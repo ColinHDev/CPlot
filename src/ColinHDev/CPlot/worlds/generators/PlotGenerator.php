@@ -85,13 +85,13 @@ class PlotGenerator extends Generator {
     public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
 
         if ($this->schematicRoadName !== "default" && $this->schematicRoad === null) {
-            $this->schematicRoad = new Schematic($this->schematicRoadName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $this->schematicRoadName . Schematic::FILE_EXTENSION);
+            $this->schematicRoad = new Schematic($this->schematicRoadName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $this->schematicRoadName . "." . Schematic::FILE_EXTENSION);
             if (!$this->schematicRoad->loadFromFile()) {
                 $this->schematicRoadName = "default";
             }
         }
         if ($this->schematicPlotName !== "default" && $this->schematicPlot === null) {
-            $this->schematicPlot = new Schematic($this->schematicPlotName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $this->schematicPlotName . Schematic::FILE_EXTENSION);
+            $this->schematicPlot = new Schematic($this->schematicPlotName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $this->schematicPlotName . "." . Schematic::FILE_EXTENSION);
             if (!$this->schematicPlot->loadFromFile()) {
                 $this->schematicPlotName = "default";
             }

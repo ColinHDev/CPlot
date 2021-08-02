@@ -31,13 +31,9 @@ class SchematicSubcommand extends Subcommand {
                 $files = [];
                 foreach (scandir($this->getPlugin()->getDataFolder() . "schematics") as $file) {
                     $file = explode(".", $file);
-                    if ($file === false) {
-                        continue;
-                    }
+                    if ($file === false) continue;
                     [$fileName, $fileExtension] = $file;
-                    if ($fileExtension !== "cplot") {
-                        continue;
-                    }
+                    if ($fileExtension !== Schematic::FILE_EXTENSION) continue;
                     $files[] = $fileName;
                 }
                 if (count($files) === 0) {
@@ -57,7 +53,7 @@ class SchematicSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.info.directoryNotFound"));
                     break;
                 }
-                $file = $dir . DIRECTORY_SEPARATOR . $args[1] . ".cplot";
+                $file = $dir . DIRECTORY_SEPARATOR . $args[1] . "." . Schematic::FILE_EXTENSION;
                 if (!file_exists($file)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.info.schematicNotFound", [$args[1]]));
                     break;
@@ -104,7 +100,7 @@ class SchematicSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.directoryNotFound"));
                     break;
                 }
-                $file = $dir . DIRECTORY_SEPARATOR . $schematicName . Schematic::FILE_EXTENSION;
+                $file = $dir . DIRECTORY_SEPARATOR . $schematicName . "." . Schematic::FILE_EXTENSION;
                 if (file_exists($file)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.schematicAlreadyExists", [$schematicName]));
                     break;
@@ -158,7 +154,7 @@ class SchematicSubcommand extends Subcommand {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.directoryNotFound"));
                         break;
                     }
-                    $file = $dir . DIRECTORY_SEPARATOR . $args[2] . ".cplot";
+                    $file = $dir . DIRECTORY_SEPARATOR . $args[2] . "." . Schematic::FILE_EXTENSION;
                     if (!file_exists($file)) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.schematicNotFound", [$args[2]]));
                         break;

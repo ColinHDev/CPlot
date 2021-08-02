@@ -84,7 +84,7 @@ class SchematicGenerator extends Generator {
     public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
 
         if ($this->schematicName !== "default" && $this->schematic === null) {
-            $this->schematic = new Schematic($this->schematicName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $this->schematicName . Schematic::FILE_EXTENSION);
+            $this->schematic = new Schematic($this->schematicName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $this->schematicName . "." . Schematic::FILE_EXTENSION);
             if (!$this->schematic->loadFromFile()) {
                 $this->schematicName = "default";
             }

@@ -14,7 +14,7 @@ use pocketmine\nbt\TreeRoot;
 
 class Schematic {
 
-    public const FILE_EXTENSION = ".cplot_schematic";
+    public const FILE_EXTENSION = "cplot_schematic";
 
     public const SCHEMATIC_VERSION = 1;
 
