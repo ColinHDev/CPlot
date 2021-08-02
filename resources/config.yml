@@ -1,0 +1,64 @@
+# settings that are used for a plot world when generating
+worldSettings:
+
+    # schematic for the road of the plot world
+    # default value: "default" (no schematic)
+    schematicRoad: "default"
+    # schematic for the merged road of the plot world
+    # default value: "default" (no schematic)
+    schematicMergeRoad: "default"
+    # schematic for the plots of the plot world
+    # default value: "default" (no schematic)
+    schematicPlot: "default"
+
+    # the width of the street
+    # default value: 7
+    # minimum value: 3
+    sizeRoad: 7
+    # the size of the plot
+    # default value: 32
+    # minimum value: 5
+    sizePlot: 32
+    # the hight of the plot
+    # default value: 64
+    # maximum value: 254
+    # minimum value: 5
+    sizeGround: 64
+
+    # the block that makes up the street
+    # default value: "5:0" (Oak Wood Planks)
+    blockRoad: "5:0"
+    # the block that makes up the border of the plot
+    # default value: "44:0" (Smooth Stone Slab)
+    blockBorder: "44:0"
+    # the block that makes up the border of the plot when it is claimed
+    # default value: "44:3" (Cobblestone Slab)
+    blockBorderOnClaim: "44:3"
+
+    # the block that makes up the floor of the plot
+    # default value: "2:0" (Grass)
+    blockPlotFloor: "2:0"
+    # the block with which the plot is filled
+    # default value: "3:0" (Dirt)
+    blockPlotFill: "3:0"
+    # the block that makes up the bottom of the plots
+    # default value: "7:0" (Bedrock)
+    blockPlotBottom: "7:0"
+
+# database settings
+database:
+    # define which provider will be used
+    provider: "sqlite"
+    # settings for the SQLite provider
+    sqlite:
+        # folder of the SQLite database file
+        folder: "plugin_data/CPlot/"
+        # file of the SQLite database
+        file: "CPlot.sqlite"
+    # settings for the MySQL provider
+    mysql:
+        host: "127.0.0.1"
+        port: 3306
+        username: ""
+        password: ""
+        database: "FlagWars"

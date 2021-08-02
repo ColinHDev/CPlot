@@ -1,0 +1,16 @@
+name: CPlot
+main: ColinHDev\CPlot\CPlot
+version: "1.0.0"
+
+api: 4.0.0
+
+author: ColinHDev
+website: https://github.com/ColinHDev
+
+permissions:
+    cplot.command.plot:
+        default: true
+    cplot.command.generate:
+        default: op
+    cplot.command.schematic:
+        default: op
