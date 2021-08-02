@@ -71,7 +71,7 @@ class SchematicSubcommand extends Subcommand {
                     $typeString = "schematic.info.success.typeUnknown";
                 }
                 $sender->sendMessage(
-                    $this->getPrefix() . $this->translateString(
+                    $this->translateString(
                         "schematic.info.success.body",
                         [
                             $this->translateString("schematic.info.success.timeformat", explode(".", date("d.m.Y.H.i.s", $schematic->getCreationTime()))),
