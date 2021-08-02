@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlotAPI\Plot;
 
 abstract class DataProvider {
 
@@ -11,8 +12,16 @@ abstract class DataProvider {
     /** @var int $worldCacheSize */
     private int $worldCacheSize = 16;
 
+    /** @var Plot[] */
+    private array $plotCache = [];
+    private int $plotCacheSize = 128;
+
     abstract public function getWorld(string $name) : ?WorldSettings;
     abstract public function addWorld(string $name, WorldSettings $settings) : bool;
+
+    abstract public function getPlot(string $worldName, int $x, int $z) : ?Plot;
+    abstract public function getPlotsByOwnerUUID(string $ownerUUID) : array;
+    abstract public function getPlotByAlias(string $alias) : ?Plot;
 
     abstract public function close() : bool;
 
@@ -30,5 +39,32 @@ abstract class DataProvider {
             array_shift($this->worldCache);
         }
         $this->worldCache = array_merge([$name => clone $settings], $this->worldCache);
+    }
+
+    /**
+     * @param string    $worldName
+     * @param int       $x
+     * @param int       $z
+     * @return Plot | null
+     */
+    protected function getPlotFromCache(string $worldName, int $x, int $z) : ?Plot {
+        if ($this->plotCacheSize <= 0) return null;
+        $key = $worldName . ";" . $x . ";" . $z;
+        if (!isset($this->plotCache[$key])) return null;
+        return $this->plotCache[$key];
+    }
+
+    /**
+     * @param Plot $plot
+     */
+    protected function cachePlot(Plot $plot) : void {
+        if ($this->plotCacheSize <= 0) return;
+        $key = $plot->toString();
+        if (isset($this->plotCache[$key])) {
+            unset($this->plotCache[$key]);
+        } else if ($this->plotCache <= count($this->plotCache)) {
+            array_shift($this->plotCache);
+        }
+        $this->plotCache = array_merge([$key => clone $plot], $this->plotCache);
     }
 }
