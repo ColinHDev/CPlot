@@ -10,6 +10,7 @@ class ResourceManager {
     private static ResourceManager $instance;
 
     private Config $config;
+    private Config $flagsConfig;
     private Language $language;
 
     public function __construct() {
@@ -19,6 +20,7 @@ class ResourceManager {
         if (!is_dir(CPlot::getInstance()->getDataFolder() . "schematics")) mkdir(CPlot::getInstance()->getDataFolder() . "schematics");
 
         CPlot::getInstance()->saveResource("config.yml");
+        CPlot::getInstance()->saveResource("flags.yml");
         CPlot::getInstance()->saveResource("language.ini");
 
         $this->config = new Config(CPlot::getInstance()->getDataFolder() . "config.yml", Config::YAML);
@@ -68,5 +70,13 @@ class ResourceManager {
     public function getConfig() : Config {
         $this->config->reload();
         return $this->config;
+    }
+
+    /**
+     * @return Config
+     */
+    public function getFlagsConfig() : Config {
+        $this->flagsConfig->reload();
+        return $this->flagsConfig;
     }
 }
