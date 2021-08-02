@@ -30,11 +30,9 @@ class SchematicSubcommand extends Subcommand {
                 }
                 $files = [];
                 foreach (scandir($this->getPlugin()->getDataFolder() . "schematics") as $file) {
-                    $file = explode(".", $file);
-                    if ($file === false) continue;
-                    [$fileName, $fileExtension] = $file;
-                    if ($fileExtension !== Schematic::FILE_EXTENSION) continue;
-                    $files[] = $fileName;
+                    $fileData = pathinfo($file);
+                    if (!isset($fileData["extension"]) || $fileData["extension"] !== Schematic::FILE_EXTENSION) continue;
+                    $files[] = $fileData["filename"];
                 }
                 if (count($files) === 0) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.list.noSchematics"));
