@@ -57,7 +57,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS players (
-            playerUUID VARCHAR(512), playerName VARCHAR(512), 
+            playerUUID VARCHAR(256), playerName VARCHAR(256), 
             PRIMARY KEY (playerUUID)
             )";
         $this->database->exec($sql);
@@ -73,7 +73,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS playerSettings (
-            playerUUID VARCHAR(512), setting VARCHAR(256), value VARCHAR(512),
+            playerUUID VARCHAR(256), setting VARCHAR(256), value VARCHAR(512),
             PRIMARY KEY (playerUUID, setting), 
             FOREIGN KEY (playerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
             )";
@@ -90,8 +90,8 @@ class SQLiteProvider extends DataProvider {
 
         $sql = "
             CREATE TABLE IF NOT EXISTS worlds (
-                worldName VARCHAR(512),
-                schematicRoad VARCHAR(512), schematicMergeRoad VARCHAR(512), schematicPlot VARCHAR(512),
+                worldName VARCHAR(256),
+                schematicRoad VARCHAR(256), schematicMergeRoad VARCHAR(256), schematicPlot VARCHAR(256),
                 sizeRoad INTEGER, sizePlot INTEGER, sizeGround INTEGER,
                 blockRoad VARCHAR(32), blockBorder VARCHAR(32), blockBorderOnClaim VARCHAR(32), 
                 blockPlotFloor VARCHAR(32), blockPlotFill VARCHAR(32), blockPlotBottom VARCHAR(32), 
@@ -109,8 +109,8 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plots (
-            worldName VARCHAR(512), x INTEGER, z INTEGER,
-            ownerUUID VARCHAR(512), claimTime INTEGER, alias VARCHAR(128),
+            worldName VARCHAR(256), x INTEGER, z INTEGER,
+            ownerUUID VARCHAR(256), claimTime INTEGER, alias VARCHAR(128),
             PRIMARY KEY (worldName, x, z),
             FOREIGN KEY (worldName) REFERENCES worlds (worldName) ON DELETE CASCADE,
             FOREIGN KEY (ownerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
@@ -142,7 +142,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS mergedPlots (
-            worldName VARCHAR(512), baseX INTEGER, baseZ INTEGER, mergedX INTEGER, mergedZ INTEGER, 
+            worldName VARCHAR(256), baseX INTEGER, baseZ INTEGER, mergedX INTEGER, mergedZ INTEGER, 
             PRIMARY KEY (worldName, baseX, baseZ, mergedX, mergedZ),
             FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
             FOREIGN KEY (baseX) REFERENCES plots (x) ON DELETE CASCADE,
@@ -163,7 +163,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plotPlayers (
-            worldName VARCHAR(512), x INTEGER, z INTEGER, playerUUID VARCHAR(512), state INTEGER, addTime INTEGER,
+            worldName VARCHAR(256), x INTEGER, z INTEGER, playerUUID VARCHAR(256), state INTEGER, addTime INTEGER,
             PRIMARY KEY (worldName, x, z, playerUUID),
             FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
             FOREIGN KEY (x) REFERENCES plots (x) ON DELETE CASCADE,
@@ -183,7 +183,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plotFlags (
-            worldName VARCHAR(512), x INTEGER, z INTEGER, ID VARCHAR(256), value VARCHAR(512),
+            worldName VARCHAR(256), x INTEGER, z INTEGER, ID VARCHAR(256), value VARCHAR(512),
             PRIMARY KEY (worldName, x, z, ID),
             FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
             FOREIGN KEY (x) REFERENCES plots (x) ON DELETE CASCADE,
@@ -202,7 +202,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plotRates (
-            worldName VARCHAR(512), x INTEGER, z INTEGER, rate FLOAT, playerUUID VARCHAR(512), rateTime INTEGER,
+            worldName VARCHAR(256), x INTEGER, z INTEGER, rate FLOAT, playerUUID VARCHAR(256), rateTime INTEGER,
             PRIMARY KEY (worldName, x, z, playerUUID, rateTime),
             FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
             FOREIGN KEY (x) REFERENCES plots (x) ON DELETE CASCADE,
