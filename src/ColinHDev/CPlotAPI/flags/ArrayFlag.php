@@ -9,11 +9,11 @@ class ArrayFlag extends BaseFlag {
 
     /**
      * ArrayFlag constructor.
-     * @param string    $id
+     * @param string    $ID
      * @param array     $data
      */
-    public function __construct(string $id, array $data) {
-        parent::__construct($id, $data);
+    public function __construct(string $ID, array $data) {
+        parent::__construct($ID, $data);
         $this->default = (array) $data["default"];
     }
 

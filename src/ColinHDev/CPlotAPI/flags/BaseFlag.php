@@ -4,18 +4,18 @@ namespace ColinHDev\CPlotAPI\flags;
 
 abstract class BaseFlag implements FlagIDs {
 
-    protected string $id;
+    protected string $ID;
     protected string $category;
     protected string $valueType;
     protected string $description;
 
     /**
      * BaseFlag constructor.
-     * @param string    $id
+     * @param string    $ID
      * @param array     $data
      */
-    public function __construct(string $id, array $data) {
-        $this->id = $id;
+    public function __construct(string $ID, array $data) {
+        $this->ID = $ID;
         $this->category = $data["category"];
         $this->valueType = $data["type"];
         $this->description = $data["description"];

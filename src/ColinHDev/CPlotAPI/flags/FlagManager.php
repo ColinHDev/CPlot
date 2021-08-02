@@ -43,20 +43,20 @@ class FlagManager {
 
     /**
      * @param Config    $config
-     * @param string    $id
+     * @param string    $ID
      * @param string    $className
      */
-    private function register(Config $config, string $id, string $className) : void {
+    private function register(Config $config, string $ID, string $className) : void {
         Utils::testValidInstance($className, BaseFlag::class);
-        $this->flags[$id] = new $className($id, $config->get($id));
+        $this->flags[$ID] = new $className($ID, $config->get($ID));
     }
 
     /**
-     * @param string $id
+     * @param string $ID
      * @return BaseFlag | null
      */
-    public function getFlagById(string $id) : ?BaseFlag {
-        if (!isset($this->flags[$id])) return null;
-        return clone $this->flags[$id];
+    public function getFlagByID(string $ID) : ?BaseFlag {
+        if (!isset($this->flags[$ID])) return null;
+        return clone $this->flags[$ID];
     }
 }

@@ -183,21 +183,21 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plotFlags (
-            worldName VARCHAR(512), x INTEGER, z INTEGER, setting VARCHAR(256), value VARCHAR(512),
-            PRIMARY KEY (worldName, x, z, setting),
+            worldName VARCHAR(512), x INTEGER, z INTEGER, ID VARCHAR(256), value VARCHAR(512),
+            PRIMARY KEY (worldName, x, z, ID),
             FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
             FOREIGN KEY (x) REFERENCES plots (x) ON DELETE CASCADE,
             FOREIGN KEY (z) REFERENCES plots (z) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
-            "SELECT setting, value FROM plotFlags WHERE worldName = :worldName AND x = :x AND z = :z;";
+            "SELECT ID, value FROM plotFlags WHERE worldName = :worldName AND x = :x AND z = :z;";
         $this->getPlotFlags = $this->createSQLite3Stmt($sql);
         $sql =
-            "INSERT OR REPLACE INTO plotFlags (worldName, x, z, setting, value) VALUES (:worldName, :x, :z, :setting, :value);";
+            "INSERT OR REPLACE INTO plotFlags (worldName, x, z, ID, value) VALUES (:worldName, :x, :z, :ID, :value);";
         $this->setPlotFlag = $this->createSQLite3Stmt($sql);
         $sql =
-            "DELETE FROM plotFlags WHERE worldName = :worldName AND x = :x AND z = :z AND setting = :setting;";
+            "DELETE FROM plotFlags WHERE worldName = :worldName AND x = :x AND z = :z AND ID = :ID;";
         $this->deletePlotFlag = $this->createSQLite3Stmt($sql);
 
         $sql =
