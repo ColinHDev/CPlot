@@ -14,7 +14,7 @@ class SchematicGenerator extends Generator {
 
     private string $schematicName;
     private int $schematicType;
-    private ?Schematic $schematic;
+    private ?Schematic $schematic = null;
 
     private int $sizeRoad;
     private int $sizePlot;
@@ -42,6 +42,7 @@ class SchematicGenerator extends Generator {
             $generatorOptions = [];
         }
 
+        var_dump($generatorOptions);
         $this->schematicName = WorldSettings::parseString($generatorOptions, "schematic", "default");
         $this->schematicType = WorldSettings::parseNumber($generatorOptions, "schematicType", Schematic::TYPE_ROAD);
 

@@ -145,7 +145,7 @@ class SchematicSubcommand extends Subcommand {
                     break;
                 }
 
-                $settings = ResourceManager::getInstance()->getConfig()->get("worldSettings", []);
+                $worldSettings = WorldSettings::fromConfig()->toArray();
                 if ($args[2] !== "road" && $args[2] !== "plot") {
                     $dir = $this->getPlugin()->getDataFolder() . "schematics";
                     if (!is_dir($dir)) {
@@ -157,27 +157,30 @@ class SchematicSubcommand extends Subcommand {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.schematicNotFound", [$args[2]]));
                         break;
                     }
-                    $schematic = new Schematic($args[1], $file);
+                    $schematic = new Schematic($args[2], $file);
                     if (!$schematic->loadFromFile()) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.couldNotLoadSchematic", [$args[1]]));
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.couldNotLoadSchematic", [$args[2]]));
                         break;
                     }
-                    $settings["schematic"] = $schematic->getName();
-                    $settings["schematicType"] = $schematic->getType();
+                    $worldSettings["schematic"] = $schematic->getName();
+                    $worldSettings["schematicType"] = $schematic->getType();
+                } else if ($args[2] === "road") {
+                    $worldSettings["schematic"] = "default";
+                    $worldSettings["schematicType"] = Schematic::TYPE_ROAD;
                 } else {
-                    $settings["schematic"] = "default";
-                    $settings["schematicType"] = $args[2];
+                    $worldSettings["schematic"] = "default";
+                    $worldSettings["schematicType"] = Schematic::TYPE_PLOT;
                 }
                 $options = new WorldCreationOptions();
                 $options = $options->setGeneratorClass(GeneratorManager::getInstance()->getGenerator(SchematicGenerator::GENERATOR_NAME));
-                $options = $options->setGeneratorOptions(json_encode($settings));
+                $options = $options->setGeneratorOptions(json_encode($worldSettings));
                 if (!$this->getPlugin()->getServer()->getWorldManager()->generateWorld($args[1], $options)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.generateError"));
                     break;
                 }
                 $world = $this->getPlugin()->getServer()->getWorldManager()->getWorldByName($args[1]);
                 if ($world !== null) {
-                    $world->setSpawnLocation(new Vector3(0, $settings["sizeGround"] + 1, 0));
+                    $world->setSpawnLocation(new Vector3(0, $worldSettings["sizeGround"] + 1, 0));
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.success", [$args[1]]));
                 break;

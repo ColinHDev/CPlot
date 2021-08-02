@@ -99,12 +99,14 @@ class PlotGenerator extends Generator {
 
         $chunk = $world->getChunk($chunkX, $chunkZ);
         for ($X = 0; $X < 16; $X++) {
+            $x = $this->getRasterCoordinate($chunkX * 16 + $X);
+            $xPlot = $x - $this->sizeRoad;
+
             for ($Z = 0; $Z < 16; $Z++) {
+                $z = $this->getRasterCoordinate($chunkZ * 16 + $Z);
+                $zPlot = $z - $this->sizeRoad;
 
                 $chunk->setBiomeId($X, $Z, BiomeIds::PLAINS);
-
-                $x = $this->getRasterCoordinate($chunkX * 16 + $X);
-                $z = $this->getRasterCoordinate($chunkZ * 16 + $Z);
 
                 if ($x < $this->sizeRoad || $z < $this->sizeRoad) {
                     if ($this->schematicRoadName !== "default" && $this->schematicRoad !== null) {
@@ -127,7 +129,7 @@ class PlotGenerator extends Generator {
                 } else {
                     if ($this->schematicPlotName !== "default" && $this->schematicPlot !== null) {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            $chunk->setFullBlock($X, $y, $Z, $this->schematicPlot->getFullBlock($x, $y, $z));
+                            $chunk->setFullBlock($X, $y, $Z, $this->schematicPlot->getFullBlock($xPlot, $y, $zPlot));
                         }
                     } else {
                         for ($y = $world->getMinY(); $y <= $this->sizeGround; $y++) {
