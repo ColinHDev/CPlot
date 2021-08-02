@@ -5,6 +5,7 @@ namespace ColinHDev\CPlot\provider;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\Plot;
 use Exception;
+use pocketmine\data\bedrock\BiomeIds;
 use SQLite3;
 use SQLite3Stmt;
 use SQLite3Result;
@@ -303,7 +304,7 @@ class SQLiteProvider extends DataProvider {
         if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
             $plot = new Plot(
                 $worldName, $x, $z,
-                $result["ownerUUID"] ?? null, $result["claimTime"] ?? null, $result["alias"] ?? null
+                $result["biomeID"] ?? BiomeIds::PLAINS, $result["ownerUUID"] ?? null, $result["claimTime"] ?? null, $result["alias"] ?? null
             );
             $this->cachePlot($plot);
             return $plot;
@@ -325,7 +326,7 @@ class SQLiteProvider extends DataProvider {
         while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
             $plots[] = new Plot(
                 $result["worldName"], $result["x"], $result["z"],
-                $ownerUUID, $result["claimTime"] ?? null, $result["alias"] ?? null
+                $result["biomeID"] ?? BiomeIds::PLAINS, $ownerUUID, $result["claimTime"] ?? null, $result["alias"] ?? null
             );
         }
         return $plots;
@@ -344,7 +345,7 @@ class SQLiteProvider extends DataProvider {
         if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
             $plot = new Plot(
                 $result["worldName"], $result["x"], $result["z"],
-                $result["ownerUUID"] ?? null, $result["claimTime"] ?? null, $alias
+                $result["biomeID"] ?? BiomeIds::PLAINS, $result["ownerUUID"] ?? null, $result["claimTime"] ?? null, $alias
             );
             $this->cachePlot($plot);
             return $plot;
