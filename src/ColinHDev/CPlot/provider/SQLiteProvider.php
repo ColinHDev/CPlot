@@ -238,7 +238,7 @@ class SQLiteProvider extends DataProvider {
     public function getWorld(string $name) : ?WorldSettings {
         if (($settings = $this->getWorldFromCache($name)) !== null) return $settings;
 
-        $this->getWorld->bindValue(':worldName', $name, SQLITE3_TEXT);
+        $this->getWorld->bindValue(":worldName", $name, SQLITE3_TEXT);
 
         $this->getWorld->reset();
         $results = $this->getWorld->execute();
@@ -257,26 +257,24 @@ class SQLiteProvider extends DataProvider {
      * @return bool
      */
     public function addWorld(string $name, WorldSettings $settings) : bool {
-        $settingsArray = $settings->toArray();
-
         $stmt = $this->setWorld;
 
         $stmt->bindValue(":worldName", $name, SQLITE3_TEXT);
 
-        $stmt->bindValue(":schematicRoad", $settingsArray["schematicRoad"], SQLITE3_TEXT);
-        $stmt->bindValue(":schematicMergeRoad", $settingsArray["schematicMergeRoad"], SQLITE3_TEXT);
-        $stmt->bindValue(":schematicPlot", $settingsArray["schematicPlot"], SQLITE3_TEXT);
+        $stmt->bindValue(":schematicRoad", $settings->getSchematicRoad(), SQLITE3_TEXT);
+        $stmt->bindValue(":schematicMergeRoad", $settings->getSchematicMergeRoad(), SQLITE3_TEXT);
+        $stmt->bindValue(":schematicPlot", $settings->getSchematicPlot(), SQLITE3_TEXT);
 
-        $stmt->bindValue(":sizeRoad", $settingsArray["sizeRoad"], SQLITE3_INTEGER);
-        $stmt->bindValue(":sizePlot", $settingsArray["sizePlot"], SQLITE3_INTEGER);
-        $stmt->bindValue(":sizeGround", $settingsArray["sizeGround"], SQLITE3_INTEGER);
+        $stmt->bindValue(":sizeRoad", $settings->getSizeRoad(), SQLITE3_INTEGER);
+        $stmt->bindValue(":sizePlot", $settings->getSizePlot(), SQLITE3_INTEGER);
+        $stmt->bindValue(":sizeGround", $settings->getSizeGround(), SQLITE3_INTEGER);
 
-        $stmt->bindValue(":blockRoad", $settingsArray["blockRoad"], SQLITE3_TEXT);
-        $stmt->bindValue(":blockBorder", $settingsArray["blockBorder"], SQLITE3_TEXT);
-        $stmt->bindValue(":blockBorderOnClaim", $settingsArray["blockBorderOnClaim"], SQLITE3_TEXT);
-        $stmt->bindValue(":blockPlotFloor", $settingsArray["blockPlotFloor"], SQLITE3_TEXT);
-        $stmt->bindValue(":blockPlotFill", $settingsArray["blockPlotFill"], SQLITE3_TEXT);
-        $stmt->bindValue(":blockPlotBottom", $settingsArray["blockPlotBottom"], SQLITE3_TEXT);
+        $stmt->bindValue(":blockRoad", $settings->getBlockRoadString(), SQLITE3_TEXT);
+        $stmt->bindValue(":blockBorder", $settings->getBlockBorderString(), SQLITE3_TEXT);
+        $stmt->bindValue(":blockBorderOnClaim", $settings->getBlockBorderOnClaimString(), SQLITE3_TEXT);
+        $stmt->bindValue(":blockPlotFloor", $settings->getBlockPlotFloorString(), SQLITE3_TEXT);
+        $stmt->bindValue(":blockPlotFill", $settings->getBlockPlotFillString(), SQLITE3_TEXT);
+        $stmt->bindValue(":blockPlotBottom", $settings->getBlockPlotBottomString(), SQLITE3_TEXT);
 
         $stmt->reset();
         $result = $stmt->execute();

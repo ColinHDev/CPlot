@@ -7,9 +7,8 @@ use ColinHDev\CPlotAPI\Plot;
 
 abstract class DataProvider {
 
-    /** @var array | WorldSettings[] $worldCache */
+    /** @var WorldSettings[] */
     private array $worldCache = [];
-    /** @var int $worldCacheSize */
     private int $worldCacheSize = 16;
 
     /** @var Plot[] */
@@ -25,14 +24,22 @@ abstract class DataProvider {
 
     abstract public function close() : bool;
 
+    /**
+     * @param string $name
+     * @return WorldSettings | null
+     */
     protected function getWorldFromCache(string $name) : ?WorldSettings {
-        if (isset($this->worldCache[$name])) {
-            return $this->worldCache[$name];
-        }
-        return null;
+        if ($this->worldCacheSize <= 0) return null;
+        if (!isset($this->worldCache[$name])) return null;
+        return $this->worldCache[$name];
     }
 
+    /**
+     * @param string $name
+     * @param WorldSettings $settings
+     */
     protected function cacheWorld(string $name, WorldSettings $settings) : void {
+        if ($this->worldCacheSize <= 0) return;
         if (isset($this->worldCache[$name])) {
             unset($this->worldCache[$name]);
         } else if ($this->worldCacheSize <= count($this->worldCache)) {

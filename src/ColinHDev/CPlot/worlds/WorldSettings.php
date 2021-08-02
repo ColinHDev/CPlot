@@ -106,10 +106,24 @@ class WorldSettings {
     }
 
     /**
+     * @return string
+     */
+    public function getBlockRoadString() : string {
+        return $this->blockRoad->getId() . (($meta = $this->blockRoad->getMeta()) === 0 ? "" : ":" . $meta);
+    }
+
+    /**
      * @return Block
      */
     public function getBlockBorder() : Block {
         return $this->blockBorder;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBlockBorderString() : string {
+        return $this->blockBorder->getId() . (($meta = $this->blockBorder->getMeta()) === 0 ? "" : ":" . $meta);
     }
 
     /**
@@ -120,10 +134,24 @@ class WorldSettings {
     }
 
     /**
+     * @return string
+     */
+    public function getBlockBorderOnClaimString() : string {
+        return $this->blockBorderOnClaim->getId() . (($meta = $this->blockBorderOnClaim->getMeta()) === 0 ? "" : ":" . $meta);
+    }
+
+    /**
      * @return Block
      */
     public function getBlockPlotFloor() : Block {
         return $this->blockPlotFloor;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBlockPlotFloorString() : string {
+        return $this->blockPlotFloor->getId() . (($meta = $this->blockPlotFloor->getMeta()) === 0 ? "" : ":" . $meta);
     }
 
     /**
@@ -134,10 +162,24 @@ class WorldSettings {
     }
 
     /**
+     * @return string
+     */
+    public function getBlockPlotFillString() : string {
+        return $this->blockPlotFill->getId() . (($meta = $this->blockPlotFill->getMeta()) === 0 ? "" : ":" . $meta);
+    }
+
+    /**
      * @return Block
      */
     public function getBlockPlotBottom() : Block {
         return $this->blockPlotBottom;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBlockPlotBottomString() : string {
+        return $this->blockPlotBottom->getId() . (($meta = $this->blockPlotBottom->getMeta()) === 0 ? "" : ":" . $meta);
     }
 
     /**
@@ -166,7 +208,7 @@ class WorldSettings {
      * @return self
      */
     public static function fromConfig() : self {
-        $settings = ResourceManager::getInstance()->getConfig()->get("worldSettings");
+        $settings = ResourceManager::getInstance()->getConfig()->get("worldSettings", []);
         return self::fromArray($settings);
     }
 
