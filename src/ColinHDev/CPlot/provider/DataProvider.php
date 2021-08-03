@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlotAPI\flags\BaseFlag;
 use ColinHDev\CPlotAPI\Plot;
 
 abstract class DataProvider {
@@ -21,6 +22,11 @@ abstract class DataProvider {
     abstract public function getPlot(string $worldName, int $x, int $z) : ?Plot;
     abstract public function getPlotsByOwnerUUID(string $ownerUUID) : array;
     abstract public function getPlotByAlias(string $alias) : ?Plot;
+
+    abstract public function getPlotFlags(Plot $plot) : ?Plot;
+    abstract public function savePlotFlag(Plot $plot, BaseFlag $flag) : bool;
+    abstract public function deletePlotFlag(Plot $plot, string $flagID) : bool;
+    abstract public function deletePlotFlags(Plot $plot) : bool;
 
     abstract public function close() : bool;
 

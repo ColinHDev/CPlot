@@ -24,8 +24,8 @@ abstract class BaseFlag implements FlagIDs {
     /**
      * @return int
      */
-    public function getId() : int {
-        return $this->id;
+    public function getID() : int {
+        return $this->ID;
     }
 
     /**
@@ -48,4 +48,12 @@ abstract class BaseFlag implements FlagIDs {
     public function getDescription() : string {
         return $this->description;
     }
+
+    abstract public function getDefault() : mixed;
+
+    abstract public function getValue() : mixed;
+    abstract public function setValue(mixed $value) : void;
+
+    abstract public function serializeValue() : string;
+    abstract public function unserializeValue(string $serializedValue) : void;
 }

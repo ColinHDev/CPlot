@@ -2,6 +2,8 @@
 
 namespace ColinHDev\CPlotAPI\flags;
 
+use ColinHDev\CPlotAPI\flags\utils\InvalidValueException;
+
 class BooleanFlag extends BaseFlag {
 
     protected bool $default;
@@ -32,9 +34,29 @@ class BooleanFlag extends BaseFlag {
     }
 
     /**
-     * @param bool | null $value
+     * @param mixed $value
+     * @throws InvalidValueException
      */
-    public function setValue(?bool $value) : void {
+    public function setValue(mixed $value) : void {
+        if ($value !== null) {
+            if (!is_bool($value)) {
+                throw new InvalidValueException("Expected value to be boolean or null, got " . gettype($value) . ".");
+            }
+        }
         $this->value = $value;
+    }
+
+    /**
+     * @return string
+     */
+    public function serializeValue() : string {
+        return $this->value ? "true" : "false";
+    }
+
+    /**
+     * @param string $serializedValue
+     */
+    public function unserializeValue(string $serializedValue) : void {
+        $this->value = $serializedValue;
     }
 }

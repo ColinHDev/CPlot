@@ -3,6 +3,8 @@
 namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlotAPI\flags\BaseFlag;
+use ColinHDev\CPlotAPI\flags\FlagManager;
 use ColinHDev\CPlotAPI\Plot;
 use Exception;
 use pocketmine\data\bedrock\BiomeIds;
@@ -42,6 +44,7 @@ class SQLiteProvider extends DataProvider {
 
     private SQLite3Stmt $getPlotFlags;
     private SQLite3Stmt $setPlotFlag;
+    private SQLite3Stmt $deletePlotFlags;
     private SQLite3Stmt $deletePlotFlag;
 
     private SQLite3Stmt $getPlotRates;
@@ -197,6 +200,9 @@ class SQLiteProvider extends DataProvider {
             "INSERT OR REPLACE INTO plotFlags (worldName, x, z, ID, value) VALUES (:worldName, :x, :z, :ID, :value);";
         $this->setPlotFlag = $this->createSQLite3Stmt($sql);
         $sql =
+            "DELETE FROM plotFlags WHERE worldName = :worldName AND x = :x AND z = :z;";
+        $this->deletePlotFlags = $this->createSQLite3Stmt($sql);
+        $sql =
             "DELETE FROM plotFlags WHERE worldName = :worldName AND x = :x AND z = :z AND ID = :ID;";
         $this->deletePlotFlag = $this->createSQLite3Stmt($sql);
 
@@ -351,6 +357,101 @@ class SQLiteProvider extends DataProvider {
             return $plot;
         }
         return null;
+    }
+
+    /**
+     * @param Plot $plot
+     * @return Plot | null
+     */
+    public function getPlotFlags(Plot $plot) : ?Plot {
+        $this->getPlotFlags->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->getPlotFlags->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $this->getPlotFlags->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+
+        $this->getPlotFlags->reset();
+        $results = $this->getPlotFlags->execute();
+        if ($results === false) return null;
+
+        $flags = [];
+        while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+            $flag = FlagManager::getInstance()->getFlagByID($result["ID"]);
+            if ($flag === null) continue;
+            $flag->unserializeValue($result["value"]);
+            $flags[$flag->getID()] = $flag;
+        }
+        $plot->setFlags($flags);
+        $this->cachePlot($plot);
+        return $plot;
+    }
+
+    /**
+     * @param Plot      $plot
+     * @param BaseFlag  $flag
+     * @return bool
+     */
+    public function savePlotFlag(Plot $plot, BaseFlag $flag) : bool {
+        if ($flag->getValue() === null) return false;
+        if (!$plot->addFlag($flag)) return false;
+
+        $stmt = $this->setPlotFlag;
+
+        $stmt->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $stmt->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $stmt->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+
+        $stmt->bindValue(":ID", $flag->getID(), SQLITE3_TEXT);
+        $stmt->bindValue(":value", $flag->serializeValue(), SQLITE3_TEXT);
+
+        $stmt->reset();
+        $result = $stmt->execute();
+        if (!$result instanceof SQLite3Result) return false;
+
+        $this->cachePlot($plot);
+        return true;
+    }
+
+    /**
+     * @param Plot      $plot
+     * @param string    $flagID
+     * @return bool
+     */
+    public function deletePlotFlag(Plot $plot, string $flagID) : bool {
+        if (!$plot->removeFlag($flagID)) return false;
+
+        $stmt = $this->deletePlotFlag;
+
+        $stmt->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $stmt->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $stmt->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+
+        $stmt->bindValue(":ID", $flagID, SQLITE3_TEXT);
+
+        $stmt->reset();
+        $result = $stmt->execute();
+        if (!$result instanceof SQLite3Result) return false;
+
+        $this->cachePlot($plot);
+        return true;
+    }
+
+    /**
+     * @param Plot $plot
+     * @return bool
+     */
+    public function deletePlotFlags(Plot $plot) : bool {
+        $stmt = $this->deletePlotFlags;
+
+        $stmt->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $stmt->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $stmt->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+
+        $stmt->reset();
+        $result = $stmt->execute();
+        if (!$result instanceof SQLite3Result) return false;
+
+        $plot->setFlags(null);
+        $this->cachePlot($plot);
+        return true;
     }
 
     /**

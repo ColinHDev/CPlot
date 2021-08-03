@@ -2,6 +2,8 @@
 
 namespace ColinHDev\CPlotAPI\flags;
 
+use ColinHDev\CPlotAPI\flags\utils\InvalidValueException;
+
 class StringFlag extends BaseFlag {
 
     protected string $default;
@@ -32,9 +34,29 @@ class StringFlag extends BaseFlag {
     }
 
     /**
-     * @param string | null $value
+     * @param mixed $value
+     * @throws InvalidValueException
      */
-    public function setValue(?string $value) : void {
+    public function setValue(mixed $value) : void {
+        if ($value !== null) {
+            if (!is_string($value)) {
+                throw new InvalidValueException("Expected value to be string or null, got " . gettype($value) . ".");
+            }
+        }
         $this->value = $value;
+    }
+
+    /**
+     * @return string
+     */
+    public function serializeValue() : string {
+        return $this->value;
+    }
+
+    /**
+     * @param string $serializedValue
+     */
+    public function unserializeValue(string $serializedValue) : void {
+        $this->value = $serializedValue;
     }
 }

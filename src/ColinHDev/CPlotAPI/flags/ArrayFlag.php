@@ -2,6 +2,8 @@
 
 namespace ColinHDev\CPlotAPI\flags;
 
+use ColinHDev\CPlotAPI\flags\utils\InvalidValueException;
+
 class ArrayFlag extends BaseFlag {
 
     protected array $default;
@@ -32,9 +34,33 @@ class ArrayFlag extends BaseFlag {
     }
 
     /**
-     * @param array | null $value
+     * @param mixed $value
+     * @throws InvalidValueException
      */
-    public function setValue(?array $value) : void {
+    public function setValue(mixed $value) : void {
+        if ($value !== null) {
+            if (!is_array($value)) {
+                throw new InvalidValueException("Expected value to be array or null, got " . gettype($value) . ".");
+            }
+        }
         $this->value = $value;
+    }
+
+    /**
+     * @return string
+     */
+    public function serializeValue() : string {
+        return implode(";", $this->value);
+    }
+
+    /**
+     * @param string $serializedValue
+     */
+    public function unserializeValue(string $serializedValue) : void {
+        if ($serializedValue === "") {
+            $this->value = [];
+        } else {
+            $this->value = explode(";", $serializedValue);
+        }
     }
 }

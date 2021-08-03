@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlotAPI\flags;
 
 use ColinHDev\CPlot\ResourceManager;
+use ColinHDev\CPlotAPI\flags\implementations\SpawnFlag;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\Utils;
@@ -22,7 +23,7 @@ class FlagManager {
         $this->register($config, FlagIDs::FLAG_PLOT_LEAVE, BooleanFlag::class);
         $this->register($config, FlagIDs::FLAG_MESSAGE, StringFlag::class);
 
-        $this->register($config, FlagIDs::FLAG_SPAWN, PositionFlag::class);
+        $this->register($config, FlagIDs::FLAG_SPAWN, SpawnFlag::class);
 
         $this->register($config, FlagIDs::FLAG_ITEM_DROP, BooleanFlag::class);
         $this->register($config, FlagIDs::FLAG_ITEM_PICKUP, BooleanFlag::class);
