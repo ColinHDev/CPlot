@@ -4,9 +4,7 @@ namespace ColinHDev\CPlot\tasks\async;
 
 use ColinHDev\CPlot\worlds\generators\Schematic;
 
-class SchematicSaveAsyncTask extends CPlotAsyncTask {
-
-    protected bool $updateChunks = false;
+class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
 
     private string $name;
     private string $file;
