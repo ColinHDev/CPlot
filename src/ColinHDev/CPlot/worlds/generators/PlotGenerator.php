@@ -2,6 +2,7 @@
 
 namespace ColinHDev\CPlot\worlds\generators;
 
+use ColinHDev\CPlotAPI\math\CoordinateUtils;
 use pocketmine\world\generator\Generator;
 use pocketmine\world\ChunkManager;
 use pocketmine\data\bedrock\BiomeIds;
@@ -99,11 +100,11 @@ class PlotGenerator extends Generator {
 
         $chunk = $world->getChunk($chunkX, $chunkZ);
         for ($X = 0; $X < 16; $X++) {
-            $x = $this->getRasterCoordinate($chunkX * 16 + $X);
+            $x = CoordinateUtils::getRasterCoordinate($chunkX * 16 + $X, $this->sizeRoad + $this->sizePlot);
             $xPlot = $x - $this->sizeRoad;
 
             for ($Z = 0; $Z < 16; $Z++) {
-                $z = $this->getRasterCoordinate($chunkZ * 16 + $Z);
+                $z = CoordinateUtils::getRasterCoordinate($chunkZ * 16 + $Z, $this->sizeRoad + $this->sizePlot);
                 $zPlot = $z - $this->sizeRoad;
 
                 $chunk->setBiomeId($X, $Z, BiomeIds::PLAINS);
@@ -118,7 +119,7 @@ class PlotGenerator extends Generator {
                             if ($y === $world->getMinY()) {
                                 $chunk->setFullBlock($X, $y, $Z, $this->blockPlotBottomId);
                             } else if ($y === ($this->sizeGround + 1)) {
-                                if ($this->isOnBorder($x, $z)) {
+                                if (CoordinateUtils::isRasterPositionOnBorder($x, $z, $this->sizeRoad)) {
                                     $chunk->setFullBlock($X, $y, $Z, $this->blockBorderId);
                                 }
                             } else {
@@ -153,53 +154,5 @@ class PlotGenerator extends Generator {
      * @param int           $chunkZ
      */
     public function populateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
-    }
-
-    /**
-     * @param int   $x
-     * @param int   $z
-     * @return bool
-     */
-    private function isOnBorder(int $x, int $z) : bool {
-        if ($x === 0) {
-            if ($z === 0) {
-                return true;
-            }
-            if ($z >= ($this->sizeRoad - 1)) {
-                return true;
-            }
-        } else if ($x === ($this->sizeRoad - 1)) {
-            if ($z === 0) {
-                return true;
-            }
-            if ($z >= ($this->sizeRoad - 1)) {
-                return true;
-            }
-        }
-        if ($z === 0) {
-            if ($x === 0) {
-                return true;
-            }
-            if ($x >= ($this->sizeRoad - 1)) {
-                return true;
-            }
-        } else if ($z === ($this->sizeRoad - 1)) {
-            if ($x === 0) {
-                return true;
-            }
-            if ($x >= ($this->sizeRoad - 1)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param int $coordinate
-     * @return int
-     */
-    private function getRasterCoordinate(int $coordinate) : int {
-        $totalSize = $this->sizeRoad + $this->sizePlot;
-        return $coordinate - (floor($coordinate / $totalSize) * $totalSize);
     }
 }

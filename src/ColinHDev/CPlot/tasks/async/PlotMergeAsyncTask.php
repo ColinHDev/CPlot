@@ -6,6 +6,7 @@ use ColinHDev\CPlot\worlds\generators\Schematic;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\math\Area;
+use ColinHDev\CPlotAPI\math\CoordinateUtils;
 use ColinHDev\CPlotAPI\MergedPlot;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\math\Facing;
@@ -175,7 +176,7 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
         foreach (array_merge([$plotToMerge], $plotToMerge->getMergedPlots()) as $mergedPlotToMerge) {
             $plot->addMerge(MergedPlot::fromBasePlot($mergedPlotToMerge, $plot->getX(), $plot->getZ()));
         }
-        $plots = array_merge([$plot], $plot->getMergedPlots());;
+        $plots = array_merge([$plot], $plot->getMergedPlots());
         /** @var BasePlot $mergedPlot */
         foreach ($plots as $mergedPlot) {
             $plotPos = $mergedPlot->getPositionNonNull($worldSettings->getSizeRoad(), $worldSettings->getSizePlot(), $worldSettings->getSizeGround());
@@ -439,11 +440,11 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
             if (isset($blockHashs["roadChange"])) {
                 foreach ($blockHashs["roadChange"] as $blockHash) {
                     World::getXZ($blockHash, $xInChunk, $zInChunk);
-                    $x = $this->getCoordinate($chunkX, $xInChunk);
-                    $z = $this->getCoordinate($chunkZ, $zInChunk);
+                    $x = CoordinateUtils::getCoordinateFromChunk($chunkX, $xInChunk);
+                    $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
                     if ($schematicMergeRoad !== null) {
-                        $xRaster = $this->getRasterCoordinate($x, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
-                        $zRaster = $this->getRasterCoordinate($z, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
+                        $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
+                        $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             switch ($explorer->moveTo($x, $y, $z)) {
                                 case SubChunkExplorerStatus::OK:
@@ -485,8 +486,8 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
             if (isset($blockHashs["borderChange"])) {
                 foreach ($blockHashs["borderChange"] as $blockHash) {
                     World::getXZ($blockHash, $xInChunk, $zInChunk);
-                    $x = $this->getCoordinate($chunkX, $xInChunk);
-                    $z = $this->getCoordinate($chunkZ, $zInChunk);
+                    $x = CoordinateUtils::getCoordinateFromChunk($chunkX, $xInChunk);
+                    $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
                     for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                         if ($y === $world->getMinY()) {
                             $fullBlock = $worldSettings->getBlockPlotBottom()->getFullId();
@@ -518,11 +519,11 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
             if (isset($blockHashs["borderReset"])) {
                 foreach ($blockHashs["borderReset"] as $blockHash) {
                     World::getXZ($blockHash, $xInChunk, $zInChunk);
-                    $x = $this->getCoordinate($chunkX, $xInChunk);
-                    $z = $this->getCoordinate($chunkZ, $zInChunk);
+                    $x = CoordinateUtils::getCoordinateFromChunk($chunkX, $xInChunk);
+                    $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
                     if ($schematicRoad !== null) {
-                        $xRaster = $this->getRasterCoordinate($x, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
-                        $zRaster = $this->getRasterCoordinate($z, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
+                        $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
+                        $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             switch ($explorer->moveTo($x, $y, $z)) {
                                 case SubChunkExplorerStatus::OK:

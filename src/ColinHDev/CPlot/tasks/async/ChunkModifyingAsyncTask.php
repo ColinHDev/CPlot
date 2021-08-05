@@ -19,24 +19,6 @@ abstract class ChunkModifyingAsyncTask extends ChunkFetchingAsyncTask {
     }
 
     /**
-     * @param int $chunkCoordinate
-     * @param int $coordinateInChunk
-     * @return int
-     */
-    protected function getCoordinate(int $chunkCoordinate, int $coordinateInChunk) : int {
-        return $chunkCoordinate * 16 + $coordinateInChunk;
-    }
-
-    /**
-     * @param int $coordinate
-     * @param int $totalSize
-     * @return int
-     */
-    protected function getRasterCoordinate(int $coordinate, int $totalSize) : int {
-        return (int) ($coordinate - (floor($coordinate / $totalSize) * $totalSize));
-    }
-
-    /**
      * @param mixed $progress
      */
     public function onProgressUpdate(mixed $progress) : void {
