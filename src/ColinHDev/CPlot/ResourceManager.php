@@ -24,6 +24,7 @@ class ResourceManager {
         CPlot::getInstance()->saveResource("language.ini");
 
         $this->config = new Config(CPlot::getInstance()->getDataFolder() . "config.yml", Config::YAML);
+        $this->flagsConfig = new Config(CPlot::getInstance()->getDataFolder() . "flags.yml", Config::YAML);
         $this->language = new Language("language", CPlot::getInstance()->getDataFolder(), "language");
     }
 

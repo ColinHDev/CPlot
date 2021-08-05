@@ -16,7 +16,7 @@ class StringFlag extends BaseFlag {
      */
     public function __construct(string $ID, array $data) {
         parent::__construct($ID, $data);
-        $this->default = (string) $data["default"];
+        $this->default = (string) $data["standard"];
     }
 
     /**

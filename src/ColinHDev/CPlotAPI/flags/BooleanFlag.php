@@ -16,7 +16,7 @@ class BooleanFlag extends BaseFlag {
      */
     public function __construct(string $ID, array $data) {
         parent::__construct($ID, $data);
-        $this->default = (bool) $data["default"];
+        $this->default = (bool) $data["standard"];
     }
 
     /**
