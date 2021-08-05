@@ -40,7 +40,7 @@ class MergeSubcommand extends Subcommand {
         }
         if (!$sender->hasPermission("cplot.admin.merge")) {
             if ($plot->getOwnerUUID() !== $sender->getUniqueId()->toString()) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notPlotOwner", [$this->getPlugin()->getProvider()->getP]));
+                $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notPlotOwner", [$this->getPlugin()->getProvider()->getPlayerNameByUUID($plot->getOwnerUUID()) ?? "ERROR"]));
                 return;
             }
         }

@@ -74,7 +74,7 @@ class SQLiteProvider extends DataProvider {
             "SELECT playerUUID FROM players WHERE playerName = :playerName;";
         $this->getPlayerUUIDByName = $this->createSQLite3Stmt($sql);
         $sql =
-            "INSERT OR REPLACE INTO players (playerUUID, playerName) VALUES (:playerUUID, :playerName);";
+            "INSERT INTO players (playerUUID, playerName) VALUES (:playerUUID, :playerName) ON CONFLICT (playerUUID) DO UPDATE SET playerName = excluded.playerName;";
         $this->setPlayer = $this->createSQLite3Stmt($sql);
 
         $sql =
@@ -241,6 +241,55 @@ class SQLiteProvider extends DataProvider {
             throw new Exception("#" . $this->database->lastErrorCode() . ": " . $this->database->lastErrorMsg());
         }
         return $stmt;
+    }
+
+
+    /**
+     * @param string $playerUUID
+     * @return string | null
+     */
+    public function getPlayerNameByUUID(string $playerUUID) : ?string {
+        $this->getPlayerNameByUUID->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
+
+        $this->getPlayerNameByUUID->reset();
+        $results = $this->getPlayerNameByUUID->execute();
+
+        if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+            return $result["playerName"];
+        }
+        return null;
+    }
+
+    /**
+     * @param string $playerName
+     * @return string | null
+     */
+    public function getPlayerUUIDByName(string $playerName) : ?string {
+        $this->getPlayerUUIDByName->bindValue(":playerName", $playerName, SQLITE3_TEXT);
+
+        $this->getPlayerNameByUUID->reset();
+        $results = $this->getPlayerNameByUUID->execute();
+
+        if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+            return $result["playerUUID"];
+        }
+        return null;
+    }
+
+    /**
+     * @param string    $playerUUID
+     * @param string    $playerName
+     * @return bool
+     */
+    public function setPlayer(string $playerUUID, string $playerName) : bool {
+        $stmt = $this->setPlayer;
+
+        $stmt->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
+        $stmt->bindValue(":playerName", $playerName, SQLITE3_TEXT);
+
+        $stmt->reset();
+        $result = $stmt->execute();
+        return $result instanceof SQLite3Result;
     }
 
 

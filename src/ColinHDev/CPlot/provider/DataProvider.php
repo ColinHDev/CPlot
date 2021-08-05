@@ -17,6 +17,10 @@ abstract class DataProvider {
     private array $plotCache = [];
     private int $plotCacheSize = 128;
 
+    abstract public function getPlayerNameByUUID(string $playerUUID) : ?string;
+    abstract public function getPlayerUUIDByName(string $playerName) : ?string;
+    abstract public function setPlayer(string $playerUUID, string $playerName) : bool;
+
     abstract public function getWorld(string $name) : ?WorldSettings;
     abstract public function addWorld(string $name, WorldSettings $settings) : bool;
 
