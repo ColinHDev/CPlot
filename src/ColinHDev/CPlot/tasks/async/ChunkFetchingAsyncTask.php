@@ -13,7 +13,7 @@ abstract class ChunkFetchingAsyncTask extends CPlotAsyncTask {
     private int $minY;
     private int $maxY;
 
-    protected ?string $chunks;
+    protected ?string $chunks = null;
 
     /**
      * @param World $world

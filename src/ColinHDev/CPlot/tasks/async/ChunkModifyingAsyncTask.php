@@ -19,6 +19,24 @@ abstract class ChunkModifyingAsyncTask extends ChunkFetchingAsyncTask {
     }
 
     /**
+     * @param int $chunkCoordinate
+     * @param int $coordinateInChunk
+     * @return int
+     */
+    protected function getCoordinate(int $chunkCoordinate, int $coordinateInChunk) : int {
+        return $chunkCoordinate * 16 + $coordinateInChunk;
+    }
+
+    /**
+     * @param int $coordinate
+     * @param int $totalSize
+     * @return int
+     */
+    protected function getRasterCoordinate(int $coordinate, int $totalSize) : int {
+        return (int) ($coordinate - (floor($coordinate / $totalSize) * $totalSize));
+    }
+
+    /**
      * @param mixed $progress
      */
     public function onProgressUpdate(mixed $progress) : void {
@@ -26,9 +44,11 @@ abstract class ChunkModifyingAsyncTask extends ChunkFetchingAsyncTask {
 
         $chunks = [];
 
-        foreach ($progress as $chunkHash) {
+        foreach ($progress as $chunkHash => $data) {
             World::getXZ($chunkHash, $chunkX, $chunkZ);
-            $chunks[$chunkHash] = $world->loadChunk($chunkX, $chunkZ);
+            $chunk = $world->loadChunk($chunkX, $chunkZ);
+            if ($chunk === null) continue;
+            $chunks[$chunkHash] = FastChunkSerializer::serializeWithoutLight($chunk);
         }
 
         $this->chunks = serialize($chunks);

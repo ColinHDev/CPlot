@@ -118,7 +118,7 @@ class SchematicSubcommand extends Subcommand {
                     $pos1 = new Vector3(0, 0, 0);
                     $pos2 = new Vector3($worldSettings->getSizePlot(), 0, $worldSettings->getSizePlot());
                 }
-                $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.taskStart", [$schematicName]));
+                $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.start", [$schematicName]));
                 $task = new SchematicSaveAsyncTask($schematicName, $file, $type, $worldSettings->getSizeRoad(), $worldSettings->getSizePlot());
                 $task->setWorld($sender->getWorld());
                 $task->saveChunks($sender->getWorld(), $pos1, $pos2);
@@ -129,7 +129,7 @@ class SchematicSubcommand extends Subcommand {
                             "Saving schematic \"" . $schematicName . "\" (" . $schematicType . ") with the size of " . $blocksCount . " blocks and a filesize of " . $fileSizeString . " (" . $fileSize . " B) took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ")."
                         );
                         if (!$sender->isConnected()) return;
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.taskEnd", [$schematicName, $elapsedTimeString]));
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.finish", [$schematicName, $elapsedTimeString]));
                     }
                 );
                 $this->getPlugin()->getServer()->getAsyncPool()->submitTask($task);

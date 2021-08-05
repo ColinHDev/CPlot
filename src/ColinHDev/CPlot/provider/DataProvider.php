@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
 use ColinHDev\CPlotAPI\Plot;
 
@@ -12,7 +13,7 @@ abstract class DataProvider {
     private array $worldCache = [];
     private int $worldCacheSize = 16;
 
-    /** @var Plot[] */
+    /** @var BasePlot[] */
     private array $plotCache = [];
     private int $plotCacheSize = 128;
 
@@ -23,7 +24,12 @@ abstract class DataProvider {
     abstract public function getPlotsByOwnerUUID(string $ownerUUID) : array;
     abstract public function getPlotByAlias(string $alias) : ?Plot;
 
-    abstract public function getPlotFlags(Plot $plot) : ?Plot;
+    abstract public function getMergedPlots(Plot $plot) : ?array;
+    abstract public function getMergeOrigin(BasePlot $plot) : ?Plot;
+    abstract public function mergePlots(Plot $origin, BasePlot ...$plots) : bool;
+    abstract public function deleteMergedPlots(Plot $plot) : bool;
+
+    abstract public function getPlotFlags(Plot $plot) : ?array;
     abstract public function savePlotFlag(Plot $plot, BaseFlag $flag) : bool;
     abstract public function deletePlotFlag(Plot $plot, string $flagID) : bool;
     abstract public function deletePlotFlags(Plot $plot) : bool;
@@ -34,7 +40,7 @@ abstract class DataProvider {
      * @param string $name
      * @return WorldSettings | null
      */
-    protected function getWorldFromCache(string $name) : ?WorldSettings {
+    final protected function getWorldFromCache(string $name) : ?WorldSettings {
         if ($this->worldCacheSize <= 0) return null;
         if (!isset($this->worldCache[$name])) return null;
         return $this->worldCache[$name];
@@ -44,7 +50,7 @@ abstract class DataProvider {
      * @param string $name
      * @param WorldSettings $settings
      */
-    protected function cacheWorld(string $name, WorldSettings $settings) : void {
+    final protected function cacheWorld(string $name, WorldSettings $settings) : void {
         if ($this->worldCacheSize <= 0) return;
         if (isset($this->worldCache[$name])) {
             unset($this->worldCache[$name]);
@@ -58,9 +64,9 @@ abstract class DataProvider {
      * @param string    $worldName
      * @param int       $x
      * @param int       $z
-     * @return Plot | null
+     * @return BasePlot | null
      */
-    protected function getPlotFromCache(string $worldName, int $x, int $z) : ?Plot {
+    final protected function getPlotFromCache(string $worldName, int $x, int $z) : ?BasePlot {
         if ($this->plotCacheSize <= 0) return null;
         $key = $worldName . ";" . $x . ";" . $z;
         if (!isset($this->plotCache[$key])) return null;
@@ -68,9 +74,9 @@ abstract class DataProvider {
     }
 
     /**
-     * @param Plot $plot
+     * @param BasePlot $plot
      */
-    protected function cachePlot(Plot $plot) : void {
+    final public function cachePlot(BasePlot $plot) : void {
         if ($this->plotCacheSize <= 0) return;
         $key = $plot->toString();
         if (isset($this->plotCache[$key])) {
@@ -79,5 +85,15 @@ abstract class DataProvider {
             array_shift($this->plotCache);
         }
         $this->plotCache = array_merge([$key => clone $plot], $this->plotCache);
+    }
+
+    /**
+     * @param BasePlot $plot
+     */
+    final protected function removePlotFromCache(BasePlot $plot) : void {
+        if ($this->plotCacheSize <= 0) return;
+        $key = $plot->toString();
+        if (!isset($this->plotCache[$key])) return;
+        unset($this->plotCache[$key]);
     }
 }

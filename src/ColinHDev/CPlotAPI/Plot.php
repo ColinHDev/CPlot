@@ -6,6 +6,7 @@ use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
 use ColinHDev\CPlotAPI\flags\FlagManager;
 use pocketmine\data\bedrock\BiomeIds;
+use pocketmine\math\Facing;
 use pocketmine\world\Position;
 
 class Plot extends BasePlot {
@@ -15,8 +16,8 @@ class Plot extends BasePlot {
     private ?int $claimTime;
     private ?string $alias;
 
-    /** @var null | BasePlot[] */
-    private ?array $mergedPlotIDs = null;
+    /** @var null | MergedPlot[] */
+    private ?array $mergedPlots = null;
 
     /** @var null | PlotPlayer[] */
     private ?array $plotPlayers = null;
@@ -64,6 +65,88 @@ class Plot extends BasePlot {
     }
 
     /**
+     * @return bool
+     */
+    public function loadMergedPlots() : bool {
+        $this->mergedPlots = CPlot::getInstance()->getProvider()->getMergedPlots($this);
+        if ($this->mergedPlots === null) return false;
+        CPlot::getInstance()->getProvider()->cachePlot($this);
+        return true;
+    }
+
+    /**
+     * @return MergedPlot[] | null
+     */
+    public function getMergedPlots() : ?array {
+        return $this->mergedPlots;
+    }
+
+    /**
+     * @param BasePlot $plot
+     * @return bool
+     */
+    public function isMerged(BasePlot $plot) : bool {
+        if ($this->isSame($plot, false)) return true;
+        if ($this->mergedPlots === null) return false;
+        return isset($this->mergedPlots[$plot->toString()]);
+    }
+
+    /**
+     * @param MergedPlot[] | null $mergedPlots
+     */
+    public function setMergedPlots(?array $mergedPlots) : void {
+        $this->mergedPlots = $mergedPlots;
+    }
+
+    /**
+     * @param MergedPlot $mergedPlot
+     * @return bool
+     */
+    public function addMerge(MergedPlot $mergedPlot) : bool {
+        if ($this->mergedPlots === null) return false;
+        $this->mergedPlots[$mergedPlot->toString()] = $mergedPlot;
+        return true;
+    }
+
+    /**
+     * @param Plot $plot
+     * @return bool
+     */
+    public function merge(self $plot) : bool {
+        if ($this->mergedPlots === null && !$this->loadMergedPlots()) return false;
+        if ($plot->getMergedPlots() === null && !$plot->loadMergedPlots()) return false;
+
+        if (count($plot->getMergedPlots()) > 0) {
+            if (!CPlot::getInstance()->getProvider()->deleteMergedPlots($plot)) return false;
+        }
+
+        foreach (array_merge([$plot], $plot->getMergedPlots()) as $mergedPlot) {
+            $this->addMerge(MergedPlot::fromBasePlot($mergedPlot, $this->x, $this->z));
+        }
+
+        return CPlot::getInstance()->getProvider()->mergePlots($this, $plot, ...$plot->getMergedPlots());
+    }
+
+
+    /**
+     * @param PlotPlayer[] | null $plotPlayers
+     */
+    public function setPlotPlayers(?array $plotPlayers) : void {
+        $this->plotPlayers = $plotPlayers;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function loadFlags() : bool {
+        $this->flags = CPlot::getInstance()->getProvider()->getPlotFlags($this);
+        if ($this->flags === null) return false;
+        CPlot::getInstance()->getProvider()->cachePlot($this);
+        return true;
+    }
+
+    /**
      * @return BaseFlag[] | null
      */
     public function getFlags() : ?array {
@@ -75,8 +158,9 @@ class Plot extends BasePlot {
      * @return BaseFlag | null
      */
     public function getFlagByID(string $flagID) : ?BaseFlag {
-        if ($this->flags === null) return null;
-        if (isset($this->flags[$flagID])) return $this->flags[$flagID];
+        if ($this->flags !== null) {
+            if (isset($this->flags[$flagID])) return $this->flags[$flagID];
+        }
         return FlagManager::getInstance()->getFlagByID($flagID);
     }
 
@@ -105,5 +189,94 @@ class Plot extends BasePlot {
         if ($this->flags === null) return false;
         unset($this->flags[$flagID]);
         return true;
+    }
+
+
+    public function isSame(BasePlot $plot, bool $checkMerge = true) : bool {
+        if ($checkMerge && !$plot instanceof Plot) {
+            $plot = $plot->toPlot() ?? $plot;
+        }
+        return parent::isSame($plot);
+    }
+
+    /**
+     * @param Position  $position
+     * @param bool      $checkMerge
+     * @return self | null
+     */
+    public static function fromPosition(Position $position, bool $checkMerge = true) : ?self {
+        $worldSettings = CPlot::getInstance()->getProvider()->getWorld($position->getWorld()->getFolderName());
+        if ($worldSettings === null) return null;
+
+        // check for: position = plot
+        $basePlot = parent::fromPosition($position);
+        if ($basePlot !== null) {
+            return $basePlot->toPlot();
+        }
+
+        if (!$checkMerge) return null;
+
+        // check for: position = road between plots in north (-z) and south (+z)
+        $basePlotInNorth = parent::fromPosition($position->getSide(Facing::NORTH, $worldSettings->getSizeRoad()));
+        $basePlotInSouth = parent::fromPosition($position->getSide(Facing::SOUTH, $worldSettings->getSizeRoad()));
+        if ($basePlotInNorth !== null && $basePlotInSouth !== null) {
+            $plotInNorth = $basePlotInNorth->toPlot();
+            if ($plotInNorth === null) return null;
+            if ($plotInNorth->isSame($basePlotInSouth)) return $plotInNorth;
+            return null;
+        }
+
+        // check for: position = road between plots in west (-x) and east (+x)
+        $basePlotInWest = parent::fromPosition($position->getSide(Facing::WEST, $worldSettings->getSizeRoad()));
+        $basePlotInEast = parent::fromPosition($position->getSide(Facing::EAST, $worldSettings->getSizeRoad()));
+        if ($basePlotInWest !== null && $basePlotInEast !== null) {
+            $plotInWest = $basePlotInWest->toPlot();
+            if ($plotInWest === null) return null;
+            if ($plotInWest->isSame($basePlotInEast)) return $plotInWest;
+            return null;
+        }
+
+        // check for: position = road center
+        $basePlotInNorthWest = parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getSizeRoad(), 0, - $worldSettings->getSizeRoad()), $position->getWorld()));
+        $basePlotInNorthEast = parent::fromPosition(Position::fromObject($position->add($worldSettings->getSizeRoad(), 0, - $worldSettings->getSizeRoad()), $position->getWorld()));
+        $basePlotInSouthWest = parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getSizeRoad(), 0, $worldSettings->getSizeRoad()), $position->getWorld()));
+        $basePlotInSouthEast = parent::fromPosition(Position::fromObject($position->add($worldSettings->getSizeRoad(), 0, $worldSettings->getSizeRoad()), $position->getWorld()));
+        if ($basePlotInNorthWest !== null && $basePlotInNorthEast !== null && $basePlotInSouthWest !== null && $basePlotInSouthEast !== null) {
+            $plotInNorthWest = $basePlotInNorthWest->toPlot();
+            if ($plotInNorthWest === null) return null;
+            if ($plotInNorthWest->isSame($basePlotInNorthEast) && $plotInNorthWest->isSame($basePlotInSouthWest) && $plotInNorthWest->isSame($basePlotInSouthEast)) return $plotInNorthWest;
+            return null;
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array
+     */
+    public function __serialize() : array {
+        return [
+            "worldName" => $this->worldName, "x" => $this->x, "z" => $this->z,
+            "biomeID" => $this->biomeID, "ownerUUID" => $this->ownerUUID, "claimTime" => $this->claimTime, "alias" => $this->alias,
+            "mergedPlots" => serialize($this->mergedPlots), "plotPlayers" => serialize($this->plotPlayers), "flags" => serialize($this->flags)
+        ];
+    }
+
+    /**
+     * @param array $data
+     */
+    public function __unserialize(array $data) : void {
+        $this->worldName = $data["worldName"];
+        $this->x = $data["x"];
+        $this->z = $data["z"];
+
+        $this->biomeID = $data["biomeID"];
+        $this->ownerUUID = $data["ownerUUID"];
+        $this->claimTime = $data["claimTime"];
+        $this->alias = $data["alias"];
+
+        $this->mergedPlots = unserialize($data["mergedPlots"]);
+        $this->plotPlayers = unserialize($data["plotPlayers"]);
+        $this->flags = unserialize($data["flags"]);
     }
 }

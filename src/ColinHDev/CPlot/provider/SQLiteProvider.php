@@ -3,8 +3,10 @@
 namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
 use ColinHDev\CPlotAPI\flags\FlagManager;
+use ColinHDev\CPlotAPI\MergedPlot;
 use ColinHDev\CPlotAPI\Plot;
 use Exception;
 use pocketmine\data\bedrock\BiomeIds;
@@ -34,9 +36,10 @@ class SQLiteProvider extends DataProvider {
     private SQLite3Stmt $setPlot;
     private SQLite3Stmt $deletePlot;
 
-    private SQLite3Stmt $setMergedPlot;
-    private SQLite3Stmt $getBasePlot;
+    private SQLite3Stmt $getOriginPlot;
     private SQLite3Stmt $getMergedPlots;
+    private SQLite3Stmt $addMergedPlot;
+    private SQLite3Stmt $deleteMergedPlots;
 
     private SQLite3Stmt $getPlotPlayers;
     private SQLite3Stmt $addPlotPlayer;
@@ -145,24 +148,27 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS mergedPlots (
-            worldName VARCHAR(256), baseX INTEGER, baseZ INTEGER, mergedX INTEGER, mergedZ INTEGER, 
-            PRIMARY KEY (worldName, baseX, baseZ, mergedX, mergedZ),
+            worldName VARCHAR(256), originX INTEGER, originZ INTEGER, mergedX INTEGER, mergedZ INTEGER, 
+            PRIMARY KEY (worldName, originX, originZ, mergedX, mergedZ),
             FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
-            FOREIGN KEY (baseX) REFERENCES plots (x) ON DELETE CASCADE,
-            FOREIGN KEY (baseZ) REFERENCES plots (z) ON DELETE CASCADE,
+            FOREIGN KEY (originX) REFERENCES plots (x) ON DELETE CASCADE,
+            FOREIGN KEY (originZ) REFERENCES plots (z) ON DELETE CASCADE,
             FOREIGN KEY (mergedX) REFERENCES plots (x) ON DELETE CASCADE,
             FOREIGN KEY (mergedZ) REFERENCES plots (z) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
-            "INSERT OR REPLACE INTO mergedPlots (worldName, baseX, baseZ, mergedX, mergedZ) VALUES (:worldName, :baseX, :baseZ, :mergedX, :mergedZ);";
-        $this->setMergedPlot = $this->createSQLite3Stmt($sql);
+            "SELECT originX, originZ FROM mergedPlots WHERE worldName = :worldName AND mergedX = :mergedX AND mergedZ = :mergedZ;";
+        $this->getOriginPlot = $this->createSQLite3Stmt($sql);
         $sql =
-            "SELECT * FROM plots LEFT JOIN mergedPlots ON mergedPlots.worldName = plots.worldName AND baseX = :baseX AND baseZ = :baseZ WHERE mergedPlots.worldName = :worldName AND mergedX = :mergedX AND mergedZ = :mergedZ;";
-        $this->getBasePlot = $this->createSQLite3Stmt($sql);
-        $sql =
-            "SELECT * FROM plots LEFT JOIN mergedPlots ON mergedPlots.worldName = plots.worldName AND mergedX = :mergedX AND mergedZ = :mergedZ WHERE mergedPlots.worldName = :worldName AND baseX = :baseX AND baseZ = :baseZ;";
+            "SELECT mergedX, mergedZ FROM mergedPlots WHERE worldName = :worldName AND originX = :originX AND originZ = :originZ;";
         $this->getMergedPlots = $this->createSQLite3Stmt($sql);
+        $sql =
+            "INSERT OR REPLACE INTO mergedPlots (worldName, originX, originZ, mergedX, mergedZ) VALUES (:worldName, :originX, :originZ, :mergedX, :mergedZ);";
+        $this->addMergedPlot = $this->createSQLite3Stmt($sql);
+        $sql =
+            "DELETE FROM mergedPlots WHERE worldName = :worldName AND originX = :originX AND originZ = :originZ;";
+        $this->deleteMergedPlots = $this->createSQLite3Stmt($sql);
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plotPlayers (
@@ -298,7 +304,10 @@ class SQLiteProvider extends DataProvider {
      */
     public function getPlot(string $worldName, int $x, int $z) : ?Plot {
         $plot = $this->getPlotFromCache($worldName, $x, $z);
-        if ($plot !== null) return $plot;
+        if ($plot !== null) {
+            if (!$plot instanceof Plot) return null;
+            return $plot;
+        }
 
         $this->getPlot->bindValue(":worldName", $worldName, SQLITE3_TEXT);
         $this->getPlot->bindValue(":x", $x, SQLITE3_INTEGER);
@@ -306,6 +315,7 @@ class SQLiteProvider extends DataProvider {
 
         $this->getPlot->reset();
         $results = $this->getPlot->execute();
+        if ($results === false) return null;
 
         if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
             $plot = new Plot(
@@ -315,7 +325,7 @@ class SQLiteProvider extends DataProvider {
             $this->cachePlot($plot);
             return $plot;
         }
-        return null;
+        return new Plot($worldName, $x, $z);
     }
 
     /**
@@ -360,10 +370,106 @@ class SQLiteProvider extends DataProvider {
     }
 
     /**
-     * @param Plot $plot
+     * @param Plot      $plot
+     * @return MergedPlot[] | null
+     */
+    public function getMergedPlots(Plot $plot) : ?array {
+        $this->getMergedPlots->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->getMergedPlots->bindValue(":originX", $plot->getX(), SQLITE3_INTEGER);
+        $this->getMergedPlots->bindValue(":originZ", $plot->getZ(), SQLITE3_INTEGER);
+
+        $this->getMergedPlots->reset();
+        $results = $this->getMergedPlots->execute();
+        if ($results === false) return null;
+
+        $mergedPlots = [];
+        while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+            $mergedPlot = new MergedPlot($plot->getWorldName(), $result["mergedX"], $result["mergedZ"], $plot->getX(), $plot->getZ());
+            $this->cachePlot($mergedPlot);
+            $mergedPlots[$mergedPlot->toString()] = $mergedPlot;
+        }
+        return $mergedPlots;
+    }
+
+    /**
+     * @param BasePlot $plot
      * @return Plot | null
      */
-    public function getPlotFlags(Plot $plot) : ?Plot {
+    public function getMergeOrigin(BasePlot $plot) : ?Plot {
+        if ($plot instanceof MergedPlot) {
+            return $this->getPlot($plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ());
+        }
+
+        $this->getOriginPlot->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->getOriginPlot->bindValue(":mergedX", $plot->getX(), SQLITE3_INTEGER);
+        $this->getOriginPlot->bindValue(":mergedZ", $plot->getZ(), SQLITE3_INTEGER);
+
+        $this->getOriginPlot->reset();
+        $results = $this->getOriginPlot->execute();
+        if ($results === false) return null;
+
+        if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+            $this->cachePlot(MergedPlot::fromBasePlot($plot, $result["originX"], $result["originZ"]));
+            return $this->getPlot($plot->getWorldName(), $result["originX"], $result["originZ"]);
+        }
+        if ($plot instanceof Plot) return $plot;
+        return $this->getPlot($plot->getWorldName(), $plot->getX(), $plot->getZ());
+    }
+
+    /**
+     * @param Plot $origin
+     * @param BasePlot ...$plots
+     * @return bool
+     */
+    public function mergePlots(Plot $origin, BasePlot ...$plots) : bool {
+        if ($origin->getMergedPlots() === null) return false;
+
+        foreach ($plots as $plot) {
+            $this->addMergedPlot->bindValue(":worldName", $origin->getWorldName(), SQLITE3_TEXT);
+            $this->addMergedPlot->bindValue(":originX", $origin->getX(), SQLITE3_INTEGER);
+            $this->addMergedPlot->bindValue(":originZ", $origin->getZ(), SQLITE3_INTEGER);
+            $this->addMergedPlot->bindValue(":mergedX", $plot->getX(), SQLITE3_INTEGER);
+            $this->addMergedPlot->bindValue(":mergedZ", $plot->getZ(), SQLITE3_INTEGER);
+
+            $this->addMergedPlot->reset();
+            $result = $this->addMergedPlot->execute();
+            if (!$result instanceof SQLite3Result) return false;
+        }
+
+        foreach ($plots as $plot) {
+            $this->cachePlot(MergedPlot::fromBasePlot($plot, $origin->getX(), $origin->getZ()));
+        }
+        $this->cachePlot($origin);
+        return true;
+    }
+
+    /**
+     * @param Plot $plot
+     * @return bool
+     */
+    public function deleteMergedPlots(Plot $plot) : bool {
+        if ($plot->getMergedPlots() === null) return false;
+
+        $this->deleteMergedPlots->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->deleteMergedPlots->bindValue(":originX", $plot->getX(), SQLITE3_INTEGER);
+        $this->deleteMergedPlots->bindValue(":originZ", $plot->getZ(), SQLITE3_INTEGER);
+
+        $this->deleteMergedPlots->reset();
+        $result = $this->deleteMergedPlots->execute();
+        if (!$result instanceof SQLite3Result) return false;
+
+        foreach ($plot->getMergedPlots() as $mergedPlot) {
+            $this->removePlotFromCache($mergedPlot);
+        }
+        $this->removePlotFromCache($plot);
+        return true;
+    }
+
+    /**
+     * @param Plot $plot
+     * @return BaseFlag | null
+     */
+    public function getPlotFlags(Plot $plot) : ?array {
         $this->getPlotFlags->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
         $this->getPlotFlags->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
         $this->getPlotFlags->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
@@ -379,9 +485,7 @@ class SQLiteProvider extends DataProvider {
             $flag->unserializeValue($result["value"]);
             $flags[$flag->getID()] = $flag;
         }
-        $plot->setFlags($flags);
-        $this->cachePlot($plot);
-        return $plot;
+        return $flags;
     }
 
     /**

@@ -8,9 +8,15 @@ author: ColinHDev
 website: https://github.com/ColinHDev
 
 permissions:
+
     cplot.command.plot:
         default: true
     cplot.command.generate:
         default: op
+    cplot.command.merge:
+        default: true
     cplot.command.schematic:
+        default: op
+
+    cplot.admin.merge:
         default: op
