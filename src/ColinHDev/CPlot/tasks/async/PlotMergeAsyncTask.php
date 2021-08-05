@@ -2,8 +2,8 @@
 
 namespace ColinHDev\CPlot\tasks\async;
 
-use ColinHDev\CPlot\worlds\generators\Schematic;
-use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlotAPI\worlds\schematics\Schematic;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\math\Area;
 use ColinHDev\CPlotAPI\math\CoordinateUtils;

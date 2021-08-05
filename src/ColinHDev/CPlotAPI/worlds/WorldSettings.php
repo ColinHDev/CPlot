@@ -1,6 +1,6 @@
 <?php
 
-namespace ColinHDev\CPlot\worlds;
+namespace ColinHDev\CPlotAPI\worlds;
 
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Block;

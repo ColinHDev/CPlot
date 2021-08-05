@@ -2,7 +2,7 @@
 
 namespace ColinHDev\CPlot\tasks\async;
 
-use ColinHDev\CPlot\worlds\generators\Schematic;
+use ColinHDev\CPlotAPI\worlds\schematics\Schematic;
 
 class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
 

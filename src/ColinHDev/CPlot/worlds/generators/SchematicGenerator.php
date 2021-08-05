@@ -7,7 +7,8 @@ use pocketmine\world\generator\Generator;
 use pocketmine\world\ChunkManager;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\block\VanillaBlocks;
-use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
+use ColinHDev\CPlotAPI\worlds\schematics\Schematic;
 
 class SchematicGenerator extends Generator {
 

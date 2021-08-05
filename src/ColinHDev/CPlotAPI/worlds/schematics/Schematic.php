@@ -1,6 +1,6 @@
 <?php
 
-namespace ColinHDev\CPlot\worlds\generators;
+namespace ColinHDev\CPlotAPI\worlds\schematics;
 
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockLegacyIds;

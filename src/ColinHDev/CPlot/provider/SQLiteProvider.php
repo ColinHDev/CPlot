@@ -2,7 +2,7 @@
 
 namespace ColinHDev\CPlot\provider;
 
-use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
 use ColinHDev\CPlotAPI\flags\FlagManager;
