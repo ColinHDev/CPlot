@@ -34,6 +34,16 @@ class BooleanFlag extends BaseFlag {
     }
 
     /**
+     * @return bool
+     */
+    public function getValueNonNull() : bool {
+        if ($this->value !== null) {
+            return $this->value;
+        }
+        return $this->default;
+    }
+
+    /**
      * @param mixed $value
      * @throws InvalidValueException
      */

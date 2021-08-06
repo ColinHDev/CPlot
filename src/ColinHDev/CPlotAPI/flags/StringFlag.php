@@ -34,6 +34,16 @@ class StringFlag extends BaseFlag {
     }
 
     /**
+     * @return string
+     */
+    public function getValueNonNull() : string {
+        if ($this->value !== null) {
+            return $this->value;
+        }
+        return $this->default;
+    }
+
+    /**
      * @param mixed $value
      * @throws InvalidValueException
      */

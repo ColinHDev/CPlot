@@ -22,6 +22,13 @@ class SpawnFlag extends BaseFlag {
     }
 
     /**
+     * @return Vector3 | null
+     */
+    public function getValueNonNull() : ?Vector3 {
+        return $this->getValue();
+    }
+
+    /**
      * @param mixed $value
      * @throws InvalidValueException
      */

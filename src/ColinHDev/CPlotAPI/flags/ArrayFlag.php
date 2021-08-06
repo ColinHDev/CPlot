@@ -34,6 +34,16 @@ class ArrayFlag extends BaseFlag {
     }
 
     /**
+     * @return array
+     */
+    public function getValueNonNull() : array {
+        if ($this->value !== null) {
+            return $this->value;
+        }
+        return $this->default;
+    }
+
+    /**
      * @param mixed $value
      * @throws InvalidValueException
      */

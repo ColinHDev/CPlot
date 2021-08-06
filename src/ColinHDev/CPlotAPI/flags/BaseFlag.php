@@ -52,6 +52,7 @@ abstract class BaseFlag implements FlagIDs {
     abstract public function getDefault() : mixed;
 
     abstract public function getValue() : mixed;
+    abstract public function getValueNonNull() : mixed;
     abstract public function setValue(mixed $value) : void;
 
     abstract public function serializeValue() : string;
