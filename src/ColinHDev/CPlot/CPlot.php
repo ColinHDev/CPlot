@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot;
 
 use ColinHDev\CPlot\commands\PlotCommand;
+use ColinHDev\CPlot\listener\BlockTeleportListener;
 use ColinHDev\CPlot\listener\EntityExplodeListener;
 use ColinHDev\CPlot\listener\PlayerPreLoginListener;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -46,6 +47,7 @@ class CPlot extends PluginBase {
     public function onEnable() : void {
         $this->getScheduler()->scheduleRepeatingTask(new EntityMovementTask(), 1);
 
+        $this->getServer()->getPluginManager()->registerEvents(new BlockTeleportListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new EntityExplodeListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new PlayerPreLoginListener(), $this);
 
