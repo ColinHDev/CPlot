@@ -17,6 +17,7 @@ class EntityExplodeListener implements Listener {
 
     public function onEntityExplode(EntityExplodeEvent $event) : void {
         if ($event->isCancelled()) return;
+        if (count($event->getBlockList()) === 0) return;
 
         $position = $event->getPosition();
         $world = $position->getWorld();
