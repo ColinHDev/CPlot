@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot;
 
 use ColinHDev\CPlot\commands\PlotCommand;
+use ColinHDev\CPlot\listener\EntityExplodeListener;
 use ColinHDev\CPlot\listener\PlayerPreLoginListener;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\SQLiteProvider;
@@ -42,6 +43,7 @@ class CPlot extends PluginBase {
     }
 
     public function onEnable() : void {
+        $this->getServer()->getPluginManager()->registerEvents(new EntityExplodeListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new PlayerPreLoginListener(), $this);
 
         $this->getServer()->getCommandMap()->register("plot", new PlotCommand());
