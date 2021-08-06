@@ -7,6 +7,7 @@ use ColinHDev\CPlot\listener\EntityExplodeListener;
 use ColinHDev\CPlot\listener\PlayerPreLoginListener;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\SQLiteProvider;
+use ColinHDev\CPlot\tasks\EntityMovementTask;
 use pocketmine\plugin\PluginBase;
 use pocketmine\world\generator\GeneratorManager;
 use ColinHDev\CPlot\worlds\generators\PlotGenerator;
@@ -43,6 +44,8 @@ class CPlot extends PluginBase {
     }
 
     public function onEnable() : void {
+        $this->getScheduler()->scheduleRepeatingTask(new EntityMovementTask(), 1);
+
         $this->getServer()->getPluginManager()->registerEvents(new EntityExplodeListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new PlayerPreLoginListener(), $this);
 
