@@ -2,6 +2,7 @@
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlotAPI\PlotPlayer;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
@@ -42,7 +43,7 @@ class SQLiteProvider extends DataProvider {
     private SQLite3Stmt $deleteMergedPlots;
 
     private SQLite3Stmt $getPlotPlayers;
-    private SQLite3Stmt $addPlotPlayer;
+    private SQLite3Stmt $setPlotPlayer;
     private SQLite3Stmt $deletePlotPlayer;
 
     private SQLite3Stmt $getPlotFlags;
@@ -152,9 +153,7 @@ class SQLiteProvider extends DataProvider {
             PRIMARY KEY (worldName, originX, originZ, mergedX, mergedZ),
             FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
             FOREIGN KEY (originX) REFERENCES plots (x) ON DELETE CASCADE,
-            FOREIGN KEY (originZ) REFERENCES plots (z) ON DELETE CASCADE,
-            FOREIGN KEY (mergedX) REFERENCES plots (x) ON DELETE CASCADE,
-            FOREIGN KEY (mergedZ) REFERENCES plots (z) ON DELETE CASCADE
+            FOREIGN KEY (originZ) REFERENCES plots (z) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
@@ -172,7 +171,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plotPlayers (
-            worldName VARCHAR(256), x INTEGER, z INTEGER, playerUUID VARCHAR(256), state INTEGER, addTime INTEGER,
+            worldName VARCHAR(256), x INTEGER, z INTEGER, playerUUID VARCHAR(256), state VARCHAR(32), addTime INTEGER,
             PRIMARY KEY (worldName, x, z, playerUUID),
             FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
             FOREIGN KEY (x) REFERENCES plots (x) ON DELETE CASCADE,
@@ -181,11 +180,11 @@ class SQLiteProvider extends DataProvider {
             )";
         $this->database->exec($sql);
         $sql =
-            "SELECT playerUUID, addTime FROM plotPlayers WHERE worldName = :worldName AND x = :x AND z = :z AND state = :state;";
+            "SELECT playerUUID, state, addTime FROM plotPlayers WHERE worldName = :worldName AND x = :x AND z = :z;";
         $this->getPlotPlayers = $this->createSQLite3Stmt($sql);
         $sql =
-            "INSERT INTO plotPlayers (worldName, x, z, playerUUID, state, addTime) VALUES (:worldName, :x, :z, :playerUUID, :state, :addTime);";
-        $this->addPlotPlayer = $this->createSQLite3Stmt($sql);
+            "INSERT INTO plotPlayers (worldName, x, z, playerUUID, state, addTime) VALUES (:worldName, :x, :z, :playerUUID, :state, :addTime) ON CONFLICT DO UPDATE SET state = excluded.state, addTime = excluded.addTime;";
+        $this->setPlotPlayer = $this->createSQLite3Stmt($sql);
         $sql =
             "DELETE FROM plotPlayers WHERE worldName = :worldName AND x = :x AND z = :z AND playerUUID = :playerUUID;";
         $this->deletePlotPlayer = $this->createSQLite3Stmt($sql);
@@ -516,7 +515,74 @@ class SQLiteProvider extends DataProvider {
 
     /**
      * @param Plot $plot
-     * @return BaseFlag | null
+     * @return PlotPlayer[] | null
+     */
+    public function getPlotPlayers(Plot $plot) : ?array {
+        $this->getPlotPlayers->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->getPlotPlayers->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $this->getPlotPlayers->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+
+        $this->getPlotPlayers->reset();
+        $results = $this->getPlotPlayers->execute();
+        if ($results === false) return null;
+
+        $plotPlayers = [];
+        while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+            $plotPlayer = new PlotPlayer($result["playerUUID"], $result["state"], $result["addTime"]);
+            $plotPlayers[$plotPlayer->getPlayerUUID()] = $plotPlayer;
+        }
+        return $plotPlayers;
+    }
+
+    /**
+     * @param Plot          $plot
+     * @param PlotPlayer    $plotPlayer
+     * @return bool
+     */
+    public function savePlotPlayer(Plot $plot, PlotPlayer $plotPlayer) : bool {
+        if (!$plot->addPlotPlayer($plotPlayer)) return false;
+
+        $this->setPlotPlayer->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->setPlotPlayer->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $this->setPlotPlayer->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+
+        $this->setPlotPlayer->bindValue(":playerUUID", $plotPlayer->getPlayerUUID(), SQLITE3_TEXT);
+        $this->setPlotPlayer->bindValue(":state", $plotPlayer->getState(), SQLITE3_TEXT);
+        $this->setPlotPlayer->bindValue(":addTIme", $plotPlayer->getAddTime(), SQLITE3_INTEGER);
+
+        $this->setPlotPlayer->reset();
+        $result = $this->setPlotPlayer->execute();
+        if (!$result instanceof SQLite3Result) return false;
+
+        $this->cachePlot($plot);
+        return true;
+    }
+
+    /**
+     * @param Plot      $plot
+     * @param string    $playerUUID
+     * @return bool
+     */
+    public function deletePlotPlayer(Plot $plot, string $playerUUID) : bool {
+        if (!$plot->removePlotPlayer($playerUUID)) return false;
+
+        $this->deletePlotPlayer->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->deletePlotPlayer->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $this->deletePlotPlayer->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+
+        $this->deletePlotPlayer->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
+
+        $this->deletePlotPlayer->reset();
+        $result = $this->deletePlotPlayer->execute();
+        if (!$result instanceof SQLite3Result) return false;
+
+        $this->cachePlot($plot);
+        return true;
+    }
+
+    /**
+     * @param Plot $plot
+     * @return BaseFlag[] | null
      */
     public function getPlotFlags(Plot $plot) : ?array {
         $this->getPlotFlags->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);

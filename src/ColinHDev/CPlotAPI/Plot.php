@@ -129,10 +129,57 @@ class Plot extends BasePlot {
 
 
     /**
+     * @return bool
+     */
+    public function loadPlotPlayers() : bool {
+        $this->plotPlayers = CPlot::getInstance()->getProvider()->getPlotPlayers($this);
+        if ($this->plotPlayers === null) return false;
+        CPlot::getInstance()->getProvider()->cachePlot($this);
+        return true;
+    }
+
+    /**
+     * @return PlotPlayer[] | null
+     */
+    public function getPlotPlayers() : ?array {
+        return $this->plotPlayers;
+    }
+
+    /**
+     * @param string $playerUUID
+     * @return BaseFlag | null
+     */
+    public function getPlotPlayer(string $playerUUID) : ?PlotPlayer {
+        if ($this->plotPlayers !== null) return null;
+        if (!isset($this->plotPlayers[$playerUUID])) return null;
+        return $this->plotPlayers[$playerUUID];
+    }
+
+    /**
      * @param PlotPlayer[] | null $plotPlayers
      */
     public function setPlotPlayers(?array $plotPlayers) : void {
         $this->plotPlayers = $plotPlayers;
+    }
+
+    /**
+     * @param PlotPlayer $plotPlayer
+     * @return bool
+     */
+    public function addPlotPlayer(PlotPlayer $plotPlayer) : bool {
+        if ($this->plotPlayers === null) return false;
+        $this->plotPlayers[$plotPlayer->getPlayerUUID()] = $plotPlayer;
+        return true;
+    }
+
+    /**
+     * @param string $playerUUID
+     * @return bool
+     */
+    public function removePlotPlayer(string $playerUUID) : bool {
+        if ($this->plotPlayers === null) return false;
+        unset($this->plotPlayers[$playerUUID]);
+        return true;
     }
 
 

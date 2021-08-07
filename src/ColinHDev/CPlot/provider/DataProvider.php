@@ -2,6 +2,7 @@
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlotAPI\PlotPlayer;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
@@ -32,6 +33,10 @@ abstract class DataProvider {
     abstract public function getMergeOrigin(BasePlot $plot) : ?Plot;
     abstract public function mergePlots(Plot $origin, BasePlot ...$plots) : bool;
     abstract public function deleteMergedPlots(Plot $plot) : bool;
+
+    abstract public function getPlotPlayers(Plot $plot) : ?array;
+    abstract public function savePlotPlayer(Plot $plot, PlotPlayer $plotPlayer) : bool;
+    abstract public function deletePlotPlayer(Plot $plot, string $playerUUID) : bool;
 
     abstract public function getPlotFlags(Plot $plot) : ?array;
     abstract public function savePlotFlag(Plot $plot, BaseFlag $flag) : bool;
