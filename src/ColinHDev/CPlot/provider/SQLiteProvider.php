@@ -251,10 +251,11 @@ class SQLiteProvider extends DataProvider {
         $this->getPlayerNameByUUID->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
 
         $this->getPlayerNameByUUID->reset();
-        $results = $this->getPlayerNameByUUID->execute();
+        $result = $this->getPlayerNameByUUID->execute();
+        if (!$result instanceof SQLite3Result) return null;
 
-        if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-            return $result["playerName"];
+        if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
+            return $var["playerName"];
         }
         return null;
     }
@@ -267,10 +268,11 @@ class SQLiteProvider extends DataProvider {
         $this->getPlayerUUIDByName->bindValue(":playerName", $playerName, SQLITE3_TEXT);
 
         $this->getPlayerNameByUUID->reset();
-        $results = $this->getPlayerNameByUUID->execute();
+        $result = $this->getPlayerNameByUUID->execute();
+        if (!$result instanceof SQLite3Result) return null;
 
-        if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-            return $result["playerUUID"];
+        if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
+            return $var["playerUUID"];
         }
         return null;
     }
@@ -281,66 +283,65 @@ class SQLiteProvider extends DataProvider {
      * @return bool
      */
     public function setPlayer(string $playerUUID, string $playerName) : bool {
-        $stmt = $this->setPlayer;
+        $this->setPlayer->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
+        $this->setPlayer->bindValue(":playerName", $playerName, SQLITE3_TEXT);
 
-        $stmt->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
-        $stmt->bindValue(":playerName", $playerName, SQLITE3_TEXT);
-
-        $stmt->reset();
-        $result = $stmt->execute();
+        $this->setPlayer->reset();
+        $result = $this->setPlayer->execute();
         return $result instanceof SQLite3Result;
     }
 
 
     /**
-     * @param string $name
+     * @param string $worldName
      * @return WorldSettings | null
      */
-    public function getWorld(string $name) : ?WorldSettings {
-        if (($settings = $this->getWorldFromCache($name)) !== null) return $settings;
+    public function getWorld(string $worldName) : ?WorldSettings {
+        $worldSettings = $this->getWorldFromCache($worldName);
+        if ($worldSettings !== null) return $worldSettings;
 
-        $this->getWorld->bindValue(":worldName", $name, SQLITE3_TEXT);
+        $this->getWorld->bindValue(":worldName", $worldName, SQLITE3_TEXT);
 
         $this->getWorld->reset();
-        $results = $this->getWorld->execute();
+        $result = $this->getWorld->execute();
+        if (!$result instanceof SQLite3Result) return null;
 
-        if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-            $settings = WorldSettings::fromArray($result);
-            $this->cacheWorld($name, $settings);
+        if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
+            $settings = WorldSettings::fromArray($var);
+            $this->cacheWorld($worldName, $settings);
             return $settings;
         }
         return null;
     }
 
     /**
-     * @param string        $name
+     * @param string        $worldName
      * @param WorldSettings $settings
      * @return bool
      */
-    public function addWorld(string $name, WorldSettings $settings) : bool {
-        $stmt = $this->setWorld;
+    public function addWorld(string $worldName, WorldSettings $settings) : bool {
+        $this->setWorld->bindValue(":worldName", $worldName, SQLITE3_TEXT);
 
-        $stmt->bindValue(":worldName", $name, SQLITE3_TEXT);
+        $this->setWorld->bindValue(":schematicRoad", $settings->getSchematicRoad(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":schematicMergeRoad", $settings->getSchematicMergeRoad(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":schematicPlot", $settings->getSchematicPlot(), SQLITE3_TEXT);
 
-        $stmt->bindValue(":schematicRoad", $settings->getSchematicRoad(), SQLITE3_TEXT);
-        $stmt->bindValue(":schematicMergeRoad", $settings->getSchematicMergeRoad(), SQLITE3_TEXT);
-        $stmt->bindValue(":schematicPlot", $settings->getSchematicPlot(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":sizeRoad", $settings->getSizeRoad(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":sizePlot", $settings->getSizePlot(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":sizeGround", $settings->getSizeGround(), SQLITE3_INTEGER);
 
-        $stmt->bindValue(":sizeRoad", $settings->getSizeRoad(), SQLITE3_INTEGER);
-        $stmt->bindValue(":sizePlot", $settings->getSizePlot(), SQLITE3_INTEGER);
-        $stmt->bindValue(":sizeGround", $settings->getSizeGround(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":blockRoad", $settings->getBlockRoadString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockBorder", $settings->getBlockBorderString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockBorderOnClaim", $settings->getBlockBorderOnClaimString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockPlotFloor", $settings->getBlockPlotFloorString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockPlotFill", $settings->getBlockPlotFillString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockPlotBottom", $settings->getBlockPlotBottomString(), SQLITE3_TEXT);
 
-        $stmt->bindValue(":blockRoad", $settings->getBlockRoadString(), SQLITE3_TEXT);
-        $stmt->bindValue(":blockBorder", $settings->getBlockBorderString(), SQLITE3_TEXT);
-        $stmt->bindValue(":blockBorderOnClaim", $settings->getBlockBorderOnClaimString(), SQLITE3_TEXT);
-        $stmt->bindValue(":blockPlotFloor", $settings->getBlockPlotFloorString(), SQLITE3_TEXT);
-        $stmt->bindValue(":blockPlotFill", $settings->getBlockPlotFillString(), SQLITE3_TEXT);
-        $stmt->bindValue(":blockPlotBottom", $settings->getBlockPlotBottomString(), SQLITE3_TEXT);
-
-        $stmt->reset();
-        $result = $stmt->execute();
+        $this->setWorld->reset();
+        $result = $this->setWorld->execute();
         if (!$result instanceof SQLite3Result) return false;
-        $this->cacheWorld($name, $settings);
+
+        $this->cacheWorld($worldName, $settings);
         return true;
     }
 
@@ -362,13 +363,13 @@ class SQLiteProvider extends DataProvider {
         $this->getPlot->bindValue(":z", $z, SQLITE3_INTEGER);
 
         $this->getPlot->reset();
-        $results = $this->getPlot->execute();
-        if ($results === false) return null;
+        $result = $this->getPlot->execute();
+        if (!$result instanceof SQLite3Result) return null;
 
-        if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+        if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
             $plot = new Plot(
                 $worldName, $x, $z,
-                $result["biomeID"] ?? BiomeIds::PLAINS, $result["ownerUUID"] ?? null, $result["claimTime"] ?? null, $result["alias"] ?? null
+                $var["biomeID"] ?? BiomeIds::PLAINS, $var["ownerUUID"] ?? null, $var["claimTime"] ?? null, $var["alias"] ?? null
             );
             $this->cachePlot($plot);
             return $plot;
@@ -378,19 +379,20 @@ class SQLiteProvider extends DataProvider {
 
     /**
      * @param string $ownerUUID
-     * @return Plot[]
+     * @return Plot[] | null
      */
-    public function getPlotsByOwnerUUID(string $ownerUUID) : array {
+    public function getPlotsByOwnerUUID(string $ownerUUID) : ?array {
         $this->getPlotsByOwnerUUID->bindValue(":ownerUUID", $ownerUUID, SQLITE3_TEXT);
 
         $this->getPlotsByOwnerUUID->reset();
-        $results = $this->getPlotsByOwnerUUID->execute();
+        $result = $this->getPlotsByOwnerUUID->execute();
+        if (!$result instanceof SQLite3Result) return null;
 
         $plots = [];
-        while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+        while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
             $plots[] = new Plot(
-                $result["worldName"], $result["x"], $result["z"],
-                $result["biomeID"] ?? BiomeIds::PLAINS, $ownerUUID, $result["claimTime"] ?? null, $result["alias"] ?? null
+                $var["worldName"], $var["x"], $var["z"],
+                $var["biomeID"] ?? BiomeIds::PLAINS, $ownerUUID, $var["claimTime"] ?? null, $var["alias"] ?? null
             );
         }
         return $plots;
@@ -404,12 +406,13 @@ class SQLiteProvider extends DataProvider {
         $this->getPlotByAlias->bindValue(":alias", $alias, SQLITE3_TEXT);
 
         $this->getPlotByAlias->reset();
-        $results = $this->getPlotByAlias->execute();
+        $result = $this->getPlotByAlias->execute();
+        if (!$result instanceof SQLite3Result) return null;
 
-        if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+        if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
             $plot = new Plot(
-                $result["worldName"], $result["x"], $result["z"],
-                $result["biomeID"] ?? BiomeIds::PLAINS, $result["ownerUUID"] ?? null, $result["claimTime"] ?? null, $alias
+                $var["worldName"], $var["x"], $var["z"],
+                $var["biomeID"] ?? BiomeIds::PLAINS, $var["ownerUUID"] ?? null, $var["claimTime"] ?? null, $alias
             );
             $this->cachePlot($plot);
             return $plot;
@@ -427,12 +430,12 @@ class SQLiteProvider extends DataProvider {
         $this->getMergedPlots->bindValue(":originZ", $plot->getZ(), SQLITE3_INTEGER);
 
         $this->getMergedPlots->reset();
-        $results = $this->getMergedPlots->execute();
-        if ($results === false) return null;
+        $result = $this->getMergedPlots->execute();
+        if (!$result instanceof SQLite3Result) return null;
 
         $mergedPlots = [];
-        while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-            $mergedPlot = new MergedPlot($plot->getWorldName(), $result["mergedX"], $result["mergedZ"], $plot->getX(), $plot->getZ());
+        while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
+            $mergedPlot = new MergedPlot($plot->getWorldName(), $var["mergedX"], $var["mergedZ"], $plot->getX(), $plot->getZ());
             $this->cachePlot($mergedPlot);
             $mergedPlots[$mergedPlot->toString()] = $mergedPlot;
         }
@@ -453,12 +456,12 @@ class SQLiteProvider extends DataProvider {
         $this->getOriginPlot->bindValue(":mergedZ", $plot->getZ(), SQLITE3_INTEGER);
 
         $this->getOriginPlot->reset();
-        $results = $this->getOriginPlot->execute();
-        if ($results === false) return null;
+        $result = $this->getOriginPlot->execute();
+        if (!$result instanceof SQLite3Result) return null;
 
-        if ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-            $this->cachePlot(MergedPlot::fromBasePlot($plot, $result["originX"], $result["originZ"]));
-            return $this->getPlot($plot->getWorldName(), $result["originX"], $result["originZ"]);
+        if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
+            $this->cachePlot(MergedPlot::fromBasePlot($plot, $var["originX"], $var["originZ"]));
+            return $this->getPlot($plot->getWorldName(), $var["originX"], $var["originZ"]);
         }
         if ($plot instanceof Plot) return $plot;
         return $this->getPlot($plot->getWorldName(), $plot->getX(), $plot->getZ());
@@ -523,12 +526,12 @@ class SQLiteProvider extends DataProvider {
         $this->getPlotPlayers->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
 
         $this->getPlotPlayers->reset();
-        $results = $this->getPlotPlayers->execute();
-        if ($results === false) return null;
+        $result = $this->getPlotPlayers->execute();
+        if (!$result instanceof SQLite3Result) return null;
 
         $plotPlayers = [];
-        while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-            $plotPlayer = new PlotPlayer($result["playerUUID"], $result["state"], $result["addTime"]);
+        while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
+            $plotPlayer = new PlotPlayer($var["playerUUID"], $var["state"], $var["addTime"]);
             $plotPlayers[$plotPlayer->getPlayerUUID()] = $plotPlayer;
         }
         return $plotPlayers;
@@ -590,14 +593,14 @@ class SQLiteProvider extends DataProvider {
         $this->getPlotFlags->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
 
         $this->getPlotFlags->reset();
-        $results = $this->getPlotFlags->execute();
-        if ($results === false) return null;
+        $result = $this->getPlotFlags->execute();
+        if (!$result instanceof SQLite3Result) return null;
 
         $flags = [];
-        while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-            $flag = FlagManager::getInstance()->getFlagByID($result["ID"]);
+        while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
+            $flag = FlagManager::getInstance()->getFlagByID($var["ID"]);
             if ($flag === null) continue;
-            $flag->unserializeValue($result["value"]);
+            $flag->unserializeValue($var["value"]);
             $flags[$flag->getID()] = $flag;
         }
         return $flags;
@@ -612,17 +615,15 @@ class SQLiteProvider extends DataProvider {
         if ($flag->getValue() === null) return false;
         if (!$plot->addFlag($flag)) return false;
 
-        $stmt = $this->setPlotFlag;
+        $this->setPlotFlag->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->setPlotFlag->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $this->setPlotFlag->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
 
-        $stmt->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
-        $stmt->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
-        $stmt->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+        $this->setPlotFlag->bindValue(":ID", $flag->getID(), SQLITE3_TEXT);
+        $this->setPlotFlag->bindValue(":value", $flag->serializeValue(), SQLITE3_TEXT);
 
-        $stmt->bindValue(":ID", $flag->getID(), SQLITE3_TEXT);
-        $stmt->bindValue(":value", $flag->serializeValue(), SQLITE3_TEXT);
-
-        $stmt->reset();
-        $result = $stmt->execute();
+        $this->setPlotFlag->reset();
+        $result = $this->setPlotFlag->execute();
         if (!$result instanceof SQLite3Result) return false;
 
         $this->cachePlot($plot);
@@ -637,16 +638,14 @@ class SQLiteProvider extends DataProvider {
     public function deletePlotFlag(Plot $plot, string $flagID) : bool {
         if (!$plot->removeFlag($flagID)) return false;
 
-        $stmt = $this->deletePlotFlag;
+        $this->deletePlotFlag->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->deletePlotFlag->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $this->deletePlotFlag->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
 
-        $stmt->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
-        $stmt->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
-        $stmt->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+        $this->deletePlotFlag->bindValue(":ID", $flagID, SQLITE3_TEXT);
 
-        $stmt->bindValue(":ID", $flagID, SQLITE3_TEXT);
-
-        $stmt->reset();
-        $result = $stmt->execute();
+        $this->deletePlotFlag->reset();
+        $result = $this->deletePlotFlag->execute();
         if (!$result instanceof SQLite3Result) return false;
 
         $this->cachePlot($plot);
@@ -658,14 +657,12 @@ class SQLiteProvider extends DataProvider {
      * @return bool
      */
     public function deletePlotFlags(Plot $plot) : bool {
-        $stmt = $this->deletePlotFlags;
+        $this->deletePlotFlags->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->deletePlotFlags->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $this->deletePlotFlags->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
 
-        $stmt->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
-        $stmt->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
-        $stmt->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
-
-        $stmt->reset();
-        $result = $stmt->execute();
+        $this->deletePlotFlags->reset();
+        $result = $this->deletePlotFlags->execute();
         if (!$result instanceof SQLite3Result) return false;
 
         $plot->setFlags(null);

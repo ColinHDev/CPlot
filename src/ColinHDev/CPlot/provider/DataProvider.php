@@ -22,11 +22,11 @@ abstract class DataProvider {
     abstract public function getPlayerUUIDByName(string $playerName) : ?string;
     abstract public function setPlayer(string $playerUUID, string $playerName) : bool;
 
-    abstract public function getWorld(string $name) : ?WorldSettings;
-    abstract public function addWorld(string $name, WorldSettings $settings) : bool;
+    abstract public function getWorld(string $worldName) : ?WorldSettings;
+    abstract public function addWorld(string $worldName, WorldSettings $settings) : bool;
 
     abstract public function getPlot(string $worldName, int $x, int $z) : ?Plot;
-    abstract public function getPlotsByOwnerUUID(string $ownerUUID) : array;
+    abstract public function getPlotsByOwnerUUID(string $ownerUUID) : ?array;
     abstract public function getPlotByAlias(string $alias) : ?Plot;
 
     abstract public function getMergedPlots(Plot $plot) : ?array;
@@ -46,27 +46,27 @@ abstract class DataProvider {
     abstract public function close() : bool;
 
     /**
-     * @param string $name
+     * @param string $worldName
      * @return WorldSettings | null
      */
-    final protected function getWorldFromCache(string $name) : ?WorldSettings {
+    final protected function getWorldFromCache(string $worldName) : ?WorldSettings {
         if ($this->worldCacheSize <= 0) return null;
-        if (!isset($this->worldCache[$name])) return null;
-        return $this->worldCache[$name];
+        if (!isset($this->worldCache[$worldName])) return null;
+        return $this->worldCache[$worldName];
     }
 
     /**
-     * @param string $name
+     * @param string $worldName
      * @param WorldSettings $settings
      */
-    final protected function cacheWorld(string $name, WorldSettings $settings) : void {
+    final protected function cacheWorld(string $worldName, WorldSettings $settings) : void {
         if ($this->worldCacheSize <= 0) return;
-        if (isset($this->worldCache[$name])) {
-            unset($this->worldCache[$name]);
+        if (isset($this->worldCache[$worldName])) {
+            unset($this->worldCache[$worldName]);
         } else if ($this->worldCacheSize <= count($this->worldCache)) {
             array_shift($this->worldCache);
         }
-        $this->worldCache = array_merge([$name => clone $settings], $this->worldCache);
+        $this->worldCache = array_merge([$worldName => clone $settings], $this->worldCache);
     }
 
     /**
