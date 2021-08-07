@@ -15,11 +15,10 @@ class BlockSpreadListener implements Listener {
         if ($event->isCancelled()) return;
         if (!$event->getNewState() instanceof Liquid) return;
 
-        $fromPosition = $event->getBlock()->getPos();
-        $world = $fromPosition->getWorld();
-        if (CPlot::getInstance()->getProvider()->getWorld($world->getFolderName()) === null) return;
+        $position = $event->getBlock()->getPos();
+        if (CPlot::getInstance()->getProvider()->getWorld($position->getWorld()->getFolderName()) === null) return;
 
-        $plot = Plot::fromPosition($event->getBlock()->getPos());
+        $plot = Plot::fromPosition($position);
         if ($plot !== null) {
             $flag = $plot->getFlagByID(FlagIDs::FLAG_FLOWING);
             if ($flag !== null && $flag->getValueNonNull() === true) return;
