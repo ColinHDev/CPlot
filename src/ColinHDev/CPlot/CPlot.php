@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot;
 
 use ColinHDev\CPlot\commands\PlotCommand;
+use ColinHDev\CPlot\listener\BlockBurningListener;
 use ColinHDev\CPlot\listener\BlockGrowListener;
 use ColinHDev\CPlot\listener\BlockSpreadListener;
 use ColinHDev\CPlot\listener\BlockTeleportListener;
@@ -49,6 +50,7 @@ class CPlot extends PluginBase {
     public function onEnable() : void {
         $this->getScheduler()->scheduleRepeatingTask(new EntityMovementTask(), 1);
 
+        $this->getServer()->getPluginManager()->registerEvents(new BlockBurningListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new BlockGrowListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new BlockSpreadListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new BlockTeleportListener(), $this);

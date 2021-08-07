@@ -15,9 +15,9 @@ class BlockGrowListener implements Listener {
         if ($event->isCancelled()) return;
 
         $world = $event->getBlock()->getPos()->getWorld();
-        $position = $event->getNewState()->getPos()->asVector3();
         if (CPlot::getInstance()->getProvider()->getWorld($world->getFolderName()) === null) return;
 
+        $position = $event->getNewState()->getPos()->asVector3();
         $plot = Plot::fromPosition(Position::fromObject($position, $world));
         if ($plot !== null) {
             $flag = $plot->getFlagByID(FlagIDs::FLAG_GROWING);
