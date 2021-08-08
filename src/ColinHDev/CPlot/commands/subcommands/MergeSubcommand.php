@@ -117,6 +117,10 @@ class MergeSubcommand extends Subcommand {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("merge.finish", [$elapsedTimeString]));
             }
         );
+        if (!$this->getPlugin()->getProvider()->deletePlot($plotToMerge->getWorldName(), $plotToMerge->getX(), $plotToMerge->getZ())) {
+            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.deleteError"));
+            return;
+        }
         if (!$plot->merge($plotToMerge)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.saveError"));
             return;
