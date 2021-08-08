@@ -43,8 +43,9 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
         /** @var Area[] $borderAreasToReset */
         $borderAreasToReset = [];
 
+        $plots = array_merge([$plot], $plot->getMergedPlots());
         /** @var BasePlot $mergedPlot */
-        foreach (array_merge([$plot], $plot->getMergedPlots()) as $mergedPlot) {
+        foreach ($plots as $mergedPlot) {
             $plotPos = $mergedPlot->getPositionNonNull($worldSettings->getSizeRoad(), $worldSettings->getSizePlot(), $worldSettings->getSizeGround());
 
             $plotInNorth = $mergedPlot->getSide(Facing::NORTH);
@@ -263,6 +264,8 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
 
         $this->publishProgress($chunks);
 
+        $plotCount = count($plots);
+
         $schematicRoad = null;
         if ($worldSettings->getSchematicRoad() !== "default") {
             $schematicRoad = new Schematic($worldSettings->getSchematicRoad(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getSchematicRoad() . "." . Schematic::FILE_EXTENSION);
@@ -340,5 +343,6 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
         }
 
         $this->chunks = serialize($finishedChunks);
+        $this->setResult([$plotCount, $plots]);
     }
 }
