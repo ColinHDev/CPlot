@@ -11,11 +11,11 @@ permissions:
 
     cplot.command.plot:
         default: true
-    cplot.command.generate:
+    cplot.subcommand.generate:
         default: op
-    cplot.command.merge:
+    cplot.subcommand.merge:
         default: true
-    cplot.command.schematic:
+    cplot.subcommand.schematic:
         default: op
 
     cplot.admin.merge:

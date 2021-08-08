@@ -31,9 +31,9 @@ class PlotCommand extends Command {
         $this->setPermission("cplot.command.plot");
         $this->setPermissionMessage($resourceManager->getPrefix() . $commandData["permissionMessage"]);
 
-        $this->loadSubcommand(new GenerateSubcommand($resourceManager->getCommandData("generate"), "cplot.command.generate"));
-        $this->loadSubcommand(new MergeSubcommand($resourceManager->getCommandData("merge"), "cplot.command.merge"));
-        $this->loadSubcommand(new SchematicSubcommand($resourceManager->getCommandData("schematic"), "cplot.command.schematic"));
+        $this->loadSubcommand(new GenerateSubcommand($resourceManager->getCommandData("generate"), "cplot.subcommand.generate"));
+        $this->loadSubcommand(new MergeSubcommand($resourceManager->getCommandData("merge"), "cplot.subcommand.merge"));
+        $this->loadSubcommand(new SchematicSubcommand($resourceManager->getCommandData("schematic"), "cplot.subcommand.schematic"));
     }
 
     /**
