@@ -55,10 +55,4 @@ database:
         folder: "plugin_data/CPlot/"
         # file of the SQLite database
         file: "CPlot.sqlite"
-    # settings for the MySQL provider
-    mysql:
-        host: "127.0.0.1"
-        port: 3306
-        username: ""
-        password: ""
-        database: "FlagWars"
+    # TODO: more provider

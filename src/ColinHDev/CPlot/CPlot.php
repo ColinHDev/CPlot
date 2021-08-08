@@ -41,7 +41,11 @@ class CPlot extends PluginBase {
         self::$instance = $this;
 
         new ResourceManager();
-        $this->provider = new SQLiteProvider(ResourceManager::getInstance()->getConfig()->getNested("database.sqlite"));
+        switch (strtolower(ResourceManager::getInstance()->getConfig()->getNested("database.provider", ""))) {
+            case "sqlite":
+            default:
+                $this->provider = new SQLiteProvider(ResourceManager::getInstance()->getConfig()->getNested("database.sqlite"));
+        }
 
         GeneratorManager::getInstance()->addGenerator(PlotGenerator::class, PlotGenerator::GENERATOR_NAME, true);
         GeneratorManager::getInstance()->addGenerator(SchematicGenerator::class, SchematicGenerator::GENERATOR_NAME, true);
