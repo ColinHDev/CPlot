@@ -89,6 +89,7 @@ class Plot extends BasePlot {
      * @return bool
      */
     public function loadMergedPlots() : bool {
+        if ($this->mergedPlots !== null) return true;
         $this->mergedPlots = CPlot::getInstance()->getProvider()->getMergedPlots($this);
         if ($this->mergedPlots === null) return false;
         CPlot::getInstance()->getProvider()->cachePlot($this);
@@ -153,6 +154,7 @@ class Plot extends BasePlot {
      * @return bool
      */
     public function loadPlotPlayers() : bool {
+        if ($this->plotPlayers !== null) return true;
         $this->plotPlayers = CPlot::getInstance()->getProvider()->getPlotPlayers($this);
         if ($this->plotPlayers === null) return false;
         CPlot::getInstance()->getProvider()->cachePlot($this);
@@ -208,6 +210,7 @@ class Plot extends BasePlot {
      * @return bool
      */
     public function loadFlags() : bool {
+        if ($this->flags !== null) return true;
         $this->flags = CPlot::getInstance()->getProvider()->getPlotFlags($this);
         if ($this->flags === null) return false;
         CPlot::getInstance()->getProvider()->cachePlot($this);
