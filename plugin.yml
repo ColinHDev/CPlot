@@ -11,6 +11,8 @@ permissions:
 
     cplot.command.plot:
         default: true
+    cplot.subcommand.auto:
+        default: true
     cplot.subcommand.claim:
         default: true
     cplot.subcommand.generate:

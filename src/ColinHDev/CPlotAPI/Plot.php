@@ -7,6 +7,7 @@ use ColinHDev\CPlotAPI\flags\BaseFlag;
 use ColinHDev\CPlotAPI\flags\FlagManager;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\math\Facing;
+use pocketmine\player\Player;
 use pocketmine\world\Position;
 
 class Plot extends BasePlot {
@@ -308,6 +309,15 @@ class Plot extends BasePlot {
         }
         return parent::isSame($plot);
     }
+
+
+    /**
+     * @return BasePlot
+     */
+    public function toBasePlot() : BasePlot {
+        return new BasePlot($this->worldName, $this->x, $this->z);
+    }
+
 
     /**
      * @param Position  $position

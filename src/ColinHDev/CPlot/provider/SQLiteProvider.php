@@ -34,7 +34,6 @@ class SQLiteProvider extends DataProvider {
     private SQLite3Stmt $getPlot;
     private SQLite3Stmt $getPlotsByOwnerUUID;
     private SQLite3Stmt $getPlotByAlias;
-    private SQLite3Stmt $getPlotXZ;
     private SQLite3Stmt $setPlot;
     private SQLite3Stmt $deletePlot;
 
@@ -42,6 +41,8 @@ class SQLiteProvider extends DataProvider {
     private SQLite3Stmt $getMergedPlots;
     private SQLite3Stmt $addMergedPlot;
     private SQLite3Stmt $deleteMergedPlots;
+
+    private SQLite3Stmt $getExistingPlotXZ;
 
     private SQLite3Stmt $getPlotPlayers;
     private SQLite3Stmt $setPlotPlayer;
@@ -134,14 +135,6 @@ class SQLiteProvider extends DataProvider {
             "SELECT worldName, x, z, biomeID, ownerUUID, claimTime FROM plots WHERE alias = :alias;";
         $this->getPlotByAlias = $this->createSQLite3Stmt($sql);
         $sql =
-            "SELECT x, z FROM plots WHERE (
-                worldName = :worldName AND (
-                    (abs(x) = :number AND abs(z) <= :number) OR
-                    (abs(z) = :number AND abs(x) <= :number)
-                )
-			);";
-        $this->getPlotXZ = $this->createSQLite3Stmt($sql);
-        $sql =
             "INSERT INTO plots (worldName, x, z, biomeID, ownerUUID, claimTime, alias) VALUES (:worldName, :x, :z, :biomeID, :ownerUUID, :claimTime, :alias) ON CONFLICT DO UPDATE SET biomeID = excluded.biomeID, ownerUUID = excluded.ownerUUID, claimTime = excluded.claimTime, alias = excluded.alias;";
         $this->setPlot = $this->createSQLite3Stmt($sql);
         $sql =
@@ -169,6 +162,23 @@ class SQLiteProvider extends DataProvider {
         $sql =
             "DELETE FROM mergedPlots WHERE worldName = :worldName AND originX = :originX AND originZ = :originZ;";
         $this->deleteMergedPlots = $this->createSQLite3Stmt($sql);
+
+        /** code (modified here) from @see https://github.com/jasonwynn10/MyPlot */
+        $sql =
+            "SELECT x, z FROM plots WHERE (
+                worldName = :worldName AND (
+                    (abs(x) = :number AND abs(z) <= :number) OR
+                    (abs(z) = :number AND abs(x) <= :number)
+                )
+			)
+            UNION 
+            SELECT mergedX, mergedZ FROM mergedPlots WHERE (
+                worldName = :worldName AND (
+                    (abs(mergedX) = :number AND abs(mergedZ) <= :number) OR
+                    (abs(mergedZ) = :number AND abs(mergedX) <= :number)
+                )
+			);";
+        $this->getExistingPlotXZ = $this->createSQLite3Stmt($sql);
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plotPlayers (
@@ -560,6 +570,54 @@ class SQLiteProvider extends DataProvider {
         $this->removePlotFromCache($plot->getWorldName(), $plot->getX(), $plot->getZ());
         return true;
     }
+
+
+    /**
+     * @param string    $worldName
+     * @param int       $limitXZ
+     * @return Plot | null
+     * code (modified here) from @see https://github.com/jasonwynn10/MyPlot
+     */
+    public function getNextFreePlot(string $worldName, int $limitXZ = 0) : ?Plot {
+        $i = 0;
+
+        $this->getExistingPlotXZ->bindValue(":worldName", $worldName, SQLITE3_TEXT);
+        $this->getExistingPlotXZ->bindParam(":number", $i, SQLITE3_INTEGER);
+
+        for(; $limitXZ <= 0 or $i < $limitXZ; $i++) {
+            $this->getExistingPlotXZ->reset();
+            $result = $this->getExistingPlotXZ->execute();
+            if (!$result instanceof SQLite3Result) continue;
+
+            $plots = [];
+            while ($val = $result->fetchArray(SQLITE3_NUM)) {
+                $plots[$val[0]][$val[1]] = true;
+            }
+            if (count($plots) === max(1, 8 * $i)) continue;
+            if (($ret = $this->findEmptyPlotSquared(0, $i, $plots)) !== null) {
+                [$x, $z] = $ret;
+                $plot = new Plot($worldName, $x, $z);
+                $this->cachePlot($plot);
+                return $plot;
+            }
+            for ($a = 1; $a < $i; $a++) {
+                if (($ret = $this->findEmptyPlotSquared($a, $i, $plots)) !== null) {
+                    [$x, $z] = $ret;
+                    $plot = new Plot($worldName, $x, $z);
+                    $this->cachePlot($plot);
+                    return $plot;
+                }
+            }
+            if (($ret = $this->findEmptyPlotSquared($i, $i, $plots)) !== null) {
+                [$x, $z] = $ret;
+                $plot = new Plot($worldName, $x, $z);
+                $this->cachePlot($plot);
+                return $plot;
+            }
+        }
+        return null;
+    }
+
 
     /**
      * @param Plot $plot
