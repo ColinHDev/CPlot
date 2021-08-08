@@ -28,6 +28,8 @@ abstract class DataProvider {
     abstract public function getPlot(string $worldName, int $x, int $z) : ?Plot;
     abstract public function getPlotsByOwnerUUID(string $ownerUUID) : ?array;
     abstract public function getPlotByAlias(string $alias) : ?Plot;
+    abstract public function savePlot(Plot $plot) : bool;
+    abstract public function deletePlot(string $worldName, int $x, int $z) : bool;
 
     abstract public function getMergedPlots(Plot $plot) : ?array;
     abstract public function getMergeOrigin(BasePlot $plot) : ?Plot;
@@ -97,11 +99,13 @@ abstract class DataProvider {
     }
 
     /**
-     * @param BasePlot $plot
+     * @param string    $worldName
+     * @param int       $x
+     * @param int       $z
      */
-    final protected function removePlotFromCache(BasePlot $plot) : void {
+    final protected function removePlotFromCache(string $worldName, int $x, int $z) : void {
         if ($this->plotCacheSize <= 0) return;
-        $key = $plot->toString();
+        $key = $worldName . ";" . $x . ";" . $z;
         if (!isset($this->plotCache[$key])) return;
         unset($this->plotCache[$key]);
     }

@@ -141,7 +141,7 @@ class SQLiteProvider extends DataProvider {
 			);";
         $this->getPlotXZ = $this->createSQLite3Stmt($sql);
         $sql =
-            "INSERT OR REPLACE INTO plots (worldName, x, z, biomeID, ownerUUID, claimTime, alias) VALUES (:worldName, :x, :z, :biomeID, :ownerUUID, :claimTime, :alias);";
+            "INSERT INTO plots (worldName, x, z, biomeID, ownerUUID, claimTime, alias) VALUES (:worldName, :x, :z, :biomeID, :ownerUUID, :claimTime, :alias) ON CONFLICT DO UPDATE SET biomeID = excluded.biomeID, ownerUUID = excluded.ownerUUID, claimTime = excluded.claimTime, alias = excluded.alias;";
         $this->setPlot = $this->createSQLite3Stmt($sql);
         $sql =
             "DELETE FROM plots WHERE worldName = :worldName AND x = :x AND z = :z;";
@@ -345,6 +345,7 @@ class SQLiteProvider extends DataProvider {
         return true;
     }
 
+
     /**
      * @param string    $worldName
      * @param int       $x
@@ -419,6 +420,48 @@ class SQLiteProvider extends DataProvider {
         }
         return null;
     }
+
+    /**
+     * @param Plot $plot
+     * @return bool
+     */
+    public function savePlot(Plot $plot) : bool {
+        $this->setPlot->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->setPlot->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $this->setPlot->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+
+        $this->setPlot->bindValue(":biomeID", $plot->getBiomeID(), SQLITE3_INTEGER);
+        $this->setPlot->bindValue(":ownerUUID", $plot->getOwnerUUID(), SQLITE3_TEXT);
+        $this->setPlot->bindValue(":claimTIme", $plot->getClaimTime(), SQLITE3_INTEGER);
+        $this->setPlot->bindValue(":alias", $plot->getAlias(), SQLITE3_TEXT);
+
+        $this->setPlotPlayer->reset();
+        $result = $this->setPlotPlayer->execute();
+        if (!$result instanceof SQLite3Result) return false;
+
+        $this->cachePlot($plot);
+        return true;
+    }
+
+    /**
+     * @param string    $worldName
+     * @param int       $x
+     * @param int       $z
+     * @return bool
+     */
+    public function deletePlot(string $worldName, int $x, int $z) : bool {
+        $this->deletePlot->bindValue(":worldName", $worldName, SQLITE3_TEXT);
+        $this->deletePlot->bindValue(":x", $x, SQLITE3_INTEGER);
+        $this->deletePlot->bindValue(":z", $z, SQLITE3_INTEGER);
+
+        $this->deletePlot->reset();
+        $result = $this->deletePlot->execute();
+        if (!$result instanceof SQLite3Result) return false;
+
+        $this->removePlotFromCache($worldName, $x, $z);
+        return true;
+    }
+
 
     /**
      * @param Plot      $plot
@@ -510,9 +553,9 @@ class SQLiteProvider extends DataProvider {
         if (!$result instanceof SQLite3Result) return false;
 
         foreach ($plot->getMergedPlots() as $mergedPlot) {
-            $this->removePlotFromCache($mergedPlot);
+            $this->removePlotFromCache($mergedPlot->getWorldName(), $mergedPlot->getX(), $mergedPlot->getZ());
         }
-        $this->removePlotFromCache($plot);
+        $this->removePlotFromCache($plot->getWorldName(), $plot->getX(), $plot->getZ());
         return true;
     }
 

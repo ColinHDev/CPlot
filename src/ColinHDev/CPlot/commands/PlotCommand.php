@@ -2,12 +2,13 @@
 
 namespace ColinHDev\CPlot\commands;
 
+use ColinHDev\CPlot\commands\subcommands\ClaimSubcommand;
+use ColinHDev\CPlot\commands\subcommands\GenerateSubcommand;
 use ColinHDev\CPlot\commands\subcommands\MergeSubcommand;
+use ColinHDev\CPlot\commands\subcommands\SchematicSubcommand;
+use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use ColinHDev\CPlot\ResourceManager;
-use ColinHDev\CPlot\commands\subcommands\GenerateSubcommand;
-use ColinHDev\CPlot\commands\subcommands\SchematicSubcommand;
 
 class PlotCommand extends Command {
 
@@ -31,6 +32,7 @@ class PlotCommand extends Command {
         $this->setPermission("cplot.command.plot");
         $this->setPermissionMessage($resourceManager->getPrefix() . $commandData["permissionMessage"]);
 
+        $this->loadSubcommand(new ClaimSubcommand($resourceManager->getCommandData("claim"), "cplot.subcommand.claim"));
         $this->loadSubcommand(new GenerateSubcommand($resourceManager->getCommandData("generate"), "cplot.subcommand.generate"));
         $this->loadSubcommand(new MergeSubcommand($resourceManager->getCommandData("merge"), "cplot.subcommand.merge"));
         $this->loadSubcommand(new SchematicSubcommand($resourceManager->getCommandData("schematic"), "cplot.subcommand.schematic"));

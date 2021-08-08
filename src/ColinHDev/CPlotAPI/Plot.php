@@ -44,6 +44,13 @@ class Plot extends BasePlot {
     }
 
     /**
+     * @return int
+     */
+    public function getBiomeID() : int {
+        return $this->biomeID;
+    }
+
+    /**
      * @return string | null
      */
     public function getOwnerUUID() : ?string {
@@ -51,10 +58,24 @@ class Plot extends BasePlot {
     }
 
     /**
+     * @param string | null $ownerUUID
+     */
+    public function setOwnerUUID(?string $ownerUUID) : void {
+        $this->ownerUUID = $ownerUUID;
+    }
+
+    /**
      * @return int | null
      */
     public function getClaimTime() : ?int {
         return $this->claimTime;
+    }
+
+    /**
+     * @param int | null $claimTime
+     */
+    public function setClaimTime(?int $claimTime) : void {
+        $this->claimTime = $claimTime;
     }
 
     /**

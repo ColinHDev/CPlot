@@ -11,6 +11,8 @@ permissions:
 
     cplot.command.plot:
         default: true
+    cplot.subcommand.claim:
+        default: true
     cplot.subcommand.generate:
         default: op
     cplot.subcommand.merge:
@@ -19,4 +21,9 @@ permissions:
         default: op
 
     cplot.admin.merge:
+        default: op
+
+    cplot.claimPlots.4:
+        default: true
+    cplot.claimPlots.unlimited:
         default: op
