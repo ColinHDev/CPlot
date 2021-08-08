@@ -5,6 +5,8 @@ namespace ColinHDev\CPlotAPI;
 use ColinHDev\CPlot\CPlot;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
+use pocketmine\player\Player;
+use pocketmine\Server;
 use pocketmine\world\Position;
 
 class BasePlot {
@@ -46,6 +48,34 @@ class BasePlot {
         return $this->z;
     }
 
+
+    /**
+     * @param Player    $player
+     * @param bool      $toPlotCenter
+     * @return bool
+     */
+    public function teleportTo(Player $player, bool $toPlotCenter = false) : bool {
+        $worldSettings = CPlot::getInstance()->getProvider()->getWorld($this->worldName);
+        if ($worldSettings === null) return false;
+
+        $vector = $this->getPosition();
+        $vector->x += floor($worldSettings->getSizePlot() / 2);
+        $vector->y += 1;
+        if ($toPlotCenter) {
+            $vector->z += floor($worldSettings->getSizePlot() / 2);
+        } else {
+            $vector->z -= 1;
+        }
+
+        $world = Server::getInstance()->getWorldManager()->getWorldByName($this->worldName);
+        if ($world === null) return false;
+
+        return $player->teleport(
+            Position::fromObject($vector, $world)
+        );
+    }
+
+
     /**
      * @param int           $side
      * @param int           $step
@@ -68,6 +98,7 @@ class BasePlot {
     public function isSame(self $plot) : bool {
         return $this->worldName === $plot->getWorldName() && $this->x === $plot->getX() && $this->z === $plot->getZ();
     }
+
 
     /**
      * @return string
