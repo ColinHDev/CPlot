@@ -119,13 +119,14 @@ class SchematicSubcommand extends Subcommand {
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.start", [$schematicName]));
                 $task = new SchematicSaveAsyncTask($schematicName, $file, $type, $worldSettings->getSizeRoad(), $worldSettings->getSizePlot());
-                $task->setWorld($sender->getWorld());
-                $task->saveChunks($sender->getWorld(), $pos1, $pos2);
+                $world = $sender->getWorld();
+                $task->setWorld($world);
+                $task->saveChunks($world, $pos1, $pos2);
                 $task->setClosure(
-                    function (int $elapsedTime, string $elapsedTimeString, array $result) use ($sender, $schematicName, $schematicType) {
+                    function (int $elapsedTime, string $elapsedTimeString, array $result) use ($world, $sender, $schematicName, $schematicType) {
                         [$blocksCount, $fileSize, $fileSizeString] = $result;
                         Server::getInstance()->getLogger()->debug(
-                            "Saving schematic \"" . $schematicName . "\" (" . $schematicType . ") with the size of " . $blocksCount . " blocks and a filesize of " . $fileSizeString . " (" . $fileSize . " B) took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ")."
+                            "Saving schematic from world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") \"" . $schematicName . "\" (" . $schematicType . ") with the size of " . $blocksCount . " blocks and a filesize of " . $fileSizeString . " (" . $fileSize . " B) took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ")."
                         );
                         if (!$sender->isConnected()) return;
                         $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.finish", [$schematicName, $elapsedTimeString]));

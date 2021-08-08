@@ -4,6 +4,7 @@ namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\tasks\async\EntityExplodeAsyncTask;
+use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\block\BlockFactory;
@@ -40,7 +41,13 @@ class EntityExplodeListener implements Listener {
         $task = new EntityExplodeAsyncTask($worldSettings, $plot, $affectedBlocks);
         //$yield = (1 / $this->size) * 100;
         $size = 100 / $event->getYield();
-        $plotString = $plot->toString();
+        $plots = array_map(
+            function (BasePlot $plot) : string {
+                return $plot->toSmallString();
+            },
+            array_merge([$plot], $plot->getMergedPlots())
+        );
+        $plotString = (count($plots) > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "].";
         $task->setClosure(
             function (int $elapsedTime, string $elapsedTimeString, array $result) use ($position, $size, $plotString) {
                 /** @var $affectedBlocks int[] */
@@ -48,12 +55,13 @@ class EntityExplodeListener implements Listener {
                 /** @var $affectedBlocksCount int */
                 [$affectedBlocks, $oldAffectedBlocksCount, $affectedBlocksCount] = $result;
 
+                $world = $position->getWorld();
                 $explosion = new Explosion($position, $size);
                 $newAffectedBlocks = [];
                 foreach ($affectedBlocks as $positionHash => $fullId) {
                     $block = BlockFactory::getInstance()->fromFullBlock($fullId);
                     World::getBlockXYZ($positionHash, $positionX, $positionY, $positionZ);
-                    $block->position($position->getWorld(), $positionX, $positionY, $positionZ);
+                    $block->position($world, $positionX, $positionY, $positionZ);
                     $newAffectedBlocks[] = $block;
                 }
                 $explosion->affectedBlocks = $newAffectedBlocks;
@@ -62,7 +70,7 @@ class EntityExplodeListener implements Listener {
                 $explosion->explodeB();
 
                 Server::getInstance()->getLogger()->debug(
-                    "Calculating explosion took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for: " . $oldAffectedBlocksCount . " blocks to " . $affectedBlocksCount . " blocks for plot " . $plotString . "."
+                    "Calculating explosion in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for: " . $oldAffectedBlocksCount . " blocks to " . $affectedBlocksCount . " blocks for plot" . $plotString . "."
                 );
             }
         );

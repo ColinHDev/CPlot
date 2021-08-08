@@ -99,9 +99,10 @@ class MergeSubcommand extends Subcommand {
 
         $sender->sendMessage($this->getPrefix() . $this->translateString("merge.start"));
         $task = new PlotMergeAsyncTask($worldSettings, $plot, $plotToMerge);
-        $task->setWorld($sender->getWorld());
+        $world = $sender->getWorld();
+        $task->setWorld($world);
         $task->setClosure(
-            function (int $elapsedTime, string $elapsedTimeString, array $result) use ($sender) {
+            function (int $elapsedTime, string $elapsedTimeString, array $result) use ($world, $sender) {
                 [$plotCount, $plots] = $result;
                 $plots = array_map(
                     function (BasePlot $plot) : string {
@@ -110,7 +111,7 @@ class MergeSubcommand extends Subcommand {
                     $plots
                 );
                 Server::getInstance()->getLogger()->debug(
-                    "Merging plot" . ($plotCount > 1 ? "s" : "") . " took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
+                    "Merging plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
                 if (!$sender->isConnected()) return;
                 $sender->sendMessage($this->getPrefix() . $this->translateString("merge.finish", [$elapsedTimeString]));
