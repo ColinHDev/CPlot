@@ -433,11 +433,11 @@ class SQLiteProvider extends DataProvider {
 
         $this->setPlot->bindValue(":biomeID", $plot->getBiomeID(), SQLITE3_INTEGER);
         $this->setPlot->bindValue(":ownerUUID", $plot->getOwnerUUID(), SQLITE3_TEXT);
-        $this->setPlot->bindValue(":claimTIme", $plot->getClaimTime(), SQLITE3_INTEGER);
+        $this->setPlot->bindValue(":claimTime", $plot->getClaimTime(), SQLITE3_INTEGER);
         $this->setPlot->bindValue(":alias", $plot->getAlias(), SQLITE3_TEXT);
 
-        $this->setPlotPlayer->reset();
-        $result = $this->setPlotPlayer->execute();
+        $this->setPlot->reset();
+        $result = $this->setPlot->execute();
         if (!$result instanceof SQLite3Result) return false;
 
         $this->cachePlot($plot);

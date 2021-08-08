@@ -5,6 +5,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlotAPI\BasePlot;
+use ColinHDev\CPlotAPI\Plot;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\Permission;
 use pocketmine\player\Player;
@@ -28,9 +29,8 @@ class ClaimSubcommand extends Subcommand {
             return;
         }
 
-        $basePlot = BasePlot::fromPosition($sender->getPosition());
-        $plot = $basePlot?->toPlot();
-        if ($basePlot === null || $plot === null) {
+        $plot = Plot::fromPosition($sender->getPosition(), false);
+        if ($plot === null) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlot"));
             return;
         }
