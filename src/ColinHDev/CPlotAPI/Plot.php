@@ -25,6 +25,9 @@ class Plot extends BasePlot {
     /** @var null | BaseFlag[] */
     private ?array $flags = null;
 
+    /** @var null | PlotRate[] */
+    private ?array $plotRates = null;
+
     /**
      * Plot constructor.
      * @param string            $worldName
@@ -259,6 +262,42 @@ class Plot extends BasePlot {
     public function removeFlag(string $flagID) : bool {
         if ($this->flags === null) return false;
         unset($this->flags[$flagID]);
+        return true;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function loadPlotRates() : bool {
+        if ($this->plotRates !== null) return true;
+        $this->plotRates = CPlot::getInstance()->getProvider()->getPlotRates($this);
+        if ($this->plotRates === null) return false;
+        CPlot::getInstance()->getProvider()->cachePlot($this);
+        return true;
+    }
+
+    /**
+     * @return PlotRate[] | null
+     */
+    public function getPlotRates() : ?array {
+        return $this->plotRates;
+    }
+
+    /**
+     * @param PlotRate[] | null $plotRates
+     */
+    public function setPlotRates(?array $plotRates) : void {
+        $this->plotRates = $plotRates;
+    }
+
+    /**
+     * @param PlotRate $plotRate
+     * @return bool
+     */
+    public function addPlotRate(PlotRate $plotRate) : bool {
+        if ($this->plotRates === null) return false;
+        $this->plotRates[$plotRate->toString()] = $plotRate;
         return true;
     }
 

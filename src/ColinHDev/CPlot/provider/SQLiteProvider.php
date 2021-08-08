@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlotAPI\PlotPlayer;
+use ColinHDev\CPlotAPI\PlotRate;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
@@ -52,7 +53,7 @@ class SQLiteProvider extends DataProvider {
     private SQLite3Stmt $deletePlotFlag;
 
     private SQLite3Stmt $getPlotRates;
-    private SQLite3Stmt $addPlotRate;
+    private SQLite3Stmt $setPlotRate;
 
     /**
      * SQLiteProvider constructor.
@@ -213,7 +214,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plotRates (
-            worldName VARCHAR(256), x INTEGER, z INTEGER, rate FLOAT, playerUUID VARCHAR(256), rateTime INTEGER,
+            worldName VARCHAR(256), x INTEGER, z INTEGER, rate DECIMAL(4, 2), playerUUID VARCHAR(256), rateTime INTEGER, comment TEXT,
             PRIMARY KEY (worldName, x, z, playerUUID, rateTime),
             FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
             FOREIGN KEY (x) REFERENCES plots (x) ON DELETE CASCADE,
@@ -222,11 +223,11 @@ class SQLiteProvider extends DataProvider {
             )";
         $this->database->exec($sql);
         $sql =
-            "SELECT rate, playerUUID, rateTime FROM plotRates WHERE worldName = :worldName AND x = :x AND z = :z;";
+            "SELECT rate, playerUUID, rateTime, comment FROM plotRates WHERE worldName = :worldName AND x = :x AND z = :z;";
         $this->getPlotRates = $this->createSQLite3Stmt($sql);
         $sql =
-            "INSERT INTO plotRates (worldName, x, z, rate, playerUUID, rateTime) VALUES (:worldName, :x, :z, :rate, :playerUUID, :rateTime)";
-        $this->addPlotRate = $this->createSQLite3Stmt($sql);
+            "INSERT INTO plotRates (worldName, x, z, rate, playerUUID, rateTime, comment) VALUES (:worldName, :x, :z, :rate, :playerUUID, :rateTime, :comment) ON CONFLICT DO UPDATE SET rate = excluded.rate, comment = excluded.comment;";
+        $this->setPlotRate = $this->createSQLite3Stmt($sql);
     }
 
     /**
@@ -712,6 +713,59 @@ class SQLiteProvider extends DataProvider {
         $this->cachePlot($plot);
         return true;
     }
+
+
+    /**
+     * @param Plot $plot
+     * @return PlotRate[] | null
+     */
+    public function getPlotRates(Plot $plot) : ?array {
+        $this->getPlotRates->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->getPlotRates->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $this->getPlotRates->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+
+        $this->getPlotRates->reset();
+        $result = $this->getPlotRates->execute();
+        if (!$result instanceof SQLite3Result) return null;
+
+        $plotRates = [];
+        while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
+            $plotRate = new PlotRate(
+                $var["rate"],
+                $var["playerUUID"],
+                $var["rateTime"],
+                $var["comment"] ?? null
+            );
+            $plotRates[$plotRate->toString()] = $plotRate;
+        }
+        return $plotRates;
+    }
+
+    /**
+     * @param Plot      $plot
+     * @param PlotRate  $plotRate
+     * @return bool
+     */
+    public function savePlotRate(Plot $plot, PlotRate $plotRate) : bool {
+        if (!$plot->addPlotRate($plotRate)) return false;
+
+        $this->setPlotRate->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->setPlotRate->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $this->setPlotRate->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
+
+        $this->setPlotRate->bindValue(":rate", $plotRate->getRate(), SQLITE3_NUM);
+        $this->setPlotRate->bindValue(":playerUUID", $plotRate->getPlayerUUID(), SQLITE3_TEXT);
+        $this->setPlotRate->bindValue(":rateTime", $plotRate->getRateTime(), SQLITE3_INTEGER);
+        $this->setPlotRate->bindValue(":comment", $plotRate->getComment(), SQLITE3_TEXT);
+
+        $this->setPlotRate->reset();
+        $result = $this->setPlotRate->execute();
+        if (!$result instanceof SQLite3Result) return false;
+
+        $this->cachePlot($plot);
+        return true;
+    }
+
 
     /**
      * @return bool

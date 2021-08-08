@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlotAPI\PlotPlayer;
+use ColinHDev\CPlotAPI\PlotRate;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
@@ -44,6 +45,9 @@ abstract class DataProvider {
     abstract public function savePlotFlag(Plot $plot, BaseFlag $flag) : bool;
     abstract public function deletePlotFlag(Plot $plot, string $flagID) : bool;
     abstract public function deletePlotFlags(Plot $plot) : bool;
+
+    abstract public function getPlotRates(Plot $plot) : ?array;
+    abstract public function savePlotRate(Plot $plot, PlotRate $plotRate) : bool;
 
     abstract public function close() : bool;
 
