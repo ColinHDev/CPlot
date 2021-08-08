@@ -89,11 +89,11 @@ class MergeSubcommand extends Subcommand {
         }
 
         if (!$plot->loadMergedPlots()) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.couldntLoadMergedPlots"));
+            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.loadMergedPlotsError"));
             return;
         }
         if (!$plotToMerge->loadMergedPlots()) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.couldntLoadMergedPlotsOfSecondPlot"));
+            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.loadMergedPlotsOfSecondPlotError"));
             return;
         }
 

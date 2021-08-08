@@ -35,7 +35,7 @@ class ClaimSubcommand extends Subcommand {
             return;
         }
         if (!$plot->loadMergedPlots()) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.couldntLoadMergedPlots"));
+            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadMergedPlotsError"));
             return;
         }
         $senderUUID = $sender->getUniqueId()->toString();

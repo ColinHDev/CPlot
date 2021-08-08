@@ -57,7 +57,7 @@ class SchematicSubcommand extends Subcommand {
                 }
                 $schematic = new Schematic($args[1], $file);
                 if (!$schematic->loadFromFile()) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.info.couldNotLoadSchematic", [$args[1]]));
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.info.loadSchematicError", [$args[1]]));
                     break;
                 }
 
@@ -159,7 +159,7 @@ class SchematicSubcommand extends Subcommand {
                     }
                     $schematic = new Schematic($args[2], $file);
                     if (!$schematic->loadFromFile()) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.couldNotLoadSchematic", [$args[2]]));
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.loadSchematicError", [$args[2]]));
                         break;
                     }
                     $worldSettings["schematic"] = $schematic->getName();
