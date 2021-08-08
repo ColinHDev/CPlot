@@ -117,20 +117,20 @@ class SQLiteProvider extends DataProvider {
         $sql =
             "CREATE TABLE IF NOT EXISTS plots (
             worldName VARCHAR(256), x INTEGER, z INTEGER,
-            ownerUUID VARCHAR(256), claimTime INTEGER, alias VARCHAR(128),
+            biomeID INTEGER, ownerUUID VARCHAR(256), claimTime INTEGER, alias VARCHAR(128),
             PRIMARY KEY (worldName, x, z),
             FOREIGN KEY (worldName) REFERENCES worlds (worldName) ON DELETE CASCADE,
             FOREIGN KEY (ownerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
-            "SELECT ownerUUID, claimTime, alias FROM plots WHERE worldName = :worldName AND x = :x AND z = :z;";
+            "SELECT biomeID, ownerUUID, claimTime, alias FROM plots WHERE worldName = :worldName AND x = :x AND z = :z;";
         $this->getPlot = $this->createSQLite3Stmt($sql);
         $sql =
-            "SELECT worldName, x, z, claimTime, alias FROM plots WHERE ownerUUID = :ownerUUID;";
+            "SELECT worldName, x, z, biomeID, claimTime, alias FROM plots WHERE ownerUUID = :ownerUUID;";
         $this->getPlotsByOwnerUUID = $this->createSQLite3Stmt($sql);
         $sql =
-            "SELECT worldName, x, z, ownerUUID, claimTime FROM plots WHERE alias = :alias;";
+            "SELECT worldName, x, z, biomeID, ownerUUID, claimTime FROM plots WHERE alias = :alias;";
         $this->getPlotByAlias = $this->createSQLite3Stmt($sql);
         $sql =
             "SELECT x, z FROM plots WHERE (
@@ -141,7 +141,7 @@ class SQLiteProvider extends DataProvider {
 			);";
         $this->getPlotXZ = $this->createSQLite3Stmt($sql);
         $sql =
-            "INSERT OR REPLACE INTO plots (worldName, x, z, ownerUUID, claimTime, alias) VALUES (:worldName, :x, :z, :ownerUUID, :claimTime, :alias);";
+            "INSERT OR REPLACE INTO plots (worldName, x, z, biomeID, ownerUUID, claimTime, alias) VALUES (:worldName, :x, :z, :biomeID, :ownerUUID, :claimTime, :alias);";
         $this->setPlot = $this->createSQLite3Stmt($sql);
         $sql =
             "DELETE FROM plots WHERE worldName = :worldName AND x = :x AND z = :z;";
