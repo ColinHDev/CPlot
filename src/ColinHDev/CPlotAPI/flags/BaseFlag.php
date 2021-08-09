@@ -22,9 +22,9 @@ abstract class BaseFlag implements FlagIDs {
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getID() : int {
+    public function getID() : string {
         return $this->ID;
     }
 
