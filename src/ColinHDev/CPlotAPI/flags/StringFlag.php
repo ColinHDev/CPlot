@@ -57,16 +57,37 @@ class StringFlag extends BaseFlag {
     }
 
     /**
+     * @param mixed $data
      * @return string
      */
-    public function serializeValue() : string {
-        return $this->value;
+    public function serializeValueType(mixed $data) : string {
+        return $data;
     }
 
     /**
      * @param string $serializedValue
+     * @return mixed
      */
-    public function unserializeValue(string $serializedValue) : void {
-        $this->value = $serializedValue;
+    public function unserializeValueType(string $serializedValue) : mixed {
+        return $serializedValue;
+    }
+
+    /**
+     * @return array
+     */
+    public function __serialize() : array {
+        $data = parent::__serialize();
+        $data["default"] = $this->serializeValueType($this->default);
+        $data["value"] = $this->serializeValueType($this->value);
+        return $data;
+    }
+
+    /**
+     * @param array $data
+     */
+    public function __unserialize(array $data) : void {
+        parent::__unserialize($data);
+        $this->default = $this->unserializeValueType($data["default"]);
+        $this->value = $this->unserializeValueType($data["value"]);
     }
 }

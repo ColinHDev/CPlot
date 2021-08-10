@@ -703,7 +703,9 @@ class SQLiteProvider extends DataProvider {
         while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
             $flag = FlagManager::getInstance()->getFlagByID($var["ID"]);
             if ($flag === null) continue;
-            $flag->unserializeValue($var["value"]);
+            $flag->setValue(
+                $flag->unserializeValueType($var["value"])
+            );
             $flags[$flag->getID()] = $flag;
         }
         return $flags;
@@ -723,7 +725,7 @@ class SQLiteProvider extends DataProvider {
         $this->setPlotFlag->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
 
         $this->setPlotFlag->bindValue(":ID", $flag->getID(), SQLITE3_TEXT);
-        $this->setPlotFlag->bindValue(":value", $flag->serializeValue(), SQLITE3_TEXT);
+        $this->setPlotFlag->bindValue(":value", $flag->serializeValueType($flag->getValue()), SQLITE3_TEXT);
 
         $this->setPlotFlag->reset();
         $result = $this->setPlotFlag->execute();

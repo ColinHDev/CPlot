@@ -57,20 +57,42 @@ class ArrayFlag extends BaseFlag {
     }
 
     /**
+     * @param mixed $data
      * @return string
      */
-    public function serializeValue() : string {
-        return implode(";", $this->value);
+    public function serializeValueType(mixed $data) : string {
+        return implode(";", $data);
     }
 
     /**
      * @param string $serializedValue
+     * @return mixed
      */
-    public function unserializeValue(string $serializedValue) : void {
+    public function unserializeValueType(string $serializedValue) : mixed {
         if ($serializedValue === "") {
-            $this->value = [];
+            $data = [];
         } else {
-            $this->value = explode(";", $serializedValue);
+            $data = explode(";", $serializedValue);
         }
+        return $data;
+    }
+
+    /**
+     * @return array
+     */
+    public function __serialize() : array {
+        $data = parent::__serialize();
+        $data["default"] = $this->serializeValueType($this->default);
+        $data["value"] = $this->serializeValueType($this->value);
+        return $data;
+    }
+
+    /**
+     * @param array $data
+     */
+    public function __unserialize(array $data) : void {
+        parent::__unserialize($data);
+        $this->default = $this->unserializeValueType($data["default"]);
+        $this->value = $this->unserializeValueType($data["value"]);
     }
 }

@@ -55,6 +55,28 @@ abstract class BaseFlag implements FlagIDs {
     abstract public function getValueNonNull() : mixed;
     abstract public function setValue(mixed $value) : void;
 
-    abstract public function serializeValue() : string;
-    abstract public function unserializeValue(string $serializedValue) : void;
+    abstract public function serializeValueType(mixed $data) : string;
+    abstract public function unserializeValueType(string $serializedValue) : mixed;
+
+    /**
+     * @return array
+     */
+    public function __serialize() : array {
+        return [
+            "ID" => $this->ID,
+            "category" => $this->category,
+            "valueType" => $this->valueType,
+            "description" => $this->description,
+        ];
+    }
+
+    /**
+     * @param array $data
+     */
+    public function __unserialize(array $data) : void {
+        $this->ID = $data["ID"];
+        $this->category = $data["category"];
+        $this->valueType = $data["valueType"];
+        $this->description = $data["description"];
+    }
 }
