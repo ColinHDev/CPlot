@@ -45,7 +45,7 @@ class MergeSubcommand extends Subcommand {
             }
         }
         $plot->loadFlags();
-        $flag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
+        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag === null || $flag->getValueNonNull() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.serverPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
             return;
@@ -82,7 +82,7 @@ class MergeSubcommand extends Subcommand {
             return;
         }
 
-        $flag = $plotToMerge->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
+        $flag = $plotToMerge->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag === null || $flag->getValueNonNull() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.secondPlotServerPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
             return;

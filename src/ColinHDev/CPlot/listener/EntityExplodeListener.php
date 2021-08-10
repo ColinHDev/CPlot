@@ -29,7 +29,7 @@ class EntityExplodeListener implements Listener {
         $plot = Plot::fromPosition($position);
         if ($plot === null) return;
         if (!$plot->loadFlags()) return;
-        $flag = $plot->getFlagByID(FlagIDs::FLAG_EXPLOSION);
+        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_EXPLOSION);
         if ($flag === null || $flag->getValueNonNull() === false) return;
         if (!$plot->loadMergedPlots()) return;
 

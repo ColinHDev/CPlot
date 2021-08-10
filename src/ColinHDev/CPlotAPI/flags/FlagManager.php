@@ -52,6 +52,14 @@ class FlagManager {
         $this->flags[$ID] = new $className($ID, $config->get($ID));
     }
 
+
+    /**
+     * @return BaseFlag[]
+     */
+    public function getFlags() : array {
+        return $this->flags;
+    }
+
     /**
      * @param string $ID
      * @return BaseFlag | null

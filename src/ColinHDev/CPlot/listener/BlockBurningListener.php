@@ -18,7 +18,7 @@ class BlockBurningListener implements Listener {
 
         $plot = Plot::fromPosition($position);
         if ($plot !== null) {
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_BURNING);
+            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_BURNING);
             if ($flag !== null && $flag->getValueNonNull() === true) return;
         }
 

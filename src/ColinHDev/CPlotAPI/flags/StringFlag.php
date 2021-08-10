@@ -2,7 +2,10 @@
 
 namespace ColinHDev\CPlotAPI\flags;
 
+use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\flags\utils\InvalidValueException;
+use ColinHDev\CPlotAPI\Plot;
+use pocketmine\player\Player;
 
 class StringFlag extends BaseFlag {
 
@@ -71,6 +74,49 @@ class StringFlag extends BaseFlag {
     public function unserializeValueType(string $serializedValue) : mixed {
         return $serializedValue;
     }
+
+
+    /**
+     * @param Plot      $plot
+     * @param Player    $player
+     * @param array     $args
+     * @return bool
+     */
+    public function set(Plot $plot, Player $player, array $args) : bool {
+        $flag = $plot->getFlagNonNullByID(self::FLAG_SERVER_PLOT);
+        if ($flag === null || $flag->getValueNonNull() === true) {
+            $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.serverPlotFlag", [$flag->getID() ?? self::FLAG_SERVER_PLOT]));
+            return false;
+        }
+
+        if (count($args) < 1) {
+            $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.noValue", [$this->ID]));
+            return false;
+        }
+
+        $this->value = implode(" ", $args);
+        $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.success", [$this->ID, $this->serializeValueType($this->value)]));
+        return true;
+    }
+
+    /**
+     * @param Plot      $plot
+     * @param Player    $player
+     * @param array     $args
+     * @return bool
+     */
+    public function remove(Plot $plot, Player $player, array $args) : bool {
+        $flag = $plot->getFlagNonNullByID(self::FLAG_SERVER_PLOT);
+        if ($flag === null || $flag->getValueNonNull() === true) {
+            $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.serverPlotFlag", [$flag->getID() ?? self::FLAG_SERVER_PLOT]));
+            return false;
+        }
+
+        $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.success", [$this->ID, $this->serializeValueType($this->value)]));
+        $this->value = null;
+        return true;
+    }
+
 
     /**
      * @return array

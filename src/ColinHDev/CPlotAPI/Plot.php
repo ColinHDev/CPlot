@@ -236,6 +236,17 @@ class Plot extends BasePlot {
         if ($this->flags !== null) {
             if (isset($this->flags[$flagID])) return $this->flags[$flagID];
         }
+        return null;
+    }
+
+    /**
+     * @param string $flagID
+     * @return BaseFlag | null
+     */
+    public function getFlagNonNullByID(string $flagID) : ?BaseFlag {
+        if ($this->flags !== null) {
+            if (isset($this->flags[$flagID])) return $this->flags[$flagID];
+        }
         return FlagManager::getInstance()->getFlagByID($flagID);
     }
 

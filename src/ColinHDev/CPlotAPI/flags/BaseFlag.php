@@ -2,6 +2,9 @@
 
 namespace ColinHDev\CPlotAPI\flags;
 
+use ColinHDev\CPlotAPI\Plot;
+use pocketmine\player\Player;
+
 abstract class BaseFlag implements FlagIDs {
 
     protected string $ID;
@@ -57,6 +60,9 @@ abstract class BaseFlag implements FlagIDs {
 
     abstract public function serializeValueType(mixed $data) : string;
     abstract public function unserializeValueType(string $serializedValue) : mixed;
+
+    abstract public function set(Plot $plot, Player $player, array $args) : bool;
+    abstract public function remove(Plot $plot, Player $player, array $args) : bool;
 
     /**
      * @return array

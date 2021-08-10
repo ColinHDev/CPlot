@@ -20,7 +20,7 @@ class BlockSpreadListener implements Listener {
 
         $plot = Plot::fromPosition($position);
         if ($plot !== null) {
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_FLOWING);
+            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_FLOWING);
             if ($flag !== null && $flag->getValueNonNull() === true) return;
         }
 
