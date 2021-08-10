@@ -78,7 +78,12 @@ class SpawnFlag extends BaseFlag {
             return false;
         }
 
-        $this->value = $player->getPosition()->asVector3();
+        $position = $player->getPosition()->asVector3();
+        $this->value = new Vector3(
+            round($position->x, 1),
+            round($position->y, 1),
+            round($position->z, 1)
+        );
         $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.success", [$this->ID, $this->serializeValueType($this->value)]));
         return true;
     }
