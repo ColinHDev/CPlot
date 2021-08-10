@@ -35,3 +35,40 @@ permissions:
         default: true
     cplot.claimPlots.unlimited:
         default: op
+
+    cplot.flag.title:
+        default: true
+    cplot.flag.plot_enter:
+        default: true
+    cplot.flag.plot_leave:
+        default: true
+    cplot.flag.message:
+        default: op
+    cplot.flag.spawn:
+        default: op
+    cplot.flag.item_drop:
+        default: true
+    cplot.flag.item_pickup:
+        default: true
+    cplot.flag.pvp:
+        default: true
+    cplot.flag.explosion:
+        default: true
+    cplot.flag.burning:
+        default: true
+    cplot.flag.flowing:
+        default: true
+    cplot.flag.growing:
+        default: true
+    cplot.flag.player_interact:
+        default: true
+    cplot.flag.server_plot:
+        default: op
+    cplot.flag.check_offlinetime:
+        default: op
+    cplot.flag.place:
+        default: true
+    cplot.flag.break:
+        default: true
+    cplot.flag.use:
+        default: true

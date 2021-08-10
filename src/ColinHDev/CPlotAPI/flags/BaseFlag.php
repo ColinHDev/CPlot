@@ -11,17 +11,20 @@ abstract class BaseFlag implements FlagIDs {
     protected string $category;
     protected string $valueType;
     protected string $description;
+    protected string $permission;
 
     /**
      * BaseFlag constructor.
      * @param string    $ID
      * @param array     $data
+     * @param string    $permission
      */
-    public function __construct(string $ID, array $data) {
+    public function __construct(string $ID, array $data, string $permission) {
         $this->ID = $ID;
         $this->category = $data["category"];
         $this->valueType = $data["type"];
         $this->description = $data["description"];
+        $this->permission = $permission;
     }
 
     /**
@@ -50,6 +53,13 @@ abstract class BaseFlag implements FlagIDs {
      */
     public function getDescription() : string {
         return $this->description;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPermission() : string {
+        return $this->permission;
     }
 
     abstract public function getDefault() : mixed;

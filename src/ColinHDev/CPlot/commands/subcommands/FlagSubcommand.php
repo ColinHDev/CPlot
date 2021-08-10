@@ -136,6 +136,10 @@ class FlagSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noFlag", [$args[1]]));
                     break;
                 }
+                if (!$sender->hasPermission($flag->getPermission())) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noPermissionForFlag", [$flag->getID()]));
+                    break;
+                }
 
                 array_splice($args, 0, 2);
                 if (!$flag->set($plot, $sender, $args)) return;
@@ -183,6 +187,10 @@ class FlagSubcommand extends Subcommand {
                 $flag = $plot->getFlagByID($args[1]);
                 if ($flag === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flagNotSet", [$args[1]]));
+                    break;
+                }
+                if (!$sender->hasPermission($flag->getPermission())) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.noPermissionForFlag", [$flag->getID()]));
                     break;
                 }
 

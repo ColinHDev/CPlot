@@ -49,7 +49,7 @@ class FlagManager {
      */
     private function register(Config $config, string $ID, string $className) : void {
         Utils::testValidInstance($className, BaseFlag::class);
-        $this->flags[$ID] = new $className($ID, $config->get($ID));
+        $this->flags[$ID] = new $className($ID, $config->get($ID), "cplot.flag." . $ID);
     }
 
 

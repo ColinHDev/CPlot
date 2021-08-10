@@ -18,9 +18,10 @@ class ArrayFlag extends BaseFlag {
      * ArrayFlag constructor.
      * @param string    $ID
      * @param array     $data
+     * @param string    $permission
      */
-    public function __construct(string $ID, array $data) {
-        parent::__construct($ID, $data);
+    public function __construct(string $ID, array $data, string $permission) {
+        parent::__construct($ID, $data, $permission);
         $this->default = (array) $data["standard"];
     }
 

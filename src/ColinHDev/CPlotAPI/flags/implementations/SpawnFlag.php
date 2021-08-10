@@ -4,7 +4,6 @@ namespace ColinHDev\CPlotAPI\flags\implementations;
 
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
-use ColinHDev\CPlotAPI\flags\FlagIDs;
 use ColinHDev\CPlotAPI\flags\utils\InvalidValueException;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\math\Vector3;
