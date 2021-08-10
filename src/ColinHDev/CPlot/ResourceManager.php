@@ -28,33 +28,23 @@ class ResourceManager {
         $this->language = new Language("language", CPlot::getInstance()->getDataFolder(), "language");
     }
 
-    /**
-     * @return ResourceManager
-     */
+
     public static function getInstance() : ResourceManager {
         return self::$instance;
     }
 
-    /**
-     * @return string
-     */
+
     public function getPrefix() : string {
         return $this->language->get("prefix");
     }
 
     /**
-     * @param string            $str
-     * @param array | string[]  $params
-     * @return string
+     * @param string[]  $params
      */
     public function translateString(string $str, array $params = []) : string {
         return $this->language->translateString($str, $params);
     }
 
-    /**
-     * @param string $commandName
-     * @return array
-     */
     public function getCommandData(string $commandName) : array {
         return [
             "name" => $this->language->get($commandName . ".name"),
@@ -65,17 +55,12 @@ class ResourceManager {
         ];
     }
 
-    /**
-     * @return Config
-     */
+
     public function getConfig() : Config {
         $this->config->reload();
         return $this->config;
     }
 
-    /**
-     * @return Config
-     */
     public function getFlagsConfig() : Config {
         $this->flagsConfig->reload();
         return $this->flagsConfig;

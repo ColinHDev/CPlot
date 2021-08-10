@@ -10,17 +10,11 @@ abstract class ChunkModifyingAsyncTask extends ChunkFetchingAsyncTask {
 
     private int $worldId;
 
-    /**
-     * @param World $world
-     */
     public function setWorld(World $world) : void {
         $this->worldId = $world->getId();
         parent::setWorld($world);
     }
 
-    /**
-     * @param mixed $progress
-     */
     public function onProgressUpdate(mixed $progress) : void {
         $world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
 

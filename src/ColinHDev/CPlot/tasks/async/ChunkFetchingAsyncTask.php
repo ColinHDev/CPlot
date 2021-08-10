@@ -15,17 +15,11 @@ abstract class ChunkFetchingAsyncTask extends CPlotAsyncTask {
 
     protected ?string $chunks = null;
 
-    /**
-     * @param World $world
-     */
     public function setWorld(World $world) : void {
         $this->minY = $world->getMinY();
         $this->maxY = $world->getMaxY();
     }
 
-    /**
-     * @return SimpleChunkManager
-     */
     protected function getChunkManager() : SimpleChunkManager {
         $manager = new SimpleChunkManager($this->minY, $this->maxY);
         foreach (unserialize($this->chunks) as $hash => $serializedChunk) {
@@ -35,11 +29,6 @@ abstract class ChunkFetchingAsyncTask extends CPlotAsyncTask {
         return $manager;
     }
 
-    /**
-     * @param SimpleChunkManager    $world
-     * @param Vector3               $pos1
-     * @param Vector3               $pos2
-     */
     public function saveChunks(ChunkManager $world, Vector3 $pos1, Vector3 $pos2) : void {
         $minChunkX = min($pos1->x, $pos2->x) >> 4;
         $maxChunkX = max($pos1->x, $pos2->x) >> 4;

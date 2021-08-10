@@ -58,7 +58,6 @@ class SQLiteProvider extends DataProvider {
 
     /**
      * SQLiteProvider constructor.
-     * @param array $settings
      * @throws Exception
      */
     public function __construct(array $settings) {
@@ -242,8 +241,6 @@ class SQLiteProvider extends DataProvider {
     }
 
     /**
-     * @param string $sql
-     * @return SQLite3Stmt
      * @throws Exception
      */
     private function createSQLite3Stmt(string $sql) : SQLite3Stmt {
@@ -255,10 +252,6 @@ class SQLiteProvider extends DataProvider {
     }
 
 
-    /**
-     * @param string $playerUUID
-     * @return string | null
-     */
     public function getPlayerNameByUUID(string $playerUUID) : ?string {
         $this->getPlayerNameByUUID->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
 
@@ -272,10 +265,6 @@ class SQLiteProvider extends DataProvider {
         return null;
     }
 
-    /**
-     * @param string $playerName
-     * @return string | null
-     */
     public function getPlayerUUIDByName(string $playerName) : ?string {
         $this->getPlayerUUIDByName->bindValue(":playerName", $playerName, SQLITE3_TEXT);
 
@@ -289,11 +278,6 @@ class SQLiteProvider extends DataProvider {
         return null;
     }
 
-    /**
-     * @param string    $playerUUID
-     * @param string    $playerName
-     * @return bool
-     */
     public function setPlayer(string $playerUUID, string $playerName) : bool {
         $this->setPlayer->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
         $this->setPlayer->bindValue(":playerName", $playerName, SQLITE3_TEXT);
@@ -304,10 +288,6 @@ class SQLiteProvider extends DataProvider {
     }
 
 
-    /**
-     * @param string $worldName
-     * @return WorldSettings | null
-     */
     public function getWorld(string $worldName) : ?WorldSettings {
         $worldSettings = $this->getWorldFromCache($worldName);
         if ($worldSettings !== null) return $worldSettings;
@@ -326,11 +306,6 @@ class SQLiteProvider extends DataProvider {
         return null;
     }
 
-    /**
-     * @param string        $worldName
-     * @param WorldSettings $settings
-     * @return bool
-     */
     public function addWorld(string $worldName, WorldSettings $settings) : bool {
         $this->setWorld->bindValue(":worldName", $worldName, SQLITE3_TEXT);
 
@@ -358,12 +333,6 @@ class SQLiteProvider extends DataProvider {
     }
 
 
-    /**
-     * @param string    $worldName
-     * @param int       $x
-     * @param int       $z
-     * @return Plot | null
-     */
     public function getPlot(string $worldName, int $x, int $z) : ?Plot {
         $plot = $this->getPlotFromCache($worldName, $x, $z);
         if ($plot !== null) {
@@ -391,7 +360,6 @@ class SQLiteProvider extends DataProvider {
     }
 
     /**
-     * @param string $ownerUUID
      * @return Plot[] | null
      */
     public function getPlotsByOwnerUUID(string $ownerUUID) : ?array {
@@ -411,10 +379,6 @@ class SQLiteProvider extends DataProvider {
         return $plots;
     }
 
-    /**
-     * @param string $alias
-     * @return Plot | null
-     */
     public function getPlotByAlias(string $alias) : ?Plot {
         $this->getPlotByAlias->bindValue(":alias", $alias, SQLITE3_TEXT);
 
@@ -433,10 +397,6 @@ class SQLiteProvider extends DataProvider {
         return null;
     }
 
-    /**
-     * @param Plot $plot
-     * @return bool
-     */
     public function savePlot(Plot $plot) : bool {
         $this->setPlot->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
         $this->setPlot->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
@@ -455,12 +415,6 @@ class SQLiteProvider extends DataProvider {
         return true;
     }
 
-    /**
-     * @param string    $worldName
-     * @param int       $x
-     * @param int       $z
-     * @return bool
-     */
     public function deletePlot(string $worldName, int $x, int $z) : bool {
         $this->deletePlot->bindValue(":worldName", $worldName, SQLITE3_TEXT);
         $this->deletePlot->bindValue(":x", $x, SQLITE3_INTEGER);
@@ -476,7 +430,6 @@ class SQLiteProvider extends DataProvider {
 
 
     /**
-     * @param Plot      $plot
      * @return MergedPlot[] | null
      */
     public function getMergedPlots(Plot $plot) : ?array {
@@ -497,10 +450,6 @@ class SQLiteProvider extends DataProvider {
         return $mergedPlots;
     }
 
-    /**
-     * @param BasePlot $plot
-     * @return Plot | null
-     */
     public function getMergeOrigin(BasePlot $plot) : ?Plot {
         if ($plot instanceof MergedPlot) {
             return $this->getPlot($plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ());
@@ -523,9 +472,7 @@ class SQLiteProvider extends DataProvider {
     }
 
     /**
-     * @param Plot $origin
      * @param BasePlot ...$plots
-     * @return bool
      */
     public function mergePlots(Plot $origin, BasePlot ...$plots) : bool {
         if ($origin->getMergedPlots() === null) return false;
@@ -549,10 +496,6 @@ class SQLiteProvider extends DataProvider {
         return true;
     }
 
-    /**
-     * @param Plot $plot
-     * @return bool
-     */
     public function deleteMergedPlots(Plot $plot) : bool {
         if ($plot->getMergedPlots() === null) return false;
 
@@ -573,9 +516,6 @@ class SQLiteProvider extends DataProvider {
 
 
     /**
-     * @param string    $worldName
-     * @param int       $limitXZ
-     * @return Plot | null
      * code (modified here) from @see https://github.com/jasonwynn10/MyPlot
      */
     public function getNextFreePlot(string $worldName, int $limitXZ = 0) : ?Plot {
@@ -620,7 +560,6 @@ class SQLiteProvider extends DataProvider {
 
 
     /**
-     * @param Plot $plot
      * @return PlotPlayer[] | null
      */
     public function getPlotPlayers(Plot $plot) : ?array {
@@ -640,11 +579,6 @@ class SQLiteProvider extends DataProvider {
         return $plotPlayers;
     }
 
-    /**
-     * @param Plot          $plot
-     * @param PlotPlayer    $plotPlayer
-     * @return bool
-     */
     public function savePlotPlayer(Plot $plot, PlotPlayer $plotPlayer) : bool {
         if (!$plot->addPlotPlayer($plotPlayer)) return false;
 
@@ -664,11 +598,6 @@ class SQLiteProvider extends DataProvider {
         return true;
     }
 
-    /**
-     * @param Plot      $plot
-     * @param string    $playerUUID
-     * @return bool
-     */
     public function deletePlotPlayer(Plot $plot, string $playerUUID) : bool {
         if (!$plot->removePlotPlayer($playerUUID)) return false;
 
@@ -687,7 +616,6 @@ class SQLiteProvider extends DataProvider {
     }
 
     /**
-     * @param Plot $plot
      * @return BaseFlag[] | null
      */
     public function getPlotFlags(Plot $plot) : ?array {
@@ -711,11 +639,6 @@ class SQLiteProvider extends DataProvider {
         return $flags;
     }
 
-    /**
-     * @param Plot      $plot
-     * @param BaseFlag  $flag
-     * @return bool
-     */
     public function savePlotFlag(Plot $plot, BaseFlag $flag) : bool {
         if ($flag->getValue() === null) return false;
         if (!$plot->addFlag($flag)) return false;
@@ -735,11 +658,6 @@ class SQLiteProvider extends DataProvider {
         return true;
     }
 
-    /**
-     * @param Plot      $plot
-     * @param string    $flagID
-     * @return bool
-     */
     public function deletePlotFlag(Plot $plot, string $flagID) : bool {
         if (!$plot->removeFlag($flagID)) return false;
 
@@ -757,10 +675,6 @@ class SQLiteProvider extends DataProvider {
         return true;
     }
 
-    /**
-     * @param Plot $plot
-     * @return bool
-     */
     public function deletePlotFlags(Plot $plot) : bool {
         $this->deletePlotFlags->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
         $this->deletePlotFlags->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
@@ -777,7 +691,6 @@ class SQLiteProvider extends DataProvider {
 
 
     /**
-     * @param Plot $plot
      * @return PlotRate[] | null
      */
     public function getPlotRates(Plot $plot) : ?array {
@@ -802,11 +715,6 @@ class SQLiteProvider extends DataProvider {
         return $plotRates;
     }
 
-    /**
-     * @param Plot      $plot
-     * @param PlotRate  $plotRate
-     * @return bool
-     */
     public function savePlotRate(Plot $plot, PlotRate $plotRate) : bool {
         if (!$plot->addPlotRate($plotRate)) return false;
 
@@ -828,9 +736,6 @@ class SQLiteProvider extends DataProvider {
     }
 
 
-    /**
-     * @return bool
-     */
     public function close() : bool {
         return $this->database->close();
     }

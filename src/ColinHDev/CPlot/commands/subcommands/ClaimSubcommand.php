@@ -13,10 +13,6 @@ use pocketmine\Server;
 
 class ClaimSubcommand extends Subcommand {
 
-    /**
-     * @param CommandSender $sender
-     * @param array         $args
-     */
     public function execute(CommandSender $sender, array $args) : void {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.senderNotOnline"));
@@ -90,10 +86,6 @@ class ClaimSubcommand extends Subcommand {
         $sender->sendMessage($this->getPrefix() . $this->translateString("claim.success", [$plot->toString(), $plot->toSmallString()]));
     }
 
-    /**
-     * @param Player $player
-     * @return int
-     */
     private function getMaxPlotsOfPlayer(Player $player) : int {
         if ($player->hasPermission("cplot.claimPlots.unlimited")) return PHP_INT_MAX;
 

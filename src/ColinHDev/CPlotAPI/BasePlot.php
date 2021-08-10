@@ -15,45 +15,24 @@ class BasePlot {
     protected int $x;
     protected int $z;
 
-    /**
-     * BasePlot constructor.
-     * @param string    $worldName
-     * @param int       $x
-     * @param int       $z
-     */
     public function __construct(string $worldName, int $x, int $z) {
         $this->worldName = $worldName;
         $this->x = $x;
         $this->z = $z;
     }
 
-    /**
-     * @return string
-     */
     public function getWorldName() : string {
         return $this->worldName;
     }
 
-    /**
-     * @return int
-     */
     public function getX() : int {
         return $this->x;
     }
 
-    /**
-     * @return int
-     */
     public function getZ() : int {
         return $this->z;
     }
 
-
-    /**
-     * @param Player    $player
-     * @param bool      $toPlotCenter
-     * @return bool
-     */
     public function teleportTo(Player $player, bool $toPlotCenter = false) : bool {
         $worldSettings = CPlot::getInstance()->getProvider()->getWorld($this->worldName);
         if ($worldSettings === null) return false;
@@ -75,12 +54,6 @@ class BasePlot {
         );
     }
 
-
-    /**
-     * @param int           $side
-     * @param int           $step
-     * @return self | null
-     */
     public function getSide(int $side, int $step = 1) : ?self {
         return match ($side) {
             Facing::NORTH => new self($this->worldName, $this->x, $this->z - $step),
@@ -91,51 +64,28 @@ class BasePlot {
         };
     }
 
-    /**
-     * @param BasePlot $plot
-     * @return bool
-     */
     public function isSame(self $plot) : bool {
         return $this->worldName === $plot->getWorldName() && $this->x === $plot->getX() && $this->z === $plot->getZ();
     }
 
-
-    /**
-     * @return string
-     */
     public function toString() : string {
         return $this->worldName . ";" . $this->x . ";" . $this->z;
     }
 
-    /**
-     * @return string
-     */
     public function toSmallString() : string {
         return $this->x . ";" . $this->z;
     }
 
-    /**
-     * @return Plot | null
-     */
     public function toPlot() : ?Plot {
         return CPlot::getInstance()->getProvider()->getMergeOrigin($this);
     }
 
-    /**
-     * @return Vector3 | null
-     */
     public function getPosition() : ?Vector3 {
         $worldSettings = CPlot::getInstance()->getProvider()->getWorld($this->worldName);
         if ($worldSettings === null) return null;
         return $this->getPositionNonNull($worldSettings->getSizeRoad(), $worldSettings->getSizePlot(), $worldSettings->getSizeGround());
     }
 
-    /**
-     * @param int       $sizeRoad
-     * @param int       $sizePlot
-     * @param int       $sizeGround
-     * @return Vector3
-     */
     public function getPositionNonNull(int $sizeRoad, int $sizePlot, int $sizeGround) : Vector3 {
         return new Vector3(
             $sizeRoad + ($sizeRoad + $sizePlot) * $this->x,
@@ -144,10 +94,6 @@ class BasePlot {
         );
     }
 
-    /**
-     * @param Position          $position
-     * @return self | null
-     */
     public static function fromPosition(Position $position) : ?self {
         $worldSettings = CPlot::getInstance()->getProvider()->getWorld($position->getWorld()->getFolderName());
         if ($worldSettings === null) return null;
@@ -176,10 +122,6 @@ class BasePlot {
         return new self($position->getWorld()->getFolderName(), $X, $Z);
     }
 
-
-    /**
-     * @return array
-     */
     public function __serialize() : array {
         return [
             "worldName" => $this->worldName,
@@ -188,9 +130,6 @@ class BasePlot {
         ];
     }
 
-    /**
-     * @param array $data
-     */
     public function __unserialize(array $data) : void {
         $this->worldName = $data["worldName"];
         $this->x = $data["x"];

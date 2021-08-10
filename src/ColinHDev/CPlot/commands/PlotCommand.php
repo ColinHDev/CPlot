@@ -44,9 +44,6 @@ class PlotCommand extends Command {
         $this->loadSubcommand(new SchematicSubcommand($resourceManager->getCommandData("schematic"), "cplot.subcommand.schematic"));
     }
 
-    /**
-     * @param Subcommand $subcommand
-     */
     private function loadSubcommand(Subcommand $subcommand) : void {
         $this->subcommands[$subcommand->getName()] = $subcommand;
         foreach ($subcommand->getAlias() as $alias) {
@@ -54,12 +51,6 @@ class PlotCommand extends Command {
         }
     }
 
-    /**
-     * @param CommandSender     $sender
-     * @param string            $commandLabel
-     * @param array             $args
-     * @return void
-     */
     public function execute(CommandSender $sender, string $commandLabel, array $args) : void {
         if (!$this->testPermission($sender)) {
             return;

@@ -12,34 +12,19 @@ class StringFlag extends BaseFlag {
     protected string $default;
     protected ?string $value = null;
 
-    /**
-     * StringFlag constructor.
-     * @param string    $ID
-     * @param array     $data
-     * @param string    $permission
-     */
     public function __construct(string $ID, array $data, string $permission) {
         parent::__construct($ID, $data, $permission);
         $this->default = (string) $data["standard"];
     }
 
-    /**
-     * @return string
-     */
     public function getDefault() : string {
         return $this->default;
     }
 
-    /**
-     * @return string | null
-     */
     public function getValue() : ?string {
         return $this->value;
     }
 
-    /**
-     * @return string
-     */
     public function getValueNonNull() : string {
         if ($this->value !== null) {
             return $this->value;
@@ -48,7 +33,6 @@ class StringFlag extends BaseFlag {
     }
 
     /**
-     * @param mixed $value
      * @throws InvalidValueException
      */
     public function setValue(mixed $value) : void {
@@ -60,29 +44,29 @@ class StringFlag extends BaseFlag {
         $this->value = $value;
     }
 
-    /**
-     * @param mixed $data
-     * @return string
-     */
+
     public function serializeValueType(mixed $data) : string {
         return $data;
     }
 
-    /**
-     * @param string $serializedValue
-     * @return mixed
-     */
-    public function unserializeValueType(string $serializedValue) : mixed {
+    public function unserializeValueType(string $serializedValue) : string {
         return $serializedValue;
     }
 
+    public function __serialize() : array {
+        $data = parent::__serialize();
+        $data["default"] = $this->serializeValueType($this->default);
+        $data["value"] = $this->serializeValueType($this->value);
+        return $data;
+    }
 
-    /**
-     * @param Plot      $plot
-     * @param Player    $player
-     * @param array     $args
-     * @return bool
-     */
+    public function __unserialize(array $data) : void {
+        parent::__unserialize($data);
+        $this->default = $this->unserializeValueType($data["default"]);
+        $this->value = $this->unserializeValueType($data["value"]);
+    }
+
+
     public function set(Plot $plot, Player $player, array $args) : bool {
         $flag = $plot->getFlagNonNullByID(self::FLAG_SERVER_PLOT);
         if ($flag === null || $flag->getValueNonNull() === true) {
@@ -100,12 +84,6 @@ class StringFlag extends BaseFlag {
         return true;
     }
 
-    /**
-     * @param Plot      $plot
-     * @param Player    $player
-     * @param array     $args
-     * @return bool
-     */
     public function remove(Plot $plot, Player $player, array $args) : bool {
         $flag = $plot->getFlagNonNullByID(self::FLAG_SERVER_PLOT);
         if ($flag === null || $flag->getValueNonNull() === true) {
@@ -116,25 +94,5 @@ class StringFlag extends BaseFlag {
         $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.success", [$this->ID, $this->serializeValueType($this->value)]));
         $this->value = null;
         return true;
-    }
-
-
-    /**
-     * @return array
-     */
-    public function __serialize() : array {
-        $data = parent::__serialize();
-        $data["default"] = $this->serializeValueType($this->default);
-        $data["value"] = $this->serializeValueType($this->value);
-        return $data;
-    }
-
-    /**
-     * @param array $data
-     */
-    public function __unserialize(array $data) : void {
-        parent::__unserialize($data);
-        $this->default = $this->unserializeValueType($data["default"]);
-        $this->value = $this->unserializeValueType($data["value"]);
     }
 }

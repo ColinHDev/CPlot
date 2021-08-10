@@ -17,22 +17,15 @@ class SpawnFlag extends BaseFlag {
         return null;
     }
 
-    /**
-     * @return Vector3 | null
-     */
     public function getValue() : ?Vector3 {
         return $this->value;
     }
 
-    /**
-     * @return Vector3 | null
-     */
     public function getValueNonNull() : ?Vector3 {
         return $this->getValue();
     }
 
     /**
-     * @param mixed $value
      * @throws InvalidValueException
      */
     public function setValue(mixed $value) : void {
@@ -44,32 +37,30 @@ class SpawnFlag extends BaseFlag {
         $this->value = $value;
     }
 
-    /**
-     * @param mixed $data
-     * @return string
-     */
+
     public function serializeValueType(mixed $data) : string {
         if ($data === null) return "null";
         return $data->getX() . ";" . $data->getY() . ";" . $data->getZ();
     }
 
-    /**
-     * @param string $serializedValue
-     * @return mixed
-     */
-    public function unserializeValueType(string $serializedValue) : mixed {
+    public function unserializeValueType(string $serializedValue) : ?Vector3 {
         if ($serializedValue === "null") return null;
         [$x, $y, $z] = explode(";", $serializedValue);
         return new Vector3((float) $x, (float) $y, (float) $z);
     }
 
+    public function __serialize() : array {
+        $data = parent::__serialize();
+        $data["value"] = $this->serializeValueType($this->value);
+        return $data;
+    }
 
-    /**
-     * @param Plot      $plot
-     * @param Player    $player
-     * @param array     $args
-     * @return bool
-     */
+    public function __unserialize(array $data) : void {
+        parent::__unserialize($data);
+        $this->value = $this->unserializeValueType($data["value"]);
+    }
+
+
     public function set(Plot $plot, Player $player, array $args) : bool {
         $flag = $plot->getFlagNonNullByID(self::FLAG_SERVER_PLOT);
         if ($flag === null || $flag->getValueNonNull() === true) {
@@ -87,12 +78,6 @@ class SpawnFlag extends BaseFlag {
         return true;
     }
 
-    /**
-     * @param Plot      $plot
-     * @param Player    $player
-     * @param array     $args
-     * @return bool
-     */
     public function remove(Plot $plot, Player $player, array $args) : bool {
         $flag = $plot->getFlagNonNullByID(self::FLAG_SERVER_PLOT);
         if ($flag === null || $flag->getValueNonNull() === true) {
@@ -103,23 +88,5 @@ class SpawnFlag extends BaseFlag {
         $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.success", [$this->ID, $this->serializeValueType($this->value)]));
         $this->value = null;
         return true;
-    }
-
-
-    /**
-     * @return array
-     */
-    public function __serialize() : array {
-        $data = parent::__serialize();
-        $data["value"] = $this->serializeValueType($this->value);
-        return $data;
-    }
-
-    /**
-     * @param array $data
-     */
-    public function __unserialize(array $data) : void {
-        parent::__unserialize($data);
-        $this->value = $this->unserializeValueType($data["value"]);
     }
 }

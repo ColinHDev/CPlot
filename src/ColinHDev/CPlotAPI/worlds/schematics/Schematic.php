@@ -33,19 +33,11 @@ class Schematic {
     /** @var int[] */
     private array $blocks;
 
-    /**
-     * Schematic constructor.
-     * @param string    $name
-     * @param string    $file
-     */
     public function __construct(string $name, string $file) {
         $this->name = $name;
         $this->file = $file;
     }
 
-    /**
-     * @return bool
-     */
     public function save() : bool {
         $nbt = new CompoundTag();
         $nbt->setShort("Version", $this->version);
@@ -59,9 +51,6 @@ class Schematic {
         return true;
     }
 
-    /**
-     * @return bool
-     */
     public function loadFromFile() : bool {
         if (!file_exists($this->file)) return false;
 
@@ -81,13 +70,6 @@ class Schematic {
         return true;
     }
 
-    /**
-     * @param ChunkManager  $world
-     * @param int           $type
-     * @param int           $sizeRoad
-     * @param int           $sizePlot
-     * @return bool
-     */
     public function loadFromWorld(ChunkManager $world, int $type, int $sizeRoad, int $sizePlot) : bool {
         $this->version = self::SCHEMATIC_VERSION;
         $this->creationTime = time();
@@ -145,51 +127,30 @@ class Schematic {
         return true;
     }
 
-    /**
-     * @return string
-     */
     public function getName() : string {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
     public function getFile() : string {
         return $this->file;
     }
 
-    /**
-     * @return int
-     */
     public function getVersion() : int {
         return $this->version;
     }
 
-    /**
-     * @return int
-     */
     public function getCreationTime() : int {
         return $this->creationTime;
     }
 
-    /**
-     * @return int
-     */
     public function getType() : int {
         return $this->type;
     }
 
-    /**
-     * @return int
-     */
     public function getRoadSize() : int {
         return $this->sizeRoad;
     }
 
-    /**
-     * @return int
-     */
     public function getPlotSize() : int {
         return $this->sizePlot;
     }
@@ -201,12 +162,6 @@ class Schematic {
         return $this->blocks;
     }
 
-    /**
-     * @param int $x
-     * @param int $y
-     * @param int $z
-     * @return int
-     */
     public function getFullBlock(int $x, int $y, int $z) : int {
         $hash = World::blockHash($x, $y, $z);
         if (!isset($this->blocks[$hash])) return BlockLegacyIds::AIR;

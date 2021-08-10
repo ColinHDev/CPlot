@@ -28,11 +28,6 @@ class SchematicGenerator extends Generator {
     private int $blockPlotFillId;
     private int $blockPlotBottomId;
 
-    /**
-     * SchematicGenerator constructor.
-     * @param int       $seed
-     * @param string    $preset
-     */
     public function __construct(int $seed, string $preset) {
         parent::__construct($seed, $preset);
         if ($preset !== "") {
@@ -78,11 +73,6 @@ class SchematicGenerator extends Generator {
         ]);
     }
 
-    /**
-     * @param ChunkManager  $world
-     * @param int           $chunkX
-     * @param int           $chunkZ
-     */
     public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
 
         if ($this->schematicName !== "default" && $this->schematic === null) {
@@ -155,11 +145,6 @@ class SchematicGenerator extends Generator {
         }
     }
 
-    /**
-     * @param ChunkManager  $world
-     * @param int           $chunkX
-     * @param int           $chunkZ
-     */
     public function populateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
     }
 }

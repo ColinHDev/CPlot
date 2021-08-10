@@ -29,16 +29,6 @@ class Plot extends BasePlot {
     /** @var null | PlotRate[] */
     private ?array $plotRates = null;
 
-    /**
-     * Plot constructor.
-     * @param string            $worldName
-     * @param int               $x
-     * @param int               $z
-     * @param int               $biomeID
-     * @param null | string     $ownerUUID
-     * @param null | int        $claimTime
-     * @param null | string     $alias
-     */
     public function __construct(string $worldName, int $x, int $z, int $biomeID = BiomeIds::PLAINS, ?string $ownerUUID = null, ?int $claimTime = null, ?string $alias = null) {
         parent::__construct($worldName, $x, $z);
         $this->biomeID = $biomeID;
@@ -47,51 +37,31 @@ class Plot extends BasePlot {
         $this->alias = $alias;
     }
 
-    /**
-     * @return int
-     */
     public function getBiomeID() : int {
         return $this->biomeID;
     }
 
-    /**
-     * @return string | null
-     */
     public function getOwnerUUID() : ?string {
         return $this->ownerUUID;
     }
 
-    /**
-     * @param string | null $ownerUUID
-     */
     public function setOwnerUUID(?string $ownerUUID) : void {
         $this->ownerUUID = $ownerUUID;
     }
 
-    /**
-     * @return int | null
-     */
     public function getClaimTime() : ?int {
         return $this->claimTime;
     }
 
-    /**
-     * @param int | null $claimTime
-     */
     public function setClaimTime(?int $claimTime) : void {
         $this->claimTime = $claimTime;
     }
 
-    /**
-     * @return string | null
-     */
     public function getAlias() : ?string {
         return $this->alias;
     }
 
-    /**
-     * @return bool
-     */
+
     public function loadMergedPlots() : bool {
         if ($this->mergedPlots !== null) return true;
         $this->mergedPlots = CPlot::getInstance()->getProvider()->getMergedPlots($this);
@@ -107,10 +77,6 @@ class Plot extends BasePlot {
         return $this->mergedPlots;
     }
 
-    /**
-     * @param BasePlot $plot
-     * @return bool
-     */
     public function isMerged(BasePlot $plot) : bool {
         if ($this->isSame($plot, false)) return true;
         if ($this->mergedPlots === null) return false;
@@ -124,20 +90,12 @@ class Plot extends BasePlot {
         $this->mergedPlots = $mergedPlots;
     }
 
-    /**
-     * @param MergedPlot $mergedPlot
-     * @return bool
-     */
     public function addMerge(MergedPlot $mergedPlot) : bool {
         if ($this->mergedPlots === null) return false;
         $this->mergedPlots[$mergedPlot->toString()] = $mergedPlot;
         return true;
     }
 
-    /**
-     * @param Plot $plot
-     * @return bool
-     */
     public function merge(self $plot) : bool {
         if ($this->mergedPlots === null && !$this->loadMergedPlots()) return false;
         if ($plot->getMergedPlots() === null && !$plot->loadMergedPlots()) return false;
@@ -154,9 +112,6 @@ class Plot extends BasePlot {
     }
 
 
-    /**
-     * @return bool
-     */
     public function loadPlotPlayers() : bool {
         if ($this->plotPlayers !== null) return true;
         $this->plotPlayers = CPlot::getInstance()->getProvider()->getPlotPlayers($this);
@@ -172,10 +127,6 @@ class Plot extends BasePlot {
         return $this->plotPlayers;
     }
 
-    /**
-     * @param string $playerUUID
-     * @return BaseFlag | null
-     */
     public function getPlotPlayer(string $playerUUID) : ?PlotPlayer {
         if ($this->plotPlayers !== null) return null;
         if (!isset($this->plotPlayers[$playerUUID])) return null;
@@ -189,20 +140,12 @@ class Plot extends BasePlot {
         $this->plotPlayers = $plotPlayers;
     }
 
-    /**
-     * @param PlotPlayer $plotPlayer
-     * @return bool
-     */
     public function addPlotPlayer(PlotPlayer $plotPlayer) : bool {
         if ($this->plotPlayers === null) return false;
         $this->plotPlayers[$plotPlayer->getPlayerUUID()] = $plotPlayer;
         return true;
     }
 
-    /**
-     * @param string $playerUUID
-     * @return bool
-     */
     public function removePlotPlayer(string $playerUUID) : bool {
         if ($this->plotPlayers === null) return false;
         unset($this->plotPlayers[$playerUUID]);
@@ -210,9 +153,6 @@ class Plot extends BasePlot {
     }
 
 
-    /**
-     * @return bool
-     */
     public function loadFlags() : bool {
         if ($this->flags !== null) return true;
         $this->flags = CPlot::getInstance()->getProvider()->getPlotFlags($this);
@@ -228,10 +168,6 @@ class Plot extends BasePlot {
         return $this->flags;
     }
 
-    /**
-     * @param string $flagID
-     * @return BaseFlag | null
-     */
     public function getFlagByID(string $flagID) : ?BaseFlag {
         if ($this->flags !== null) {
             if (isset($this->flags[$flagID])) return $this->flags[$flagID];
@@ -239,10 +175,6 @@ class Plot extends BasePlot {
         return null;
     }
 
-    /**
-     * @param string $flagID
-     * @return BaseFlag | null
-     */
     public function getFlagNonNullByID(string $flagID) : ?BaseFlag {
         if ($this->flags !== null) {
             if (isset($this->flags[$flagID])) return $this->flags[$flagID];
@@ -257,20 +189,12 @@ class Plot extends BasePlot {
         $this->flags = $flags;
     }
 
-    /**
-     * @param BaseFlag $flag
-     * @return bool
-     */
     public function addFlag(BaseFlag $flag) : bool {
         if ($this->flags === null) return false;
         $this->flags[$flag->getID()] = $flag;
         return true;
     }
 
-    /**
-     * @param string $flagID
-     * @return bool
-     */
     public function removeFlag(string $flagID) : bool {
         if ($this->flags === null) return false;
         unset($this->flags[$flagID]);
@@ -278,9 +202,6 @@ class Plot extends BasePlot {
     }
 
 
-    /**
-     * @return bool
-     */
     public function loadPlotRates() : bool {
         if ($this->plotRates !== null) return true;
         $this->plotRates = CPlot::getInstance()->getProvider()->getPlotRates($this);
@@ -303,10 +224,6 @@ class Plot extends BasePlot {
         $this->plotRates = $plotRates;
     }
 
-    /**
-     * @param PlotRate $plotRate
-     * @return bool
-     */
     public function addPlotRate(PlotRate $plotRate) : bool {
         if ($this->plotRates === null) return false;
         $this->plotRates[$plotRate->toString()] = $plotRate;
@@ -322,19 +239,11 @@ class Plot extends BasePlot {
     }
 
 
-    /**
-     * @return BasePlot
-     */
     public function toBasePlot() : BasePlot {
         return new BasePlot($this->worldName, $this->x, $this->z);
     }
 
 
-    /**
-     * @param Position  $position
-     * @param bool      $checkMerge
-     * @return self | null
-     */
     public static function fromPosition(Position $position, bool $checkMerge = true) : ?self {
         $worldSettings = CPlot::getInstance()->getProvider()->getWorld($position->getWorld()->getFolderName());
         if ($worldSettings === null) return null;
@@ -382,9 +291,7 @@ class Plot extends BasePlot {
         return null;
     }
 
-    /**
-     * @return array
-     */
+
     public function __serialize() : array {
         $data = parent::__serialize();
 
@@ -400,9 +307,6 @@ class Plot extends BasePlot {
         return $data;
     }
 
-    /**
-     * @param array $data
-     */
     public function __unserialize(array $data) : void {
         parent::__unserialize($data);
 

@@ -21,11 +21,6 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
     private string $plot;
     private int $blockFullID;
 
-    /**
-     * @param WorldSettings $worldSettings
-     * @param Plot          $plot
-     * @param Block         $block
-     */
     public function __construct(WorldSettings $worldSettings, Plot $plot, Block $block) {
         $this->startTime();
         $this->worldSettings = serialize($worldSettings->toArray());

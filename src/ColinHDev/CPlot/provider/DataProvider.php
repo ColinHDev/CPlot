@@ -19,20 +19,13 @@ abstract class DataProvider {
     private array $plotCache = [];
     private int $plotCacheSize = 128;
 
-    /**
-     * @param string $worldName
-     * @return WorldSettings | null
-     */
+
     final protected function getWorldFromCache(string $worldName) : ?WorldSettings {
         if ($this->worldCacheSize <= 0) return null;
         if (!isset($this->worldCache[$worldName])) return null;
         return $this->worldCache[$worldName];
     }
 
-    /**
-     * @param string $worldName
-     * @param WorldSettings $settings
-     */
     final protected function cacheWorld(string $worldName, WorldSettings $settings) : void {
         if ($this->worldCacheSize <= 0) return;
         if (isset($this->worldCache[$worldName])) {
@@ -43,12 +36,7 @@ abstract class DataProvider {
         $this->worldCache = array_merge([$worldName => clone $settings], $this->worldCache);
     }
 
-    /**
-     * @param string    $worldName
-     * @param int       $x
-     * @param int       $z
-     * @return BasePlot | null
-     */
+
     final protected function getPlotFromCache(string $worldName, int $x, int $z) : ?BasePlot {
         if ($this->plotCacheSize <= 0) return null;
         $key = $worldName . ";" . $x . ";" . $z;
@@ -56,9 +44,6 @@ abstract class DataProvider {
         return $this->plotCache[$key];
     }
 
-    /**
-     * @param BasePlot $plot
-     */
     final public function cachePlot(BasePlot $plot) : void {
         if ($this->plotCacheSize <= 0) return;
         $key = $plot->toString();
@@ -70,17 +55,13 @@ abstract class DataProvider {
         $this->plotCache = array_merge([$key => clone $plot], $this->plotCache);
     }
 
-    /**
-     * @param string    $worldName
-     * @param int       $x
-     * @param int       $z
-     */
     final protected function removePlotFromCache(string $worldName, int $x, int $z) : void {
         if ($this->plotCacheSize <= 0) return;
         $key = $worldName . ";" . $x . ";" . $z;
         if (!isset($this->plotCache[$key])) return;
         unset($this->plotCache[$key]);
     }
+
 
     abstract public function getPlayerNameByUUID(string $playerUUID) : ?string;
     abstract public function getPlayerUUIDByName(string $playerName) : ?string;
@@ -116,10 +97,8 @@ abstract class DataProvider {
 
     abstract public function close() : bool;
 
+
     /**
-     * @param int       $a
-     * @param int       $b
-     * @param array     $plots
      * @return int[] | null
      * code from @see https://github.com/jasonwynn10/MyPlot
      */

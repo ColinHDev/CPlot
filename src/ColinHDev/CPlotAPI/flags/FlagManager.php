@@ -42,11 +42,6 @@ class FlagManager {
         $this->register($config, FlagIDs::FLAG_USE, ArrayFlag::class);
     }
 
-    /**
-     * @param Config    $config
-     * @param string    $ID
-     * @param string    $className
-     */
     private function register(Config $config, string $ID, string $className) : void {
         Utils::testValidInstance($className, BaseFlag::class);
         $this->flags[$ID] = new $className($ID, $config->get($ID), "cplot.flag." . $ID);
@@ -60,10 +55,6 @@ class FlagManager {
         return $this->flags;
     }
 
-    /**
-     * @param string $ID
-     * @return BaseFlag | null
-     */
     public function getFlagByID(string $ID) : ?BaseFlag {
         if (!isset($this->flags[$ID])) return null;
         return clone $this->flags[$ID];

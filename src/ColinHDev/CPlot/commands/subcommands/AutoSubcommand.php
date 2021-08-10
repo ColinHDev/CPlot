@@ -8,10 +8,6 @@ use pocketmine\player\Player;
 
 class AutoSubcommand extends Subcommand {
 
-    /**
-     * @param CommandSender $sender
-     * @param array         $args
-     */
     public function execute(CommandSender $sender, array $args) : void {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("auto.senderNotOnline"));

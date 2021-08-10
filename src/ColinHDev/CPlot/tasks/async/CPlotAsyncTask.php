@@ -15,16 +15,10 @@ abstract class CPlotAsyncTask extends AsyncTask {
         $this->startTime = round(microtime(true) * 1000);
     }
 
-    /**
-     * @return int
-     */
     protected function getElapsedTime() : int {
         return (round(microtime(true) * 1000)) - $this->startTime;
     }
 
-    /**
-     * @return string
-     */
     protected function getElapsedTimeString() : string {
         $ms = $this->getElapsedTime();
         $min = floor($ms / 60000);
@@ -46,9 +40,6 @@ abstract class CPlotAsyncTask extends AsyncTask {
         return $time;
     }
 
-    /**
-     * @param Closure | null $closure
-     */
     public function setClosure(?Closure $closure) : void {
         if ($closure !== null) {
             $this->storeLocal("callback", $closure);

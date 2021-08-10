@@ -4,21 +4,13 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
-use ColinHDev\CPlotAPI\flags\BooleanFlag;
 use ColinHDev\CPlotAPI\flags\FlagManager;
-use ColinHDev\CPlotAPI\flags\implementations\SpawnFlag;
-use ColinHDev\CPlotAPI\flags\StringFlag;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\command\CommandSender;
-use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 
 class FlagSubcommand extends Subcommand {
 
-    /**
-     * @param CommandSender $sender
-     * @param array         $args
-     */
     public function execute(CommandSender $sender, array $args) : void {
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());

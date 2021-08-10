@@ -16,11 +16,6 @@ abstract class Subcommand {
     private string $permission;
     private string $permissionMessage;
 
-    /**
-     * Subcommand constructor.
-     * @param array     $commandData
-     * @param string    $permission
-     */
     public function __construct(array $commandData, string $permission) {
         $this->name = $commandData["name"];
         $this->alias = $commandData["alias"];
@@ -30,68 +25,41 @@ abstract class Subcommand {
         $this->permissionMessage = $commandData["permissionMessage"];
     }
 
-    /**
-     * @return string
-     */
     public function getName() : string {
         return $this->name;
     }
 
     /**
-     * @return array
+     * @return string[]
      */
     public function getAlias() : array {
         return $this->alias;
     }
 
-    /**
-     * @return string
-     */
     public function getDescription() : string {
         return $this->description;
     }
 
-    /**
-     * @return string
-     */
     public function getUsage() : string {
         return $this->usage;
     }
 
-    /**
-     * @return string
-     */
     public function getPermissionMessage() : string {
         return $this->permissionMessage;
     }
 
-    /**
-     * @return CPlot
-     */
     public function getPlugin() : CPlot {
         return CPlot::getInstance();
     }
 
-    /**
-     * @return string
-     */
     protected function getPrefix() : string {
         return ResourceManager::getInstance()->getPrefix();
     }
 
-    /**
-     * @param string    $str
-     * @param array     $params
-     * @return string
-     */
     protected function translateString(string $str, array $params = []) : string {
         return ResourceManager::getInstance()->translateString($str, $params);
     }
 
-    /**
-     * @param CommandSender $sender
-     * @return bool
-     */
     public function testPermission(CommandSender $sender) : bool {
         if ($sender->hasPermission($this->permission)) {
             return true;
@@ -100,9 +68,5 @@ abstract class Subcommand {
         return false;
     }
 
-    /**
-     * @param CommandSender $sender
-     * @param array         $args
-     */
     abstract public function execute(CommandSender $sender, array $args) : void;
 }

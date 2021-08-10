@@ -21,11 +21,6 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
     private string $plot;
     private string $plotToMerge;
 
-    /**
-     * @param WorldSettings $worldSettings
-     * @param Plot          $plot
-     * @param Plot          $plotToMerge
-     */
     public function __construct(WorldSettings $worldSettings, Plot $plot, Plot $plotToMerge) {
         $this->startTime();
         $this->worldSettings = serialize($worldSettings->toArray());

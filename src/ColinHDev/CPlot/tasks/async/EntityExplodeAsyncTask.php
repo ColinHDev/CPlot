@@ -16,9 +16,7 @@ class EntityExplodeAsyncTask extends CPlotAsyncTask {
     private string $affectedBlocks;
 
     /**
-     * @param WorldSettings     $worldSettings
-     * @param Plot              $plot
-     * @param array | int[]     $affectedBlocks
+     * @param int[] $affectedBlocks
      */
     public function __construct(WorldSettings $worldSettings, Plot $plot, array $affectedBlocks) {
         $this->startTime();

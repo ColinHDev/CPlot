@@ -21,21 +21,17 @@ class CPlot extends PluginBase {
 
     private static CPlot $instance;
 
-    private DataProvider $provider;
-
-    /**
-     * @return CPlot
-     */
     public static function getInstance() : CPlot {
         return self::$instance;
     }
 
-    /**
-     * @return DataProvider
-     */
+
+    private DataProvider $provider;
+
     public function getProvider() : DataProvider {
         return $this->provider;
     }
+
 
     public function onLoad() : void {
         self::$instance = $this;
