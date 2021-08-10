@@ -56,4 +56,26 @@ class PlotRate {
     public function toString() : string {
         return $this->playerUUID . ";" . $this->rateTime;
     }
+
+    /**
+     * @return array
+     */
+    public function __serialize() : array {
+        return [
+            "rate" => $this->rate,
+            "playerUUID" => $this->playerUUID,
+            "rateTime" => $this->rateTime,
+            "comment" => $this->comment
+        ];
+    }
+
+    /**
+     * @param array $data
+     */
+    public function __unserialize(array $data) : void {
+        $this->rate = $data["rate"];
+        $this->playerUUID = $data["playerUUID"];
+        $this->rateTime = $data["rateTime"];
+        $this->comment = $data["comment"];
+    }
 }

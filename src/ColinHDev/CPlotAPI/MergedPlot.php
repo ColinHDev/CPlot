@@ -48,23 +48,22 @@ class MergedPlot extends BasePlot {
         );
     }
 
+
     /**
      * @return array
      */
     public function __serialize() : array {
-        return [
-            "worldName" => $this->worldName, "x" => $this->x, "z" => $this->z,
-            "originX" => $this->originX, "originZ" => $this->originZ
-        ];
+        $data = parent::__serialize();
+        $data["originX"] = $this->originX;
+        $data["originZ"] = $this->originZ;
+        return $data;
     }
 
     /**
      * @param array $data
      */
     public function __unserialize(array $data) : void {
-        $this->worldName = $data["worldName"];
-        $this->x = $data["x"];
-        $this->z = $data["z"];
+        parent::__unserialize($data);
         $this->originX = $data["originX"];
         $this->originZ = $data["originZ"];
     }

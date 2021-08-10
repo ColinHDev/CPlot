@@ -44,4 +44,24 @@ class PlotPlayer {
     public function getAddTime() : int {
         return $this->addTime;
     }
+
+    /**
+     * @return array
+     */
+    public function __serialize() : array {
+        return [
+            "playerUUID" => $this->playerUUID,
+            "state" => $this->state,
+            "addTime" => $this->addTime
+        ];
+    }
+
+    /**
+     * @param array $data
+     */
+    public function __unserialize(array $data) : void {
+        $this->playerUUID = $data["playerUUID"];
+        $this->state = $data["state"];
+        $this->addTime = $data["addTime"];
+    }
 }

@@ -175,4 +175,25 @@ class BasePlot {
         if (($difX > $worldSettings->getSizePlot() - 1) || ($difZ > $worldSettings->getSizePlot() - 1)) return null;
         return new self($position->getWorld()->getFolderName(), $X, $Z);
     }
+
+
+    /**
+     * @return array
+     */
+    public function __serialize() : array {
+        return [
+            "worldName" => $this->worldName,
+            "x" => $this->x,
+            "z" => $this->z
+        ];
+    }
+
+    /**
+     * @param array $data
+     */
+    public function __unserialize(array $data) : void {
+        $this->worldName = $data["worldName"];
+        $this->x = $data["x"];
+        $this->z = $data["z"];
+    }
 }

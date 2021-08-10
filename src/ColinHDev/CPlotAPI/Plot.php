@@ -375,20 +375,25 @@ class Plot extends BasePlot {
      * @return array
      */
     public function __serialize() : array {
-        return [
-            "worldName" => $this->worldName, "x" => $this->x, "z" => $this->z,
-            "biomeID" => $this->biomeID, "ownerUUID" => $this->ownerUUID, "claimTime" => $this->claimTime, "alias" => $this->alias,
-            "mergedPlots" => serialize($this->mergedPlots), "plotPlayers" => serialize($this->plotPlayers), "flags" => serialize($this->flags)
-        ];
+        $data = parent::__serialize();
+
+        $data["biomeID"] = $this->biomeID;
+        $data["ownerUUID"] = $this->ownerUUID;
+        $data["claimTime"] = $this->claimTime;
+        $data["alias"] = $this->alias;
+
+        $data["mergedPlots"] = serialize($this->mergedPlots);
+        $data["plotPlayers"] = serialize($this->plotPlayers);
+        $data["flags"] = serialize($this->flags);
+        $data["plotRates"] = serialize($this->plotRates);
+        return $data;
     }
 
     /**
      * @param array $data
      */
     public function __unserialize(array $data) : void {
-        $this->worldName = $data["worldName"];
-        $this->x = $data["x"];
-        $this->z = $data["z"];
+        parent::__unserialize($data);
 
         $this->biomeID = $data["biomeID"];
         $this->ownerUUID = $data["ownerUUID"];
@@ -398,5 +403,6 @@ class Plot extends BasePlot {
         $this->mergedPlots = unserialize($data["mergedPlots"]);
         $this->plotPlayers = unserialize($data["plotPlayers"]);
         $this->flags = unserialize($data["flags"]);
+        $this->plotRates = unserialize($data["plotRates"]);
     }
 }
