@@ -51,7 +51,7 @@ class ClearSubcommand extends Subcommand {
         }
 
         if (!$plot->loadMergedPlots()) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("clear.loadFlagsError"));
+            $sender->sendMessage($this->getPrefix() . $this->translateString("clear.loadMergedPlotsError"));
             return;
         }
         $sender->sendMessage($this->getPrefix() . $this->translateString("clear.start"));
