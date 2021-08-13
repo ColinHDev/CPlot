@@ -31,6 +31,9 @@ permissions:
     cplot.admin.merge:
         default: op
 
+    cplot.bypass.deny:
+        default: op
+
     cplot.claimPlots.4:
         default: true
     cplot.claimPlots.unlimited:

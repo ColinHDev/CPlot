@@ -8,6 +8,7 @@ use ColinHDev\CPlot\listener\BlockGrowListener;
 use ColinHDev\CPlot\listener\BlockSpreadListener;
 use ColinHDev\CPlot\listener\BlockTeleportListener;
 use ColinHDev\CPlot\listener\EntityExplodeListener;
+use ColinHDev\CPlot\listener\PlayerMoveListener;
 use ColinHDev\CPlot\listener\PlayerPreLoginListener;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\SQLiteProvider;
@@ -55,6 +56,7 @@ class CPlot extends PluginBase {
         $this->getServer()->getPluginManager()->registerEvents(new BlockSpreadListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new BlockTeleportListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new EntityExplodeListener(), $this);
+        $this->getServer()->getPluginManager()->registerEvents(new PlayerMoveListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new PlayerPreLoginListener(), $this);
 
         $this->getServer()->getCommandMap()->register("plot", new PlotCommand());
