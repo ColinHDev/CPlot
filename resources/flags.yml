@@ -81,10 +81,10 @@ server_plot:
     type: "boolean (Wahrheitswert)"
     description: "Auf Grundstücken mit dieser Flag sind viele Funktionen zum Schutz des Grundstückes deaktiviert."
     category: "protection"
-check_offlinetime:
+check_inactive:
     standard: true
     type: "boolean (Wahrheitswert)"
-    description: "Aktiviere / Deaktiviere die Offline-Kontrolle eines Grundstückes."
+    description: "Aktiviere / Deaktiviere die Inaktivitäts-Kontrolle eines Grundstückes."
     category: "protection"
 
 

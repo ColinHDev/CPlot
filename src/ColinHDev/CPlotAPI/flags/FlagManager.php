@@ -35,7 +35,7 @@ class FlagManager {
         $this->register($config, FlagIDs::FLAG_GROWING, BooleanFlag::class);
         $this->register($config, FlagIDs::FLAG_PLAYER_INTERACT, BooleanFlag::class);
         $this->register($config, FlagIDs::FLAG_SERVER_PLOT, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_CHECK_OFFLINETIME, BooleanFlag::class);
+        $this->register($config, FlagIDs::FLAG_CHECK_INACTIVE, BooleanFlag::class);
 
         $this->register($config, FlagIDs::FLAG_PLACE, ArrayFlag::class);
         $this->register($config, FlagIDs::FLAG_BREAK, ArrayFlag::class);
