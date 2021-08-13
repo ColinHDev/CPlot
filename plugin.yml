@@ -15,6 +15,8 @@ permissions:
         default: true
     cplot.subcommand.claim:
         default: true
+    cplot.subcommand.clear:
+        default: true
     cplot.subcommand.flag:
         default: true
     cplot.subcommand.generate:
@@ -26,6 +28,8 @@ permissions:
     cplot.subcommand.schematic:
         default: op
 
+    cplot.admin.clear:
+        default: op
     cplot.admin.flag:
         default: op
     cplot.admin.merge:

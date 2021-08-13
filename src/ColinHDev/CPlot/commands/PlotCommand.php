@@ -4,6 +4,7 @@ namespace ColinHDev\CPlot\commands;
 
 use ColinHDev\CPlot\commands\subcommands\AutoSubcommand;
 use ColinHDev\CPlot\commands\subcommands\ClaimSubcommand;
+use ColinHDev\CPlot\commands\subcommands\ClearSubcommand;
 use ColinHDev\CPlot\commands\subcommands\FlagSubcommand;
 use ColinHDev\CPlot\commands\subcommands\GenerateSubcommand;
 use ColinHDev\CPlot\commands\subcommands\InfoSubcommand;
@@ -37,6 +38,7 @@ class PlotCommand extends Command {
 
         $this->loadSubcommand(new AutoSubcommand($resourceManager->getCommandData("auto"), "cplot.subcommand.auto"));
         $this->loadSubcommand(new ClaimSubcommand($resourceManager->getCommandData("claim"), "cplot.subcommand.claim"));
+        $this->loadSubcommand(new ClearSubcommand($resourceManager->getCommandData("clear"), "cplot.subcommand.clear"));
         $this->loadSubcommand(new FlagSubcommand($resourceManager->getCommandData("flag"), "cplot.subcommand.flag"));
         $this->loadSubcommand(new GenerateSubcommand($resourceManager->getCommandData("generate"), "cplot.subcommand.generate"));
         $this->loadSubcommand(new InfoSubcommand($resourceManager->getCommandData("info"), "cplot.subcommand.info"));
