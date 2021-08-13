@@ -81,7 +81,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS playerSettings (
-            playerUUID VARCHAR(256) NOT NULL, setting VARCHAR(256) NOT NULL, value VARCHAR(512) NOT NULL,
+            playerUUID VARCHAR(256) NOT NULL, setting VARCHAR(256) NOT NULL, value TEXT NOT NULL,
             PRIMARY KEY (playerUUID, setting), 
             FOREIGN KEY (playerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
             )";
@@ -201,7 +201,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plotFlags (
-            worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL, ID VARCHAR(256) NOT NULL, value VARCHAR(512) NOT NULL,
+            worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL, ID VARCHAR(256) NOT NULL, TEXT NOT NULL,
             PRIMARY KEY (worldName, x, z, ID),
             FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
             FOREIGN KEY (x) REFERENCES plots (x) ON DELETE CASCADE,
