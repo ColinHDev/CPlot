@@ -2,6 +2,7 @@
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlotAPI\players\Player;
 use ColinHDev\CPlotAPI\PlotPlayer;
 use ColinHDev\CPlotAPI\PlotRate;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
@@ -20,8 +21,8 @@ class SQLiteProvider extends DataProvider {
 
     private SQLite3 $database;
 
-    private SQLite3Stmt $getPlayerNameByUUID;
-    private SQLite3Stmt $getPlayerUUIDByName;
+    private SQLite3Stmt $getPlayerByUUID;
+    private SQLite3Stmt $getPlayerByName;
     private SQLite3Stmt $setPlayer;
 
     private SQLite3Stmt $getPlayerSettings;
@@ -65,18 +66,18 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS players (
-            playerUUID VARCHAR(256) NOT NULL, playerName VARCHAR(256) NOT NULL, 
+            playerUUID VARCHAR(256) NOT NULL, playerName VARCHAR(256) NOT NULL, lastPlayed INTEGER NOT NULL,
             PRIMARY KEY (playerUUID)
             )";
         $this->database->exec($sql);
         $sql =
-            "SELECT playerName FROM players WHERE playerUUID = :playerUUID;";
-        $this->getPlayerNameByUUID = $this->createSQLite3Stmt($sql);
+            "SELECT playerName, lastPlayed FROM players WHERE playerUUID = :playerUUID;";
+        $this->getPlayerByUUID = $this->createSQLite3Stmt($sql);
         $sql =
-            "SELECT playerUUID FROM players WHERE playerName = :playerName;";
-        $this->getPlayerUUIDByName = $this->createSQLite3Stmt($sql);
+            "SELECT playerUUID, lastPlayed FROM players WHERE playerName = :playerName;";
+        $this->getPlayerByName = $this->createSQLite3Stmt($sql);
         $sql =
-            "INSERT INTO players (playerUUID, playerName) VALUES (:playerUUID, :playerName) ON CONFLICT (playerUUID) DO UPDATE SET playerName = excluded.playerName;";
+            "INSERT INTO players (playerUUID, playerName, lastPlayed) VALUES (:playerUUID, :playerName, :lastPlayed) ON CONFLICT (playerUUID) DO UPDATE SET playerName = excluded.playerName, lastPlayed = excluded.lastPlayed;";
         $this->setPlayer = $this->createSQLite3Stmt($sql);
 
         $sql =
@@ -237,36 +238,59 @@ class SQLiteProvider extends DataProvider {
         return $stmt;
     }
 
+    public function getPlayerByUUID(string $playerUUID) : ?Player {
+        $player = $this->getPlayerFromCache($playerUUID);
+        if ($player !== null) return $player;
 
-    public function getPlayerNameByUUID(string $playerUUID) : ?string {
-        $this->getPlayerNameByUUID->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
+        $this->getPlayerByUUID->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
 
-        $this->getPlayerNameByUUID->reset();
-        $result = $this->getPlayerNameByUUID->execute();
+        $this->getPlayerByUUID->reset();
+        $result = $this->getPlayerByUUID->execute();
         if (!$result instanceof SQLite3Result) return null;
 
         if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            return $var["playerName"];
+            $player = new Player(
+                $playerUUID, $var["playerName"], $var["lastPlayed"]
+            );
+            $this->cachePlayer($player);
+            return $player;
         }
         return null;
+    }
+
+    public function getPlayerByName(string $playerName) : ?Player {
+        $this->getPlayerByName->bindValue(":playerName", $playerName, SQLITE3_TEXT);
+
+        $this->getPlayerByName->reset();
+        $result = $this->getPlayerByName->execute();
+        if (!$result instanceof SQLite3Result) return null;
+
+        if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
+            $player = new Player(
+                $var["playerUUID"], $playerName, $var["lastPlayed"]
+            );
+            $this->cachePlayer($player);
+            return $player;
+        }
+        return null;
+    }
+
+    public function getPlayerNameByUUID(string $playerUUID) : ?string {
+        $player = $this->getPlayerByUUID($playerUUID);
+        if ($player === null) return null;
+        return $player->getPlayerName();
     }
 
     public function getPlayerUUIDByName(string $playerName) : ?string {
-        $this->getPlayerUUIDByName->bindValue(":playerName", $playerName, SQLITE3_TEXT);
-
-        $this->getPlayerNameByUUID->reset();
-        $result = $this->getPlayerNameByUUID->execute();
-        if (!$result instanceof SQLite3Result) return null;
-
-        if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            return $var["playerUUID"];
-        }
-        return null;
+        $player = $this->getPlayerByName($playerName);
+        if ($player === null) return null;
+        return $player->getPlayerUUID();
     }
 
-    public function setPlayer(string $playerUUID, string $playerName) : bool {
-        $this->setPlayer->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
-        $this->setPlayer->bindValue(":playerName", $playerName, SQLITE3_TEXT);
+    public function setPlayer(Player $player) : bool {
+        $this->setPlayer->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
+        $this->setPlayer->bindValue(":playerName", $player->getPlayerName(), SQLITE3_TEXT);
+        $this->setPlayer->bindValue(":lastPlayed", $player->getLastPlayed(), SQLITE3_INTEGER);
 
         $this->setPlayer->reset();
         $result = $this->setPlayer->execute();

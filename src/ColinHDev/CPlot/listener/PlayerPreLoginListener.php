@@ -4,6 +4,7 @@ namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\ResourceManager;
+use ColinHDev\CPlotAPI\players\Player;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerPreLoginEvent;
 
@@ -13,7 +14,12 @@ class PlayerPreLoginListener implements Listener {
         if ($event->isCancelled()) return;
 
         $playerInfo = $event->getPlayerInfo();
-        if (CPlot::getInstance()->getProvider()->setPlayer($playerInfo->getUuid()->toString(), $playerInfo->getUsername())) return;
+        $player = new Player(
+            $playerInfo->getUuid()->toString(),
+            $playerInfo->getUsername(),
+            (int) (microtime(true) * 1000)
+        );
+        if (CPlot::getInstance()->getProvider()->setPlayer($player)) return;
 
         $event->setKickReason(
             PlayerPreLoginEvent::KICK_REASON_PLUGIN,

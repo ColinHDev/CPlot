@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlotAPI\MergedPlot;
+use ColinHDev\CPlotAPI\players\Player;
 use ColinHDev\CPlotAPI\PlotPlayer;
 use ColinHDev\CPlotAPI\PlotRate;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
@@ -12,6 +13,10 @@ use ColinHDev\CPlotAPI\Plot;
 
 abstract class DataProvider {
 
+    /** @var Player[] */
+    private array $playerCache = [];
+    private int $playerCacheSize = 64;
+
     /** @var WorldSettings[] */
     private array $worldCache = [];
     private int $worldCacheSize = 16;
@@ -19,6 +24,24 @@ abstract class DataProvider {
     /** @var BasePlot[] */
     private array $plotCache = [];
     private int $plotCacheSize = 128;
+
+
+    final protected function getPlayerFromCache(string $playerUUID) : ?Player {
+        if ($this->playerCacheSize <= 0) return null;
+        if (!isset($this->playerCache[$playerUUID])) return null;
+        return $this->playerCache[$playerUUID];
+    }
+
+    final protected function cachePlayer(Player $player) : void {
+        if ($this->playerCacheSize <= 0) return;
+        $key = $player->getPlayerUUID();
+        if (isset($this->playerCache[$key])) {
+            unset($this->playerCache[$key]);
+        } else if ($this->playerCacheSize <= count($this->playerCache)) {
+            array_shift($this->playerCache);
+        }
+        $this->playerCache = array_merge([$key => clone $player], $this->playerCache);
+    }
 
 
     final protected function getWorldFromCache(string $worldName) : ?WorldSettings {
@@ -81,9 +104,17 @@ abstract class DataProvider {
     }
 
 
+    abstract public function getPlayerByUUID(string $playerUUID) : ?Player;
+    abstract public function getPlayerByName(string $playerName) : ?Player;
+    /**
+     * @deprecated due to @see Provider::getPlayerByUUID()
+     */
     abstract public function getPlayerNameByUUID(string $playerUUID) : ?string;
+    /**
+     * @deprecated due to @see Provider::getPlayerByName()
+     */
     abstract public function getPlayerUUIDByName(string $playerName) : ?string;
-    abstract public function setPlayer(string $playerUUID, string $playerName) : bool;
+    abstract public function setPlayer(Player $player) : bool;
 
     abstract public function getWorld(string $worldName) : ?WorldSettings;
     abstract public function addWorld(string $worldName, WorldSettings $settings) : bool;
