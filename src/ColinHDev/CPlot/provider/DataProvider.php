@@ -90,7 +90,6 @@ abstract class DataProvider {
     abstract public function getPlotFlags(Plot $plot) : ?array;
     abstract public function savePlotFlag(Plot $plot, BaseFlag $flag) : bool;
     abstract public function deletePlotFlag(Plot $plot, string $flagID) : bool;
-    abstract public function deletePlotFlags(Plot $plot) : bool;
 
     abstract public function getPlotRates(Plot $plot) : ?array;
     abstract public function savePlotRate(Plot $plot, PlotRate $plotRate) : bool;

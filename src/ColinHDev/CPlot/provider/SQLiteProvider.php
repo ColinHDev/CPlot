@@ -50,7 +50,6 @@ class SQLiteProvider extends DataProvider {
 
     private SQLite3Stmt $getPlotFlags;
     private SQLite3Stmt $setPlotFlag;
-    private SQLite3Stmt $deletePlotFlags;
     private SQLite3Stmt $deletePlotFlag;
 
     private SQLite3Stmt $getPlotRates;
@@ -209,9 +208,6 @@ class SQLiteProvider extends DataProvider {
         $sql =
             "INSERT OR REPLACE INTO plotFlags (worldName, x, z, ID, value) VALUES (:worldName, :x, :z, :ID, :value);";
         $this->setPlotFlag = $this->createSQLite3Stmt($sql);
-        $sql =
-            "DELETE FROM plotFlags WHERE worldName = :worldName AND x = :x AND z = :z;";
-        $this->deletePlotFlags = $this->createSQLite3Stmt($sql);
         $sql =
             "DELETE FROM plotFlags WHERE worldName = :worldName AND x = :x AND z = :z AND ID = :ID;";
         $this->deletePlotFlag = $this->createSQLite3Stmt($sql);
@@ -664,20 +660,6 @@ class SQLiteProvider extends DataProvider {
         $result = $this->deletePlotFlag->execute();
         if (!$result instanceof SQLite3Result) return false;
 
-        $this->cachePlot($plot);
-        return true;
-    }
-
-    public function deletePlotFlags(Plot $plot) : bool {
-        $this->deletePlotFlags->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
-        $this->deletePlotFlags->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
-        $this->deletePlotFlags->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
-
-        $this->deletePlotFlags->reset();
-        $result = $this->deletePlotFlags->execute();
-        if (!$result instanceof SQLite3Result) return false;
-
-        $plot->setFlags(null);
         $this->cachePlot($plot);
         return true;
     }
