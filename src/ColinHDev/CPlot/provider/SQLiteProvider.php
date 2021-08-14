@@ -62,6 +62,7 @@ class SQLiteProvider extends DataProvider {
      */
     public function __construct(array $settings) {
         $this->database = new SQLite3($settings["folder"] . $settings["file"]);
+        $this->database->exec("PRAGMA foreign_keys = TRUE;");
 
         $sql =
             "CREATE TABLE IF NOT EXISTS players (
@@ -144,9 +145,7 @@ class SQLiteProvider extends DataProvider {
             "CREATE TABLE IF NOT EXISTS mergedPlots (
             worldName VARCHAR(256) NOT NULL, originX INTEGER NOT NULL, originZ INTEGER NOT NULL, mergedX INTEGER NOT NULL, mergedZ INTEGER NOT NULL, 
             PRIMARY KEY (worldName, originX, originZ, mergedX, mergedZ),
-            FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
-            FOREIGN KEY (originX) REFERENCES plots (x) ON DELETE CASCADE,
-            FOREIGN KEY (originZ) REFERENCES plots (z) ON DELETE CASCADE
+            FOREIGN KEY (worldName, originX, originZ) REFERENCES plots (worldName, x, z) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
@@ -183,9 +182,7 @@ class SQLiteProvider extends DataProvider {
             "CREATE TABLE IF NOT EXISTS plotPlayers (
             worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL, playerUUID VARCHAR(256) NOT NULL, state VARCHAR(32) NOT NULL, addTime INTEGER NOT NULL,
             PRIMARY KEY (worldName, x, z, playerUUID),
-            FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
-            FOREIGN KEY (x) REFERENCES plots (x) ON DELETE CASCADE,
-            FOREIGN KEY (z) REFERENCES plots (z) ON DELETE CASCADE,
+            FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE,
             FOREIGN KEY (playerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
@@ -203,9 +200,7 @@ class SQLiteProvider extends DataProvider {
             "CREATE TABLE IF NOT EXISTS plotFlags (
             worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL, ID VARCHAR(256) NOT NULL, value TEXT NOT NULL,
             PRIMARY KEY (worldName, x, z, ID),
-            FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
-            FOREIGN KEY (x) REFERENCES plots (x) ON DELETE CASCADE,
-            FOREIGN KEY (z) REFERENCES plots (z) ON DELETE CASCADE
+            FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
@@ -226,9 +221,7 @@ class SQLiteProvider extends DataProvider {
             worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL, 
             rate DECIMAL(4, 2) NOT NULL, playerUUID VARCHAR(256) NOT NULL, rateTime INTEGER NOT NULL, comment TEXT,
             PRIMARY KEY (worldName, x, z, playerUUID, rateTime),
-            FOREIGN KEY (worldName) REFERENCES plots (worldName) ON DELETE CASCADE,
-            FOREIGN KEY (x) REFERENCES plots (x) ON DELETE CASCADE,
-            FOREIGN KEY (z) REFERENCES plots (z) ON DELETE CASCADE,
+            FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE,
             FOREIGN KEY (playerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
