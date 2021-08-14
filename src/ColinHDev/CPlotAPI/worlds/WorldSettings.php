@@ -2,7 +2,7 @@
 
 namespace ColinHDev\CPlotAPI\worlds;
 
-use ColinHDev\CPlot\provider\Cacheable;
+use ColinHDev\CPlot\provider\cache\Cacheable;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;

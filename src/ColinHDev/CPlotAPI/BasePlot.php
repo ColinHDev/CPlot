@@ -3,7 +3,7 @@
 namespace ColinHDev\CPlotAPI;
 
 use ColinHDev\CPlot\CPlot;
-use ColinHDev\CPlot\provider\Cacheable;
+use ColinHDev\CPlot\provider\cache\Cacheable;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;

@@ -2,7 +2,7 @@
 
 namespace ColinHDev\CPlotAPI\players;
 
-use ColinHDev\CPlot\provider\Cacheable;
+use ColinHDev\CPlot\provider\cache\Cacheable;
 
 class Player implements Cacheable {
 

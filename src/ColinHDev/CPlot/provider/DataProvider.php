@@ -2,6 +2,8 @@
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlot\provider\cache\Cache;
+use ColinHDev\CPlot\provider\cache\CacheIDs;
 use ColinHDev\CPlotAPI\players\Player;
 use ColinHDev\CPlotAPI\PlotPlayer;
 use ColinHDev\CPlotAPI\PlotRate;

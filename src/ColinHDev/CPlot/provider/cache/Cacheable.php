@@ -1,6 +1,6 @@
 <?php
 
-namespace ColinHDev\CPlot\provider;
+namespace ColinHDev\CPlot\provider\cache;
 
 /**
  * Classes implementing this interface can be cached.
