@@ -74,7 +74,7 @@ class ResetSubcommand extends Subcommand {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("reset.finish", [$elapsedTimeString]));
             }
         );
-        if (!$this->getPlugin()->getProvider()->deletePlot($plot->getWorldName(), $plot->getX(), $plot->getZ())) {
+        if (!$this->getPlugin()->getProvider()->deletePlot($plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("reset.deletePlotError"));
             return;
         }

@@ -2,6 +2,7 @@
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlotAPI\MergedPlot;
 use ColinHDev\CPlotAPI\PlotPlayer;
 use ColinHDev\CPlotAPI\PlotRate;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
@@ -55,9 +56,26 @@ abstract class DataProvider {
         $this->plotCache = array_merge([$key => clone $plot], $this->plotCache);
     }
 
-    final protected function removePlotFromCache(string $worldName, int $x, int $z) : void {
+    final protected function removePlotFromCache(BasePlot $plot) : void {
         if ($this->plotCacheSize <= 0) return;
-        $key = $worldName . ";" . $x . ";" . $z;
+        // no old merged plots should be saved in the provider
+        if ($plot instanceof Plot) {
+            if ($plot->getMergedPlots() === null) {
+                foreach ($plot->getMergedPlots() as $mergedPlot) {
+                    $this->removePlotFromCache($mergedPlot);
+                }
+            } else {
+                foreach ($this->plotCache as $possiblyMergedPlot) {
+                    if (!$possiblyMergedPlot instanceof MergedPlot) continue;
+                    if ($plot->getWorldName() !== $possiblyMergedPlot->getWorldName()) continue;
+                    if ($plot->getX() !== $possiblyMergedPlot->getOriginX()) continue;
+                    if ($plot->getZ() !== $possiblyMergedPlot->getOriginZ()) continue;
+                    $this->removePlotFromCache($possiblyMergedPlot);
+                }
+            }
+        }
+        // remove plot
+        $key = $plot->toString();
         if (!isset($this->plotCache[$key])) return;
         unset($this->plotCache[$key]);
     }
@@ -74,7 +92,7 @@ abstract class DataProvider {
     abstract public function getPlotsByOwnerUUID(string $ownerUUID) : ?array;
     abstract public function getPlotByAlias(string $alias) : ?Plot;
     abstract public function savePlot(Plot $plot) : bool;
-    abstract public function deletePlot(string $worldName, int $x, int $z) : bool;
+    abstract public function deletePlot(Plot $plot) : bool;
 
     abstract public function getMergedPlots(Plot $plot) : ?array;
     abstract public function getMergeOrigin(BasePlot $plot) : ?Plot;

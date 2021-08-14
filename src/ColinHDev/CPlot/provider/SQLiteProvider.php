@@ -404,16 +404,16 @@ class SQLiteProvider extends DataProvider {
         return true;
     }
 
-    public function deletePlot(string $worldName, int $x, int $z) : bool {
-        $this->deletePlot->bindValue(":worldName", $worldName, SQLITE3_TEXT);
-        $this->deletePlot->bindValue(":x", $x, SQLITE3_INTEGER);
-        $this->deletePlot->bindValue(":z", $z, SQLITE3_INTEGER);
+    public function deletePlot(Plot $plot) : bool {
+        $this->deletePlot->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
+        $this->deletePlot->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
+        $this->deletePlot->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
 
         $this->deletePlot->reset();
         $result = $this->deletePlot->execute();
         if (!$result instanceof SQLite3Result) return false;
 
-        $this->removePlotFromCache($worldName, $x, $z);
+        $this->removePlotFromCache($plot);
         return true;
     }
 
@@ -497,9 +497,9 @@ class SQLiteProvider extends DataProvider {
         if (!$result instanceof SQLite3Result) return false;
 
         foreach ($plot->getMergedPlots() as $mergedPlot) {
-            $this->removePlotFromCache($mergedPlot->getWorldName(), $mergedPlot->getX(), $mergedPlot->getZ());
+            $this->removePlotFromCache($mergedPlot);
         }
-        $this->removePlotFromCache($plot->getWorldName(), $plot->getX(), $plot->getZ());
+        $this->removePlotFromCache($plot);
         return true;
     }
 
