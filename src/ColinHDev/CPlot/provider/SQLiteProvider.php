@@ -156,9 +156,6 @@ class SQLiteProvider extends DataProvider {
         $sql =
             "INSERT OR REPLACE INTO mergedPlots (worldName, originX, originZ, mergedX, mergedZ) VALUES (:worldName, :originX, :originZ, :mergedX, :mergedZ);";
         $this->addMergedPlot = $this->createSQLite3Stmt($sql);
-        $sql =
-            "DELETE FROM mergedPlots WHERE worldName = :worldName AND originX = :originX AND originZ = :originZ;";
-        $this->deleteMergedPlots = $this->createSQLite3Stmt($sql);
 
         /** code (modified here) from @see https://github.com/jasonwynn10/MyPlot */
         $sql =
@@ -482,24 +479,6 @@ class SQLiteProvider extends DataProvider {
             $this->cachePlot(MergedPlot::fromBasePlot($plot, $origin->getX(), $origin->getZ()));
         }
         $this->cachePlot($origin);
-        return true;
-    }
-
-    public function deleteMergedPlots(Plot $plot) : bool {
-        if ($plot->getMergedPlots() === null) return false;
-
-        $this->deleteMergedPlots->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
-        $this->deleteMergedPlots->bindValue(":originX", $plot->getX(), SQLITE3_INTEGER);
-        $this->deleteMergedPlots->bindValue(":originZ", $plot->getZ(), SQLITE3_INTEGER);
-
-        $this->deleteMergedPlots->reset();
-        $result = $this->deleteMergedPlots->execute();
-        if (!$result instanceof SQLite3Result) return false;
-
-        foreach ($plot->getMergedPlots() as $mergedPlot) {
-            $this->removePlotFromCache($mergedPlot);
-        }
-        $this->removePlotFromCache($plot);
         return true;
     }
 

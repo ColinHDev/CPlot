@@ -100,10 +100,6 @@ class Plot extends BasePlot {
         if ($this->mergedPlots === null && !$this->loadMergedPlots()) return false;
         if ($plot->getMergedPlots() === null && !$plot->loadMergedPlots()) return false;
 
-        if (count($plot->getMergedPlots()) > 0) {
-            if (!CPlot::getInstance()->getProvider()->deleteMergedPlots($plot)) return false;
-        }
-
         foreach (array_merge([$plot], $plot->getMergedPlots()) as $mergedPlot) {
             $this->addMerge(MergedPlot::fromBasePlot($mergedPlot, $this->x, $this->z));
         }

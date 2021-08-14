@@ -97,7 +97,6 @@ abstract class DataProvider {
     abstract public function getMergedPlots(Plot $plot) : ?array;
     abstract public function getMergeOrigin(BasePlot $plot) : ?Plot;
     abstract public function mergePlots(Plot $origin, BasePlot ...$plots) : bool;
-    abstract public function deleteMergedPlots(Plot $plot) : bool;
 
     abstract public function getNextFreePlot(string $worldName, int $limitXZ = 0) : ?Plot;
 
