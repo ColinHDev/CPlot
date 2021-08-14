@@ -464,11 +464,7 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                         if ($y === $world->getMinY()) {
                             $fullBlock = $worldSettings->getBlockPlotBottom()->getFullId();
                         } else if ($y === $worldSettings->getSizeGround() + 1) {
-                            if ($plot->getOwnerUUID() === null) {
-                                $fullBlock = $worldSettings->getBlockBorder()->getFullId();
-                            } else {
-                                $fullBlock = $worldSettings->getBlockBorderOnClaim()->getFullId();
-                            }
+                            $fullBlock = $worldSettings->getBlockBorder()->getFullId();
                         } else if ($y <= $worldSettings->getSizeGround()) {
                             $fullBlock = $worldSettings->getBlockRoad()->getFullId();
                         } else {
