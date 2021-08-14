@@ -3,12 +3,15 @@
 namespace ColinHDev\CPlotAPI;
 
 use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
 use ColinHDev\CPlotAPI\flags\FlagManager;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\math\Facing;
-use pocketmine\player\Player;
+use pocketmine\player\OfflinePlayer;
+use pocketmine\Server;
 use pocketmine\world\Position;
+use Ramsey\Uuid\Uuid;
 
 class Plot extends BasePlot {
 
@@ -43,6 +46,53 @@ class Plot extends BasePlot {
 
     public function getOwnerUUID() : ?string {
         return $this->ownerUUID;
+    }
+
+    /**
+     * @return int | null
+     * returns int as the last played time in seconds
+     * returns null if the result couldn't be found
+     */
+    public function getOwnerLastPlayed() : ?int {
+        // the plot has no owner
+        if ($this->ownerUUID === null) return null;
+
+        // plot owner is online and therefore not inactive
+        $owner = Server::getInstance()->getPlayerByRawUUID(Uuid::fromString($this->ownerUUID));
+        if ($owner !== null) return (int) (microtime(true) * 1000);
+
+        // check if the last time the player played should be fetched from the offline data file or the database
+        switch (ResourceManager::getInstance()->getConfig()->get("lastPlayed.origin", "database")) {
+            case "offline_data":
+                // plot owner's name couldn't be fetched from the database
+                // we return null so the plot doesn't get falsely stated as inactive because of a database error
+                $ownerName = CPlot::getInstance()->getProvider()->getPlayerNameByUUID($this->ownerUUID);
+                if ($ownerName === null) return null;
+
+                // if plot owner isn't an instance of OfflinePlayer it is one of Player and therefore online on the server
+                $owner = Server::getInstance()->getOfflinePlayer($ownerName);
+                if (!$owner instanceof OfflinePlayer) return (int) (microtime(true) * 1000);
+
+                // check if the plot owner's offline player data even exists
+                // if not we try to fetch the last time the player played from the database
+                // this could be null if the server admin deleted the plot owners offline player data file
+                $lastPlayed = $owner->getLastPlayed();
+                if ($lastPlayed !== null) break;
+
+            default:
+            case "database":
+                // plot owner's data couldn't be fetched from the database
+                // we return null so the plot doesn't get falsely stated as inactive because of a database error
+                $owner = CPlot::getInstance()->getProvider()->getPlayer($this->ownerUUID);
+                if ($owner === null) return null;
+
+                $lastPlayed = $owner->getLastPlayed();
+                break;
+        }
+
+        // the last played time is saved in milliseconds therefore we devide by 1000 and cast it to an integer
+        // the float gets rounded up in favor of the plot owner
+        return (int) ceil($lastPlayed / 1000);
     }
 
     public function setOwnerUUID(?string $ownerUUID) : void {

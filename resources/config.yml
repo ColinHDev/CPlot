@@ -1,3 +1,8 @@
+# decide if the plugin should use a player's offline data file to fetch the last time he played or should use the data from the plugin's database
+# possible values: database, offline_data
+# default value: database
+lastPlayed.origin: "database"
+
 # settings that are used for a plot world when generating
 worldSettings:
 
