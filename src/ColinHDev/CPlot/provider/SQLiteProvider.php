@@ -2,7 +2,9 @@
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlotAPI\players\BaseSetting;
 use ColinHDev\CPlotAPI\players\Player;
+use ColinHDev\CPlotAPI\players\SettingManager;
 use ColinHDev\CPlotAPI\PlotPlayer;
 use ColinHDev\CPlotAPI\PlotRate;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
@@ -84,19 +86,19 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS playerSettings (
-            playerUUID VARCHAR(256) NOT NULL, setting VARCHAR(256) NOT NULL, value TEXT NOT NULL,
-            PRIMARY KEY (playerUUID, setting), 
+            playerUUID VARCHAR(256) NOT NULL, ID VARCHAR(256) NOT NULL, value TEXT NOT NULL,
+            PRIMARY KEY (playerUUID, ID), 
             FOREIGN KEY (playerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
-            "SELECT setting, value FROM playerSettings WHERE playerUUID = :playerUUID;";
+            "SELECT ID, value FROM playerSettings WHERE playerUUID = :playerUUID;";
         $this->getPlayerSettings = $this->createSQLite3Stmt($sql);
         $sql =
-            "INSERT OR REPLACE INTO playerSettings (playerUUID, setting, value) VALUES (:playerUUID, :setting, :value);";
+            "INSERT OR REPLACE INTO playerSettings (playerUUID, ID, value) VALUES (:playerUUID, :ID, :value);";
         $this->setPlayerSetting = $this->createSQLite3Stmt($sql);
         $sql =
-            "DELETE FROM playerSettings WHERE playerUUID = :playerUUID AND setting = :setting;";
+            "DELETE FROM playerSettings WHERE playerUUID = :playerUUID AND ID = :ID;";
         $this->deletePlayerSetting = $this->createSQLite3Stmt($sql);
 
         $sql = "
@@ -296,6 +298,59 @@ class SQLiteProvider extends DataProvider {
 
         $this->setPlayer->reset();
         $result = $this->setPlayer->execute();
+        if (!$result instanceof SQLite3Result) return false;
+
+        $this->getPlayerCache()->cacheObject($player->getPlayerUUID(), $player);
+        return true;
+    }
+
+
+    /**
+     * @return BaseSetting[] | null
+     */
+    public function getPlayerSettings(Player $player) : ?array {
+        $this->getPlayerSettings->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
+
+        $this->getPlayerSettings->reset();
+        $result = $this->getPlayerSettings->execute();
+        if (!$result instanceof SQLite3Result) return null;
+
+        $settings = [];
+        while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
+            $setting = SettingManager::getInstance()->getSettingByID($var["ID"]);
+            if ($setting === null) continue;
+            $setting->setValue(
+                $setting->unserializeValueType($var["value"])
+            );
+            $settings[$setting->getID()] = $setting;
+        }
+        return $settings;
+    }
+
+    public function savePlayerSetting(Player $player, BaseSetting $setting) : bool {
+        if ($setting->getValue() === null) return false;
+        if (!$player->addSetting($setting)) return false;
+
+        $this->setPlayerSetting->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
+        $this->setPlayerSetting->bindValue(":ID", $setting->getID(), SQLITE3_TEXT);
+        $this->setPlayerSetting->bindValue(":value", $setting->serializeValueType($setting->getValue()), SQLITE3_TEXT);
+
+        $this->setPlayerSetting->reset();
+        $result = $this->setPlayerSetting->execute();
+        if (!$result instanceof SQLite3Result) return false;
+
+        $this->getPlayerCache()->cacheObject($player->getPlayerUUID(), $player);
+        return true;
+    }
+
+    public function deletePlayerSetting(Player $player, string $settingID) : bool {
+        if (!$player->removeSetting($settingID)) return false;
+
+        $this->deletePlayerSetting->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
+        $this->deletePlayerSetting->bindValue(":ID", $settingID, SQLITE3_TEXT);
+
+        $this->deletePlayerSetting->reset();
+        $result = $this->deletePlayerSetting->execute();
         if (!$result instanceof SQLite3Result) return false;
 
         $this->getPlayerCache()->cacheObject($player->getPlayerUUID(), $player);

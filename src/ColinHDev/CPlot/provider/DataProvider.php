@@ -4,6 +4,7 @@ namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlot\provider\cache\Cache;
 use ColinHDev\CPlot\provider\cache\CacheIDs;
+use ColinHDev\CPlotAPI\players\BaseSetting;
 use ColinHDev\CPlotAPI\players\Player;
 use ColinHDev\CPlotAPI\PlotPlayer;
 use ColinHDev\CPlotAPI\PlotRate;
@@ -48,6 +49,10 @@ abstract class DataProvider {
      */
     abstract public function getPlayerUUIDByName(string $playerName) : ?string;
     abstract public function setPlayer(Player $player) : bool;
+
+    abstract public function getPlayerSettings(Player $player) : ?array;
+    abstract public function savePlayerSetting(Player $player, BaseSetting $setting) : bool;
+    abstract public function deletePlayerSetting(Player $player, string $settingID) : bool;
 
     abstract public function getWorld(string $worldName) : ?WorldSettings;
     abstract public function addWorld(string $worldName, WorldSettings $worldSettings) : bool;

@@ -12,6 +12,7 @@ class ResourceManager {
     private Config $config;
     private Config $flagsConfig;
     private Language $language;
+    private Config $settingsConfig;
 
     public function __construct() {
         self::$instance = $this;
@@ -22,10 +23,12 @@ class ResourceManager {
         CPlot::getInstance()->saveResource("config.yml");
         CPlot::getInstance()->saveResource("flags.yml");
         CPlot::getInstance()->saveResource("language.ini");
+        CPlot::getInstance()->saveResource("settings.yml");
 
         $this->config = new Config(CPlot::getInstance()->getDataFolder() . "config.yml", Config::YAML);
         $this->flagsConfig = new Config(CPlot::getInstance()->getDataFolder() . "flags.yml", Config::YAML);
         $this->language = new Language("language", CPlot::getInstance()->getDataFolder(), "language");
+        $this->settingsConfig = new Config(CPlot::getInstance()->getDataFolder() . "settings.yml", Config::YAML);
     }
 
 
@@ -64,5 +67,10 @@ class ResourceManager {
     public function getFlagsConfig() : Config {
         $this->flagsConfig->reload();
         return $this->flagsConfig;
+    }
+
+    public function getSettingsConfig() : Config {
+        $this->settingsConfig->reload();
+        return $this->settingsConfig;
     }
 }
