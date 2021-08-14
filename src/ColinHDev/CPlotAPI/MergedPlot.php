@@ -2,6 +2,8 @@
 
 namespace ColinHDev\CPlotAPI;
 
+use ColinHDev\CPlot\CPlot;
+
 class MergedPlot extends BasePlot {
 
     protected int $originX;
@@ -19,6 +21,10 @@ class MergedPlot extends BasePlot {
 
     public function getOriginZ() : int {
         return $this->originZ;
+    }
+
+    public function toPlot() : ?Plot {
+        return CPlot::getInstance()->getProvider()->getPlot($this->worldName, $this->originX, $this->originZ);
     }
 
     public static function fromBasePlot(BasePlot $basePlot, int $originX, int $originZ) : self {

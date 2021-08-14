@@ -2,12 +2,13 @@
 
 namespace ColinHDev\CPlotAPI\worlds;
 
+use ColinHDev\CPlot\provider\Cacheable;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use ColinHDev\CPlot\ResourceManager;
 
-class WorldSettings {
+class WorldSettings implements Cacheable {
 
     private string $schematicRoad;
     private string $schematicMergeRoad;

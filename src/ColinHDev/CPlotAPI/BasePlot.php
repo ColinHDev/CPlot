@@ -3,13 +3,14 @@
 namespace ColinHDev\CPlotAPI;
 
 use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\provider\Cacheable;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
 
-class BasePlot {
+class BasePlot implements Cacheable {
 
     protected string $worldName;
     protected int $x;

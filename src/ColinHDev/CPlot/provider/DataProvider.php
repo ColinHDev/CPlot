@@ -2,7 +2,6 @@
 
 namespace ColinHDev\CPlot\provider;
 
-use ColinHDev\CPlotAPI\MergedPlot;
 use ColinHDev\CPlotAPI\players\Player;
 use ColinHDev\CPlotAPI\PlotPlayer;
 use ColinHDev\CPlotAPI\PlotRate;
@@ -13,96 +12,28 @@ use ColinHDev\CPlotAPI\Plot;
 
 abstract class DataProvider {
 
-    /** @var Player[] */
-    private array $playerCache = [];
-    private int $playerCacheSize = 64;
+    /** @var Cache[] */
+    private array $caches;
 
-    /** @var WorldSettings[] */
-    private array $worldCache = [];
-    private int $worldCacheSize = 16;
-
-    /** @var BasePlot[] */
-    private array $plotCache = [];
-    private int $plotCacheSize = 128;
-
-
-    final protected function getPlayerFromCache(string $playerUUID) : ?Player {
-        if ($this->playerCacheSize <= 0) return null;
-        if (!isset($this->playerCache[$playerUUID])) return null;
-        return $this->playerCache[$playerUUID];
+    public function __construct() {
+        $this->caches = [
+            CacheIDs::CACHE_PLAYER => new Cache(64),
+            CacheIDs::CACHE_WORLDSETTING => new Cache(16),
+            CacheIDs::CACHE_PLOT => new Cache(128),
+        ];
     }
 
-    final protected function cachePlayer(Player $player) : void {
-        if ($this->playerCacheSize <= 0) return;
-        $key = $player->getPlayerUUID();
-        if (isset($this->playerCache[$key])) {
-            unset($this->playerCache[$key]);
-        } else if ($this->playerCacheSize <= count($this->playerCache)) {
-            array_shift($this->playerCache);
-        }
-        $this->playerCache = array_merge([$key => clone $player], $this->playerCache);
+    final public function getPlayerCache() : Cache {
+        return $this->caches[CacheIDs::CACHE_PLAYER];
     }
 
-
-    final protected function getWorldFromCache(string $worldName) : ?WorldSettings {
-        if ($this->worldCacheSize <= 0) return null;
-        if (!isset($this->worldCache[$worldName])) return null;
-        return $this->worldCache[$worldName];
+    final public function getWorldSettingCache() : Cache {
+        return $this->caches[CacheIDs::CACHE_WORLDSETTING];
     }
 
-    final protected function cacheWorld(string $worldName, WorldSettings $settings) : void {
-        if ($this->worldCacheSize <= 0) return;
-        if (isset($this->worldCache[$worldName])) {
-            unset($this->worldCache[$worldName]);
-        } else if ($this->worldCacheSize <= count($this->worldCache)) {
-            array_shift($this->worldCache);
-        }
-        $this->worldCache = array_merge([$worldName => clone $settings], $this->worldCache);
+    final public function getPlotCache() : Cache {
+        return $this->caches[CacheIDs::CACHE_PLOT];
     }
-
-
-    final protected function getPlotFromCache(string $worldName, int $x, int $z) : ?BasePlot {
-        if ($this->plotCacheSize <= 0) return null;
-        $key = $worldName . ";" . $x . ";" . $z;
-        if (!isset($this->plotCache[$key])) return null;
-        return $this->plotCache[$key];
-    }
-
-    final public function cachePlot(BasePlot $plot) : void {
-        if ($this->plotCacheSize <= 0) return;
-        $key = $plot->toString();
-        if (isset($this->plotCache[$key])) {
-            unset($this->plotCache[$key]);
-        } else if ($this->plotCache <= count($this->plotCache)) {
-            array_shift($this->plotCache);
-        }
-        $this->plotCache = array_merge([$key => clone $plot], $this->plotCache);
-    }
-
-    final protected function removePlotFromCache(BasePlot $plot) : void {
-        if ($this->plotCacheSize <= 0) return;
-        // no old merged plots should be saved in the provider
-        if ($plot instanceof Plot) {
-            if ($plot->getMergedPlots() === null) {
-                foreach ($plot->getMergedPlots() as $mergedPlot) {
-                    $this->removePlotFromCache($mergedPlot);
-                }
-            } else {
-                foreach ($this->plotCache as $possiblyMergedPlot) {
-                    if (!$possiblyMergedPlot instanceof MergedPlot) continue;
-                    if ($plot->getWorldName() !== $possiblyMergedPlot->getWorldName()) continue;
-                    if ($plot->getX() !== $possiblyMergedPlot->getOriginX()) continue;
-                    if ($plot->getZ() !== $possiblyMergedPlot->getOriginZ()) continue;
-                    $this->removePlotFromCache($possiblyMergedPlot);
-                }
-            }
-        }
-        // remove plot
-        $key = $plot->toString();
-        if (!isset($this->plotCache[$key])) return;
-        unset($this->plotCache[$key]);
-    }
-
 
     abstract public function getPlayerByUUID(string $playerUUID) : ?Player;
     abstract public function getPlayerByName(string $playerName) : ?Player;
@@ -117,7 +48,7 @@ abstract class DataProvider {
     abstract public function setPlayer(Player $player) : bool;
 
     abstract public function getWorld(string $worldName) : ?WorldSettings;
-    abstract public function addWorld(string $worldName, WorldSettings $settings) : bool;
+    abstract public function addWorld(string $worldName, WorldSettings $worldSettings) : bool;
 
     abstract public function getPlot(string $worldName, int $x, int $z) : ?Plot;
     abstract public function getPlotsByOwnerUUID(string $ownerUUID) : ?array;

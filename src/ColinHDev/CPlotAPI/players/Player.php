@@ -2,7 +2,9 @@
 
 namespace ColinHDev\CPlotAPI\players;
 
-class Player {
+use ColinHDev\CPlot\provider\Cacheable;
+
+class Player implements Cacheable {
 
     private string $playerUUID;
     private string $playerName;

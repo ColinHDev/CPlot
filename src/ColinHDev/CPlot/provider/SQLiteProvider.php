@@ -61,6 +61,8 @@ class SQLiteProvider extends DataProvider {
      * @throws Exception
      */
     public function __construct(array $settings) {
+        parent::__construct();
+
         $this->database = new SQLite3($settings["folder"] . $settings["file"]);
         $this->database->exec("PRAGMA foreign_keys = TRUE;");
 
@@ -239,8 +241,8 @@ class SQLiteProvider extends DataProvider {
     }
 
     public function getPlayerByUUID(string $playerUUID) : ?Player {
-        $player = $this->getPlayerFromCache($playerUUID);
-        if ($player !== null) return $player;
+        $player = $this->getPlayerCache()->getObjectFromCache($playerUUID);
+        if ($player instanceof Player) return $player;
 
         $this->getPlayerByUUID->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
 
@@ -252,7 +254,7 @@ class SQLiteProvider extends DataProvider {
             $player = new Player(
                 $playerUUID, $var["playerName"], $var["lastPlayed"]
             );
-            $this->cachePlayer($player);
+            $this->getPlayerCache()->cacheObject($playerUUID, $player);
             return $player;
         }
         return null;
@@ -269,7 +271,7 @@ class SQLiteProvider extends DataProvider {
             $player = new Player(
                 $var["playerUUID"], $playerName, $var["lastPlayed"]
             );
-            $this->cachePlayer($player);
+            $this->getPlayerCache()->cacheObject($player->getPlayerUUID(), $player);
             return $player;
         }
         return null;
@@ -294,13 +296,16 @@ class SQLiteProvider extends DataProvider {
 
         $this->setPlayer->reset();
         $result = $this->setPlayer->execute();
-        return $result instanceof SQLite3Result;
+        if (!$result instanceof SQLite3Result) return false;
+
+        $this->getPlayerCache()->cacheObject($player->getPlayerUUID(), $player);
+        return true;
     }
 
 
     public function getWorld(string $worldName) : ?WorldSettings {
-        $worldSettings = $this->getWorldFromCache($worldName);
-        if ($worldSettings !== null) return $worldSettings;
+        $worldSettings = $this->getWorldSettingCache()->getObjectFromCache($worldName);
+        if ($worldSettings instanceof WorldSettings) return $worldSettings;
 
         $this->getWorld->bindValue(":worldName", $worldName, SQLITE3_TEXT);
 
@@ -309,43 +314,43 @@ class SQLiteProvider extends DataProvider {
         if (!$result instanceof SQLite3Result) return null;
 
         if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            $settings = WorldSettings::fromArray($var);
-            $this->cacheWorld($worldName, $settings);
-            return $settings;
+            $worldSettings = WorldSettings::fromArray($var);
+            $this->getWorldSettingCache()->cacheObject($worldName, $worldSettings);
+            return $worldSettings;
         }
         return null;
     }
 
-    public function addWorld(string $worldName, WorldSettings $settings) : bool {
+    public function addWorld(string $worldName, WorldSettings $worldSettings) : bool {
         $this->setWorld->bindValue(":worldName", $worldName, SQLITE3_TEXT);
 
-        $this->setWorld->bindValue(":schematicRoad", $settings->getSchematicRoad(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":schematicMergeRoad", $settings->getSchematicMergeRoad(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":schematicPlot", $settings->getSchematicPlot(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":schematicRoad", $worldSettings->getSchematicRoad(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":schematicMergeRoad", $worldSettings->getSchematicMergeRoad(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":schematicPlot", $worldSettings->getSchematicPlot(), SQLITE3_TEXT);
 
-        $this->setWorld->bindValue(":sizeRoad", $settings->getSizeRoad(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":sizePlot", $settings->getSizePlot(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":sizeGround", $settings->getSizeGround(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":sizeRoad", $worldSettings->getSizeRoad(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":sizePlot", $worldSettings->getSizePlot(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":sizeGround", $worldSettings->getSizeGround(), SQLITE3_INTEGER);
 
-        $this->setWorld->bindValue(":blockRoad", $settings->getBlockRoadString(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockBorder", $settings->getBlockBorderString(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockBorderOnClaim", $settings->getBlockBorderOnClaimString(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockPlotFloor", $settings->getBlockPlotFloorString(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockPlotFill", $settings->getBlockPlotFillString(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockPlotBottom", $settings->getBlockPlotBottomString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockRoad", $worldSettings->getBlockRoadString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockBorder", $worldSettings->getBlockBorderString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockBorderOnClaim", $worldSettings->getBlockBorderOnClaimString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockPlotFloor", $worldSettings->getBlockPlotFloorString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockPlotFill", $worldSettings->getBlockPlotFillString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockPlotBottom", $worldSettings->getBlockPlotBottomString(), SQLITE3_TEXT);
 
         $this->setWorld->reset();
         $result = $this->setWorld->execute();
         if (!$result instanceof SQLite3Result) return false;
 
-        $this->cacheWorld($worldName, $settings);
+        $this->getWorldSettingCache()->cacheObject($worldName, $worldSettings);
         return true;
     }
 
 
     public function getPlot(string $worldName, int $x, int $z) : ?Plot {
-        $plot = $this->getPlotFromCache($worldName, $x, $z);
-        if ($plot !== null) {
+        $plot = $this->getPlotCache()->getObjectFromCache($worldName . ";" . $x . ";" . $z);
+        if ($plot instanceof BasePlot) {
             if (!$plot instanceof Plot) return null;
             return $plot;
         }
@@ -363,7 +368,7 @@ class SQLiteProvider extends DataProvider {
                 $worldName, $x, $z,
                 $var["biomeID"] ?? BiomeIds::PLAINS, $var["ownerUUID"] ?? null, $var["claimTime"] ?? null, $var["alias"] ?? null
             );
-            $this->cachePlot($plot);
+            $this->getPlotCache()->cacheObject($plot->toString(), $plot);
             return $plot;
         }
         return new Plot($worldName, $x, $z);
@@ -381,10 +386,12 @@ class SQLiteProvider extends DataProvider {
 
         $plots = [];
         while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            $plots[] = new Plot(
+            $plot = new Plot(
                 $var["worldName"], $var["x"], $var["z"],
                 $var["biomeID"] ?? BiomeIds::PLAINS, $ownerUUID, $var["claimTime"] ?? null, $var["alias"] ?? null
             );
+            $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+            $plots[] = $plot;
         }
         return $plots;
     }
@@ -401,7 +408,7 @@ class SQLiteProvider extends DataProvider {
                 $var["worldName"], $var["x"], $var["z"],
                 $var["biomeID"] ?? BiomeIds::PLAINS, $var["ownerUUID"] ?? null, $var["claimTime"] ?? null, $alias
             );
-            $this->cachePlot($plot);
+            $this->getPlotCache()->cacheObject($plot->toString(), $plot);
             return $plot;
         }
         return null;
@@ -421,7 +428,7 @@ class SQLiteProvider extends DataProvider {
         $result = $this->setPlot->execute();
         if (!$result instanceof SQLite3Result) return false;
 
-        $this->cachePlot($plot);
+        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return true;
     }
 
@@ -434,7 +441,12 @@ class SQLiteProvider extends DataProvider {
         $result = $this->deletePlot->execute();
         if (!$result instanceof SQLite3Result) return false;
 
-        $this->removePlotFromCache($plot);
+        $this->getPlotCache()->removeObjectFromCache($plot->toString());
+        if ($plot->getMergedPlots() !== null) {
+            foreach ($plot->getMergedPlots() as $key => $mergedPlot) {
+                $this->getPlotCache()->removeObjectFromCache($key);
+            }
+        }
         return true;
     }
 
@@ -454,7 +466,7 @@ class SQLiteProvider extends DataProvider {
         $mergedPlots = [];
         while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
             $mergedPlot = new MergedPlot($plot->getWorldName(), $var["mergedX"], $var["mergedZ"], $plot->getX(), $plot->getZ());
-            $this->cachePlot($mergedPlot);
+            $this->getPlotCache()->cacheObject($mergedPlot->toString(), $mergedPlot);
             $mergedPlots[$mergedPlot->toString()] = $mergedPlot;
         }
         return $mergedPlots;
@@ -474,8 +486,9 @@ class SQLiteProvider extends DataProvider {
         if (!$result instanceof SQLite3Result) return null;
 
         if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            $this->cachePlot(MergedPlot::fromBasePlot($plot, $var["originX"], $var["originZ"]));
-            return $this->getPlot($plot->getWorldName(), $var["originX"], $var["originZ"]);
+            $mergedPlot = MergedPlot::fromBasePlot($plot, $var["originX"], $var["originZ"]);
+            $this->getPlotCache()->cacheObject($mergedPlot->toString(), $mergedPlot);
+            return $mergedPlot->toPlot();
         }
         if ($plot instanceof Plot) return $plot;
         return $this->getPlot($plot->getWorldName(), $plot->getX(), $plot->getZ());
@@ -500,9 +513,10 @@ class SQLiteProvider extends DataProvider {
         }
 
         foreach ($plots as $plot) {
-            $this->cachePlot(MergedPlot::fromBasePlot($plot, $origin->getX(), $origin->getZ()));
+            $mergedPlot = MergedPlot::fromBasePlot($plot, $origin->getX(), $origin->getZ());
+            $this->getPlotCache()->cacheObject($mergedPlot->toString(), $mergedPlot);
         }
-        $this->cachePlot($origin);
+        $this->getPlotCache()->cacheObject($origin->toString(), $origin);
         return true;
     }
 
@@ -529,21 +543,21 @@ class SQLiteProvider extends DataProvider {
             if (($ret = $this->findEmptyPlotSquared(0, $i, $plots)) !== null) {
                 [$x, $z] = $ret;
                 $plot = new Plot($worldName, $x, $z);
-                $this->cachePlot($plot);
+                $this->getPlotCache()->cacheObject($plot->toString(), $plot);
                 return $plot;
             }
             for ($a = 1; $a < $i; $a++) {
                 if (($ret = $this->findEmptyPlotSquared($a, $i, $plots)) !== null) {
                     [$x, $z] = $ret;
                     $plot = new Plot($worldName, $x, $z);
-                    $this->cachePlot($plot);
+                    $this->getPlotCache()->cacheObject($plot->toString(), $plot);
                     return $plot;
                 }
             }
             if (($ret = $this->findEmptyPlotSquared($i, $i, $plots)) !== null) {
                 [$x, $z] = $ret;
                 $plot = new Plot($worldName, $x, $z);
-                $this->cachePlot($plot);
+                $this->getPlotCache()->cacheObject($plot->toString(), $plot);
                 return $plot;
             }
         }
@@ -586,7 +600,7 @@ class SQLiteProvider extends DataProvider {
         $result = $this->setPlotPlayer->execute();
         if (!$result instanceof SQLite3Result) return false;
 
-        $this->cachePlot($plot);
+        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return true;
     }
 
@@ -603,7 +617,7 @@ class SQLiteProvider extends DataProvider {
         $result = $this->deletePlotPlayer->execute();
         if (!$result instanceof SQLite3Result) return false;
 
-        $this->cachePlot($plot);
+        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return true;
     }
 
@@ -646,7 +660,7 @@ class SQLiteProvider extends DataProvider {
         $result = $this->setPlotFlag->execute();
         if (!$result instanceof SQLite3Result) return false;
 
-        $this->cachePlot($plot);
+        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return true;
     }
 
@@ -663,7 +677,7 @@ class SQLiteProvider extends DataProvider {
         $result = $this->deletePlotFlag->execute();
         if (!$result instanceof SQLite3Result) return false;
 
-        $this->cachePlot($plot);
+        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return true;
     }
 
@@ -709,7 +723,7 @@ class SQLiteProvider extends DataProvider {
         $result = $this->setPlotRate->execute();
         if (!$result instanceof SQLite3Result) return false;
 
-        $this->cachePlot($plot);
+        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return true;
     }
 

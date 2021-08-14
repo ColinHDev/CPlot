@@ -83,7 +83,7 @@ class Plot extends BasePlot {
             case "database":
                 // plot owner's data couldn't be fetched from the database
                 // we return null so the plot doesn't get falsely stated as inactive because of a database error
-                $owner = CPlot::getInstance()->getProvider()->getPlayer($this->ownerUUID);
+                $owner = CPlot::getInstance()->getProvider()->getPlayerByUUID($this->ownerUUID);
                 if ($owner === null) return null;
 
                 $lastPlayed = $owner->getLastPlayed();
@@ -116,7 +116,7 @@ class Plot extends BasePlot {
         if ($this->mergedPlots !== null) return true;
         $this->mergedPlots = CPlot::getInstance()->getProvider()->getMergedPlots($this);
         if ($this->mergedPlots === null) return false;
-        CPlot::getInstance()->getProvider()->cachePlot($this);
+        CPlot::getInstance()->getProvider()->getPlotCache()->cacheObject($this->toString(), $this);
         return true;
     }
 
@@ -162,7 +162,7 @@ class Plot extends BasePlot {
         if ($this->plotPlayers !== null) return true;
         $this->plotPlayers = CPlot::getInstance()->getProvider()->getPlotPlayers($this);
         if ($this->plotPlayers === null) return false;
-        CPlot::getInstance()->getProvider()->cachePlot($this);
+        CPlot::getInstance()->getProvider()->getPlotCache()->cacheObject($this->toString(), $this);
         return true;
     }
 
@@ -203,7 +203,7 @@ class Plot extends BasePlot {
         if ($this->flags !== null) return true;
         $this->flags = CPlot::getInstance()->getProvider()->getPlotFlags($this);
         if ($this->flags === null) return false;
-        CPlot::getInstance()->getProvider()->cachePlot($this);
+        CPlot::getInstance()->getProvider()->getPlotCache()->cacheObject($this->toString(), $this);
         return true;
     }
 
@@ -252,7 +252,7 @@ class Plot extends BasePlot {
         if ($this->plotRates !== null) return true;
         $this->plotRates = CPlot::getInstance()->getProvider()->getPlotRates($this);
         if ($this->plotRates === null) return false;
-        CPlot::getInstance()->getProvider()->cachePlot($this);
+        CPlot::getInstance()->getProvider()->getPlotCache()->cacheObject($this->toString(), $this);
         return true;
     }
 
