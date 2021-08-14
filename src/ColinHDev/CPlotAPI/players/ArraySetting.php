@@ -11,7 +11,7 @@ class ArraySetting extends BaseSetting {
 
     public function __construct(string $ID, array $data) {
         parent::__construct($ID, $data);
-        $this->default = (array) $data["standard"];
+        $this->default = (array) $data["default"];
     }
 
     public function getDefault() : array {

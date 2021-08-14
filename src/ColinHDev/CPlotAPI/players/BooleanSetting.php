@@ -11,7 +11,7 @@ class BooleanSetting extends BaseSetting {
 
     public function __construct(string $ID, array $data) {
         parent::__construct($ID, $data);
-        $this->default = (bool) $data["standard"];
+        $this->default = (bool) $data["default"];
     }
 
     public function getDefault() : bool {

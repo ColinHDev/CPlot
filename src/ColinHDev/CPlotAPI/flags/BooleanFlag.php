@@ -14,7 +14,7 @@ class BooleanFlag extends BaseFlag {
 
     public function __construct(string $ID, array $data, string $permission) {
         parent::__construct($ID, $data, $permission);
-        $this->default = (bool) $data["standard"];
+        $this->default = (bool) $data["default"];
     }
 
     public function getDefault() : bool {
