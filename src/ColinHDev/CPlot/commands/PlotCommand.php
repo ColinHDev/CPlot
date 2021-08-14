@@ -9,6 +9,7 @@ use ColinHDev\CPlot\commands\subcommands\FlagSubcommand;
 use ColinHDev\CPlot\commands\subcommands\GenerateSubcommand;
 use ColinHDev\CPlot\commands\subcommands\InfoSubcommand;
 use ColinHDev\CPlot\commands\subcommands\MergeSubcommand;
+use ColinHDev\CPlot\commands\subcommands\ResetSubcommand;
 use ColinHDev\CPlot\commands\subcommands\SchematicSubcommand;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\Command;
@@ -43,6 +44,7 @@ class PlotCommand extends Command {
         $this->loadSubcommand(new GenerateSubcommand($resourceManager->getCommandData("generate"), "cplot.subcommand.generate"));
         $this->loadSubcommand(new InfoSubcommand($resourceManager->getCommandData("info"), "cplot.subcommand.info"));
         $this->loadSubcommand(new MergeSubcommand($resourceManager->getCommandData("merge"), "cplot.subcommand.merge"));
+        $this->loadSubcommand(new ResetSubcommand($resourceManager->getCommandData("reset"), "cplot.subcommand.reset"));
         $this->loadSubcommand(new SchematicSubcommand($resourceManager->getCommandData("schematic"), "cplot.subcommand.schematic"));
     }
 

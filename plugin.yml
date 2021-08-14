@@ -25,6 +25,8 @@ permissions:
         default: true
     cplot.subcommand.merge:
         default: true
+    cplot.subcommand.reset:
+        default: true
     cplot.subcommand.schematic:
         default: op
 
@@ -33,6 +35,8 @@ permissions:
     cplot.admin.flag:
         default: op
     cplot.admin.merge:
+        default: op
+    cplot.admin.reset:
         default: op
 
     cplot.bypass.deny:
