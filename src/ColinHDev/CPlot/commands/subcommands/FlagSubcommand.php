@@ -195,6 +195,10 @@ class FlagSubcommand extends Subcommand {
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.saveError"));
                 break;
+
+            default:
+                $sender->sendMessage($this->getPrefix() . $this->getUsage());
+                return;
         }
     }
 }
