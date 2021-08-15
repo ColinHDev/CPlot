@@ -11,6 +11,7 @@ use ColinHDev\CPlot\commands\subcommands\InfoSubcommand;
 use ColinHDev\CPlot\commands\subcommands\MergeSubcommand;
 use ColinHDev\CPlot\commands\subcommands\ResetSubcommand;
 use ColinHDev\CPlot\commands\subcommands\SchematicSubcommand;
+use ColinHDev\CPlot\commands\subcommands\SettingSubcommand;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
@@ -46,6 +47,7 @@ class PlotCommand extends Command {
         $this->loadSubcommand(new MergeSubcommand($resourceManager->getCommandData("merge"), "cplot.subcommand.merge"));
         $this->loadSubcommand(new ResetSubcommand($resourceManager->getCommandData("reset"), "cplot.subcommand.reset"));
         $this->loadSubcommand(new SchematicSubcommand($resourceManager->getCommandData("schematic"), "cplot.subcommand.schematic"));
+        $this->loadSubcommand(new SettingSubcommand($resourceManager->getCommandData("setting"), "cplot.subcommand.setting"));
     }
 
     private function loadSubcommand(Subcommand $subcommand) : void {

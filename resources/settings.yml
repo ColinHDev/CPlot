@@ -41,7 +41,7 @@ inform_add_plot_rate:
     default: true
     type: "boolean (Wahrheitswert)"
     description: "Erhalte eine Benachrichtigung, wenn eine Bewertung zu deinem Grundstück hinzugefügt wird."
-    category: "players"
+    category: "plots"
 
 warn_flag_title:
     default: []

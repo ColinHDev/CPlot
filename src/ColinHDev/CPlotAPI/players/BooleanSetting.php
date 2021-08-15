@@ -2,7 +2,10 @@
 
 namespace ColinHDev\CPlotAPI\players;
 
+use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\flags\utils\InvalidValueException;
+use ColinHDev\CPlotAPI\players\Player as PlayerData;
+use pocketmine\player\Player;
 
 class BooleanSetting extends BaseSetting {
 
@@ -49,5 +52,51 @@ class BooleanSetting extends BaseSetting {
     public function unserializeValueType(string $serializedValue) : bool {
         if ($serializedValue === "true") return true;
         return false;
+    }
+
+
+    public function set(Player $player, PlayerData $playerData, array $args) : bool {
+        if (!isset($args[0])) {
+            $player->sendMessage(
+                ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("setting.set.noValue", [$this->ID]));
+            return false;
+        }
+
+        switch ($args[0]) {
+            case "true":
+                if ($this->value === true) {
+                    $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("setting.set.valueSet", ["true", $this->ID]));
+                    return false;
+                }
+                $this->value = true;
+                break;
+
+            case "false":
+                if ($this->value === false) {
+                    $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("setting.set.valueSet", ["false", $this->ID]));
+                    return false;
+                }
+                $this->value = false;
+                break;
+
+            default:
+                $player->sendMessage(
+                    ResourceManager::getInstance()->getPrefix() .
+                    ResourceManager::getInstance()->translateString(
+                        "setting.set.invalidValue",
+                        [$args[0], $this->ID, implode(ResourceManager::getInstance()->translateString("setting.set.invalidValue.validValue.separator"), ["true", "false"])]
+                    )
+                );
+                return false;
+        }
+
+        $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("setting.set.success", [$this->ID, $args[0]]));
+        return true;
+    }
+
+    public function remove(Player $player, PlayerData $playerData, array $args) : bool {
+        $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("setting.remove.success", [$this->ID, $this->serializeValueType($this->value)]));
+        $this->value = null;
+        return true;
     }
 }

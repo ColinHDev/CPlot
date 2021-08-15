@@ -2,6 +2,9 @@
 
 namespace ColinHDev\CPlotAPI\players;
 
+use ColinHDev\CPlotAPI\players\Player as PlayerData;
+use pocketmine\player\Player;
+
 abstract class BaseSetting implements SettingIDs {
 
     protected string $ID;
@@ -40,4 +43,7 @@ abstract class BaseSetting implements SettingIDs {
 
     abstract public function serializeValueType(mixed $data) : string;
     abstract public function unserializeValueType(string $serializedValue) : mixed;
+
+    abstract public function set(Player $player, PlayerData $playerData, array $args) : bool;
+    abstract public function remove(Player $player, PlayerData $playerData, array $args) : bool;
 }

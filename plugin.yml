@@ -29,6 +29,8 @@ permissions:
         default: true
     cplot.subcommand.schematic:
         default: op
+    cplot.subcommand.setting:
+        default: true
 
     cplot.admin.clear:
         default: op
