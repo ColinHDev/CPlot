@@ -134,7 +134,7 @@ class ArrayFlag extends BaseFlag {
         } else {
             foreach ($args as $arg) {
                 try {
-                    $block = LegacyStringToItemParser::getInstance()->parse($args[0])->getBlock();
+                    $block = LegacyStringToItemParser::getInstance()->parse($arg)->getBlock();
                 } catch (LegacyStringToItemParserException $exception) {
                     $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.parseBlockError", [$arg, $exception->getMessage()]));
                     continue;
