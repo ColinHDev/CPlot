@@ -75,6 +75,10 @@ class SQLiteProvider extends DataProvider {
             )";
         $this->database->exec($sql);
         $sql =
+            "INSERT OR IGNORE INTO players (playerUUID, playerName, lastPlayed) VALUES (\"*\", \"*\", 0);";
+        $result = $this->database->query($sql);
+        if (!$result instanceof SQLite3Result) throw new Exception("#" . $this->database->lastErrorCode() . ": " . $this->database->lastErrorMsg());
+        $sql =
             "SELECT playerName, lastPlayed FROM players WHERE playerUUID = :playerUUID;";
         $this->getPlayerByUUID = $this->createSQLite3Stmt($sql);
         $sql =
