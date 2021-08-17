@@ -48,12 +48,12 @@ warn_flag_title:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag title einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_title_change:
+warn_change_flag_title:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag title auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_title_change:
+teleport_change_flag_title:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag title auf einen der angegebenen Werte gesetzt wird."
@@ -64,12 +64,12 @@ warn_flag_plot_enter:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag plot_enter einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_plot_enter_change:
+warn_change_flag_plot_enter:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag plot_enter auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_plot_enter_change:
+teleport_change_flag_plot_enter:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag plot_enter auf einen der angegebenen Werte gesetzt wird."
@@ -80,12 +80,12 @@ warn_flag_plot_leave:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag plot_leave einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_plot_leave_change:
+warn_change_flag_plot_leave:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag plot_leave auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_plot_leave_change:
+teleport_change_flag_plot_leave:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag plot_leave auf einen der angegebenen Werte gesetzt wird."
@@ -96,12 +96,12 @@ warn_flag_message:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag message einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_message_change:
+warn_change_flag_message:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag message auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_message_change:
+teleport_change_flag_message:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag message auf einen der angegebenen Werte gesetzt wird."
@@ -112,12 +112,12 @@ warn_flag_spawn:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag spawn einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_spawn_change:
+warn_change_flag_spawn:
     default: [true]
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag spawn auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_spawn_change:
+teleport_change_flag_spawn:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag spawn auf einen der angegebenen Werte gesetzt wird."
@@ -128,12 +128,12 @@ warn_flag_item_drop:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag item_drop einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_item_drop_change:
+warn_change_flag_item_drop:
     default: [false]
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag item_drop auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_item_drop_change:
+teleport_change_flag_item_drop:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag item_drop auf einen der angegebenen Werte gesetzt wird."
@@ -144,12 +144,12 @@ warn_flag_item_pickup:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag item_pickup einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_item_pickup_change:
+warn_change_flag_item_pickup:
     default: [false]
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag item_pickup auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_item_pickup_change:
+teleport_change_flag_item_pickup:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag item_pickup auf einen der angegebenen Werte gesetzt wird."
@@ -160,12 +160,12 @@ warn_flag_pvp:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag pvp einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_pvp_change:
+warn_change_flag_pvp:
     default: [true]
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag pvp auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_pvp_change:
+teleport_change_flag_pvp:
     default: [true]
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag pvp auf einen der angegebenen Werte gesetzt wird."
@@ -176,12 +176,12 @@ warn_flag_explosion:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag explosion einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_explosion_change:
+warn_change_flag_explosion:
     default: [true]
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag explosion auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_explosion_change:
+teleport_change_flag_explosion:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag explosion auf einen der angegebenen Werte gesetzt wird."
@@ -192,12 +192,12 @@ warn_flag_burning:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag burning einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_burning_change:
+warn_change_flag_burning:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag burning auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_burning_change:
+teleport_change_flag_burning:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag burning auf einen der angegebenen Werte gesetzt wird."
@@ -208,12 +208,12 @@ warn_flag_flowing:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag flowing einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_flowing_change:
+warn_change_flag_flowing:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag flowing auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_flowing_change:
+teleport_change_flag_flowing:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag flowing auf einen der angegebenen Werte gesetzt wird."
@@ -224,12 +224,12 @@ warn_flag_growing:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag growing einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_growing_change:
+warn_change_flag_growing:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag growing auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_growing_change:
+teleport_change_flag_growing:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag growing auf einen der angegebenen Werte gesetzt wird."
@@ -240,12 +240,12 @@ warn_flag_player_interact:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag player_interact einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_player_interact_change:
+warn_change_flag_player_interact:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag player_interact auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_player_interact_change:
+teleport_change_flag_player_interact:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag player_interact auf einen der angegebenen Werte gesetzt wird."
@@ -256,12 +256,12 @@ warn_flag_server_plot:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag server_plot einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_server_plot_change:
+warn_change_flag_server_plot:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag server_plot auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_server_plot_change:
+teleport_change_flag_server_plot:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag server_plot auf einen der angegebenen Werte gesetzt wird."
@@ -272,12 +272,12 @@ warn_flag_check_inactive:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag check_inactive einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_check_inactive_change:
+warn_change_flag_check_inactive:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag check_inactive auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_check_inactive_change:
+teleport_change_flag_check_inactive:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag check_inactive auf einen der angegebenen Werte gesetzt wird."
@@ -288,12 +288,12 @@ warn_flag_place:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag place einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_place_change:
+warn_change_flag_place:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag place auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_place_change:
+teleport_change_flag_place:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag place auf einen der angegebenen Werte gesetzt wird."
@@ -304,12 +304,12 @@ warn_flag_break:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag break einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_break_change:
+warn_change_flag_break:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag break auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_break_change:
+teleport_change_flag_break:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag break auf einen der angegebenen Werte gesetzt wird."
@@ -320,12 +320,12 @@ warn_flag_use:
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag use einem der angegebenen Werte entspricht."
     category: "flags"
-warn_flag_use_change:
+warn_change_flag_use:
     default: []
     type: "array (Feld)"
     description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag use auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
-teleport_flag_use_change:
+teleport_change_flag_use:
     default: []
     type: "array (Feld)"
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag use auf einen der angegebenen Werte gesetzt wird."
