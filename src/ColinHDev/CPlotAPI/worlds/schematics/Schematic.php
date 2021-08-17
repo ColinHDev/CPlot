@@ -72,7 +72,7 @@ class Schematic {
 
     public function loadFromWorld(ChunkManager $world, int $type, int $sizeRoad, int $sizePlot) : bool {
         $this->version = self::SCHEMATIC_VERSION;
-        $this->creationTime = time();
+        $this->creationTime = (int) (round(microtime(true) * 1000));
         $this->type = $type;
         $this->sizeRoad = $sizeRoad;
         $this->sizePlot = $sizePlot;

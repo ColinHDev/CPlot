@@ -73,7 +73,7 @@ class SchematicSubcommand extends Subcommand {
                     $this->translateString(
                         "schematic.info.success.body",
                         [
-                            $this->translateString("schematic.info.success.timeformat", explode(".", date("d.m.Y.H.i.s", $schematic->getCreationTime()))),
+                            $this->translateString("schematic.info.success.timeformat", explode(".", date("d.m.Y.H.i.s", (int) (round($schematic->getCreationTime() / 1000))))),
                             $this->translateString($typeString),
                             $schematic->getRoadSize(),
                             $schematic->getPlotSize()

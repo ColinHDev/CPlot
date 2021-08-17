@@ -31,7 +31,7 @@ class InfoSubcommand extends Subcommand {
 
         if ($plot->getOwnerUUID() !== null) {
             if ($plot->getClaimTime() !== null) {
-                [$d, $m, $y, $h, $min, $s] = explode(".", date("d.m.Y.H.i.s", $plot->getClaimTime()));
+                [$d, $m, $y, $h, $min, $s] = explode(".", date("d.m.Y.H.i.s", (int) (round($plot->getClaimTime() / 1000))));
                 $time = $this->translateString("info.owner.claimTime.format", [$d, $m, $y, $h, $min, $s]);
             } else {
                 $time = "NOT FOUND";

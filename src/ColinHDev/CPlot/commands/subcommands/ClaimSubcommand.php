@@ -57,7 +57,7 @@ class ClaimSubcommand extends Subcommand {
         }
 
         $plot->setOwnerUUID($senderUUID);
-        $plot->setClaimTime(time());
+        $plot->setClaimTime((int) (round(microtime(true) * 1000)));
         if (!$this->getPlugin()->getProvider()->savePlot($plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.saveError"));
             return;

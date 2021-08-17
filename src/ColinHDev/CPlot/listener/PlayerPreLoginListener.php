@@ -17,7 +17,7 @@ class PlayerPreLoginListener implements Listener {
         $player = new Player(
             $playerInfo->getUuid()->toString(),
             $playerInfo->getUsername(),
-            (int) (microtime(true) * 1000)
+            (int) (round(microtime(true) * 1000))
         );
         if (CPlot::getInstance()->getProvider()->setPlayer($player)) return;
 

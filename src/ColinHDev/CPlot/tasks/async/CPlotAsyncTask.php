@@ -12,11 +12,11 @@ abstract class CPlotAsyncTask extends AsyncTask {
     private bool $hasCallback = false;
 
     protected function startTime() : void {
-        $this->startTime = round(microtime(true) * 1000);
+        $this->startTime = (int) (round(microtime(true) * 1000));
     }
 
     protected function getElapsedTime() : int {
-        return (round(microtime(true) * 1000)) - $this->startTime;
+        return ((int) (round(microtime(true) * 1000))) - $this->startTime;
     }
 
     protected function getElapsedTimeString() : string {
