@@ -653,7 +653,7 @@ class SQLiteProvider extends DataProvider {
 
         $this->setPlotPlayer->bindValue(":playerUUID", $plotPlayer->getPlayerUUID(), SQLITE3_TEXT);
         $this->setPlotPlayer->bindValue(":state", $plotPlayer->getState(), SQLITE3_TEXT);
-        $this->setPlotPlayer->bindValue(":addTIme", $plotPlayer->getAddTime(), SQLITE3_INTEGER);
+        $this->setPlotPlayer->bindValue(":addTime", $plotPlayer->getAddTime(), SQLITE3_INTEGER);
 
         $this->setPlotPlayer->reset();
         $result = $this->setPlotPlayer->execute();
