@@ -12,7 +12,7 @@ class Player implements Cacheable {
     private int $lastPlayed;
 
     /** @var null | BaseSetting[] */
-    private ?array $settings;
+    private ?array $settings = null;
 
     public function __construct(string $playerUUID, string $playerName, int $lastPlayed) {
         $this->playerUUID = $playerUUID;
