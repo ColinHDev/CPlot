@@ -6,22 +6,22 @@ use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
 use ColinHDev\CPlotAPI\flags\utils\InvalidValueException;
 use ColinHDev\CPlotAPI\Plot;
-use pocketmine\math\Vector3;
+use pocketmine\entity\Location;
 use pocketmine\player\Player;
 
 class SpawnFlag extends BaseFlag {
 
-    protected ?Vector3 $value = null;
+    protected ?Location $value = null;
 
     public function getDefault() : mixed {
         return null;
     }
 
-    public function getValue() : ?Vector3 {
+    public function getValue() : ?Location {
         return $this->value;
     }
 
-    public function getValueNonNull() : ?Vector3 {
+    public function getValueNonNull() : ?Location {
         return $this->getValue();
     }
 
@@ -30,8 +30,8 @@ class SpawnFlag extends BaseFlag {
      */
     public function setValue(mixed $value) : void {
         if ($value !== null) {
-            if (!$value instanceof Vector3) {
-                throw new InvalidValueException("Expected value to be instance of Vector3 or null, got " . gettype($value) . ".");
+            if (!$value instanceof Location) {
+                throw new InvalidValueException("Expected value to be instance of Location or null, got " . gettype($value) . ".");
             }
         }
         $this->value = $value;
@@ -39,14 +39,14 @@ class SpawnFlag extends BaseFlag {
 
 
     public function serializeValueType(mixed $data) : string {
-        if ($data === null) return "null";
-        return $data->getX() . ";" . $data->getY() . ";" . $data->getZ();
+        if (!$data instanceof Location) return "null";
+        return $data->getX() . ";" . $data->getY() . ";" . $data->getZ() . ";" . $data->getYaw() . ";" . $data->getPitch();
     }
 
-    public function unserializeValueType(string $serializedValue) : ?Vector3 {
+    public function unserializeValueType(string $serializedValue) : ?Location {
         if ($serializedValue === "null") return null;
-        [$x, $y, $z] = explode(";", $serializedValue);
-        return new Vector3((float) $x, (float) $y, (float) $z);
+        [$x, $y, $z, $yaw, $pitch] = explode(";", $serializedValue);
+        return new Location((float) $x, (float) $y, (float) $z, (float) $yaw, (float) $pitch);
     }
 
     public function __serialize() : array {
@@ -68,11 +68,13 @@ class SpawnFlag extends BaseFlag {
             return false;
         }
 
-        $position = $player->getPosition()->asVector3();
-        $this->value = new Vector3(
-            round($position->x, 1),
-            round($position->y, 1),
-            round($position->z, 1)
+        $location = $player->getLocation();
+        $this->value = new Location(
+            round($location->x, 1),
+            round($location->y, 1),
+            round($location->z, 1),
+            round($location->yaw, 3),
+            round($location->pitch, 3)
         );
         $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.success", [$this->ID, $this->serializeValueType($this->value)]));
         return true;
