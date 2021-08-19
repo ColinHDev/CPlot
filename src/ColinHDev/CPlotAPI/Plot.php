@@ -283,7 +283,7 @@ class Plot extends BasePlot {
         $world = Server::getInstance()->getWorldManager()->getWorldByName($this->worldName);
         if ($world === null) return false;
 
-        if ($this->flags !== null) {
+        if ($this->loadFlags()) {
             $flag = $this->getFlagNonNullByID(FlagIDs::FLAG_SPAWN);
             $spawn = $flag?->getValueNonNull();
             if ($spawn instanceof Location) {
@@ -293,7 +293,7 @@ class Plot extends BasePlot {
             }
         }
 
-        if ($this->mergedPlots !== null && count($this->mergedPlots) >= 1) {
+        if ($this->loadMergedPlots() && count($this->mergedPlots) >= 1) {
             $northestPlot = $this;
             foreach ($this->mergedPlots as $mergedPlot) {
                 if ($northestPlot->getZ() <= $mergedPlot->getZ()) continue;
