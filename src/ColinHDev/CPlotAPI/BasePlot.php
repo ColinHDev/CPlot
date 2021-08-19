@@ -39,13 +39,13 @@ class BasePlot implements Cacheable {
         if ($worldSettings === null) return false;
 
         $vector = $this->getPosition();
-        $vector->x += floor($worldSettings->getSizePlot() / 2);
-        $vector->y += 1;
         if ($toPlotCenter) {
-            $vector->z += floor($worldSettings->getSizePlot() / 2);
+            $vector->x += floor($worldSettings->getSizePlot() / 2);
         } else {
-            $vector->z -= 1;
+            $vector->x -= 1;
         }
+        $vector->y += 1;
+        $vector->z += floor($worldSettings->getSizePlot() / 2);
 
         $world = Server::getInstance()->getWorldManager()->getWorldByName($this->worldName);
         if ($world === null) return false;

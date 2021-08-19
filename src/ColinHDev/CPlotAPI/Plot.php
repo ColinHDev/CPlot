@@ -5,10 +5,13 @@ namespace ColinHDev\CPlotAPI;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
+use ColinHDev\CPlotAPI\flags\FlagIDs;
 use ColinHDev\CPlotAPI\flags\FlagManager;
 use pocketmine\data\bedrock\BiomeIds;
+use pocketmine\entity\Location;
 use pocketmine\math\Facing;
 use pocketmine\player\OfflinePlayer;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
 use Ramsey\Uuid\Uuid;
@@ -274,6 +277,32 @@ class Plot extends BasePlot {
         if ($this->plotRates === null) return false;
         $this->plotRates[$plotRate->toString()] = $plotRate;
         return true;
+    }
+
+    public function teleportTo(Player $player, bool $toPlotCenter = false) : bool {
+        $world = Server::getInstance()->getWorldManager()->getWorldByName($this->worldName);
+        if ($world === null) return false;
+
+        if ($this->flags !== null) {
+            $flag = $this->getFlagNonNullByID(FlagIDs::FLAG_SPAWN);
+            $spawn = $flag?->getValueNonNull();
+            if ($spawn instanceof Location) {
+                return $player->teleport(
+                    Location::fromObject($spawn, $world, $spawn->getYaw(), $spawn->getPitch())
+                );
+            }
+        }
+
+        if ($this->mergedPlots !== null && count($this->mergedPlots) >= 1) {
+            $northestPlot = $this;
+            foreach ($this->mergedPlots as $mergedPlot) {
+                if ($northestPlot->getZ() <= $mergedPlot->getZ()) continue;
+                $northestPlot = $mergedPlot;
+            }
+            $northestPlot->teleportTo($player, $toPlotCenter);
+        }
+
+        return parent::teleportTo($player, $toPlotCenter);
     }
 
 
