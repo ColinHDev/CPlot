@@ -177,7 +177,7 @@ class Plot extends BasePlot {
     }
 
     public function getPlotPlayer(string $playerUUID) : ?PlotPlayer {
-        if ($this->plotPlayers !== null) return null;
+        if ($this->plotPlayers === null) return null;
         if (!isset($this->plotPlayers[$playerUUID])) return null;
         return $this->plotPlayers[$playerUUID];
     }
