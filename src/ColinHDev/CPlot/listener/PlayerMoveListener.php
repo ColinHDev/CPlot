@@ -29,6 +29,7 @@ class PlayerMoveListener implements Listener {
         if ($plotTo !== null) {
             // check if player is denied and hasn't bypass permission
             if (!$player->hasPermission("cplot.bypass.deny")) {
+                $plotTo->loadPlotPlayers();
                 $plotPlayer = $plotTo->getPlotPlayer($playerUUID);
                 if ($plotPlayer !== null && $plotPlayer->getState() === PlotPlayer::STATE_DENIED) {
                     if ($plotFrom === null) {
@@ -45,6 +46,7 @@ class PlayerMoveListener implements Listener {
             if ($plotFrom === null) {
                 // title flag && message flag
                 // TODO: Settings on plot enter
+                $plotTo->loadFlags();
                 $flag = $plotTo->getFlagNonNullByID(FlagIDs::FLAG_TITLE);
                 if ($flag !== null && $flag->getValueNonNull() === true) {
                     $title = ResourceManager::getInstance()->translateString(
@@ -69,6 +71,7 @@ class PlayerMoveListener implements Listener {
 
                 // plot_enter flag
                 if ($plotTo->getOwnerUUID() !== null) {
+                    $plotTo->loadFlags();
                     $flag = $plotTo->getFlagNonNullByID(FlagIDs::FLAG_PLOT_ENTER);
                     if ($flag !== null && $flag->getValueNonNull() === true) {
                         $owner = $player->getServer()->getPlayerByUUID(Uuid::fromString($plotTo->getOwnerUUID()));
@@ -92,6 +95,7 @@ class PlayerMoveListener implements Listener {
         if ($plotFrom !== null && $plotTo === null) {
             // plot_leave flag
             if ($plotFrom->getOwnerUUID() !== null) {
+                $plotFrom->loadFlags();
                 $flag = $plotFrom->getFlagNonNullByID(FlagIDs::FLAG_PLOT_LEAVE);
                 if ($flag !== null && $flag->getValueNonNull() === true) {
                     $owner = $player->getServer()->getPlayerByUUID(Uuid::fromString($plotFrom->getOwnerUUID()));
