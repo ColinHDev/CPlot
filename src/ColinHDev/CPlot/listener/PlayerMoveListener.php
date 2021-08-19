@@ -9,7 +9,6 @@ use ColinHDev\CPlotAPI\Plot;
 use ColinHDev\CPlotAPI\PlotPlayer;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerMoveEvent;
-use pocketmine\Server;
 use Ramsey\Uuid\Uuid;
 
 class PlayerMoveListener implements Listener {
