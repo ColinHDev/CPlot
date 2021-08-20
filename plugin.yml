@@ -123,3 +123,16 @@ permissions:
         default: true
     cplot.flag.use:
         default: true
+
+    cplot.interact.road:
+        default: op
+    cplot.interact.plot:
+        default: op
+    cplot.place.road:
+        default: op
+    cplot.place.plot:
+        default: op
+    cplot.break.road:
+        default: op
+    cplot.break.plot:
+        default: op
