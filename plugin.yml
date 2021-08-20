@@ -19,12 +19,16 @@ permissions:
         default: true
     cplot.subcommand.clear:
         default: true
+    cplot.subcommand.denied:
+        default: true
     cplot.subcommand.deny:
         default: true
     cplot.subcommand.flag:
         default: true
     cplot.subcommand.generate:
         default: op
+    cplot.subcommand.helpers:
+        default: true
     cplot.subcommand.info:
         default: true
     cplot.subcommand.merge:
@@ -36,6 +40,8 @@ permissions:
     cplot.subcommand.schematic:
         default: op
     cplot.subcommand.setting:
+        default: true
+    cplot.subcommand.trusted:
         default: true
     cplot.subcommand.trust:
         default: true
