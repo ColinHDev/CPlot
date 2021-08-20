@@ -49,7 +49,7 @@ class UndenySubcommand extends Subcommand {
             return;
         }
 
-        $plot = Plot::fromPosition($sender->getPosition(), false);
+        $plot = Plot::fromPosition($sender->getPosition());
         if ($plot === null) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("undeny.noPlot"));
             return;

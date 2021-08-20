@@ -21,7 +21,7 @@ class InfoSubcommand extends Subcommand {
             return;
         }
 
-        $plot = Plot::fromPosition($sender->getPosition(), true);
+        $plot = Plot::fromPosition($sender->getPosition());
         if ($plot === null) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("info.noPlot"));
             return;

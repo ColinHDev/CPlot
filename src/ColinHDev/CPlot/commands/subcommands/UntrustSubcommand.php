@@ -49,7 +49,7 @@ class UntrustSubcommand extends Subcommand {
             return;
         }
 
-        $plot = Plot::fromPosition($sender->getPosition(), false);
+        $plot = Plot::fromPosition($sender->getPosition());
         if ($plot === null) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.noPlot"));
             return;
