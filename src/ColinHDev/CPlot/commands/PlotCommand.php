@@ -11,6 +11,7 @@ use ColinHDev\CPlot\commands\subcommands\DenySubcommand;
 use ColinHDev\CPlot\commands\subcommands\FlagSubcommand;
 use ColinHDev\CPlot\commands\subcommands\GenerateSubcommand;
 use ColinHDev\CPlot\commands\subcommands\HelpersSubcommand;
+use ColinHDev\CPlot\commands\subcommands\HelpSubcommand;
 use ColinHDev\CPlot\commands\subcommands\InfoSubcommand;
 use ColinHDev\CPlot\commands\subcommands\MergeSubcommand;
 use ColinHDev\CPlot\commands\subcommands\RemoveSubcommand;
@@ -58,6 +59,7 @@ class PlotCommand extends Command {
         $this->loadSubcommand(new FlagSubcommand($resourceManager->getCommandData("flag"), "cplot.subcommand.flag"));
         $this->loadSubcommand(new GenerateSubcommand($resourceManager->getCommandData("generate"), "cplot.subcommand.generate"));
         $this->loadSubcommand(new HelpersSubcommand($resourceManager->getCommandData("helpers"), "cplot.subcommand.helpers"));
+        $this->loadSubcommand(new HelpSubcommand($resourceManager->getCommandData("help"), "cplot.subcommand.help", $this));
         $this->loadSubcommand(new InfoSubcommand($resourceManager->getCommandData("info"), "cplot.subcommand.info"));
         $this->loadSubcommand(new MergeSubcommand($resourceManager->getCommandData("merge"), "cplot.subcommand.merge"));
         $this->loadSubcommand(new RemoveSubcommand($resourceManager->getCommandData("remove"), "cplot.subcommand.remove"));

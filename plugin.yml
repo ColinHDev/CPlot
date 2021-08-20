@@ -29,6 +29,8 @@ permissions:
         default: op
     cplot.subcommand.helpers:
         default: true
+    cplot.subcommand.help:
+        default: true
     cplot.subcommand.info:
         default: true
     cplot.subcommand.merge:

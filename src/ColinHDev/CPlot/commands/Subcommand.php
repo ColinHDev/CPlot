@@ -44,6 +44,10 @@ abstract class Subcommand {
         return $this->usage;
     }
 
+    public function getPermission() : string {
+        return $this->permission;
+    }
+
     public function getPermissionMessage() : string {
         return $this->permissionMessage;
     }
