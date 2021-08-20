@@ -39,6 +39,10 @@ class AddSubcommand extends Subcommand {
                 }
                 $playerUUID = $playerData->getPlayerUUID();
             }
+            if ($playerUUID === $sender->getUniqueId()->toString()) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("add.senderIsPlayer"));
+                return;
+            }
         } else {
             $playerUUID = "*";
             $playerName = "*";

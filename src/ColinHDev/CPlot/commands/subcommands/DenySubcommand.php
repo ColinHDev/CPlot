@@ -39,6 +39,10 @@ class DenySubcommand extends Subcommand {
                 }
                 $playerUUID = $playerData->getPlayerUUID();
             }
+            if ($playerUUID === $sender->getUniqueId()->toString()) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("deny.senderIsPlayer"));
+                return;
+            }
         } else {
             $playerUUID = "*";
             $playerName = "*";

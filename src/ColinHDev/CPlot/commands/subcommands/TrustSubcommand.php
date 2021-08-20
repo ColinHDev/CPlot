@@ -39,6 +39,10 @@ class TrustSubcommand extends Subcommand {
                 }
                 $playerUUID = $playerData->getPlayerUUID();
             }
+            if ($playerUUID === $sender->getUniqueId()->toString()) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("trust.senderIsPlayer"));
+                return;
+            }
         } else {
             $playerUUID = "*";
             $playerName = "*";
