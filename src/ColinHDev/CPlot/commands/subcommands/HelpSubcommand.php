@@ -46,7 +46,7 @@ class HelpSubcommand extends Subcommand {
         $page = (int) min(count($subcommands), $page);
 
         $subcommandsOnPage = [];
-        foreach ($subcommands[$page] as $subcommand) {
+        foreach ($subcommands[$page - 1] as $subcommand) {
             $subcommandsOnPage[] = $this->translateString("help.success.list", [$subcommand->getName(), $subcommand->getDescription()]);
         }
         $sender->sendMessage(
