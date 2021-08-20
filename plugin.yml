@@ -43,6 +43,10 @@ permissions:
         default: true
     cplot.subcommand.untrust:
         default: true
+    cplot.subcommand.visit:
+        default: true
+    cplot.subcommand.warp:
+        default: true
 
     cplot.admin.add:
         default: op
@@ -63,6 +67,8 @@ permissions:
     cplot.admin.undeny:
         default: op
     cplot.admin.untrust:
+        default: op
+    cplot.admin.warp:
         default: op
 
     cplot.bypass.deny:
