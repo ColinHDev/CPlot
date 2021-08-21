@@ -49,6 +49,10 @@ interface SettingIDs {
     public const SETTING_WARN_CHANGE_FLAG_PVP = "warn_change_flag_pvp";
     public const SETTING_TELEPORT_CHANGE_FLAG_PVP = "teleport_change_flag_pvp";
 
+    public const SETTING_WARN_FLAG_PVE = "warn_flag_pve";
+    public const SETTING_WARN_CHANGE_FLAG_PVE = "warn_change_flag_pve";
+    public const SETTING_TELEPORT_CHANGE_FLAG_PVE = "teleport_change_flag_pve";
+
     public const SETTING_WARN_FLAG_EXPLOSION = "warn_flag_explosion";
     public const SETTING_WARN_CHANGE_FLAG_EXPLOSION = "warn_change_flag_explosion";
     public const SETTING_TELEPORT_CHANGE_FLAG_EXPLOSION = "teleport_change_flag_explosion";

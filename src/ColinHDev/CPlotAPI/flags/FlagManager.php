@@ -29,6 +29,7 @@ class FlagManager {
         $this->register($config, FlagIDs::FLAG_ITEM_PICKUP, BooleanFlag::class);
 
         $this->register($config, FlagIDs::FLAG_PVP, BooleanFlag::class);
+        $this->register($config, FlagIDs::FLAG_PVE, BooleanFlag::class);
         $this->register($config, FlagIDs::FLAG_EXPLOSION, BooleanFlag::class);
         $this->register($config, FlagIDs::FLAG_BURNING, BooleanFlag::class);
         $this->register($config, FlagIDs::FLAG_FLOWING, BooleanFlag::class);

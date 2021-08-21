@@ -78,6 +78,10 @@ class SettingManager {
         $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_PVP, ArraySetting::class, $parseBoolean);
         $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PVP, ArraySetting::class, $parseBoolean);
 
+        $this->register($config, SettingIDs::SETTING_WARN_FLAG_PVE, ArraySetting::class, $parseBoolean);
+        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_PVE, ArraySetting::class, $parseBoolean);
+        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PVE, ArraySetting::class, $parseBoolean);
+
         $this->register($config, SettingIDs::SETTING_WARN_FLAG_EXPLOSION, ArraySetting::class, $parseBoolean);
         $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_EXPLOSION, ArraySetting::class, $parseBoolean);
         $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_EXPLOSION, ArraySetting::class, $parseBoolean);

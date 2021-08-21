@@ -51,6 +51,11 @@ pvp:
     type: "boolean (Wahrheitswert)"
     description: "Aktiviere / Deaktiviere PvP (Player vs. Player) auf dem Grundstück."
     category: "protection"
+pve:
+    default: false
+    type: "boolean (Wahrheitswert)"
+    description: "Aktiviere / Deaktiviere PvE (Player vs. Environment) auf dem Grundstück."
+    category: "protection"
 explosion:
     default: false
     type: "boolean (Wahrheitswert)"

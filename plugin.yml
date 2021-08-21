@@ -103,6 +103,8 @@ permissions:
         default: true
     cplot.flag.pvp:
         default: true
+    cplot.flag.pve:
+        default: true
     cplot.flag.explosion:
         default: true
     cplot.flag.burning:

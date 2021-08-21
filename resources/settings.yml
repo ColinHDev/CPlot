@@ -171,6 +171,22 @@ teleport_change_flag_pvp:
     description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag pvp auf einen der angegebenen Werte gesetzt wird."
     category: "flags"
 
+warn_flag_pve:
+    default: [true]
+    type: "array (Feld)"
+    description: "Erhalte eine Warnung, wenn auf dem Grundstück, dass du betrittst, der Wert der Flag pve einem der angegebenen Werte entspricht."
+    category: "flags"
+warn_change_flag_pve:
+    default: [true]
+    type: "array (Feld)"
+    description: "Erhalte eine Warnung, wenn auf dem Grundstück, auf dem du dich befindest, der Wert der Flag pve auf einen der angegebenen Werte gesetzt wird."
+    category: "flags"
+teleport_change_flag_pve:
+    default: [true]
+    type: "array (Feld)"
+    description: "Du wirst außerhalb des Grundstücks teleportiert, wenn auf diesem der Wert der Flag pve auf einen der angegebenen Werte gesetzt wird."
+    category: "flags"
+
 warn_flag_explosion:
     default: [true]
     type: "array (Feld)"

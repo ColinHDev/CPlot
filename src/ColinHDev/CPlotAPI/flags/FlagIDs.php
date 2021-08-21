@@ -15,6 +15,7 @@ interface FlagIDs {
     public const FLAG_ITEM_PICKUP = "item_pickup";
 
     public const FLAG_PVP = "pvp";
+    public const FLAG_PVE = "pve";
     public const FLAG_EXPLOSION = "explosion";
     public const FLAG_BURNING = "burning";
     public const FLAG_FLOWING = "flowing";
