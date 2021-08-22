@@ -23,7 +23,7 @@ class CEconomyProvider extends EconomyProvider {
             new Transaction(
                 Transaction::TRANSACTION_TYPE_PURSE,
                 time(),
-                $money,
+                -1 * $money,
                 $message
             )
         );
