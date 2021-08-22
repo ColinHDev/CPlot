@@ -138,3 +138,7 @@ permissions:
         default: op
     cplot.break.plot:
         default: op
+    cplot.pvp.road:
+        default: op
+    cplot.pvp.plot:
+        default: op
