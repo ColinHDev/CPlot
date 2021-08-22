@@ -66,3 +66,9 @@ database:
         # file of the SQLite database
         file: "CPlot.sqlite"
     # TODO: more provider
+
+# define which economy provider will be used
+# possible values: "", cecnomy
+# default value: ""
+# TODO: more economy provider
+economy.provider: ""
