@@ -12,7 +12,7 @@ class CEconomyProvider extends EconomyProvider {
         return CEconomyAPI::getCurrency();
     }
 
-    public function getMoney(Player $player) : float {
+    public function getMoney(Player $player) : ?float {
         return CEconomyAPI::getPurseMoney($player->getUniqueId()->toString());
     }
 
