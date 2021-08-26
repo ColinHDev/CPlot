@@ -74,6 +74,7 @@ class ClaimSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("claim.saveMoneyError"));
                     return;
                 }
+                $sender->sendMessage($this->getPrefix() . $this->translateString("claim.chargedMoney", [$economyProvider->getCurrency(), $price]));
             }
         }
 

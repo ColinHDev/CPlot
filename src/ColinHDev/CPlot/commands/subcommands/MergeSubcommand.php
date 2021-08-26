@@ -111,6 +111,7 @@ class MergeSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("merge.saveMoneyError"));
                     return;
                 }
+                $sender->sendMessage($this->getPrefix() . $this->translateString("merge.chargedMoney", [$economyProvider->getCurrency(), $price]));
             }
         }
 

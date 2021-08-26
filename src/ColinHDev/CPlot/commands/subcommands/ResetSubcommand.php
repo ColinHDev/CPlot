@@ -73,6 +73,7 @@ class ResetSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("reset.saveMoneyError"));
                     return;
                 }
+                $sender->sendMessage($this->getPrefix() . $this->translateString("reset.chargedMoney", [$economyProvider->getCurrency(), $price]));
             }
         }
 

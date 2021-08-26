@@ -73,6 +73,7 @@ class ClearSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("clear.saveMoneyError"));
                     return;
                 }
+                $sender->sendMessage($this->getPrefix() . $this->translateString("clear.chargedMoney", [$economyProvider->getCurrency(), $price]));
             }
         }
 
