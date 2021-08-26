@@ -43,7 +43,6 @@ class SQLiteProvider extends DataProvider {
     private SQLite3Stmt $getOriginPlot;
     private SQLite3Stmt $getMergedPlots;
     private SQLite3Stmt $addMergedPlot;
-    private SQLite3Stmt $deleteMergedPlots;
 
     private SQLite3Stmt $getExistingPlotXZ;
 
