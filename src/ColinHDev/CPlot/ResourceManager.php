@@ -4,10 +4,11 @@ namespace ColinHDev\CPlot;
 
 use pocketmine\utils\Config;
 use pocketmine\lang\Language;
+use pocketmine\utils\SingletonTrait;
 
 class ResourceManager {
 
-    private static ResourceManager $instance;
+    use SingletonTrait;
 
     private Config $config;
     private Config $flagsConfig;
@@ -15,8 +16,6 @@ class ResourceManager {
     private Config $settingsConfig;
 
     public function __construct() {
-        self::$instance = $this;
-
         if (!is_dir(CPlot::getInstance()->getDataFolder())) mkdir(CPlot::getInstance()->getDataFolder());
         if (!is_dir(CPlot::getInstance()->getDataFolder() . "schematics")) mkdir(CPlot::getInstance()->getDataFolder() . "schematics");
 
@@ -30,12 +29,6 @@ class ResourceManager {
         $this->language = new Language("language", CPlot::getInstance()->getDataFolder(), "language");
         $this->settingsConfig = new Config(CPlot::getInstance()->getDataFolder() . "settings.yml", Config::YAML);
     }
-
-
-    public static function getInstance() : ResourceManager {
-        return self::$instance;
-    }
-
 
     public function getPrefix() : string {
         return $this->language->get("prefix");
@@ -57,7 +50,6 @@ class ResourceManager {
             "permissionMessage" => $this->language->get($commandName . ".permissionMessage")
         ];
     }
-
 
     public function getConfig() : Config {
         $this->config->reload();

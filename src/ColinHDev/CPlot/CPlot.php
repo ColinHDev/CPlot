@@ -49,7 +49,6 @@ class CPlot extends PluginBase {
     public function onLoad() : void {
         self::$instance = $this;
 
-        new ResourceManager();
         switch (strtolower(ResourceManager::getInstance()->getConfig()->getNested("database.provider", ""))) {
             case "sqlite":
             default:
