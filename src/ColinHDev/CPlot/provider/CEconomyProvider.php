@@ -12,6 +12,10 @@ class CEconomyProvider extends EconomyProvider {
         return CEconomyAPI::getCurrency();
     }
 
+    public function parseMoneyToString(float $money) : string {
+        return number_format($money, 2, ",", ".");
+    }
+
     public function getMoney(Player $player) : ?float {
         return CEconomyAPI::getPurseMoney($player->getUniqueId()->toString());
     }

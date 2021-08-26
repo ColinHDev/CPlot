@@ -66,14 +66,14 @@ class ResetSubcommand extends Subcommand {
                     return;
                 }
                 if ($money < $price) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("reset.notEnoughMoney", [$economyProvider->getCurrency(), $price, ($price - $money)]));
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("reset.notEnoughMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]));
                     return;
                 }
                 if (!$economyProvider->removeMoney($sender, $price, "Paid " . $price . $economyProvider->getCurrency() . " to reset the plot " . $plot->toString() . ".")) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("reset.saveMoneyError"));
                     return;
                 }
-                $sender->sendMessage($this->getPrefix() . $this->translateString("reset.chargedMoney", [$economyProvider->getCurrency(), $price]));
+                $sender->sendMessage($this->getPrefix() . $this->translateString("reset.chargedMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]));
             }
         }
 

@@ -104,14 +104,14 @@ class MergeSubcommand extends Subcommand {
                     return;
                 }
                 if ($money < $price) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notEnoughMoney", [$economyProvider->getCurrency(), $price, ($price - $money)]));
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notEnoughMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]));
                     return;
                 }
                 if (!$economyProvider->removeMoney($sender, $price, "Paid " . $price . $economyProvider->getCurrency() . " to merge the plot " . $plot->toString() . " with the plot " . $plotToMerge->toString() . ".")) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("merge.saveMoneyError"));
                     return;
                 }
-                $sender->sendMessage($this->getPrefix() . $this->translateString("merge.chargedMoney", [$economyProvider->getCurrency(), $price]));
+                $sender->sendMessage($this->getPrefix() . $this->translateString("merge.chargedMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]));
             }
         }
 
