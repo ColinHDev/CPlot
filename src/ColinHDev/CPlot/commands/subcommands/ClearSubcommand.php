@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
@@ -54,6 +55,27 @@ class ClearSubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->translateString("clear.loadMergedPlotsError"));
             return;
         }
+
+        $economyProvider = $this->getPlugin()->getEconomyProvider();
+        if ($economyProvider !== null) {
+            $price = $economyProvider->getPrice(EconomyProvider::PRICE_CLEAR) ?? 0.0;
+            if ($price > 0.0) {
+                $money = $economyProvider->getMoney($sender);
+                if ($money === null) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("clear.loadMoneyError"));
+                    return;
+                }
+                if ($money < $price) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("clear.notEnoughMoney", [$economyProvider->getCurrency(), $price, ($price - $money)]));
+                    return;
+                }
+                if (!$economyProvider->removeMoney($sender, $price, "Paid " . $price . $economyProvider->getCurrency() . " to clear the plot " . $plot->toString() . ".")) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("clear.saveMoneyError"));
+                    return;
+                }
+            }
+        }
+
         $sender->sendMessage($this->getPrefix() . $this->translateString("clear.start"));
         $task = new PlotClearAsyncTask($worldSettings, $plot);
         $world = $sender->getWorld();

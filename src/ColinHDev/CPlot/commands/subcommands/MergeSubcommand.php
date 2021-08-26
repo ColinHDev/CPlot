@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
@@ -91,6 +92,26 @@ class MergeSubcommand extends Subcommand {
         if (!$plotToMerge->loadMergedPlots()) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.loadMergedPlotsOfSecondPlotError"));
             return;
+        }
+
+        $economyProvider = $this->getPlugin()->getEconomyProvider();
+        if ($economyProvider !== null) {
+            $price = $economyProvider->getPrice(EconomyProvider::PRICE_MERGE) ?? 0.0;
+            if ($price > 0.0) {
+                $money = $economyProvider->getMoney($sender);
+                if ($money === null) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("merge.loadMoneyError"));
+                    return;
+                }
+                if ($money < $price) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notEnoughMoney", [$economyProvider->getCurrency(), $price, ($price - $money)]));
+                    return;
+                }
+                if (!$economyProvider->removeMoney($sender, $price, "Paid " . $price . $economyProvider->getCurrency() . " to merge the plot " . $plot->toString() . " with the plot " . $plotToMerge->toString() . ".")) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("merge.saveMoneyError"));
+                    return;
+                }
+            }
         }
 
         $sender->sendMessage($this->getPrefix() . $this->translateString("merge.start"));

@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\Plot;
@@ -54,6 +55,26 @@ class ClaimSubcommand extends Subcommand {
         if ($claimedPlotsCount > $maxPlots) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotLimitReached", [$claimedPlotsCount, $maxPlots]));
             return;
+        }
+
+        $economyProvider = $this->getPlugin()->getEconomyProvider();
+        if ($economyProvider !== null) {
+            $price = $economyProvider->getPrice(EconomyProvider::PRICE_CLAIM) ?? 0.0;
+            if ($price > 0.0) {
+                $money = $economyProvider->getMoney($sender);
+                if ($money === null) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadMoneyError"));
+                    return;
+                }
+                if ($money < $price) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("claim.notEnoughMoney", [$economyProvider->getCurrency(), $price, ($price - $money)]));
+                    return;
+                }
+                if (!$economyProvider->removeMoney($sender, $price, "Paid " . $price . $economyProvider->getCurrency() . " to claim the plot " . $plot->toString() . ".")) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("claim.saveMoneyError"));
+                    return;
+                }
+            }
         }
 
         $plot->setOwnerUUID($senderUUID);

@@ -49,15 +49,16 @@ class CPlot extends PluginBase {
     public function onLoad() : void {
         self::$instance = $this;
 
-        switch (strtolower(ResourceManager::getInstance()->getConfig()->getNested("database.provider", ""))) {
+        $config = ResourceManager::getInstance()->getConfig();
+        switch (strtolower($config->getNested("database.provider", ""))) {
             case "sqlite":
             default:
-                $this->provider = new SQLiteProvider(ResourceManager::getInstance()->getConfig()->getNested("database.sqlite"));
+                $this->provider = new SQLiteProvider($config->getNested("database.sqlite", []));
                 break;
         }
-        switch (strtolower(ResourceManager::getInstance()->getConfig()->getNested("economy.provider", ""))) {
+        switch (strtolower($config->getNested("economy.provider", ""))) {
             case "ceconomy":
-                $this->economyProvider = new CEconomyProvider();
+                $this->economyProvider = new CEconomyProvider($config->get("economy", []));
                 break;
             default:
                 $this->economyProvider = null;

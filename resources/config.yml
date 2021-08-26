@@ -67,8 +67,19 @@ database:
         file: "CPlot.sqlite"
     # TODO: more provider
 
-# define which economy provider will be used
-# possible values: "", cecnomy
-# default value: ""
-# TODO: more economy provider
-economy.provider: ""
+# economy settings
+economy:
+    # define which economy provider will be used
+    # possible values: "", ceconomy
+    # default value: ""
+    # TODO: more economy provider
+    provider: ""
+
+    # define how much it costs to claim a plot
+    priceClaim: 0.0
+    # define how much it costs to clear a plot
+    priceClear: 0.0
+    # define how much it costs to merge plots
+    priceMerge: 0.0
+    # define how much it costs to reset a plot
+    priceReset: 0.0
