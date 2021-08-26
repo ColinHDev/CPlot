@@ -69,6 +69,21 @@ class BasePlot implements Cacheable {
         return $this->worldName === $plot->getWorldName() && $this->x === $plot->getX() && $this->z === $plot->getZ();
     }
 
+    public function isOnPlot(Position $position) : bool {
+        if ($position->getWorld()->getFolderName() !== $this->worldName) return false;
+
+        $worldSettings = CPlot::getInstance()->getProvider()->getWorld($this->worldName);
+        if ($worldSettings === null) return false;
+
+        $totalSize = $worldSettings->getSizeRoad() + $worldSettings->getSizePlot();
+        if ($position->getX() < $this->x * $totalSize + $worldSettings->getSizeRoad()) return false;
+        if ($position->getZ() < $this->z * $totalSize + $worldSettings->getSizeRoad()) return false;
+        if ($position->getX() > $this->x * $totalSize + ($totalSize - 1)) return false;
+        if ($position->getZ() > $this->z * $totalSize + ($totalSize - 1)) return false;
+
+        return true;
+    }
+
     public function toString() : string {
         return $this->worldName . ";" . $this->x . ";" . $this->z;
     }

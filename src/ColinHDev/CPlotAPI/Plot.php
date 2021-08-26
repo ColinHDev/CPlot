@@ -316,6 +316,17 @@ class Plot extends BasePlot {
         return parent::isSame($plot);
     }
 
+    public function isOnPlot(Position $position, bool $checkMerge = true) : bool {
+        if (!$checkMerge || !$this->loadMergedPlots()) return parent::isOnPlot($position);
+        foreach ($this->mergedPlots as $mergedPlot) {
+            if ($mergedPlot->isOnPlot($position)) return true;
+        }
+        // TODO improve the following check, maybe @see EntityExplodeAsyncTask
+        $plot = self::fromPosition($position);
+        if ($plot !== null && $this->isSame($plot)) return true;
+        return false;
+    }
+
 
     public function toBasePlot() : BasePlot {
         return new BasePlot($this->worldName, $this->x, $this->z);
