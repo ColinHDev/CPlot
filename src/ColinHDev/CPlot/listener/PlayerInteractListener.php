@@ -19,7 +19,7 @@ class PlayerInteractListener implements Listener {
 
         $player = $event->getPlayer();
 
-        $plot = Plot::fromPosition($event->getBlock()->getPos());
+        $plot = Plot::fromPosition($event->getBlock()->getPosition());
         if ($plot !== null) {
             if ($player->hasPermission("cplot.interact.plot")) return;
 

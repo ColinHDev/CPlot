@@ -13,7 +13,7 @@ class BlockTeleportListener implements Listener {
     public function onBlockTeleport(BlockTeleportEvent $event) : void {
         if ($event->isCancelled()) return;
 
-        $fromPosition = $event->getBlock()->getPos();
+        $fromPosition = $event->getBlock()->getPosition();
         $toPosition = Position::fromObject($event->getTo(), $fromPosition->getWorld());
 
         $fromBasePlot = BasePlot::fromPosition($fromPosition);

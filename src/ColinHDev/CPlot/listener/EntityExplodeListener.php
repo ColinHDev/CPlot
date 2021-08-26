@@ -35,7 +35,7 @@ class EntityExplodeListener implements Listener {
 
         $affectedBlocks = [];
         foreach ($event->getBlockList() as $block) {
-            $position = $block->getPos();
+            $position = $block->getPosition();
             $affectedBlocks[World::blockHash($position->getFloorX(), $position->getFloorY(), $position->getFloorZ())] = $block->getFullId();
         }
         $task = new EntityExplodeAsyncTask($worldSettings, $plot, $affectedBlocks);

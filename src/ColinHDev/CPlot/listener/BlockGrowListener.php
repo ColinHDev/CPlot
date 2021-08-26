@@ -15,8 +15,8 @@ class BlockGrowListener implements Listener {
 
         $plot = Plot::fromPosition(
             Position::fromObject(
-                $event->getNewState()->getPos()->asVector3(),
-                $event->getBlock()->getPos()->getWorld()
+                $event->getNewState()->getPosition()->asVector3(),
+                $event->getBlock()->getPosition()->getWorld()
             )
         );
         if ($plot !== null) {
