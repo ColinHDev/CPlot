@@ -2,6 +2,7 @@
 
 namespace ColinHDev\CPlot\listener;
 
+use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\event\block\BlockGrowEvent;
@@ -13,12 +14,11 @@ class BlockGrowListener implements Listener {
     public function onBlockGrow(BlockGrowEvent $event) : void {
         if ($event->isCancelled()) return;
 
-        $plot = Plot::fromPosition(
-            Position::fromObject(
-                $event->getNewState()->getPosition()->asVector3(),
-                $event->getBlock()->getPosition()->getWorld()
-            )
-        );
+        $world = $event->getBlock()->getPosition()->getWorld();
+        if (CPlot::getInstance()->getProvider()->getWorld($world->getFolderName()) === null) return;
+
+        $position = $event->getNewState()->getPosition()->asVector3();
+        $plot = Plot::fromPosition(Position::fromObject($position, $world));
         if ($plot !== null) {
             $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_GROWING);
             if ($flag !== null && $flag->getValueNonNull() === true) return;

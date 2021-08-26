@@ -16,10 +16,13 @@ class PlayerMoveListener implements Listener {
     public function onPlayerMove(PlayerMoveEvent $event) : void {
         if ($event->isCancelled()) return;
 
+        $toPosition = $event->getTo();
+        $worldSettings = CPlot::getInstance()->getProvider()->getWorld($toPosition->getWorld()->getFolderName());
+        if ($worldSettings === null) return;
+
         $player = $event->getPlayer();
         $playerUUID = $event->getPlayer()->getUniqueId()->toString();
-
-        $plotTo = Plot::fromPosition($event->getTo());
+        $plotTo = Plot::fromPosition($toPosition);
         $plotFrom = Plot::fromPosition($event->getFrom());
 
         if ($plotTo !== null) {

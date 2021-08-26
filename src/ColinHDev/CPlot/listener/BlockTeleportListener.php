@@ -2,6 +2,7 @@
 
 namespace ColinHDev\CPlot\listener;
 
+use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\event\block\BlockTeleportEvent;
@@ -14,7 +15,10 @@ class BlockTeleportListener implements Listener {
         if ($event->isCancelled()) return;
 
         $fromPosition = $event->getBlock()->getPosition();
-        $toPosition = Position::fromObject($event->getTo(), $fromPosition->getWorld());
+        $world = $fromPosition->getWorld();
+        if (CPlot::getInstance()->getProvider()->getWorld($world->getFolderName()) === null) return;
+
+        $toPosition = Position::fromObject($event->getTo(), $world);
 
         $fromBasePlot = BasePlot::fromPosition($fromPosition);
         $toBasePlot = BasePlot::fromPosition($toPosition);

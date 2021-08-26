@@ -2,6 +2,7 @@
 
 namespace ColinHDev\CPlot\listener;
 
+use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
 use ColinHDev\CPlotAPI\Plot;
 use ColinHDev\CPlotAPI\PlotPlayer;
@@ -14,9 +15,12 @@ class BlockPlaceListener implements Listener {
     public function onBlockPlace(BlockPlaceEvent $event) : void {
         if ($event->isCancelled()) return;
 
+        $position = $event->getBlock()->getPosition();
+        if (CPlot::getInstance()->getProvider()->getWorld($position->getWorld()->getFolderName()) === null) return;
+
         $player = $event->getPlayer();
 
-        $plot = Plot::fromPosition($event->getBlock()->getPosition());
+        $plot = Plot::fromPosition($position);
         if ($plot !== null) {
             if ($player->hasPermission("cplot.place.plot")) return;
 
