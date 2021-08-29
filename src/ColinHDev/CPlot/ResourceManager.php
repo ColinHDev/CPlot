@@ -10,19 +10,23 @@ class ResourceManager {
 
     use SingletonTrait;
 
+    private Config $bordersConfig;
     private Config $config;
     private Config $flagsConfig;
     private Language $language;
     private Config $settingsConfig;
+    private Config $wallsConfig;
 
     public function __construct() {
         if (!is_dir(CPlot::getInstance()->getDataFolder())) mkdir(CPlot::getInstance()->getDataFolder());
         if (!is_dir(CPlot::getInstance()->getDataFolder() . "schematics")) mkdir(CPlot::getInstance()->getDataFolder() . "schematics");
 
+        CPlot::getInstance()->saveResource("borders.yml");
         CPlot::getInstance()->saveResource("config.yml");
         CPlot::getInstance()->saveResource("flags.yml");
         CPlot::getInstance()->saveResource("language.ini");
         CPlot::getInstance()->saveResource("settings.yml");
+        CPlot::getInstance()->saveResource("walls.yml");
 
         $this->config = new Config(CPlot::getInstance()->getDataFolder() . "config.yml", Config::YAML);
         $this->flagsConfig = new Config(CPlot::getInstance()->getDataFolder() . "flags.yml", Config::YAML);
@@ -51,6 +55,11 @@ class ResourceManager {
         ];
     }
 
+    public function getBordersConfig() : Config {
+        $this->bordersConfig->reload();
+        return $this->bordersConfig;
+    }
+
     public function getConfig() : Config {
         $this->config->reload();
         return $this->config;
@@ -64,5 +73,10 @@ class ResourceManager {
     public function getSettingsConfig() : Config {
         $this->settingsConfig->reload();
         return $this->settingsConfig;
+    }
+
+    public function getWallsConfig() : Config {
+        $this->wallsConfig->reload();
+        return $this->wallsConfig;
     }
 }

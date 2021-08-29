@@ -1,0 +1,8 @@
+stonebricks:
+    name: "Steinziegel"
+    block: "98:0"
+    permission: "cplot.walls.everyone"
+    form:
+        button.name: "§8Steinziegel§r \n§8[§7Jeder§8]"
+        button.pictureId: -1
+        button.picture: ""
