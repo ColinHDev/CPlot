@@ -63,7 +63,7 @@ class WarpSubcommand extends Subcommand {
         }
 
         if ($this->getPlugin()->getProvider()->getWorld($worldName) === null) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("warp.noPlotWorldProvided", [$worldName]));
+            $sender->sendMessage($this->getPrefix() . $this->translateString("warp.invalidPlotWorld", [$worldName]));
             return;
         }
         if (!is_numeric($x)) {
