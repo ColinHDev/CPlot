@@ -161,7 +161,7 @@ class WorldSettings implements Cacheable {
         );
     }
 
-    public static function parseBlock(array $array, int | string $key, Block $default) : Block {
+    public static function parseBlock(array $array, string $key, Block $default) : Block {
         if (isset($array[$key])) {
             $id = $array[$key];
             if (is_numeric($id)) {
@@ -180,14 +180,14 @@ class WorldSettings implements Cacheable {
         return $block;
     }
 
-    public static function parseString(array $array, int | string $key, string $default) : string {
+    public static function parseString(array $array, string $key, string $default) : string {
         if (isset($array[$key])) {
             return (string) $array[$key];
         }
         return $default;
     }
 
-    public static function parseNumber(array $array, int | string $key, int $default) : int {
+    public static function parseNumber(array $array, string $key, int $default) : int {
         if (isset($array[$key]) && is_numeric($array[$key])) {
             return (int) $array[$key];
         }
