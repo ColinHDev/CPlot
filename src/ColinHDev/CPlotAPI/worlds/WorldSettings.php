@@ -7,6 +7,7 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use ColinHDev\CPlot\ResourceManager;
+use pocketmine\item\StringToItemParser;
 
 class WorldSettings implements Cacheable {
 
@@ -124,12 +125,12 @@ class WorldSettings implements Cacheable {
             "sizePlot" => $this->sizePlot,
             "sizeGround" => $this->sizeGround,
 
-            "blockRoad" => $this->blockRoad->getId() . (($meta = $this->blockRoad->getMeta()) === 0 ? "" : ":" . $meta),
-            "blockBorder" => $this->blockBorder->getId() . (($meta = $this->blockBorder->getMeta()) === 0 ? "" : ":" . $meta),
-            "blockBorderOnClaim" => $this->blockBorderOnClaim->getId() . (($meta = $this->blockBorderOnClaim->getMeta()) === 0 ? "" : ":" . $meta),
-            "blockPlotFloor" => $this->blockPlotFloor->getId() . (($meta = $this->blockPlotFloor->getMeta()) === 0 ? "" : ":" . $meta),
-            "blockPlotFill" => $this->blockPlotFill->getId() . (($meta = $this->blockPlotFill->getMeta()) === 0 ? "" : ":" . $meta),
-            "blockPlotBottom" => $this->blockPlotBottom->getId() . (($meta = $this->blockPlotBottom->getMeta()) === 0 ? "" : ":" . $meta)
+            "blockRoad" => $this->blockRoad->getName(),
+            "blockBorder" => $this->blockBorder->getName(),
+            "blockBorderOnClaim" => $this->blockBorderOnClaim->getName(),
+            "blockPlotFloor" => $this->blockPlotFloor->getName(),
+            "blockPlotFill" => $this->blockPlotFill->getName(),
+            "blockPlotBottom" => $this->blockPlotBottom->getName()
         ];
     }
 
@@ -163,16 +164,11 @@ class WorldSettings implements Cacheable {
 
     public static function parseBlock(array $array, string $key, Block $default) : Block {
         if (isset($array[$key])) {
-            $id = $array[$key];
-            if (is_numeric($id)) {
-                $block = BlockFactory::getInstance()->get((int) $id, 0);
+            $item = StringToItemParser::getInstance()->parse($array[$key]);
+            if ($item !== null) {
+                $block = $item->getBlock();
             } else {
-                $split = explode(":", $id);
-                if (count($split) === 2 && is_numeric($split[0]) && is_numeric($split[1])) {
-                    $block = BlockFactory::getInstance()->get((int) $split[0], (int) $split[1]);
-                } else {
-                    $block = $default;
-                }
+                $block = $default;
             }
         } else {
             $block = $default;

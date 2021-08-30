@@ -66,11 +66,11 @@ class PlotGenerator extends Generator {
             "sizePlot" => $this->sizePlot,
             "sizeGround" => $this->sizeGround,
 
-            "blockRoad" => $blockRoad->getId() . (($meta = $blockRoad->getMeta()) === 0 ? "" : ":" . $meta),
-            "blockBorder" => $blockBorder->getId() . (($meta = $blockBorder->getMeta()) === 0 ? "" : ":" . $meta),
-            "blockPlotFloor" => $blockPlotFloor->getId() . (($meta = $blockPlotFloor->getMeta()) === 0 ? "" : ":" . $meta),
-            "blockPlotFill" => $blockPlotFill->getId() . (($meta = $blockPlotFill->getMeta()) === 0 ? "" : ":" . $meta),
-            "blockPlotBottom" => $blockPlotBottom->getId() . (($meta = $blockPlotBottom->getMeta()) === 0 ? "" : ":" . $meta)
+            "blockRoad" => $blockRoad->getName(),
+            "blockBorder" => $blockBorder->getName(),
+            "blockPlotFloor" => $blockPlotFloor->getName(),
+            "blockPlotFill" => $blockPlotFill->getName(),
+            "blockPlotBottom" => $blockPlotBottom->getName()
         ]);
     }
 
