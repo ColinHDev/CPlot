@@ -71,48 +71,24 @@ class WorldSettings implements Cacheable {
         return $this->blockRoad;
     }
 
-    public function getBlockRoadString() : string {
-        return $this->blockRoad->getId() . (($meta = $this->blockRoad->getMeta()) === 0 ? "" : ":" . $meta);
-    }
-
     public function getBlockBorder() : Block {
         return $this->blockBorder;
-    }
-
-    public function getBlockBorderString() : string {
-        return $this->blockBorder->getId() . (($meta = $this->blockBorder->getMeta()) === 0 ? "" : ":" . $meta);
     }
 
     public function getBlockBorderOnClaim() : Block {
         return $this->blockBorderOnClaim;
     }
 
-    public function getBlockBorderOnClaimString() : string {
-        return $this->blockBorderOnClaim->getId() . (($meta = $this->blockBorderOnClaim->getMeta()) === 0 ? "" : ":" . $meta);
-    }
-
     public function getBlockPlotFloor() : Block {
         return $this->blockPlotFloor;
-    }
-
-    public function getBlockPlotFloorString() : string {
-        return $this->blockPlotFloor->getId() . (($meta = $this->blockPlotFloor->getMeta()) === 0 ? "" : ":" . $meta);
     }
 
     public function getBlockPlotFill() : Block {
         return $this->blockPlotFill;
     }
 
-    public function getBlockPlotFillString() : string {
-        return $this->blockPlotFill->getId() . (($meta = $this->blockPlotFill->getMeta()) === 0 ? "" : ":" . $meta);
-    }
-
     public function getBlockPlotBottom() : Block {
         return $this->blockPlotBottom;
-    }
-
-    public function getBlockPlotBottomString() : string {
-        return $this->blockPlotBottom->getId() . (($meta = $this->blockPlotBottom->getMeta()) === 0 ? "" : ":" . $meta);
     }
 
     public function toArray() : array {

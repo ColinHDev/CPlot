@@ -390,12 +390,12 @@ class SQLiteProvider extends DataProvider {
         $this->setWorld->bindValue(":sizePlot", $worldSettings->getSizePlot(), SQLITE3_INTEGER);
         $this->setWorld->bindValue(":sizeGround", $worldSettings->getSizeGround(), SQLITE3_INTEGER);
 
-        $this->setWorld->bindValue(":blockRoad", $worldSettings->getBlockRoadString(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockBorder", $worldSettings->getBlockBorderString(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockBorderOnClaim", $worldSettings->getBlockBorderOnClaimString(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockPlotFloor", $worldSettings->getBlockPlotFloorString(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockPlotFill", $worldSettings->getBlockPlotFillString(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockPlotBottom", $worldSettings->getBlockPlotBottomString(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockRoad", $worldSettings->getBlockRoad()->getName(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockBorder", $worldSettings->getBlockBorder()->getName(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockBorderOnClaim", $worldSettings->getBlockBorderOnClaim()->getName(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockPlotFloor", $worldSettings->getBlockPlotFloor()->getName(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockPlotFill", $worldSettings->getBlockPlotFill()->getName(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockPlotBottom", $worldSettings->getBlockPlotBottom()->getName(), SQLITE3_TEXT);
 
         $this->setWorld->reset();
         $result = $this->setWorld->execute();
