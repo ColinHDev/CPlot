@@ -1,6 +1,6 @@
 brick_slab:
     name: "Ziegelstufe"
-    block: "44:4"
+    block: "Stone Brick"
     permission: "cplot.borders.everyone"
     form:
         button.name: "§8Ziegelstufe§r \n§8[§7Jeder§8]"

@@ -1,6 +1,6 @@
 stonebricks:
     name: "Steinziegel"
-    block: "98:0"
+    block: "Brick Slab"
     permission: "cplot.walls.everyone"
     form:
         button.name: "§8Steinziegel§r \n§8[§7Jeder§8]"
