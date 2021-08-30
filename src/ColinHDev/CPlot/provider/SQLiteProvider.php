@@ -109,8 +109,8 @@ class SQLiteProvider extends DataProvider {
                 worldName VARCHAR(256) NOT NULL,
                 schematicRoad VARCHAR(256) NOT NULL, schematicMergeRoad VARCHAR(256) NOT NULL, schematicPlot VARCHAR(256) NOT NULL,
                 sizeRoad INTEGER NOT NULL, sizePlot INTEGER NOT NULL, sizeGround INTEGER NOT NULL,
-                blockRoad VARCHAR(32) NOT NULL, blockBorder VARCHAR(32) NOT NULL, blockBorderOnClaim VARCHAR(32) NOT NULL, 
-                blockPlotFloor VARCHAR(32) NOT NULL, blockPlotFill VARCHAR(32) NOT NULL, blockPlotBottom VARCHAR(32) NOT NULL, 
+                blockRoad VARCHAR(256) NOT NULL, blockBorder VARCHAR(256) NOT NULL, blockBorderOnClaim VARCHAR(256) NOT NULL, 
+                blockPlotFloor VARCHAR(256) NOT NULL, blockPlotFill VARCHAR(256) NOT NULL, blockPlotBottom VARCHAR(256) NOT NULL, 
                 PRIMARY KEY (worldName)
             );";
         $this->database->exec($sql);
