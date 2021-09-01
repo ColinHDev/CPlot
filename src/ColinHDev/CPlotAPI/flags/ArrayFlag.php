@@ -5,6 +5,8 @@ namespace ColinHDev\CPlotAPI\flags;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\flags\utils\InvalidValueException;
 use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\item\LegacyStringToItemParser;
 use pocketmine\item\LegacyStringToItemParserException;
 use pocketmine\player\Player;
@@ -88,10 +90,9 @@ class ArrayFlag extends BaseFlag {
 
         $blocks = [];
         foreach ($args as $arg) {
-            try {
-                $block = LegacyStringToItemParser::getInstance()->parse($arg)->getBlock();
-            } catch (LegacyStringToItemParserException $exception) {
-                $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.parseBlockError", [$arg, $exception->getMessage()]));
+            $block = WorldSettings::parseBlock(["block" => $arg], "block", VanillaBlocks::AIR());
+            if ($block === null) {
+                $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.invalidBlock", [$arg]));
                 continue;
             }
             $blockFullID = $block->getFullId();
@@ -133,10 +134,9 @@ class ArrayFlag extends BaseFlag {
             return true;
         } else {
             foreach ($args as $arg) {
-                try {
-                    $block = LegacyStringToItemParser::getInstance()->parse($arg)->getBlock();
-                } catch (LegacyStringToItemParserException $exception) {
-                    $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.parseBlockError", [$arg, $exception->getMessage()]));
+                $block = WorldSettings::parseBlock(["block" => $arg], "block", VanillaBlocks::AIR());
+                if ($block === null) {
+                    $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.invalidBlock", [$arg]));
                     continue;
                 }
                 $key = array_search($block->getFullId(), $this->value);
