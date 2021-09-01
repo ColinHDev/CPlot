@@ -116,7 +116,6 @@ class ArrayFlag extends BaseFlag {
         if (count($args) < 1) {
             $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.success", [$this->ID, $this->serializeValueType($this->value)]));
             $this->value = null;
-            return true;
         } else {
             $blockStringID = implode(" ", $args);
             $block = WorldSettings::parseBlock(["block" => $blockStringID], "block", VanillaBlocks::AIR());
