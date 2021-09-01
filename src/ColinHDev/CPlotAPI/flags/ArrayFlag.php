@@ -50,16 +50,11 @@ class ArrayFlag extends BaseFlag {
 
 
     public function serializeValueType(mixed $data) : string {
-        return implode(";", $data);
+        return json_encode($data);
     }
 
     public function unserializeValueType(string $serializedValue) : array {
-        if ($serializedValue === "") {
-            $data = [];
-        } else {
-            $data = explode(";", $serializedValue);
-        }
-        return $data;
+        return json_decode($serializedValue, true);
     }
 
     public function __serialize() : array {
