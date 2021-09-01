@@ -50,7 +50,8 @@ class BlockPlaceListener implements Listener {
             if ($flag !== null) {
                 $value = $flag->getValueNonNull();
                 if (is_array($value)) {
-                    if (array_search($block->getFullId(), $value, true) !== false) return;
+                    // TODO flag value should be reparsed to ensure backwards compatibility on block name changes
+                    if (array_search($block->getName(), $value, true) !== false) return;
                 }
             }
 

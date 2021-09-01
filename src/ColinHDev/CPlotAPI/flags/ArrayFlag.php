@@ -89,9 +89,8 @@ class ArrayFlag extends BaseFlag {
             $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.invalidBlock", [$blockStringID]));
             return false;
         }
-        $blockFullID = $block->getFullId();
         if ($this->value !== null) {
-            if (array_search($blockFullID, $this->value) !== false) {
+            if (array_search($block->getName(), $this->value) !== false) {
                 $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.valueSet", [$block->getName(), $this->ID]));
                 return false;
             }
@@ -100,7 +99,7 @@ class ArrayFlag extends BaseFlag {
         if ($this->value === null) {
             $this->value = [];
         }
-        $this->value[] = $block->getFullId();
+        $this->value[] = $block->getName();
         $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.success", [$this->ID, $block->getName()]));
         return true;
     }
@@ -125,7 +124,7 @@ class ArrayFlag extends BaseFlag {
                 $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.invalidBlock", [$blockStringID]));
                 return false;
             }
-            $key = array_search($block->getFullId(), $this->value);
+            $key = array_search($block->getName(), $this->value);
             if ($key === false) {
                 $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.valueNotExists", [$block->getName(), $this->ID]));
                 return false;
