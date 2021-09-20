@@ -39,22 +39,22 @@ class SchematicGenerator extends Generator {
             $generatorOptions = [];
         }
 
-        $this->schematicName = WorldSettings::parseString($generatorOptions, "schematic", "default");
-        $this->schematicType = WorldSettings::parseNumber($generatorOptions, "schematicType", Schematic::TYPE_ROAD);
+        $this->schematicName = WorldSettings::parseStringFromArray($generatorOptions, "schematic", "default");
+        $this->schematicType = WorldSettings::parseIntegerFromArray($generatorOptions, "schematicType", Schematic::TYPE_ROAD);
 
-        $this->sizeRoad = WorldSettings::parseNumber($generatorOptions, "sizeRoad", 7);
-        $this->sizePlot = WorldSettings::parseNumber($generatorOptions, "sizePlot", 32);
-        $this->sizeGround = WorldSettings::parseNumber($generatorOptions, "sizeGround", 64);
+        $this->sizeRoad = WorldSettings::parseIntegerFromArray($generatorOptions, "sizeRoad", 7);
+        $this->sizePlot = WorldSettings::parseIntegerFromArray($generatorOptions, "sizePlot", 32);
+        $this->sizeGround = WorldSettings::parseIntegerFromArray($generatorOptions, "sizeGround", 64);
 
-        $blockRoad = WorldSettings::parseBlock($generatorOptions, "blockRoad", VanillaBlocks::OAK_PLANKS());
+        $blockRoad = WorldSettings::parseBlockFromArray($generatorOptions, "blockRoad", VanillaBlocks::OAK_PLANKS());
         $this->blockRoadId = $blockRoad->getFullId();
-        $blockBorder = WorldSettings::parseBlock($generatorOptions, "blockBorder", VanillaBlocks::STONE_SLAB());
+        $blockBorder = WorldSettings::parseBlockFromArray($generatorOptions, "blockBorder", VanillaBlocks::STONE_SLAB());
         $this->blockBorderId = $blockBorder->getFullId();
-        $blockPlotFloor = WorldSettings::parseBlock($generatorOptions, "blockPlotFloor", VanillaBlocks::GRASS());
+        $blockPlotFloor = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotFloor", VanillaBlocks::GRASS());
         $this->blockPlotFloorId = $blockPlotFloor->getFullId();
-        $blockPlotFill = WorldSettings::parseBlock($generatorOptions, "blockPlotFill", VanillaBlocks::DIRT());
+        $blockPlotFill = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotFill", VanillaBlocks::DIRT());
         $this->blockPlotFillId = $blockPlotFill->getFullId();
-        $blockPlotBottom = WorldSettings::parseBlock($generatorOptions, "blockPlotBottom", VanillaBlocks::BEDROCK());
+        $blockPlotBottom = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotBottom", VanillaBlocks::BEDROCK());
         $this->blockPlotBottomId = $blockPlotBottom->getFullId();
 
         $this->preset = (string) json_encode([

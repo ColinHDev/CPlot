@@ -83,10 +83,10 @@ class ArrayFlag extends BaseFlag {
             return false;
         }
 
-        $blockStringID = implode(" ", $args);
-        $block = WorldSettings::parseBlock(["block" => $blockStringID], "block", VanillaBlocks::AIR());
+        $blockIdentifier = implode(" ", $args);
+        $block = WorldSettings::parseBlock($blockIdentifier);
         if ($block === null) {
-            $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.invalidBlock", [$blockStringID]));
+            $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.invalidBlock", [$blockIdentifier]));
             return false;
         }
         if ($this->value !== null) {
@@ -117,10 +117,10 @@ class ArrayFlag extends BaseFlag {
             $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.success", [$this->ID, $this->serializeValueType($this->value)]));
             $this->value = null;
         } else {
-            $blockStringID = implode(" ", $args);
-            $block = WorldSettings::parseBlock(["block" => $blockStringID], "block", VanillaBlocks::AIR());
+            $blockIdentifier = implode(" ", $args);
+            $block = WorldSettings::parseBlock($blockIdentifier);
             if ($block === null) {
-                $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.invalidBlock", [$blockStringID]));
+                $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.invalidBlock", [$blockIdentifier]));
                 return false;
             }
             $key = array_search($block->getName(), $this->value);

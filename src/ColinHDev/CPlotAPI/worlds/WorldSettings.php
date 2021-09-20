@@ -116,20 +116,20 @@ class WorldSettings implements Cacheable {
     }
 
     public static function fromArray(array $settings) : self {
-        $schematicRoad = self::parseString($settings, "schematicRoad", "default");
-        $schematicMergeRoad = self::parseString($settings, "schematicMergeRoad", "default");
-        $schematicPlot = self::parseString($settings, "schematicPlot", "default");
+        $schematicRoad = self::parseStringFromArray($settings, "schematicRoad", "default");
+        $schematicMergeRoad = self::parseStringFromArray($settings, "schematicMergeRoad", "default");
+        $schematicPlot = self::parseStringFromArray($settings, "schematicPlot", "default");
 
-        $sizeRoad = self::parseNumber($settings, "sizeRoad", 7);
-        $sizePlot = self::parseNumber($settings, "sizePlot", 32);
-        $sizeGround = self::parseNumber($settings, "sizeGround", 64);
+        $sizeRoad = self::parseIntegerFromArray($settings, "sizeRoad", 7);
+        $sizePlot = self::parseIntegerFromArray($settings, "sizePlot", 32);
+        $sizeGround = self::parseIntegerFromArray($settings, "sizeGround", 64);
 
-        $blockRoad = self::parseBlock($settings, "blockRoad", VanillaBlocks::OAK_PLANKS());
-        $blockBorder = self::parseBlock($settings, "blockBorder", VanillaBlocks::STONE_SLAB());
-        $blockBorderOnClaim = self::parseBlock($settings, "blockBorderOnClaim", VanillaBlocks::COBBLESTONE_SLAB());
-        $blockPlotFloor = self::parseBlock($settings, "blockPlotFloor", VanillaBlocks::GRASS());
-        $blockPlotFill = self::parseBlock($settings, "blockPlotFill", VanillaBlocks::DIRT());
-        $blockPlotBottom = self::parseBlock($settings, "blockPlotBottom", VanillaBlocks::BEDROCK());
+        $blockRoad = self::parseBlockFromArray($settings, "blockRoad", VanillaBlocks::OAK_PLANKS());
+        $blockBorder = self::parseBlockFromArray($settings, "blockBorder", VanillaBlocks::STONE_SLAB());
+        $blockBorderOnClaim = self::parseBlockFromArray($settings, "blockBorderOnClaim", VanillaBlocks::COBBLESTONE_SLAB());
+        $blockPlotFloor = self::parseBlockFromArray($settings, "blockPlotFloor", VanillaBlocks::GRASS());
+        $blockPlotFill = self::parseBlockFromArray($settings, "blockPlotFill", VanillaBlocks::DIRT());
+        $blockPlotBottom = self::parseBlockFromArray($settings, "blockPlotBottom", VanillaBlocks::BEDROCK());
 
         return new self(
             $schematicRoad, $schematicMergeRoad, $schematicPlot,
@@ -138,28 +138,35 @@ class WorldSettings implements Cacheable {
         );
     }
 
-    public static function parseBlock(array $array, string $key, ?Block $default = null) : ?Block {
+    // TODO: The following methods are not only used for parsing values exclusively related to world settings
+    //  but are used throughout the entire plugin and could therefore be moved to their own class
+    public static function parseBlockFromArray(array $array, string $key, ?Block $default = null) : ?Block {
         if (isset($array[$key])) {
-            $item = StringToItemParser::getInstance()->parse($array[$key]);
-            if ($item !== null) {
-                $block = $item->getBlock();
-            } else {
-                $block = $default;
-            }
+            $block = self::parseBlock($array[$key], $default);
         } else {
             $block = $default;
         }
         return $block;
     }
 
-    public static function parseString(array $array, string $key, ?string $default = null) : ?string {
+    public static function parseBlock(string $blockIdentifier, ?Block $default = null) : ?Block {
+        $item = StringToItemParser::getInstance()->parse($blockIdentifier);
+        if ($item !== null) {
+            $block = $item->getBlock();
+        } else {
+            $block = $default;
+        }
+        return $block;
+    }
+
+    public static function parseStringFromArray(array $array, string $key, ?string $default = null) : ?string {
         if (isset($array[$key])) {
             return (string) $array[$key];
         }
         return $default;
     }
 
-    public static function parseNumber(array $array, string $key, ?int $default = null) : ?int {
+    public static function parseIntegerFromArray(array $array, string $key, ?int $default = null) : ?int {
         if (isset($array[$key]) && is_numeric($array[$key])) {
             return (int) $array[$key];
         }
