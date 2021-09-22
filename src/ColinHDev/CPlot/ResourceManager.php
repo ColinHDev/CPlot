@@ -28,10 +28,12 @@ class ResourceManager {
         CPlot::getInstance()->saveResource("settings.yml");
         CPlot::getInstance()->saveResource("walls.yml");
 
+        $this->bordersConfig = new Config(CPlot::getInstance()->getDataFolder() . "borders.yml", Config::YAML);
         $this->config = new Config(CPlot::getInstance()->getDataFolder() . "config.yml", Config::YAML);
         $this->flagsConfig = new Config(CPlot::getInstance()->getDataFolder() . "flags.yml", Config::YAML);
         $this->language = new Language("language", CPlot::getInstance()->getDataFolder(), "language");
         $this->settingsConfig = new Config(CPlot::getInstance()->getDataFolder() . "settings.yml", Config::YAML);
+        $this->wallsConfig = new Config(CPlot::getInstance()->getDataFolder() . "walls.yml", Config::YAML);
     }
 
     public function getPrefix() : string {

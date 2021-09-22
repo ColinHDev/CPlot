@@ -1,8 +1,7 @@
 brick_slab:
-    name: "Ziegelstufe"
-    block: "Stone Brick"
+    block: "Brick Slab"
     permission: "cplot.borders.everyone"
     form:
-        button.name: "§8Ziegelstufe§r \n§8[§7Jeder§8]"
-        button.pictureId: -1
-        button.picture: ""
+        button.text: "§8Ziegelstufe§r \n§8[§7Jeder§8]"
+        button.icon: ""
+        button.icon.type: ""

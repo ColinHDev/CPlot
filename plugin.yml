@@ -15,6 +15,8 @@ permissions:
         default: true
     cplot.subcommand.auto:
         default: true
+    cplot.subcommand.border:
+        default: true
     cplot.subcommand.claim:
         default: true
     cplot.subcommand.clear:
@@ -53,10 +55,14 @@ permissions:
         default: true
     cplot.subcommand.visit:
         default: true
+    cplot.subcommand.wall:
+        default: true
     cplot.subcommand.warp:
         default: true
 
     cplot.admin.add:
+        default: op
+    cplot.admin.border:
         default: op
     cplot.admin.clear:
         default: op
@@ -75,6 +81,8 @@ permissions:
     cplot.admin.undeny:
         default: op
     cplot.admin.untrust:
+        default: op
+    cplot.admin.wall:
         default: op
     cplot.admin.warp:
         default: op

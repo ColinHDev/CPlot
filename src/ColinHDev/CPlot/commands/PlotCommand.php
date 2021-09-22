@@ -4,6 +4,7 @@ namespace ColinHDev\CPlot\commands;
 
 use ColinHDev\CPlot\commands\subcommands\AddSubcommand;
 use ColinHDev\CPlot\commands\subcommands\AutoSubcommand;
+use ColinHDev\CPlot\commands\subcommands\BorderSubcommand;
 use ColinHDev\CPlot\commands\subcommands\ClaimSubcommand;
 use ColinHDev\CPlot\commands\subcommands\ClearSubcommand;
 use ColinHDev\CPlot\commands\subcommands\DeniedSubcommand;
@@ -52,6 +53,7 @@ class PlotCommand extends Command {
 
         $this->loadSubcommand(new AutoSubcommand($resourceManager->getCommandData("auto"), "cplot.subcommand.auto"));
         $this->loadSubcommand(new AddSubcommand($resourceManager->getCommandData("add"), "cplot.subcommand.add"));
+        $this->loadSubcommand(new BorderSubcommand($resourceManager->getCommandData("border"), "cplot.subcommand.border"));
         $this->loadSubcommand(new ClaimSubcommand($resourceManager->getCommandData("claim"), "cplot.subcommand.claim"));
         $this->loadSubcommand(new ClearSubcommand($resourceManager->getCommandData("clear"), "cplot.subcommand.clear"));
         $this->loadSubcommand(new DeniedSubcommand($resourceManager->getCommandData("denied"), "cplot.subcommand.denied"));

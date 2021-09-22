@@ -1,8 +1,7 @@
-stonebricks:
-    name: "Steinziegel"
-    block: "Brick Slab"
+stone_bricks:
+    block: "Stone Bricks"
     permission: "cplot.walls.everyone"
     form:
-        button.name: "§8Steinziegel§r \n§8[§7Jeder§8]"
-        button.pictureId: -1
-        button.picture: ""
+        button.text: "§8Steinziegel§r \n§8[§7Jeder§8]"
+        button.icon: ""
+        button.icon.type: ""
