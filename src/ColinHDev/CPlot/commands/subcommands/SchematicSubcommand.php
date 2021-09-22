@@ -4,6 +4,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\tasks\async\SchematicSaveAsyncTask;
 use ColinHDev\CPlot\worlds\generators\SchematicGenerator;
+use ColinHDev\CPlotAPI\worlds\schematics\SchematicTypes;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
@@ -62,9 +63,9 @@ class SchematicSubcommand extends Subcommand {
                 }
 
                 $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.info.success.head", [$args[1]]));
-                if ($schematic->getType() === Schematic::TYPE_ROAD) {
+                if ($schematic->getType() === SchematicTypes::TYPE_ROAD) {
                     $typeString = "schematic.info.success.typeRoad";
-                } else if ($schematic->getType() === Schematic::TYPE_PLOT) {
+                } else if ($schematic->getType() === SchematicTypes::TYPE_PLOT) {
                     $typeString = "schematic.info.success.typePlot";
                 } else {
                     $typeString = "schematic.info.success.typeUnknown";
@@ -109,11 +110,11 @@ class SchematicSubcommand extends Subcommand {
                 }
                 $worldSettings = WorldSettings::fromConfig();
                 if ($schematicType === "road") {
-                    $type = Schematic::TYPE_ROAD;
+                    $type = SchematicTypes::TYPE_ROAD;
                     $pos1 = new Vector3(0, 0, 0);
                     $pos2 = new Vector3(($worldSettings->getRoadSize() + $worldSettings->getPlotSize()), 0, ($worldSettings->getRoadSize() + $worldSettings->getPlotSize()));
                 } else {
-                    $type = Schematic::TYPE_PLOT;
+                    $type = SchematicTypes::TYPE_PLOT;
                     $pos1 = new Vector3(0, 0, 0);
                     $pos2 = new Vector3($worldSettings->getPlotSize(), 0, $worldSettings->getPlotSize());
                 }
@@ -166,10 +167,10 @@ class SchematicSubcommand extends Subcommand {
                     $worldSettings["schematicType"] = $schematic->getType();
                 } else if ($args[2] === "road") {
                     $worldSettings["schematicName"] = "default";
-                    $worldSettings["schematicType"] = Schematic::TYPE_ROAD;
+                    $worldSettings["schematicType"] = SchematicTypes::TYPE_ROAD;
                 } else {
                     $worldSettings["schematicName"] = "default";
-                    $worldSettings["schematicType"] = Schematic::TYPE_PLOT;
+                    $worldSettings["schematicType"] = SchematicTypes::TYPE_PLOT;
                 }
                 $options = new WorldCreationOptions();
                 $options = $options->setGeneratorClass(GeneratorManager::getInstance()->getGenerator(SchematicGenerator::GENERATOR_NAME));

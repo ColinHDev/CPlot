@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot\worlds\generators;
 
 use ColinHDev\CPlotAPI\math\CoordinateUtils;
+use ColinHDev\CPlotAPI\worlds\schematics\SchematicTypes;
 use pocketmine\world\generator\Generator;
 use pocketmine\world\ChunkManager;
 use pocketmine\data\bedrock\BiomeIds;
@@ -15,7 +16,7 @@ class SchematicGenerator extends Generator {
     public const GENERATOR_NAME = "cplot_schematic";
 
     private string $schematicName;
-    private int $schematicType;
+    private string $schematicType;
     private ?Schematic $schematic = null;
 
     private int $roadSize;
@@ -40,7 +41,7 @@ class SchematicGenerator extends Generator {
         }
 
         $this->schematicName = WorldSettings::parseStringFromArray($generatorOptions, "schematicName", "default");
-        $this->schematicType = WorldSettings::parseIntegerFromArray($generatorOptions, "schematicType", Schematic::TYPE_ROAD);
+        $this->schematicType = WorldSettings::parseStringFromArray($generatorOptions, "schematicType", SchematicTypes::TYPE_ROAD);
 
         $this->roadSize = WorldSettings::parseIntegerFromArray($generatorOptions, "roadSize", 7);
         $this->plotSize = WorldSettings::parseIntegerFromArray($generatorOptions, "plotSize", 32);
@@ -80,7 +81,7 @@ class SchematicGenerator extends Generator {
         $chunk = $world->getChunk($chunkX, $chunkZ);
 
         if ($this->schematicName === "default") {
-            if ($this->schematicType === Schematic::TYPE_ROAD) {
+            if ($this->schematicType === SchematicTypes::TYPE_ROAD) {
                 for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
                     for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
                         $chunk->setBiomeId($X, $Z, BiomeIds::PLAINS);
@@ -107,7 +108,7 @@ class SchematicGenerator extends Generator {
                     }
                 }
 
-            } else if ($this->schematicType === Schematic::TYPE_PLOT) {
+            } else if ($this->schematicType === SchematicTypes::TYPE_PLOT) {
                 for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
                     for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
                         $chunk->setBiomeId($X, $Z, BiomeIds::PLAINS);

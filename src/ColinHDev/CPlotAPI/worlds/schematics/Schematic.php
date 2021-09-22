@@ -12,20 +12,17 @@ use pocketmine\nbt\BigEndianNbtSerializer;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\TreeRoot;
 
-class Schematic {
+class Schematic implements SchematicTypes {
 
     public const FILE_EXTENSION = "cplot_schematic";
 
     public const SCHEMATIC_VERSION = 1;
 
-    public const TYPE_ROAD = 0;
-    public const TYPE_PLOT = 1;
-
     private string $name;
     private string $file;
     private int $version;
     private int $creationTime;
-    private int $type;
+    private string $type;
 
     private int $roadSize;
     private int $plotSize;
@@ -42,7 +39,7 @@ class Schematic {
         $nbt = new CompoundTag();
         $nbt->setShort("version", $this->version);
         $nbt->setLong("creationTime", $this->creationTime);
-        $nbt->setByte("type", $this->type);
+        $nbt->setString("type", $this->type);
         $nbt->setShort("roadSize", $this->roadSize);
         $nbt->setShort("plotSize", $this->plotSize);
         $nbt->setByteArray("blocks", json_encode($this->blocks));
@@ -63,14 +60,14 @@ class Schematic {
         $nbt = (new BigEndianNbtSerializer())->read($decompressed)->mustGetCompoundTag();
         $this->version = $nbt->getShort("version");
         $this->creationTime = $nbt->getLong("creationTime");
-        $this->type = $nbt->getByte("type");
+        $this->type = $nbt->getString("type");
         $this->roadSize = $nbt->getShort("roadSize");
         $this->plotSize = $nbt->getShort("plotSize");
         $this->blocks = json_decode($nbt->getByteArray("blocks"), true);
         return true;
     }
 
-    public function loadFromWorld(ChunkManager $world, int $type, int $roadSize, int $plotSize) : bool {
+    public function loadFromWorld(ChunkManager $world, string $type, int $roadSize, int $plotSize) : bool {
         $this->version = self::SCHEMATIC_VERSION;
         $this->creationTime = (int) (round(microtime(true) * 1000));
         $this->type = $type;
@@ -81,7 +78,7 @@ class Schematic {
 
         switch ($this->type) {
 
-            case self::TYPE_ROAD:
+            case SchematicTypes::TYPE_ROAD:
                 $totalSize = $this->roadSize + $this->plotSize;
                 for ($x = 0; $x < $totalSize; $x++) {
                     $xInChunk = $x & 0x0f;
@@ -103,7 +100,7 @@ class Schematic {
                 }
                 break;
 
-            case self::TYPE_PLOT:
+            case SchematicTypes::TYPE_PLOT:
                 for ($x = 0; $x < $this->plotSize; $x++) {
                     $xInChunk = $x & 0x0f;
                     for ($z = 0; $z < $this->plotSize; $z++) {
@@ -143,7 +140,7 @@ class Schematic {
         return $this->creationTime;
     }
 
-    public function getType() : int {
+    public function getType() : string {
         return $this->type;
     }
 
