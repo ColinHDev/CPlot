@@ -27,8 +27,8 @@ class Schematic {
     private int $creationTime;
     private int $type;
 
-    private int $sizeRoad;
-    private int $sizePlot;
+    private int $roadSize;
+    private int $plotSize;
 
     /** @var int[] */
     private array $blocks;
@@ -40,12 +40,12 @@ class Schematic {
 
     public function save() : bool {
         $nbt = new CompoundTag();
-        $nbt->setShort("Version", $this->version);
-        $nbt->setLong("CreationTime", $this->creationTime);
-        $nbt->setByte("Type", $this->type);
-        $nbt->setShort("SizeRoad", $this->sizeRoad);
-        $nbt->setShort("SizePlot", $this->sizePlot);
-        $nbt->setByteArray("Blocks", json_encode($this->blocks));
+        $nbt->setShort("version", $this->version);
+        $nbt->setLong("creationTime", $this->creationTime);
+        $nbt->setByte("type", $this->type);
+        $nbt->setShort("roadSize", $this->roadSize);
+        $nbt->setShort("plotSize", $this->plotSize);
+        $nbt->setByteArray("blocks", json_encode($this->blocks));
         $nbtSerializer = new BigEndianNbtSerializer();
         file_put_contents($this->file, zlib_encode($nbtSerializer->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));
         return true;
@@ -61,33 +61,33 @@ class Schematic {
         if ($decompressed === false) return false;
 
         $nbt = (new BigEndianNbtSerializer())->read($decompressed)->mustGetCompoundTag();
-        $this->version = $nbt->getShort("Version");
-        $this->creationTime = $nbt->getLong("CreationTime");
-        $this->type = $nbt->getByte("Type");
-        $this->sizeRoad = $nbt->getShort("SizeRoad");
-        $this->sizePlot = $nbt->getShort("SizePlot");
-        $this->blocks = json_decode($nbt->getByteArray("Blocks"), true);
+        $this->version = $nbt->getShort("version");
+        $this->creationTime = $nbt->getLong("creationTime");
+        $this->type = $nbt->getByte("type");
+        $this->roadSize = $nbt->getShort("roadSize");
+        $this->plotSize = $nbt->getShort("plotSize");
+        $this->blocks = json_decode($nbt->getByteArray("blocks"), true);
         return true;
     }
 
-    public function loadFromWorld(ChunkManager $world, int $type, int $sizeRoad, int $sizePlot) : bool {
+    public function loadFromWorld(ChunkManager $world, int $type, int $roadSize, int $plotSize) : bool {
         $this->version = self::SCHEMATIC_VERSION;
         $this->creationTime = (int) (round(microtime(true) * 1000));
         $this->type = $type;
-        $this->sizeRoad = $sizeRoad;
-        $this->sizePlot = $sizePlot;
+        $this->roadSize = $roadSize;
+        $this->plotSize = $plotSize;
 
         $explorer = new SubChunkExplorer($world);
 
         switch ($this->type) {
 
             case self::TYPE_ROAD:
-                $totalSize = $this->sizeRoad + $this->sizePlot;
+                $totalSize = $this->roadSize + $this->plotSize;
                 for ($x = 0; $x < $totalSize; $x++) {
                     $xInChunk = $x & 0x0f;
                     for ($z = 0; $z < $totalSize; $z++) {
                         $zInChunk = $z & 0x0f;
-                        if ($x >= $this->sizeRoad && $z >= $this->sizeRoad) continue 2;
+                        if ($x >= $this->roadSize && $z >= $this->roadSize) continue 2;
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             switch ($explorer->moveTo($x, $y, $z)) {
                                 case SubChunkExplorerStatus::OK:
@@ -104,9 +104,9 @@ class Schematic {
                 break;
 
             case self::TYPE_PLOT:
-                for ($x = 0; $x < $this->sizePlot; $x++) {
+                for ($x = 0; $x < $this->plotSize; $x++) {
                     $xInChunk = $x & 0x0f;
-                    for ($z = 0; $z < $this->sizePlot; $z++) {
+                    for ($z = 0; $z < $this->plotSize; $z++) {
                         $zInChunk = $z & 0x0f;
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             switch ($explorer->moveTo($x, $y, $z)) {
@@ -148,11 +148,11 @@ class Schematic {
     }
 
     public function getRoadSize() : int {
-        return $this->sizeRoad;
+        return $this->roadSize;
     }
 
     public function getPlotSize() : int {
-        return $this->sizePlot;
+        return $this->plotSize;
     }
 
     /**
