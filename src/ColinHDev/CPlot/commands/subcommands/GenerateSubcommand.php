@@ -36,7 +36,7 @@ class GenerateSubcommand extends Subcommand {
         }
         $world = $this->getPlugin()->getServer()->getWorldManager()->getWorldByName($worldName);
         if ($world !== null) {
-            $world->setSpawnLocation(new Vector3(0, $worldSettings->getSizeGround() + 1, 0));
+            $world->setSpawnLocation(new Vector3(0, $worldSettings->getGroundSize() + 1, 0));
         }
         $sender->sendMessage($this->getPrefix() . $this->translateString("generate.success", [$worldName]));
     }

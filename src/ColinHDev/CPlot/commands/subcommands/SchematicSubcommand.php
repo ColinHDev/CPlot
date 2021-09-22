@@ -111,14 +111,14 @@ class SchematicSubcommand extends Subcommand {
                 if ($schematicType === "road") {
                     $type = Schematic::TYPE_ROAD;
                     $pos1 = new Vector3(0, 0, 0);
-                    $pos2 = new Vector3(($worldSettings->getSizeRoad() + $worldSettings->getSizePlot()), 0, ($worldSettings->getSizeRoad() + $worldSettings->getSizePlot()));
+                    $pos2 = new Vector3(($worldSettings->getRoadSize() + $worldSettings->getPlotSize()), 0, ($worldSettings->getRoadSize() + $worldSettings->getPlotSize()));
                 } else {
                     $type = Schematic::TYPE_PLOT;
                     $pos1 = new Vector3(0, 0, 0);
-                    $pos2 = new Vector3($worldSettings->getSizePlot(), 0, $worldSettings->getSizePlot());
+                    $pos2 = new Vector3($worldSettings->getPlotSize(), 0, $worldSettings->getPlotSize());
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.start", [$schematicName]));
-                $task = new SchematicSaveAsyncTask($schematicName, $file, $type, $worldSettings->getSizeRoad(), $worldSettings->getSizePlot());
+                $task = new SchematicSaveAsyncTask($schematicName, $file, $type, $worldSettings->getRoadSize(), $worldSettings->getPlotSize());
                 $world = $sender->getWorld();
                 $task->setWorld($world);
                 $task->saveChunks($world, $pos1, $pos2);
@@ -162,13 +162,13 @@ class SchematicSubcommand extends Subcommand {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.loadSchematicError", [$args[2]]));
                         break;
                     }
-                    $worldSettings["schematic"] = $schematic->getName();
+                    $worldSettings["schematicName"] = $schematic->getName();
                     $worldSettings["schematicType"] = $schematic->getType();
                 } else if ($args[2] === "road") {
-                    $worldSettings["schematic"] = "default";
+                    $worldSettings["schematicName"] = "default";
                     $worldSettings["schematicType"] = Schematic::TYPE_ROAD;
                 } else {
-                    $worldSettings["schematic"] = "default";
+                    $worldSettings["schematicName"] = "default";
                     $worldSettings["schematicType"] = Schematic::TYPE_PLOT;
                 }
                 $options = new WorldCreationOptions();
@@ -180,7 +180,7 @@ class SchematicSubcommand extends Subcommand {
                 }
                 $world = $this->getPlugin()->getServer()->getWorldManager()->getWorldByName($args[1]);
                 if ($world !== null) {
-                    $world->setSpawnLocation(new Vector3(0, $worldSettings["sizeGround"] + 1, 0));
+                    $world->setSpawnLocation(new Vector3(0, $worldSettings["groundSize"] + 1, 0));
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.success", [$args[1]]));
                 break;

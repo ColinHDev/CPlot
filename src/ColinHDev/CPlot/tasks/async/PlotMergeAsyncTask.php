@@ -39,7 +39,7 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
         $roadPositionsToChange = [];
         /** @var BasePlot $alreadyMergedPlot */
         foreach (array_merge([$plot], $plot->getMergedPlots()) as $alreadyMergedPlot) {
-            $plotPos = $alreadyMergedPlot->getPositionNonNull($worldSettings->getSizeRoad(), $worldSettings->getSizePlot(), $worldSettings->getSizeGround());
+            $plotPos = $alreadyMergedPlot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
 
             $plotInNorth = $alreadyMergedPlot->getSide(Facing::NORTH);
             $plotInNorthWest = $plotInNorth->getSide(Facing::WEST);
@@ -52,23 +52,23 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
 
             if (!$plot->isMerged($plotInNorth) && $plotToMerge->isMerged($plotInNorth)) {
                 if ($plot->isMerged($plotInWest) && ($plot->isMerged($plotInNorthWest) || $plotToMerge->isMerged($plotInNorthWest))) {
-                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getSizeRoad();
-                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getSizeRoad();
+                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getRoadSize();
+                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getRoadSize();
                 } else if ($plotToMerge->isMerged($plotInWest) && $plotToMerge->isMerged($plotInNorthWest)) {
-                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getSizeRoad();
-                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getSizeRoad();
+                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getRoadSize();
+                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getRoadSize();
                 } else {
                     $roadPositionToChangeXMin = $plotPos->getX();
-                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getSizeRoad();
+                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getRoadSize();
                 }
                 if ($plot->isMerged($plotInEast) && ($plot->isMerged($plotInNorthEast) || $plotToMerge->isMerged($plotInNorthEast))) {
-                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                     $roadPositionToChangeZMax = $plotPos->getZ() - 1;
                 } else if ($plotToMerge->isMerged($plotInEast) && $plotToMerge->isMerged($plotInNorthEast)) {
-                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                     $roadPositionToChangeZMax = $plotPos->getZ() - 1;
                 } else {
-                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getSizePlot() - 1);
+                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getPlotSize() - 1);
                     $roadPositionToChangeZMax = $plotPos->getZ() - 1;
                 }
                 $roadPositionToChange = new Area($roadPositionToChangeXMin, $roadPositionToChangeZMin, $roadPositionToChangeXMax, $roadPositionToChangeZMax);
@@ -80,24 +80,24 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
 
             if (!$plot->isMerged($plotInSouth) && $plotToMerge->isMerged($plotInSouth)) {
                 if ($plot->isMerged($plotInWest) && ($plot->isMerged($plotInSouthWest) || $plotToMerge->isMerged($plotInSouthWest))) {
-                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getSizeRoad();
-                    $roadPositionToChangeZMin = $plotPos->getZ() + $worldSettings->getSizePlot();
+                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getRoadSize();
+                    $roadPositionToChangeZMin = $plotPos->getZ() + $worldSettings->getPlotSize();
                 } else if ($plotToMerge->isMerged($plotInWest) && $plotToMerge->isMerged($plotInSouthWest)) {
-                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getSizeRoad();
-                    $roadPositionToChangeZMin = $plotPos->getZ() + $worldSettings->getSizePlot();
+                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getRoadSize();
+                    $roadPositionToChangeZMin = $plotPos->getZ() + $worldSettings->getPlotSize();
                 } else {
                     $roadPositionToChangeXMin = $plotPos->getX();
-                    $roadPositionToChangeZMin = $plotPos->getZ() + $worldSettings->getSizePlot();
+                    $roadPositionToChangeZMin = $plotPos->getZ() + $worldSettings->getPlotSize();
                 }
                 if ($plot->isMerged($plotInEast) && ($plot->isMerged($plotInSouthEast) || $plotToMerge->isMerged($plotInSouthEast))) {
-                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
-                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 } else if ($plotToMerge->isMerged($plotInWest) && $plotToMerge->isMerged($plotInSouthEast)) {
-                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
-                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 } else {
-                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getSizePlot() - 1);
-                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getPlotSize() - 1);
+                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 }
                 $roadPositionToChange = new Area($roadPositionToChangeXMin, $roadPositionToChangeZMin, $roadPositionToChangeXMax, $roadPositionToChangeZMax);
                 $key = $roadPositionToChange->toString();
@@ -108,24 +108,24 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
 
             if (!$plot->isMerged($plotInWest) && $plotToMerge->isMerged($plotInWest)) {
                 if ($plot->isMerged($plotInNorth) && ($plot->isMerged($plotInNorthWest) || $plotToMerge->isMerged($plotInNorthWest))) {
-                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getSizeRoad();
-                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getSizeRoad();
+                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getRoadSize();
+                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getRoadSize();
                 } else if ($plotToMerge->isMerged($plotInNorth) && $plotToMerge->isMerged($plotInNorthWest)) {
-                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getSizeRoad();
-                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getSizeRoad();
+                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getRoadSize();
+                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getRoadSize();
                 } else {
-                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getSizeRoad();
+                    $roadPositionToChangeXMin = $plotPos->getX() - $worldSettings->getRoadSize();
                     $roadPositionToChangeZMin = $plotPos->getZ();
                 }
                 if ($plot->isMerged($plotInSouth) && ($plot->isMerged($plotInSouthWest) || $plotToMerge->isMerged($plotInSouthWest))) {
                     $roadPositionToChangeXMax = $plotPos->getX() - 1;
-                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 } else if ($plotToMerge->isMerged($plotInSouth) && $plotToMerge->isMerged($plotInSouthWest)) {
                     $roadPositionToChangeXMax = $plotPos->getX() - 1;
-                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 } else {
                     $roadPositionToChangeXMax = $plotPos->getX() - 1;
-                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getSizePlot() - 1);
+                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getPlotSize() - 1);
                 }
                 $roadPositionToChange = new Area($roadPositionToChangeXMin, $roadPositionToChangeZMin, $roadPositionToChangeXMax, $roadPositionToChangeZMax);
                 $key = $roadPositionToChange->toString();
@@ -136,24 +136,24 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
 
             if (!$plot->isMerged($plotInEast) && $plotToMerge->isMerged($plotInEast)) {
                 if ($plot->isMerged($plotInNorth) && ($plot->isMerged($plotInNorthEast) || $plotToMerge->isMerged($plotInNorthEast))) {
-                    $roadPositionToChangeXMin = $plotPos->getX() + $worldSettings->getSizePlot();
-                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getSizeRoad();
+                    $roadPositionToChangeXMin = $plotPos->getX() + $worldSettings->getPlotSize();
+                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getRoadSize();
                 } else if ($plotToMerge->isMerged($plotInNorth) && $plotToMerge->isMerged($plotInNorthEast)) {
-                    $roadPositionToChangeXMin = $plotPos->getX() + $worldSettings->getSizePlot();
-                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getSizeRoad();
+                    $roadPositionToChangeXMin = $plotPos->getX() + $worldSettings->getPlotSize();
+                    $roadPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getRoadSize();
                 } else {
-                    $roadPositionToChangeXMin = $plotPos->getX() + $worldSettings->getSizePlot();
+                    $roadPositionToChangeXMin = $plotPos->getX() + $worldSettings->getPlotSize();
                     $roadPositionToChangeZMin = $plotPos->getZ();
                 }
                 if ($plot->isMerged($plotInSouth) && ($plot->isMerged($plotInSouthEast) || $plotToMerge->isMerged($plotInSouthEast))) {
-                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
-                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 } else if ($plotToMerge->isMerged($plotInSouth) && $plotToMerge->isMerged($plotInSouthEast)) {
-                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
-                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 } else {
-                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
-                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getSizePlot() - 1);
+                    $roadPositionToChangeXMax = $plotPos->getX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $roadPositionToChangeZMax = $plotPos->getZ() + ($worldSettings->getPlotSize() - 1);
                 }
                 $roadPositionToChange = new Area($roadPositionToChangeXMin, $roadPositionToChangeZMin, $roadPositionToChangeXMax, $roadPositionToChangeZMax);
                 $key = $roadPositionToChange->toString();
@@ -174,7 +174,7 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
         $plots = array_merge([$plot], $plot->getMergedPlots());
         /** @var BasePlot $mergedPlot */
         foreach ($plots as $mergedPlot) {
-            $plotPos = $mergedPlot->getPositionNonNull($worldSettings->getSizeRoad(), $worldSettings->getSizePlot(), $worldSettings->getSizeGround());
+            $plotPos = $mergedPlot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
 
             $plotInNorth = $mergedPlot->getSide(Facing::NORTH);
             $plotInSouth = $mergedPlot->getSide(Facing::SOUTH);
@@ -183,14 +183,14 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
 
             if (!$plot->isMerged($plotInNorth)) {
                 if ($plot->isMerged($plotInWest)) {
-                    $borderPositionToChangeXMin = $plotPos->getX() - $worldSettings->getSizeRoad();
+                    $borderPositionToChangeXMin = $plotPos->getX() - $worldSettings->getRoadSize();
                     $borderPositionToChangeZMin = $plotPos->getZ() - 1;
                 } else {
                     $borderPositionToChangeXMin = $plotPos->getX() - 1;
                     $borderPositionToChangeZMin = $plotPos->getZ() - 1;
 
                     $borderPositionToReset = new Area(
-                        $plotPos->getX() - ($worldSettings->getSizeRoad() - 1),
+                        $plotPos->getX() - ($worldSettings->getRoadSize() - 1),
                         $plotPos->getZ() - 1,
                         $plotPos->getX() - 2,
                         $plotPos->getZ() - 1
@@ -201,16 +201,16 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                     }
                 }
                 if ($plot->isMerged($plotInEast)) {
-                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getSizePlot() + ($worldSettings->getSizeRoad() - 1);
+                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 1);
                     $borderPositionToChangeZMax = $plotPos->getZ() - 1;
                 } else {
-                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getSizePlot();
+                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getPlotSize();
                     $borderPositionToChangeZMax = $plotPos->getZ() - 1;
 
                     $borderPositionToReset = new Area(
-                        $plotPos->getX() + ($worldSettings->getSizePlot() + 1),
+                        $plotPos->getX() + ($worldSettings->getPlotSize() + 1),
                         $plotPos->getZ() - 1,
-                        $plotPos->getX() + ($worldSettings->getSizePlot() + ($worldSettings->getSizeRoad() - 2)),
+                        $plotPos->getX() + ($worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 2)),
                         $plotPos->getZ() - 1
                     );
                     $key = $borderPositionToReset->toString();
@@ -227,17 +227,17 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
 
             if (!$plot->isMerged($plotInSouth)) {
                 if ($plot->isMerged($plotInWest)) {
-                    $borderPositionToChangeXMin = $plotPos->getX() - $worldSettings->getSizeRoad();
-                    $borderPositionToChangeZMin = $plotPos->getZ() + $worldSettings->getSizePlot();
+                    $borderPositionToChangeXMin = $plotPos->getX() - $worldSettings->getRoadSize();
+                    $borderPositionToChangeZMin = $plotPos->getZ() + $worldSettings->getPlotSize();
                 } else {
                     $borderPositionToChangeXMin = $plotPos->getX() - 1;
-                    $borderPositionToChangeZMin = $plotPos->getZ() + $worldSettings->getSizePlot();
+                    $borderPositionToChangeZMin = $plotPos->getZ() + $worldSettings->getPlotSize();
 
                     $borderPositionToReset = new Area(
-                        $plotPos->getX() - ($worldSettings->getSizeRoad() - 1),
-                        $plotPos->getZ() + $worldSettings->getSizePlot(),
+                        $plotPos->getX() - ($worldSettings->getRoadSize() - 1),
+                        $plotPos->getZ() + $worldSettings->getPlotSize(),
                         $plotPos->getX() - 2,
-                        $plotPos->getZ() + $worldSettings->getSizePlot()
+                        $plotPos->getZ() + $worldSettings->getPlotSize()
                     );
                     $key = $borderPositionToReset->toString();
                     if (!isset($borderPositionsToReset[$key])) {
@@ -245,17 +245,17 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                     }
                 }
                 if ($plot->isMerged($plotInEast)) {
-                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getSizePlot() + ($worldSettings->getSizeRoad() - 1);
-                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getSizePlot();
+                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 1);
+                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getPlotSize();
                 } else {
-                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getSizePlot();
-                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getSizePlot();
+                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getPlotSize();
+                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getPlotSize();
 
                     $borderPositionToReset = new Area(
-                        $plotPos->getX() + ($worldSettings->getSizePlot() + 1),
-                        $plotPos->getZ() + $worldSettings->getSizePlot(),
-                        $plotPos->getX() + ($worldSettings->getSizePlot() + ($worldSettings->getSizeRoad() - 2)),
-                        $plotPos->getZ() + $worldSettings->getSizePlot()
+                        $plotPos->getX() + ($worldSettings->getPlotSize() + 1),
+                        $plotPos->getZ() + $worldSettings->getPlotSize(),
+                        $plotPos->getX() + ($worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 2)),
+                        $plotPos->getZ() + $worldSettings->getPlotSize()
                     );
                     $key = $borderPositionToReset->toString();
                     if (!isset($borderPositionsToReset[$key])) {
@@ -272,14 +272,14 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
             if (!$plot->isMerged($plotInWest)) {
                 if ($plot->isMerged($plotInNorth)) {
                     $borderPositionToChangeXMin = $plotPos->getX() - 1;
-                    $borderPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getSizeRoad();
+                    $borderPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getRoadSize();
                 } else {
                     $borderPositionToChangeXMin = $plotPos->getX() - 1;
                     $borderPositionToChangeZMin = $plotPos->getZ() - 1;
 
                     $borderPositionToReset = new Area(
                         $plotPos->getX() - 1,
-                        $plotPos->getZ() - ($worldSettings->getSizeRoad() - 1),
+                        $plotPos->getZ() - ($worldSettings->getRoadSize() - 1),
                         $plotPos->getX() - 1,
                         $plotPos->getZ() - 2
                     );
@@ -290,16 +290,16 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                 }
                 if ($plot->isMerged($plotInSouth)) {
                     $borderPositionToChangeXMax = $plotPos->getX() - 1;
-                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getSizePlot() + ($worldSettings->getSizeRoad() - 1);
+                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 1);
                 } else {
                     $borderPositionToChangeXMax = $plotPos->getX() - 1;
-                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getSizePlot();
+                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getPlotSize();
 
                     $borderPositionToReset = new Area(
                         $plotPos->getX() - 1,
-                        $plotPos->getZ() + ($worldSettings->getSizePlot() + 1),
+                        $plotPos->getZ() + ($worldSettings->getPlotSize() + 1),
                         $plotPos->getX() - 1,
-                        $plotPos->getZ() + ($worldSettings->getSizePlot() + ($worldSettings->getSizeRoad() - 2))
+                        $plotPos->getZ() + ($worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 2))
                     );
                     $key = $borderPositionToReset->toString();
                     if (!isset($borderPositionsToReset[$key])) {
@@ -315,16 +315,16 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
 
             if (!$plot->isMerged($plotInEast)) {
                 if ($plot->isMerged($plotInNorth)) {
-                    $borderPositionToChangeXMin = $plotPos->getX() + $worldSettings->getSizePlot();
-                    $borderPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getSizeRoad();
+                    $borderPositionToChangeXMin = $plotPos->getX() + $worldSettings->getPlotSize();
+                    $borderPositionToChangeZMin = $plotPos->getZ() - $worldSettings->getRoadSize();
                 } else {
-                    $borderPositionToChangeXMin = $plotPos->getX() + $worldSettings->getSizePlot();
+                    $borderPositionToChangeXMin = $plotPos->getX() + $worldSettings->getPlotSize();
                     $borderPositionToChangeZMin = $plotPos->getZ() - 1;
 
                     $borderPositionToReset = new Area(
-                        $plotPos->getX() + $worldSettings->getSizePlot(),
-                        $plotPos->getZ() - ($worldSettings->getSizeRoad() - 1),
-                        $plotPos->getX() + $worldSettings->getSizePlot(),
+                        $plotPos->getX() + $worldSettings->getPlotSize(),
+                        $plotPos->getZ() - ($worldSettings->getRoadSize() - 1),
+                        $plotPos->getX() + $worldSettings->getPlotSize(),
                         $plotPos->getZ() - 2
                     );
                     $key = $borderPositionToReset->toString();
@@ -333,17 +333,17 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                     }
                 }
                 if ($plot->isMerged($plotInSouth)) {
-                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getSizePlot();
-                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getSizePlot() + ($worldSettings->getSizeRoad() - 1);
+                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getPlotSize();
+                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 1);
                 } else {
-                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getSizePlot();
-                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getSizePlot();
+                    $borderPositionToChangeXMax = $plotPos->getX() + $worldSettings->getPlotSize();
+                    $borderPositionToChangeZMax = $plotPos->getZ() + $worldSettings->getPlotSize();
 
                     $borderPositionToReset = new Area(
-                        $plotPos->getX() + $worldSettings->getSizePlot(),
-                        $plotPos->getZ() + ($worldSettings->getSizePlot() + 1),
-                        $plotPos->getX() + $worldSettings->getSizePlot(),
-                        $plotPos->getZ() + ($worldSettings->getSizePlot() + ($worldSettings->getSizeRoad() - 2))
+                        $plotPos->getX() + $worldSettings->getPlotSize(),
+                        $plotPos->getZ() + ($worldSettings->getPlotSize() + 1),
+                        $plotPos->getX() + $worldSettings->getPlotSize(),
+                        $plotPos->getZ() + ($worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 2))
                     );
                     $key = $borderPositionToReset->toString();
                     if (!isset($borderPositionsToReset[$key])) {
@@ -410,15 +410,15 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
         $plotCount = count($plots);
 
         $schematicRoad = null;
-        if ($worldSettings->getSchematicRoad() !== "default") {
-            $schematicRoad = new Schematic($worldSettings->getSchematicRoad(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getSchematicRoad() . "." . Schematic::FILE_EXTENSION);
+        if ($worldSettings->getRoadSchematic() !== "default") {
+            $schematicRoad = new Schematic($worldSettings->getRoadSchematic(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getRoadSchematic() . "." . Schematic::FILE_EXTENSION);
             if (!$schematicRoad->loadFromFile()) {
                 $schematicRoad = null;
             }
         }
         $schematicMergeRoad = null;
-        if ($worldSettings->getSchematicMergeRoad() !== "default") {
-            $schematicMergeRoad = new Schematic($worldSettings->getSchematicRoad(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getSchematicRoad() . "." . Schematic::FILE_EXTENSION);
+        if ($worldSettings->getMergeRoadSchematic() !== "default") {
+            $schematicMergeRoad = new Schematic($worldSettings->getRoadSchematic(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getRoadSchematic() . "." . Schematic::FILE_EXTENSION);
             if (!$schematicMergeRoad->loadFromFile()) {
                 $schematicMergeRoad = null;
             }
@@ -438,8 +438,8 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                     $x = CoordinateUtils::getCoordinateFromChunk($chunkX, $xInChunk);
                     $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
                     if ($schematicMergeRoad !== null) {
-                        $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
-                        $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
+                        $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
+                        $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             switch ($explorer->moveTo($x, $y, $z)) {
                                 case SubChunkExplorerStatus::OK:
@@ -455,11 +455,11 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                     } else {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             if ($y === $world->getMinY()) {
-                                $fullBlock = $worldSettings->getBlockPlotBottom()->getFullId();
-                            } else if ($y === $worldSettings->getSizeGround()) {
-                                $fullBlock = $worldSettings->getBlockPlotFloor()->getFullId();
-                            } else if ($y < $worldSettings->getSizeGround()) {
-                                $fullBlock = $worldSettings->getBlockPlotFill()->getFullId();
+                                $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
+                            } else if ($y === $worldSettings->getGroundSize()) {
+                                $fullBlock = $worldSettings->getPlotFloorBlock()->getFullId();
+                            } else if ($y < $worldSettings->getGroundSize()) {
+                                $fullBlock = $worldSettings->getPlotFillBlock()->getFullId();
                             } else {
                                 $fullBlock = 0;
                             }
@@ -485,15 +485,15 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                     $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
                     for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                         if ($y === $world->getMinY()) {
-                            $fullBlock = $worldSettings->getBlockPlotBottom()->getFullId();
-                        } else if ($y === $worldSettings->getSizeGround() + 1) {
+                            $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
+                        } else if ($y === $worldSettings->getGroundSize() + 1) {
                             if ($plot->getOwnerUUID() === null) {
-                                $fullBlock = $worldSettings->getBlockBorder()->getFullId();
+                                $fullBlock = $worldSettings->getBorderBlock()->getFullId();
                             } else {
-                                $fullBlock = $worldSettings->getBlockBorderOnClaim()->getFullId();
+                                $fullBlock = $worldSettings->getBorderBlockOnClaim()->getFullId();
                             }
-                        } else if ($y <= $worldSettings->getSizeGround()) {
-                            $fullBlock = $worldSettings->getBlockRoad()->getFullId();
+                        } else if ($y <= $worldSettings->getGroundSize()) {
+                            $fullBlock = $worldSettings->getRoadBlock()->getFullId();
                         } else {
                             $fullBlock = 0;
                         }
@@ -517,8 +517,8 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                     $x = CoordinateUtils::getCoordinateFromChunk($chunkX, $xInChunk);
                     $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
                     if ($schematicRoad !== null) {
-                        $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
-                        $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getSizeRoad() + $worldSettings->getSizePlot());
+                        $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
+                        $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             switch ($explorer->moveTo($x, $y, $z)) {
                                 case SubChunkExplorerStatus::OK:
@@ -534,9 +534,9 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                     } else {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             if ($y === $world->getMinY()) {
-                                $fullBlock = $worldSettings->getBlockPlotBottom()->getFullId();
-                            } else if ($y <= $worldSettings->getSizeGround()) {
-                                $fullBlock = $worldSettings->getBlockRoad()->getFullId();
+                                $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
+                            } else if ($y <= $worldSettings->getGroundSize()) {
+                                $fullBlock = $worldSettings->getRoadBlock()->getFullId();
                             } else {
                                 $fullBlock = 0;
                             }

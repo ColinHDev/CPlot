@@ -36,7 +36,7 @@ class EntityExplodeAsyncTask extends CPlotAsyncTask {
         $plotAreas = [];
         /** @var BasePlot $alreadyMergedPlot */
         foreach (array_merge([$plot], $plot->getMergedPlots()) as $mergedPlot) {
-            $plotPos = $mergedPlot->getPositionNonNull($worldSettings->getSizeRoad(), $worldSettings->getSizePlot(), $worldSettings->getSizeGround());
+            $plotPos = $mergedPlot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
 
             $plotInNorth = $mergedPlot->getSide(Facing::NORTH);
             $plotInNorthWest = $plotInNorth->getSide(Facing::WEST);
@@ -50,24 +50,24 @@ class EntityExplodeAsyncTask extends CPlotAsyncTask {
             $plotArea = new Area(
                 $plotPos->getFloorX(),
                 $plotPos->getFloorZ(),
-                ($plotPos->getFloorX() + $worldSettings->getSizePlot() - 1),
-                ($plotPos->getFloorZ() + $worldSettings->getSizePlot() - 1),
+                ($plotPos->getFloorX() + $worldSettings->getPlotSize() - 1),
+                ($plotPos->getFloorZ() + $worldSettings->getPlotSize() - 1),
             );
             $plotAreas[$plotArea->toString()] = $plotArea;
 
             if ($plot->isMerged($plotInNorth)) {
                 if ($plot->isMerged($plotInWest) && $plot->isMerged($plotInNorthWest)) {
-                    $plotAreaXMin = $plotPos->getFloorX() - $worldSettings->getSizeRoad();
-                    $plotAreaZMin = $plotPos->getFloorZ() - $worldSettings->getSizeRoad();
+                    $plotAreaXMin = $plotPos->getFloorX() - $worldSettings->getRoadSize();
+                    $plotAreaZMin = $plotPos->getFloorZ() - $worldSettings->getRoadSize();
                 } else {
                     $plotAreaXMin = $plotPos->getFloorX();
-                    $plotAreaZMin = $plotPos->getFloorZ() - $worldSettings->getSizeRoad();
+                    $plotAreaZMin = $plotPos->getFloorZ() - $worldSettings->getRoadSize();
                 }
                 if ($plot->isMerged($plotInEast) && $plot->isMerged($plotInNorthEast)) {
-                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                     $plotAreaZMax = $plotPos->getFloorZ() - 1;
                 } else {
-                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getSizePlot() - 1);
+                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() - 1);
                     $plotAreaZMax = $plotPos->getFloorZ() - 1;
                 }
                 $plotArea = new Area($plotAreaXMin, $plotAreaZMin, $plotAreaXMax, $plotAreaZMax);
@@ -79,18 +79,18 @@ class EntityExplodeAsyncTask extends CPlotAsyncTask {
 
             if ($plot->isMerged($plotInSouth)) {
                 if ($plot->isMerged($plotInWest) && $plot->isMerged($plotInSouthWest)) {
-                    $plotAreaXMin = $plotPos->getFloorX() - $worldSettings->getSizeRoad();
-                    $plotAreaZMin = $plotPos->getFloorZ() + $worldSettings->getSizePlot();
+                    $plotAreaXMin = $plotPos->getFloorX() - $worldSettings->getRoadSize();
+                    $plotAreaZMin = $plotPos->getFloorZ() + $worldSettings->getPlotSize();
                 } else {
                     $plotAreaXMin = $plotPos->getFloorX();
-                    $plotAreaZMin = $plotPos->getFloorZ() + $worldSettings->getSizePlot();
+                    $plotAreaZMin = $plotPos->getFloorZ() + $worldSettings->getPlotSize();
                 }
                 if ($plot->isMerged($plotInEast) && $plot->isMerged($plotInSouthEast)) {
-                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
-                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 } else {
-                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getSizePlot() - 1);
-                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() - 1);
+                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 }
                 $plotArea = new Area($plotAreaXMin, $plotAreaZMin, $plotAreaXMax, $plotAreaZMax);
                 $key = $plotArea->toString();
@@ -101,18 +101,18 @@ class EntityExplodeAsyncTask extends CPlotAsyncTask {
 
             if ($plot->isMerged($plotInWest)) {
                 if ($plot->isMerged($plotInNorth) && $plot->isMerged($plotInNorthWest)) {
-                    $plotAreaXMin = $plotPos->getFloorX() - $worldSettings->getSizeRoad();
-                    $plotAreaZMin = $plotPos->getFloorZ() - $worldSettings->getSizeRoad();
+                    $plotAreaXMin = $plotPos->getFloorX() - $worldSettings->getRoadSize();
+                    $plotAreaZMin = $plotPos->getFloorZ() - $worldSettings->getRoadSize();
                 } else {
-                    $plotAreaXMin = $plotPos->getFloorX() - $worldSettings->getSizeRoad();
+                    $plotAreaXMin = $plotPos->getFloorX() - $worldSettings->getRoadSize();
                     $plotAreaZMin = $plotPos->getFloorZ();
                 }
                 if ($plot->isMerged($plotInSouth) && $plot->isMerged($plotInSouthWest)) {
                     $plotAreaXMax = $plotPos->getFloorX() - 1;
-                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 } else {
                     $plotAreaXMax = $plotPos->getFloorX() - 1;
-                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getSizePlot() - 1);
+                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() - 1);
                 }
                 $plotArea = new Area($plotAreaXMin, $plotAreaZMin, $plotAreaXMax, $plotAreaZMax);
                 $key = $plotArea->toString();
@@ -123,18 +123,18 @@ class EntityExplodeAsyncTask extends CPlotAsyncTask {
 
             if ($plot->isMerged($plotInEast)) {
                 if ($plot->isMerged($plotInNorth) && $plot->isMerged($plotInNorthEast)) {
-                    $plotAreaXMin = $plotPos->getFloorX() + $worldSettings->getSizePlot();
-                    $plotAreaZMin = $plotPos->getFloorZ() - $worldSettings->getSizeRoad();
+                    $plotAreaXMin = $plotPos->getFloorX() + $worldSettings->getPlotSize();
+                    $plotAreaZMin = $plotPos->getFloorZ() - $worldSettings->getRoadSize();
                 } else {
-                    $plotAreaXMin = $plotPos->getFloorX() + $worldSettings->getSizePlot();
+                    $plotAreaXMin = $plotPos->getFloorX() + $worldSettings->getPlotSize();
                     $plotAreaZMin = $plotPos->getFloorZ();
                 }
                 if ($plot->isMerged($plotInSouth) && $plot->isMerged($plotInSouthEast)) {
-                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
-                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
+                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 }  else {
-                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getSizePlot() + $worldSettings->getSizeRoad() - 1);
-                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getSizePlot() - 1);
+                    $plotAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $plotAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() - 1);
                 }
                 $plotArea = new Area($plotAreaXMin, $plotAreaZMin, $plotAreaXMax, $plotAreaZMax);
                 $key = $plotArea->toString();

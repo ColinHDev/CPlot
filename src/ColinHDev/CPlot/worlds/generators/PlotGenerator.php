@@ -19,15 +19,15 @@ class PlotGenerator extends Generator {
     private string $schematicPlotName;
     private ?Schematic $schematicPlot = null;
 
-    private int $sizeRoad;
-    private int $sizePlot;
-    private int $sizeGround;
+    private int $roadSize;
+    private int $plotSize;
+    private int $groundSize;
 
-    private int $blockRoadId;
-    private int $blockBorderId;
-    private int $blockPlotFloorId;
-    private int $blockPlotFillId;
-    private int $blockPlotBottomId;
+    private int $roadBlockFullID;
+    private int $borderBlockFullID;
+    private int $plotFloorBlockFullID;
+    private int $plotFillBlockFullID;
+    private int $plotBottomBlockFullID;
 
     public function __construct(int $seed, string $preset) {
         parent::__construct($seed, $preset);
@@ -40,32 +40,32 @@ class PlotGenerator extends Generator {
             $generatorOptions = [];
         }
 
-        $this->schematicRoadName = WorldSettings::parseStringFromArray($generatorOptions, "schematicRoad", "default");
-        $this->schematicPlotName = WorldSettings::parseStringFromArray($generatorOptions, "schematicPlot", "default");
+        $this->schematicRoadName = WorldSettings::parseStringFromArray($generatorOptions, "roadSchematic", "default");
+        $this->schematicPlotName = WorldSettings::parseStringFromArray($generatorOptions, "plotSchematic", "default");
 
-        $this->sizeRoad = WorldSettings::parseIntegerFromArray($generatorOptions, "sizeRoad", 7);
-        $this->sizePlot = WorldSettings::parseIntegerFromArray($generatorOptions, "sizePlot", 32);
-        $this->sizeGround = WorldSettings::parseIntegerFromArray($generatorOptions, "sizeGround", 64);
+        $this->roadSize = WorldSettings::parseIntegerFromArray($generatorOptions, "roadSize", 7);
+        $this->plotSize = WorldSettings::parseIntegerFromArray($generatorOptions, "plotSize", 32);
+        $this->groundSize = WorldSettings::parseIntegerFromArray($generatorOptions, "groundSize", 64);
 
-        $this->blockRoadId = WorldSettings::parseBlockFromArray($generatorOptions, "blockRoad", VanillaBlocks::OAK_PLANKS())->getFullId();
-        $this->blockBorderId = WorldSettings::parseBlockFromArray($generatorOptions, "blockBorder", VanillaBlocks::STONE_SLAB())->getFullId();
-        $this->blockPlotFloorId = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotFloor", VanillaBlocks::GRASS())->getFullId();
-        $this->blockPlotFillId = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotFill", VanillaBlocks::DIRT())->getFullId();
-        $this->blockPlotBottomId = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotBottom", VanillaBlocks::BEDROCK())->getFullId();
+        $this->roadBlockFullID = WorldSettings::parseBlockFromArray($generatorOptions, "roadBlock", VanillaBlocks::OAK_PLANKS())->getFullId();
+        $this->borderBlockFullID = WorldSettings::parseBlockFromArray($generatorOptions, "borderBlock", VanillaBlocks::STONE_SLAB())->getFullId();
+        $this->plotFloorBlockFullID = WorldSettings::parseBlockFromArray($generatorOptions, "plotFloorBlock", VanillaBlocks::GRASS())->getFullId();
+        $this->plotFillBlockFullID = WorldSettings::parseBlockFromArray($generatorOptions, "plotFillBlock", VanillaBlocks::DIRT())->getFullId();
+        $this->plotBottomBlockFullID = WorldSettings::parseBlockFromArray($generatorOptions, "plotBottomBlock", VanillaBlocks::BEDROCK())->getFullId();
 
         $this->preset = (string) json_encode([
-            "schematicRoad" => $this->schematicRoadName,
-            "schematicPlot" => $this->schematicPlotName,
+            "roadSchematic" => $this->schematicRoadName,
+            "plotSchematic" => $this->schematicPlotName,
 
-            "sizeRoad" => $this->sizeRoad,
-            "sizePlot" => $this->sizePlot,
-            "sizeGround" => $this->sizeGround,
+            "roadSize" => $this->roadSize,
+            "plotSize" => $this->plotSize,
+            "groundSize" => $this->groundSize,
 
-            "blockRoad" => $this->blockRoadId,
-            "blockBorder" => $this->blockBorderId,
-            "blockPlotFloor" => $this->blockPlotFloorId,
-            "blockPlotFill" => $this->blockPlotFillId,
-            "blockPlotBottom" => $this->blockPlotBottomId
+            "roadBlock" => $this->roadBlockFullID,
+            "borderBlock" => $this->borderBlockFullID,
+            "plotFloorBlock" => $this->plotFloorBlockFullID,
+            "plotFillBlock" => $this->plotFillBlockFullID,
+            "plotBottomBlock" => $this->plotBottomBlockFullID
         ]);
     }
 
@@ -86,30 +86,30 @@ class PlotGenerator extends Generator {
 
         $chunk = $world->getChunk($chunkX, $chunkZ);
         for ($X = 0; $X < 16; $X++) {
-            $x = CoordinateUtils::getRasterCoordinate($chunkX * 16 + $X, $this->sizeRoad + $this->sizePlot);
-            $xPlot = $x - $this->sizeRoad;
+            $x = CoordinateUtils::getRasterCoordinate($chunkX * 16 + $X, $this->roadSize + $this->plotSize);
+            $xPlot = $x - $this->roadSize;
 
             for ($Z = 0; $Z < 16; $Z++) {
-                $z = CoordinateUtils::getRasterCoordinate($chunkZ * 16 + $Z, $this->sizeRoad + $this->sizePlot);
-                $zPlot = $z - $this->sizeRoad;
+                $z = CoordinateUtils::getRasterCoordinate($chunkZ * 16 + $Z, $this->roadSize + $this->plotSize);
+                $zPlot = $z - $this->roadSize;
 
                 $chunk->setBiomeId($X, $Z, BiomeIds::PLAINS);
 
-                if ($x < $this->sizeRoad || $z < $this->sizeRoad) {
+                if ($x < $this->roadSize || $z < $this->roadSize) {
                     if ($this->schematicRoadName !== "default" && $this->schematicRoad !== null) {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             $chunk->setFullBlock($X, $y, $Z, $this->schematicRoad->getFullBlock($x, $y, $z));
                         }
                     } else {
-                        for ($y = $world->getMinY(); $y <= $this->sizeGround + 1; $y++) {
+                        for ($y = $world->getMinY(); $y <= $this->groundSize + 1; $y++) {
                             if ($y === $world->getMinY()) {
-                                $chunk->setFullBlock($X, $y, $Z, $this->blockPlotBottomId);
-                            } else if ($y === ($this->sizeGround + 1)) {
-                                if (CoordinateUtils::isRasterPositionOnBorder($x, $z, $this->sizeRoad)) {
-                                    $chunk->setFullBlock($X, $y, $Z, $this->blockBorderId);
+                                $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
+                            } else if ($y === ($this->groundSize + 1)) {
+                                if (CoordinateUtils::isRasterPositionOnBorder($x, $z, $this->roadSize)) {
+                                    $chunk->setFullBlock($X, $y, $Z, $this->borderBlockFullID);
                                 }
                             } else {
-                                $chunk->setFullBlock($X, $y, $Z, $this->blockRoadId);
+                                $chunk->setFullBlock($X, $y, $Z, $this->roadBlockFullID);
                             }
                         }
                     }
@@ -119,13 +119,13 @@ class PlotGenerator extends Generator {
                             $chunk->setFullBlock($X, $y, $Z, $this->schematicPlot->getFullBlock($xPlot, $y, $zPlot));
                         }
                     } else {
-                        for ($y = $world->getMinY(); $y <= $this->sizeGround; $y++) {
+                        for ($y = $world->getMinY(); $y <= $this->groundSize; $y++) {
                             if ($y === $world->getMinY()) {
-                                $chunk->setFullBlock($X, $y, $Z, $this->blockPlotBottomId);
-                            } else if ($y === $this->sizeGround) {
-                                $chunk->setFullBlock($X, $y, $Z, $this->blockPlotFloorId);
+                                $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
+                            } else if ($y === $this->groundSize) {
+                                $chunk->setFullBlock($X, $y, $Z, $this->plotFloorBlockFullID);
                             } else {
-                                $chunk->setFullBlock($X, $y, $Z, $this->blockPlotFillId);
+                                $chunk->setFullBlock($X, $y, $Z, $this->plotFillBlockFullID);
                             }
                         }
                     }

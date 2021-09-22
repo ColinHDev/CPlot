@@ -85,7 +85,7 @@ class ClaimSubcommand extends Subcommand {
             return;
         }
 
-        $blockBorderOnClaim = $worldSettings->getBlockBorderOnClaim();
+        $blockBorderOnClaim = $worldSettings->getBorderBlockOnClaim();
         $task = new PlotBorderChangeAsyncTask($worldSettings, $plot, $blockBorderOnClaim);
         $world = $sender->getWorld();
         $task->setWorld($world);

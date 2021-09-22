@@ -346,8 +346,8 @@ class Plot extends BasePlot {
         if (!$checkMerge) return null;
 
         // check for: position = road between plots in north (-z) and south (+z)
-        $basePlotInNorth = parent::fromPosition($position->getSide(Facing::NORTH, $worldSettings->getSizeRoad()));
-        $basePlotInSouth = parent::fromPosition($position->getSide(Facing::SOUTH, $worldSettings->getSizeRoad()));
+        $basePlotInNorth = parent::fromPosition($position->getSide(Facing::NORTH, $worldSettings->getRoadSize()));
+        $basePlotInSouth = parent::fromPosition($position->getSide(Facing::SOUTH, $worldSettings->getRoadSize()));
         if ($basePlotInNorth !== null && $basePlotInSouth !== null) {
             $plotInNorth = $basePlotInNorth->toPlot();
             if ($plotInNorth === null) return null;
@@ -356,8 +356,8 @@ class Plot extends BasePlot {
         }
 
         // check for: position = road between plots in west (-x) and east (+x)
-        $basePlotInWest = parent::fromPosition($position->getSide(Facing::WEST, $worldSettings->getSizeRoad()));
-        $basePlotInEast = parent::fromPosition($position->getSide(Facing::EAST, $worldSettings->getSizeRoad()));
+        $basePlotInWest = parent::fromPosition($position->getSide(Facing::WEST, $worldSettings->getRoadSize()));
+        $basePlotInEast = parent::fromPosition($position->getSide(Facing::EAST, $worldSettings->getRoadSize()));
         if ($basePlotInWest !== null && $basePlotInEast !== null) {
             $plotInWest = $basePlotInWest->toPlot();
             if ($plotInWest === null) return null;
@@ -366,10 +366,10 @@ class Plot extends BasePlot {
         }
 
         // check for: position = road center
-        $basePlotInNorthWest = parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getSizeRoad(), 0, - $worldSettings->getSizeRoad()), $position->getWorld()));
-        $basePlotInNorthEast = parent::fromPosition(Position::fromObject($position->add($worldSettings->getSizeRoad(), 0, - $worldSettings->getSizeRoad()), $position->getWorld()));
-        $basePlotInSouthWest = parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getSizeRoad(), 0, $worldSettings->getSizeRoad()), $position->getWorld()));
-        $basePlotInSouthEast = parent::fromPosition(Position::fromObject($position->add($worldSettings->getSizeRoad(), 0, $worldSettings->getSizeRoad()), $position->getWorld()));
+        $basePlotInNorthWest = parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInNorthEast = parent::fromPosition(Position::fromObject($position->add($worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInSouthWest = parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInSouthEast = parent::fromPosition(Position::fromObject($position->add($worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
         if ($basePlotInNorthWest !== null && $basePlotInNorthEast !== null && $basePlotInSouthWest !== null && $basePlotInSouthEast !== null) {
             $plotInNorthWest = $basePlotInNorthWest->toPlot();
             if ($plotInNorthWest === null) return null;

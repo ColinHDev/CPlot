@@ -107,10 +107,10 @@ class SQLiteProvider extends DataProvider {
         $sql = "
             CREATE TABLE IF NOT EXISTS worlds (
                 worldName VARCHAR(256) NOT NULL,
-                schematicRoad VARCHAR(256) NOT NULL, schematicMergeRoad VARCHAR(256) NOT NULL, schematicPlot VARCHAR(256) NOT NULL,
-                sizeRoad INTEGER NOT NULL, sizePlot INTEGER NOT NULL, sizeGround INTEGER NOT NULL,
-                blockRoad INTEGER NOT NULL, blockBorder INTEGER NOT NULL, blockBorderOnClaim INTEGER NOT NULL, 
-                blockPlotFloor INTEGER NOT NULL, blockPlotFill INTEGER NOT NULL, blockPlotBottom INTEGER NOT NULL, 
+                roadSchematic VARCHAR(256) NOT NULL, mergeRoadSchematic VARCHAR(256) NOT NULL, plotSchematic VARCHAR(256) NOT NULL,
+                roadSize INTEGER NOT NULL, plotSize INTEGER NOT NULL, groundSize INTEGER NOT NULL,
+                roadBlock INTEGER NOT NULL, borderBlock INTEGER NOT NULL, borderBlockOnClaim INTEGER NOT NULL, 
+                plotFloorBlock INTEGER NOT NULL, plotFillBlock INTEGER NOT NULL, plotBottomBlock INTEGER NOT NULL, 
                 PRIMARY KEY (worldName)
             );";
         $this->database->exec($sql);
@@ -119,8 +119,8 @@ class SQLiteProvider extends DataProvider {
         $this->getWorld = $this->createSQLite3Stmt($sql);
         $sql =
             "INSERT OR REPLACE INTO worlds 
-            (worldName, schematicRoad, schematicMergeRoad, schematicPlot, sizeRoad, sizePlot, sizeGround, blockRoad, blockBorder, blockBorderOnClaim, blockPlotFloor, blockPlotFill, blockPlotBottom) VALUES 
-            (:worldName, :schematicRoad, :schematicMergeRoad, :schematicPlot, :sizeRoad, :sizePlot, :sizeGround, :blockRoad, :blockBorder, :blockBorderOnClaim, :blockPlotFloor, :blockPlotFill, :blockPlotBottom);";
+            (worldName, roadSchematic, mergeRoadSchematic, plotSchematic, roadSize, plotSize, groundSize, roadBlock, borderBlock, borderBlockOnClaim, plotFloorBlock, plotFillBlock, plotBottomBlock) VALUES 
+            (:worldName, :roadSchematic, :mergeRoadSchematic, :plotSchematic, :roadSize, :plotSize, :groundSize, :roadBlock, :borderBlock, :borderBlockOnClaim, :plotFloorBlock, :plotFillBlock, :plotBottomBlock);";
         $this->setWorld = $this->createSQLite3Stmt($sql);
 
         $sql =
@@ -382,20 +382,20 @@ class SQLiteProvider extends DataProvider {
     public function addWorld(string $worldName, WorldSettings $worldSettings) : bool {
         $this->setWorld->bindValue(":worldName", $worldName, SQLITE3_TEXT);
 
-        $this->setWorld->bindValue(":schematicRoad", $worldSettings->getSchematicRoad(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":schematicMergeRoad", $worldSettings->getSchematicMergeRoad(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":schematicPlot", $worldSettings->getSchematicPlot(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":roadSchematic", $worldSettings->getRoadSchematic(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":mergeRoadSchematic", $worldSettings->getMergeRoadSchematic(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":plotSchematic", $worldSettings->getPlotSchematic(), SQLITE3_TEXT);
 
-        $this->setWorld->bindValue(":sizeRoad", $worldSettings->getSizeRoad(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":sizePlot", $worldSettings->getSizePlot(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":sizeGround", $worldSettings->getSizeGround(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":roadSize", $worldSettings->getRoadSize(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":plotSize", $worldSettings->getPlotSize(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":groundSize", $worldSettings->getGroundSize(), SQLITE3_INTEGER);
 
-        $this->setWorld->bindValue(":blockRoad", $worldSettings->getBlockRoad()->getFullId(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":blockBorder", $worldSettings->getBlockBorder()->getFullId(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":blockBorderOnClaim", $worldSettings->getBlockBorderOnClaim()->getFullId(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":blockPlotFloor", $worldSettings->getBlockPlotFloor()->getFullId(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":blockPlotFill", $worldSettings->getBlockPlotFill()->getFullId(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":blockPlotBottom", $worldSettings->getBlockPlotBottom()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":roadBlock", $worldSettings->getRoadBlock()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":borderBlock", $worldSettings->getBorderBlock()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":borderBlockOnClaim", $worldSettings->getBorderBlockOnClaim()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":plotFloorBlock", $worldSettings->getPlotFloorBlock()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":plotFillBlock", $worldSettings->getPlotFillBlock()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":plotBottomBlock", $worldSettings->getPlotBottomBlock()->getFullId(), SQLITE3_INTEGER);
 
         $this->setWorld->reset();
         $result = $this->setWorld->execute();

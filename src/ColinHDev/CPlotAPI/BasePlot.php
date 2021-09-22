@@ -40,12 +40,12 @@ class BasePlot implements Cacheable {
 
         $vector = $this->getPosition();
         if ($toPlotCenter) {
-            $vector->x += floor($worldSettings->getSizePlot() / 2);
+            $vector->x += floor($worldSettings->getPlotSize() / 2);
         } else {
             $vector->x -= 1;
         }
         $vector->y += 1;
-        $vector->z += floor($worldSettings->getSizePlot() / 2);
+        $vector->z += floor($worldSettings->getPlotSize() / 2);
 
         $world = Server::getInstance()->getWorldManager()->getWorldByName($this->worldName);
         if ($world === null) return false;
@@ -75,9 +75,9 @@ class BasePlot implements Cacheable {
         $worldSettings = CPlot::getInstance()->getProvider()->getWorld($this->worldName);
         if ($worldSettings === null) return false;
 
-        $totalSize = $worldSettings->getSizeRoad() + $worldSettings->getSizePlot();
-        if ($position->getX() < $this->x * $totalSize + $worldSettings->getSizeRoad()) return false;
-        if ($position->getZ() < $this->z * $totalSize + $worldSettings->getSizeRoad()) return false;
+        $totalSize = $worldSettings->getRoadSize() + $worldSettings->getPlotSize();
+        if ($position->getX() < $this->x * $totalSize + $worldSettings->getRoadSize()) return false;
+        if ($position->getZ() < $this->z * $totalSize + $worldSettings->getRoadSize()) return false;
         if ($position->getX() > $this->x * $totalSize + ($totalSize - 1)) return false;
         if ($position->getZ() > $this->z * $totalSize + ($totalSize - 1)) return false;
 
@@ -99,7 +99,7 @@ class BasePlot implements Cacheable {
     public function getPosition() : ?Vector3 {
         $worldSettings = CPlot::getInstance()->getProvider()->getWorld($this->worldName);
         if ($worldSettings === null) return null;
-        return $this->getPositionNonNull($worldSettings->getSizeRoad(), $worldSettings->getSizePlot(), $worldSettings->getSizeGround());
+        return $this->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
     }
 
     public function getPositionNonNull(int $sizeRoad, int $sizePlot, int $sizeGround) : Vector3 {
@@ -114,27 +114,27 @@ class BasePlot implements Cacheable {
         $worldSettings = CPlot::getInstance()->getProvider()->getWorld($position->getWorld()->getFolderName());
         if ($worldSettings === null) return null;
 
-        $totalSize = $worldSettings->getSizePlot() + $worldSettings->getSizeRoad();
+        $totalSize = $worldSettings->getPlotSize() + $worldSettings->getRoadSize();
 
-        $x = $position->getFloorX() - $worldSettings->getSizeRoad();
+        $x = $position->getFloorX() - $worldSettings->getRoadSize();
         if ($x >= 0) {
             $X = (int) floor($x / $totalSize);
             $difX = $x % $totalSize;
         } else {
-            $X = (int) ceil(($x - $worldSettings->getSizePlot() + 1) / $totalSize);
-            $difX = abs(($x - $worldSettings->getSizePlot() + 1) % $totalSize);
+            $X = (int) ceil(($x - $worldSettings->getPlotSize() + 1) / $totalSize);
+            $difX = abs(($x - $worldSettings->getPlotSize() + 1) % $totalSize);
         }
 
-        $z = $position->getFloorZ() - $worldSettings->getSizeRoad();
+        $z = $position->getFloorZ() - $worldSettings->getRoadSize();
         if ($z >= 0) {
             $Z = (int) floor($z / $totalSize);
             $difZ = $z % $totalSize;
         } else {
-            $Z = (int) ceil(($z - $worldSettings->getSizePlot() + 1) / $totalSize);
-            $difZ = abs(($z - $worldSettings->getSizePlot() + 1) % $totalSize);
+            $Z = (int) ceil(($z - $worldSettings->getPlotSize() + 1) / $totalSize);
+            $difZ = abs(($z - $worldSettings->getPlotSize() + 1) % $totalSize);
         }
 
-        if (($difX > $worldSettings->getSizePlot() - 1) || ($difZ > $worldSettings->getSizePlot() - 1)) return null;
+        if (($difX > $worldSettings->getPlotSize() - 1) || ($difZ > $worldSettings->getPlotSize() - 1)) return null;
         return new self($position->getWorld()->getFolderName(), $X, $Z);
     }
 

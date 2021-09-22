@@ -11,102 +11,102 @@ use pocketmine\item\StringToItemParser;
 
 class WorldSettings implements Cacheable {
 
-    private string $schematicRoad;
-    private string $schematicMergeRoad;
-    private string $schematicPlot;
+    private string $roadSchematic;
+    private string $mergeRoadSchematic;
+    private string $plotSchematic;
 
-    private int $sizeRoad;
-    private int $sizePlot;
-    private int $sizeGround;
+    private int $roadSize;
+    private int $plotSize;
+    private int $groundSize;
 
-    private Block $blockRoad;
-    private Block $blockBorder;
-    private Block $blockBorderOnClaim;
-    private Block $blockPlotFloor;
-    private Block $blockPlotFill;
-    private Block $blockPlotBottom;
+    private Block $roadBlock;
+    private Block $borderBlock;
+    private Block $borderBlockOnClaim;
+    private Block $plotFloorBlock;
+    private Block $plotFillBlock;
+    private Block $plotBottomBlock;
 
-    public function __construct(string $schematicRoad, string $schematicMergeRoad, string $schematicPlot, int $sizeRoad, int $sizePlot, int $sizeGround, Block $blockRoad, Block $blockBorder, Block $blockBorderOnClaim, Block $blockPlotFloor, Block $blockPlotFill, Block $blockPlotBottom) {
-        $this->schematicRoad = $schematicRoad;
-        $this->schematicMergeRoad = $schematicMergeRoad;
-        $this->schematicPlot = $schematicPlot;
+    public function __construct(string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, Block $roadBlock, Block $borderBlock, Block $borderBlockOnClaim, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
+        $this->roadSchematic = $roadSchematic;
+        $this->mergeRoadSchematic = $mergeRoadSchematic;
+        $this->plotSchematic = $plotSchematic;
 
-        $this->sizeRoad = $sizeRoad;
-        $this->sizePlot = $sizePlot;
-        $this->sizeGround = $sizeGround;
+        $this->roadSize = $roadSize;
+        $this->plotSize = $plotSize;
+        $this->groundSize = $groundSize;
 
-        $this->blockRoad = $blockRoad;
-        $this->blockBorder = $blockBorder;
-        $this->blockBorderOnClaim = $blockBorderOnClaim;
-        $this->blockPlotFloor = $blockPlotFloor;
-        $this->blockPlotFill = $blockPlotFill;
-        $this->blockPlotBottom = $blockPlotBottom;
+        $this->roadBlock = $roadBlock;
+        $this->borderBlock = $borderBlock;
+        $this->borderBlockOnClaim = $borderBlockOnClaim;
+        $this->plotFloorBlock = $plotFloorBlock;
+        $this->plotFillBlock = $plotFillBlock;
+        $this->plotBottomBlock = $plotBottomBlock;
     }
 
-    public function getSchematicRoad() : string {
-        return $this->schematicRoad;
+    public function getRoadSchematic() : string {
+        return $this->roadSchematic;
     }
 
-    public function getSchematicMergeRoad() : string {
-        return $this->schematicMergeRoad;
+    public function getMergeRoadSchematic() : string {
+        return $this->mergeRoadSchematic;
     }
 
-    public function getSchematicPlot() : string {
-        return $this->schematicPlot;
+    public function getPlotSchematic() : string {
+        return $this->plotSchematic;
     }
 
-    public function getSizeRoad() : int {
-        return $this->sizeRoad;
+    public function getRoadSize() : int {
+        return $this->roadSize;
     }
 
-    public function getSizePlot() : int {
-        return $this->sizePlot;
+    public function getPlotSize() : int {
+        return $this->plotSize;
     }
 
-    public function getSizeGround() : int {
-        return $this->sizeGround;
+    public function getGroundSize() : int {
+        return $this->groundSize;
     }
 
-    public function getBlockRoad() : Block {
-        return $this->blockRoad;
+    public function getRoadBlock() : Block {
+        return $this->roadBlock;
     }
 
-    public function getBlockBorder() : Block {
-        return $this->blockBorder;
+    public function getBorderBlock() : Block {
+        return $this->borderBlock;
     }
 
-    public function getBlockBorderOnClaim() : Block {
-        return $this->blockBorderOnClaim;
+    public function getBorderBlockOnClaim() : Block {
+        return $this->borderBlockOnClaim;
     }
 
-    public function getBlockPlotFloor() : Block {
-        return $this->blockPlotFloor;
+    public function getPlotFloorBlock() : Block {
+        return $this->plotFloorBlock;
     }
 
-    public function getBlockPlotFill() : Block {
-        return $this->blockPlotFill;
+    public function getPlotFillBlock() : Block {
+        return $this->plotFillBlock;
     }
 
-    public function getBlockPlotBottom() : Block {
-        return $this->blockPlotBottom;
+    public function getPlotBottomBlock() : Block {
+        return $this->plotBottomBlock;
     }
 
     public function toArray() : array {
         return [
-            "schematicRoad" => $this->schematicRoad,
-            "schematicMergeRoad" => $this->schematicMergeRoad,
-            "schematicPlot" => $this->schematicPlot,
+            "roadSchematic" => $this->roadSchematic,
+            "mergeRoadSchematic" => $this->mergeRoadSchematic,
+            "plotSchematic" => $this->plotSchematic,
 
-            "sizeRoad" => $this->sizeRoad,
-            "sizePlot" => $this->sizePlot,
-            "sizeGround" => $this->sizeGround,
+            "roadSize" => $this->roadSize,
+            "plotSize" => $this->plotSize,
+            "groundSize" => $this->groundSize,
 
-            "blockRoad" => $this->blockRoad->getFullId(),
-            "blockBorder" => $this->blockBorder->getFullId(),
-            "blockBorderOnClaim" => $this->blockBorderOnClaim->getFullId(),
-            "blockPlotFloor" => $this->blockPlotFloor->getFullId(),
-            "blockPlotFill" => $this->blockPlotFill->getFullId(),
-            "blockPlotBottom" => $this->blockPlotBottom->getFullId()
+            "roadBlock" => $this->roadBlock->getFullId(),
+            "borderBlock" => $this->borderBlock->getFullId(),
+            "borderBlockOnClaim" => $this->borderBlockOnClaim->getFullId(),
+            "plotFloorBlock" => $this->plotFloorBlock->getFullId(),
+            "plotFillBlock" => $this->plotFillBlock->getFullId(),
+            "plotBottomBlock" => $this->plotBottomBlock->getFullId()
         ];
     }
 
@@ -116,25 +116,25 @@ class WorldSettings implements Cacheable {
     }
 
     public static function fromArray(array $settings) : self {
-        $schematicRoad = self::parseStringFromArray($settings, "schematicRoad", "default");
-        $schematicMergeRoad = self::parseStringFromArray($settings, "schematicMergeRoad", "default");
-        $schematicPlot = self::parseStringFromArray($settings, "schematicPlot", "default");
+        $roadSchematic = self::parseStringFromArray($settings, "roadSchematic", "default");
+        $mergeRoadSchematic = self::parseStringFromArray($settings, "mergeRoadSchematic", "default");
+        $plotSchematic = self::parseStringFromArray($settings, "plotSchematic", "default");
 
-        $sizeRoad = self::parseIntegerFromArray($settings, "sizeRoad", 7);
-        $sizePlot = self::parseIntegerFromArray($settings, "sizePlot", 32);
-        $sizeGround = self::parseIntegerFromArray($settings, "sizeGround", 64);
+        $roadSize = self::parseIntegerFromArray($settings, "roadSize", 7);
+        $plotSize = self::parseIntegerFromArray($settings, "plotSize", 32);
+        $groundSize = self::parseIntegerFromArray($settings, "groundSize", 64);
 
-        $blockRoad = self::parseBlockFromArray($settings, "blockRoad", VanillaBlocks::OAK_PLANKS());
-        $blockBorder = self::parseBlockFromArray($settings, "blockBorder", VanillaBlocks::STONE_SLAB());
-        $blockBorderOnClaim = self::parseBlockFromArray($settings, "blockBorderOnClaim", VanillaBlocks::COBBLESTONE_SLAB());
-        $blockPlotFloor = self::parseBlockFromArray($settings, "blockPlotFloor", VanillaBlocks::GRASS());
-        $blockPlotFill = self::parseBlockFromArray($settings, "blockPlotFill", VanillaBlocks::DIRT());
-        $blockPlotBottom = self::parseBlockFromArray($settings, "blockPlotBottom", VanillaBlocks::BEDROCK());
+        $roadBlock = self::parseBlockFromArray($settings, "roadBlock", VanillaBlocks::OAK_PLANKS());
+        $borderBlock = self::parseBlockFromArray($settings, "borderBlock", VanillaBlocks::STONE_SLAB());
+        $borderBlockOnClaim = self::parseBlockFromArray($settings, "borderBlockOnClaim", VanillaBlocks::COBBLESTONE_SLAB());
+        $plotFloorBlock = self::parseBlockFromArray($settings, "plotFloorBlock", VanillaBlocks::GRASS());
+        $plotFillBlock = self::parseBlockFromArray($settings, "plotFillBlock", VanillaBlocks::DIRT());
+        $plotBottomBlock = self::parseBlockFromArray($settings, "plotBottomBlock", VanillaBlocks::BEDROCK());
 
         return new self(
-            $schematicRoad, $schematicMergeRoad, $schematicPlot,
-            $sizeRoad, $sizePlot, $sizeGround,
-            $blockRoad, $blockBorder, $blockBorderOnClaim, $blockPlotFloor, $blockPlotFill, $blockPlotBottom
+            $roadSchematic, $mergeRoadSchematic, $plotSchematic,
+            $roadSize, $plotSize, $groundSize,
+            $roadBlock, $borderBlock, $borderBlockOnClaim, $plotFloorBlock, $plotFillBlock, $plotBottomBlock
         );
     }
 

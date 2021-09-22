@@ -13,47 +13,47 @@ worldSettings:
 
     # schematic for the road of the plot world
     # default value: "default" (no schematic)
-    schematicRoad: "default"
+    roadSchematic: "default"
     # schematic for the merged road of the plot world
     # default value: "default" (no schematic)
-    schematicMergeRoad: "default"
+    mergeRoadSchematic: "default"
     # schematic for the plots of the plot world
     # default value: "default" (no schematic)
-    schematicPlot: "default"
+    plotSchematic: "default"
 
     # the width of the street
     # default value: 7
     # minimum value: 3
-    sizeRoad: 7
+    roadSize: 7
     # the size of the plot
     # default value: 32
     # minimum value: 5
-    sizePlot: 32
+    plotSize: 32
     # the hight of the plot
     # default value: 64
     # maximum value: 254
     # minimum value: 5
-    sizeGround: 64
+    groundSize: 64
 
     # the block that makes up the street
     # default value: "Oak Planks"
-    blockRoad: "Oak Planks"
+    roadBlock: "Oak Planks"
     # the block that makes up the border of the plot
     # default value: "Smooth Stone Slab"
-    blockBorder: "Smooth Stone Slab"
+    borderBlock: "Smooth Stone Slab"
     # the block that makes up the border of the plot when it is claimed
     # default value: "Cobblestone Slab"
-    blockBorderOnClaim: "Cobblestone Slab"
+    borderBlockOnClaim: "Cobblestone Slab"
 
     # the block that makes up the floor of the plot
     # default value: "Grass"
-    blockPlotFloor: "Grass"
+    plotFloorBlock: "Grass"
     # the block with which the plot is filled
     # default value: "Dirt"
-    blockPlotFill: "Dirt"
+    plotFillBlock: "Dirt"
     # the block that makes up the bottom of the plots
     # default value: "Bedrock"
-    blockPlotBottom: "Bedrock"
+    plotBottomBlock: "Bedrock"
 
 # database settings
 database:
