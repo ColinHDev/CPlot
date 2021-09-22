@@ -109,8 +109,8 @@ class SQLiteProvider extends DataProvider {
                 worldName VARCHAR(256) NOT NULL,
                 schematicRoad VARCHAR(256) NOT NULL, schematicMergeRoad VARCHAR(256) NOT NULL, schematicPlot VARCHAR(256) NOT NULL,
                 sizeRoad INTEGER NOT NULL, sizePlot INTEGER NOT NULL, sizeGround INTEGER NOT NULL,
-                blockRoad VARCHAR(256) NOT NULL, blockBorder VARCHAR(256) NOT NULL, blockBorderOnClaim VARCHAR(256) NOT NULL, 
-                blockPlotFloor VARCHAR(256) NOT NULL, blockPlotFill VARCHAR(256) NOT NULL, blockPlotBottom VARCHAR(256) NOT NULL, 
+                blockRoad INTEGER NOT NULL, blockBorder INTEGER NOT NULL, blockBorderOnClaim INTEGER NOT NULL, 
+                blockPlotFloor INTEGER NOT NULL, blockPlotFill INTEGER NOT NULL, blockPlotBottom INTEGER NOT NULL, 
                 PRIMARY KEY (worldName)
             );";
         $this->database->exec($sql);
@@ -390,12 +390,12 @@ class SQLiteProvider extends DataProvider {
         $this->setWorld->bindValue(":sizePlot", $worldSettings->getSizePlot(), SQLITE3_INTEGER);
         $this->setWorld->bindValue(":sizeGround", $worldSettings->getSizeGround(), SQLITE3_INTEGER);
 
-        $this->setWorld->bindValue(":blockRoad", $worldSettings->getBlockRoad()->getName(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockBorder", $worldSettings->getBlockBorder()->getName(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockBorderOnClaim", $worldSettings->getBlockBorderOnClaim()->getName(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockPlotFloor", $worldSettings->getBlockPlotFloor()->getName(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockPlotFill", $worldSettings->getBlockPlotFill()->getName(), SQLITE3_TEXT);
-        $this->setWorld->bindValue(":blockPlotBottom", $worldSettings->getBlockPlotBottom()->getName(), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":blockRoad", $worldSettings->getBlockRoad()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":blockBorder", $worldSettings->getBlockBorder()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":blockBorderOnClaim", $worldSettings->getBlockBorderOnClaim()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":blockPlotFloor", $worldSettings->getBlockPlotFloor()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":blockPlotFill", $worldSettings->getBlockPlotFill()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":blockPlotBottom", $worldSettings->getBlockPlotBottom()->getFullId(), SQLITE3_INTEGER);
 
         $this->setWorld->reset();
         $result = $this->setWorld->execute();

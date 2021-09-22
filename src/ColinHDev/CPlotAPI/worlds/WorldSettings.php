@@ -101,12 +101,12 @@ class WorldSettings implements Cacheable {
             "sizePlot" => $this->sizePlot,
             "sizeGround" => $this->sizeGround,
 
-            "blockRoad" => $this->blockRoad->getName(),
-            "blockBorder" => $this->blockBorder->getName(),
-            "blockBorderOnClaim" => $this->blockBorderOnClaim->getName(),
-            "blockPlotFloor" => $this->blockPlotFloor->getName(),
-            "blockPlotFill" => $this->blockPlotFill->getName(),
-            "blockPlotBottom" => $this->blockPlotBottom->getName()
+            "blockRoad" => $this->blockRoad->getFullId(),
+            "blockBorder" => $this->blockBorder->getFullId(),
+            "blockBorderOnClaim" => $this->blockBorderOnClaim->getFullId(),
+            "blockPlotFloor" => $this->blockPlotFloor->getFullId(),
+            "blockPlotFill" => $this->blockPlotFill->getFullId(),
+            "blockPlotBottom" => $this->blockPlotBottom->getFullId()
         ];
     }
 

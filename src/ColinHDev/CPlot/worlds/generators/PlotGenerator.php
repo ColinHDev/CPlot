@@ -47,16 +47,11 @@ class PlotGenerator extends Generator {
         $this->sizePlot = WorldSettings::parseIntegerFromArray($generatorOptions, "sizePlot", 32);
         $this->sizeGround = WorldSettings::parseIntegerFromArray($generatorOptions, "sizeGround", 64);
 
-        $blockRoad = WorldSettings::parseBlockFromArray($generatorOptions, "blockRoad", VanillaBlocks::OAK_PLANKS());
-        $this->blockRoadId = $blockRoad->getFullId();
-        $blockBorder = WorldSettings::parseBlockFromArray($generatorOptions, "blockBorder", VanillaBlocks::STONE_SLAB());
-        $this->blockBorderId = $blockBorder->getFullId();
-        $blockPlotFloor = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotFloor", VanillaBlocks::GRASS());
-        $this->blockPlotFloorId = $blockPlotFloor->getFullId();
-        $blockPlotFill = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotFill", VanillaBlocks::DIRT());
-        $this->blockPlotFillId = $blockPlotFill->getFullId();
-        $blockPlotBottom = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotBottom", VanillaBlocks::BEDROCK());
-        $this->blockPlotBottomId = $blockPlotBottom->getFullId();
+        $this->blockRoadId = WorldSettings::parseBlockFromArray($generatorOptions, "blockRoad", VanillaBlocks::OAK_PLANKS())->getFullId();
+        $this->blockBorderId = WorldSettings::parseBlockFromArray($generatorOptions, "blockBorder", VanillaBlocks::STONE_SLAB())->getFullId();
+        $this->blockPlotFloorId = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotFloor", VanillaBlocks::GRASS())->getFullId();
+        $this->blockPlotFillId = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotFill", VanillaBlocks::DIRT())->getFullId();
+        $this->blockPlotBottomId = WorldSettings::parseBlockFromArray($generatorOptions, "blockPlotBottom", VanillaBlocks::BEDROCK())->getFullId();
 
         $this->preset = (string) json_encode([
             "schematicRoad" => $this->schematicRoadName,
@@ -66,11 +61,11 @@ class PlotGenerator extends Generator {
             "sizePlot" => $this->sizePlot,
             "sizeGround" => $this->sizeGround,
 
-            "blockRoad" => $blockRoad->getName(),
-            "blockBorder" => $blockBorder->getName(),
-            "blockPlotFloor" => $blockPlotFloor->getName(),
-            "blockPlotFill" => $blockPlotFill->getName(),
-            "blockPlotBottom" => $blockPlotBottom->getName()
+            "blockRoad" => $this->blockRoadId,
+            "blockBorder" => $this->blockBorderId,
+            "blockPlotFloor" => $this->blockPlotFloorId,
+            "blockPlotFill" => $this->blockPlotFillId,
+            "blockPlotBottom" => $this->blockPlotBottomId
         ]);
     }
 
