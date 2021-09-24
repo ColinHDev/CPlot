@@ -4,7 +4,7 @@ namespace ColinHDev\CPlotAPI;
 
 use ColinHDev\CPlot\CPlot;
 
-class MergedPlot extends BasePlot {
+class MergePlot extends BasePlot {
 
     protected int $originX;
     protected int $originZ;

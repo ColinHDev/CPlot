@@ -23,7 +23,7 @@ class Plot extends BasePlot {
     private ?int $claimTime;
     private ?string $alias;
 
-    /** @var null | MergedPlot[] */
+    /** @var null | MergePlot[] */
     private ?array $mergedPlots = null;
 
     /** @var null | PlotPlayer[] */
@@ -124,7 +124,7 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @return MergedPlot[] | null
+     * @return MergePlot[] | null
      */
     public function getMergedPlots() : ?array {
         return $this->mergedPlots;
@@ -137,13 +137,13 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @param MergedPlot[] | null $mergedPlots
+     * @param MergePlot[] | null $mergedPlots
      */
     public function setMergedPlots(?array $mergedPlots) : void {
         $this->mergedPlots = $mergedPlots;
     }
 
-    public function addMerge(MergedPlot $mergedPlot) : bool {
+    public function addMerge(MergePlot $mergedPlot) : bool {
         if ($this->mergedPlots === null) return false;
         $this->mergedPlots[$mergedPlot->toString()] = $mergedPlot;
         return true;
@@ -154,7 +154,7 @@ class Plot extends BasePlot {
         if ($plot->getMergedPlots() === null && !$plot->loadMergedPlots()) return false;
 
         foreach (array_merge([$plot], $plot->getMergedPlots()) as $mergedPlot) {
-            $this->addMerge(MergedPlot::fromBasePlot($mergedPlot, $this->x, $this->z));
+            $this->addMerge(MergePlot::fromBasePlot($mergedPlot, $this->x, $this->z));
         }
 
         return CPlot::getInstance()->getProvider()->mergePlots($this, $plot, ...$plot->getMergedPlots());

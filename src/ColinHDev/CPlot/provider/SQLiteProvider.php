@@ -11,7 +11,7 @@ use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
 use ColinHDev\CPlotAPI\flags\FlagManager;
-use ColinHDev\CPlotAPI\MergedPlot;
+use ColinHDev\CPlotAPI\MergePlot;
 use ColinHDev\CPlotAPI\Plot;
 use Exception;
 use pocketmine\data\bedrock\BiomeIds;
@@ -510,7 +510,7 @@ class SQLiteProvider extends DataProvider {
 
 
     /**
-     * @return MergedPlot[] | null
+     * @return MergePlot[] | null
      */
     public function getMergedPlots(Plot $plot) : ?array {
         $this->getMergedPlots->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
@@ -523,7 +523,7 @@ class SQLiteProvider extends DataProvider {
 
         $mergedPlots = [];
         while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            $mergedPlot = new MergedPlot($plot->getWorldName(), $var["mergedX"], $var["mergedZ"], $plot->getX(), $plot->getZ());
+            $mergedPlot = new MergePlot($plot->getWorldName(), $var["mergedX"], $var["mergedZ"], $plot->getX(), $plot->getZ());
             $this->getPlotCache()->cacheObject($mergedPlot->toString(), $mergedPlot);
             $mergedPlots[$mergedPlot->toString()] = $mergedPlot;
         }
@@ -531,7 +531,7 @@ class SQLiteProvider extends DataProvider {
     }
 
     public function getMergeOrigin(BasePlot $plot) : ?Plot {
-        if ($plot instanceof MergedPlot) {
+        if ($plot instanceof MergePlot) {
             return $this->getPlot($plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ());
         }
 
@@ -544,7 +544,7 @@ class SQLiteProvider extends DataProvider {
         if (!$result instanceof SQLite3Result) return null;
 
         if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            $mergedPlot = MergedPlot::fromBasePlot($plot, $var["originX"], $var["originZ"]);
+            $mergedPlot = MergePlot::fromBasePlot($plot, $var["originX"], $var["originZ"]);
             $this->getPlotCache()->cacheObject($mergedPlot->toString(), $mergedPlot);
             return $mergedPlot->toPlot();
         }
@@ -571,7 +571,7 @@ class SQLiteProvider extends DataProvider {
         }
 
         foreach ($plots as $plot) {
-            $mergedPlot = MergedPlot::fromBasePlot($plot, $origin->getX(), $origin->getZ());
+            $mergedPlot = MergePlot::fromBasePlot($plot, $origin->getX(), $origin->getZ());
             $this->getPlotCache()->cacheObject($mergedPlot->toString(), $mergedPlot);
         }
         $this->getPlotCache()->cacheObject($origin->toString(), $origin);

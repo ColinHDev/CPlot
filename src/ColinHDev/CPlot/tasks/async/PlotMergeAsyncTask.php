@@ -8,7 +8,7 @@ use ColinHDev\CPlotAPI\worlds\schematics\Schematic;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\math\CoordinateUtils;
-use ColinHDev\CPlotAPI\MergedPlot;
+use ColinHDev\CPlotAPI\MergePlot;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\utils\SubChunkExplorer;
@@ -41,7 +41,7 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
 
         /** @var BasePlot $mergedPlotToMerge */
         foreach (array_merge([$plotToMerge], $plotToMerge->getMergedPlots()) as $mergedPlotToMerge) {
-            $plot->addMerge(MergedPlot::fromBasePlot($mergedPlotToMerge, $plot->getX(), $plot->getZ()));
+            $plot->addMerge(MergePlot::fromBasePlot($mergedPlotToMerge, $plot->getX(), $plot->getZ()));
         }
 
         $borderAreasToChange = $this->calculatePlotBorderAreas($worldSettings, $plot);
