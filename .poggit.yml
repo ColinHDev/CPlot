@@ -5,4 +5,7 @@ branches:
 projects:
   CPlot:
     path: ""
+    libs:
+    - src: dktapps-pm-pl/pmforms/pmforms
+      version: ^1.0.0
 ...
