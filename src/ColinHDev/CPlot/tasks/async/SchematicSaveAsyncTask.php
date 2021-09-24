@@ -27,7 +27,7 @@ class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
         $schematic->loadFromWorld($this->getChunkManager(), $this->type, $this->sizeRoad, $this->sizePlot);
         $schematic->save();
 
-        $blocksCount = count($schematic->getFullBlocks());
+        $blocksCount = $schematic->getBlockCount();
 
         $bytes = $fileSize = filesize($this->file);
         $megabytes = floor($bytes / 1048576); // 1.048.576 = 1024 * 1024

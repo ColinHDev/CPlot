@@ -2,13 +2,14 @@
 
 namespace ColinHDev\CPlotAPI\worlds\schematics;
 
-use pocketmine\block\BlockFactory;
+use pocketmine\block\Block;
 use pocketmine\block\BlockLegacyIds;
+use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
+use pocketmine\nbt\BigEndianNbtSerializer;
 use pocketmine\world\ChunkManager;
 use pocketmine\world\utils\SubChunkExplorer;
 use pocketmine\world\utils\SubChunkExplorerStatus;
 use pocketmine\world\World;
-use pocketmine\nbt\BigEndianNbtSerializer;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\TreeRoot;
 
@@ -27,8 +28,12 @@ class Schematic implements SchematicTypes {
     private int $roadSize;
     private int $plotSize;
 
-    /** @var int[] */
-    private array $blocks;
+    /** @var array<int, string> */
+    private array $blockStringIDs = [];
+    /** @var array<int, int> */
+    private array $blockIDs = [];
+    /** @var array<int, int> */
+    private array $blockMetas = [];
 
     public function __construct(string $name, string $file) {
         $this->name = $name;
@@ -37,14 +42,31 @@ class Schematic implements SchematicTypes {
 
     public function save() : bool {
         $nbt = new CompoundTag();
-        $nbt->setShort("version", $this->version);
-        $nbt->setLong("creationTime", $this->creationTime);
-        $nbt->setString("type", $this->type);
-        $nbt->setShort("roadSize", $this->roadSize);
-        $nbt->setShort("plotSize", $this->plotSize);
-        $nbt->setByteArray("blocks", json_encode($this->blocks));
-        $nbtSerializer = new BigEndianNbtSerializer();
-        file_put_contents($this->file, zlib_encode($nbtSerializer->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));
+
+        $nbt->setShort("Version", $this->version);
+        $nbt->setLong("CreationTime", $this->creationTime);
+        $nbt->setString("Type", $this->type);
+        $nbt->setShort("RoadSize", $this->roadSize);
+        $nbt->setShort("PlotSize", $this->plotSize);
+
+        $blockTreeRoots = [];
+        foreach ($this->blockStringIDs as $coordinateHash => $blockStringID) {
+            $blockNBT = new CompoundTag();
+
+            $blockNBT->setString("StringID", $blockStringID);
+            $blockNBT->setInt("ID", $this->blockIDs[$coordinateHash]);
+            $blockNBT->setShort("Meta", $this->blockMetas[$coordinateHash]);
+
+            World::getBlockXYZ($coordinateHash, $x, $y, $z);
+            $blockNBT->setShort("X", $x);
+            $blockNBT->setShort("Y", $y);
+            $blockNBT->setShort("Z", $z);
+
+            $blockTreeRoots[] = new TreeRoot($blockNBT, $coordinateHash);
+        }
+        $nbt->setByteArray("Blocks", zlib_encode((new BigEndianNbtSerializer())->writeMultiple($blockTreeRoots), ZLIB_ENCODING_GZIP));
+
+        file_put_contents($this->file, zlib_encode((new BigEndianNbtSerializer())->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));
         return true;
     }
 
@@ -54,16 +76,29 @@ class Schematic implements SchematicTypes {
         $contents = file_get_contents($this->file);
         if ($contents === false) return false;
 
-        $decompressed = @zlib_decode($contents);
+        $decompressed = zlib_decode($contents);
         if ($decompressed === false) return false;
 
         $nbt = (new BigEndianNbtSerializer())->read($decompressed)->mustGetCompoundTag();
-        $this->version = $nbt->getShort("version");
-        $this->creationTime = $nbt->getLong("creationTime");
-        $this->type = $nbt->getString("type");
-        $this->roadSize = $nbt->getShort("roadSize");
-        $this->plotSize = $nbt->getShort("plotSize");
-        $this->blocks = json_decode($nbt->getByteArray("blocks"), true);
+
+        $this->version = $nbt->getShort("Version");
+        $this->creationTime = $nbt->getLong("CreationTime");
+        $this->type = $nbt->getString("Type");
+        $this->roadSize = $nbt->getShort("RoadSize");
+        $this->plotSize = $nbt->getShort("PlotSize");
+
+        $decompressed = zlib_decode($nbt->getByteArray("Blocks"));
+        if ($decompressed === false) return false;
+
+        $blockTreeRoots = (new BigEndianNbtSerializer())->readMultiple($decompressed);
+        foreach ($blockTreeRoots as $blockTreeRoot) {
+            $blockNBT = $blockTreeRoot->mustGetCompoundTag();
+            $coordinateHash = World::blockHash($blockNBT->getShort("X"), $blockNBT->getShort("Y"), $blockNBT->getShort("Z"));
+            $this->blockStringIDs[$coordinateHash] = $blockNBT->getString("StringID");
+            $this->blockIDs[$coordinateHash] = $blockNBT->getInt("ID");
+            $this->blockMetas[$coordinateHash] = $blockNBT->getShort("Meta");
+        }
+
         return true;
     }
 
@@ -74,6 +109,7 @@ class Schematic implements SchematicTypes {
         $this->roadSize = $roadSize;
         $this->plotSize = $plotSize;
 
+        $idMap = LegacyBlockIdToStringIdMap::getInstance();
         $explorer = new SubChunkExplorer($world);
 
         switch ($this->type) {
@@ -89,11 +125,19 @@ class Schematic implements SchematicTypes {
                             switch ($explorer->moveTo($x, $y, $z)) {
                                 case SubChunkExplorerStatus::OK:
                                 case SubChunkExplorerStatus::MOVED:
-                                    $fullBlock = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & 0x0f, $zInChunk);
-                                    $block = BlockFactory::getInstance()->fromFullBlock($fullBlock);
-                                    if ($block->getId() === BlockLegacyIds::AIR) continue 2;
-                                    $hash = World::blockHash($x, $y, $z);
-                                    $this->blocks[$hash] = $fullBlock;
+                                    $blockFullID = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & 0x0f, $zInChunk);
+                                    $blockID = $blockFullID >> Block::INTERNAL_METADATA_BITS;
+                                    if ($blockID === BlockLegacyIds::AIR) {
+                                        break;
+                                    }
+                                    $blockMeta = $blockFullID & Block::INTERNAL_METADATA_MASK;
+
+                                    $coordinateHash = World::blockHash($x, $y, $z);
+
+                                    $this->blockStringIDs[$coordinateHash] = $idMap->legacyToString($blockID) ?? "minecraft:info_update";
+                                    $this->blockIDs[$coordinateHash] = $blockID;
+                                    $this->blockMetas[$coordinateHash] = $blockMeta;
+                                    break;
                             }
                         }
                     }
@@ -109,10 +153,19 @@ class Schematic implements SchematicTypes {
                             switch ($explorer->moveTo($x, $y, $z)) {
                                 case SubChunkExplorerStatus::OK:
                                 case SubChunkExplorerStatus::MOVED:
-                                    $fullBlock = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & 0x0f, $zInChunk);
-                                    if ($fullBlock === BlockLegacyIds::AIR) continue 2;
-                                    $hash = World::blockHash($x, $y, $z);
-                                    $this->blocks[$hash] = $fullBlock;
+                                    $blockFullID = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & 0x0f, $zInChunk);
+                                    $blockID = $blockFullID >> Block::INTERNAL_METADATA_BITS;
+                                    if ($blockID === BlockLegacyIds::AIR) {
+                                        break;
+                                    }
+                                    $blockMeta = $blockFullID & Block::INTERNAL_METADATA_MASK;
+
+                                    $coordinateHash = World::blockHash($x, $y, $z);
+
+                                    $this->blockStringIDs[$coordinateHash] = $idMap->legacyToString($blockID) ?? "minecraft:info_update";
+                                    $this->blockIDs[$coordinateHash] = $blockID;
+                                    $this->blockMetas[$coordinateHash] = $blockMeta;
+                                    break;
                             }
                         }
                     }
@@ -152,16 +205,15 @@ class Schematic implements SchematicTypes {
         return $this->plotSize;
     }
 
-    /**
-     * @return int[]
-     */
-    public function getFullBlocks() : array {
-        return $this->blocks;
+    public function getFullBlock(int $x, int $y, int $z) : int {
+        $coordinateHash = World::blockHash($x, $y, $z);
+        if (!isset($this->blockStringIDs[$coordinateHash])) {
+            return BlockLegacyIds::AIR << Block::INTERNAL_METADATA_BITS;
+        }
+        return ($this->blockIDs[$coordinateHash] << Block::INTERNAL_METADATA_BITS) | $this->blockMetas[$coordinateHash];
     }
 
-    public function getFullBlock(int $x, int $y, int $z) : int {
-        $hash = World::blockHash($x, $y, $z);
-        if (!isset($this->blocks[$hash])) return BlockLegacyIds::AIR;
-        return $this->blocks[$hash];
+    public function getBlockCount() : int {
+        return count($this->blockStringIDs);
     }
 }
