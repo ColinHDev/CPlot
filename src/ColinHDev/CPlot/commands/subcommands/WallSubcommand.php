@@ -127,7 +127,7 @@ class WallSubcommand extends Subcommand {
                     $plots
                 );
                 Server::getInstance()->getLogger()->debug(
-                    "Changing plot wall to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ", FullID: " . $block->getFullId() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $player->getUniqueId()->toString() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
+                    "Changing plot wall to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $player->getUniqueId()->toString() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
                 if (!$player->isConnected()) return;
                 $player->sendMessage($this->getPrefix() . $this->translateString("wall.finish", [$elapsedTimeString, $block->getName()]));

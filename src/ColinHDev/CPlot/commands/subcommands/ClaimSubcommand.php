@@ -99,7 +99,7 @@ class ClaimSubcommand extends Subcommand {
                     $plots
                 );
                 Server::getInstance()->getLogger()->debug(
-                    "Changing plot border due to plot claim to " . $blockBorderOnClaim->getName() . " (" . $blockBorderOnClaim->getId() . ":" . $blockBorderOnClaim->getMeta() . ", FullID: " . $blockBorderOnClaim->getFullId() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
+                    "Changing plot border due to plot claim to " . $blockBorderOnClaim->getName() . " (ID:Meta: " . $blockBorderOnClaim->getId() . ":" . $blockBorderOnClaim->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
             }
         );
