@@ -2,19 +2,22 @@
 
 namespace ColinHDev\CPlot\tasks\async;
 
-use ColinHDev\CPlotAPI\BasePlot;
-use ColinHDev\CPlotAPI\math\Area;
+use ColinHDev\CPlot\tasks\utils\PlotAreaCalculationTrait;
+use ColinHDev\CPlot\tasks\utils\PlotBorderAreaCalculationTrait;
+use ColinHDev\CPlot\tasks\utils\RoadAreaCalculationTrait;
 use ColinHDev\CPlotAPI\math\CoordinateUtils;
 use ColinHDev\CPlotAPI\Plot;
 use ColinHDev\CPlotAPI\worlds\schematics\Schematic;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
-use pocketmine\math\Facing;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\utils\SubChunkExplorer;
 use pocketmine\world\utils\SubChunkExplorerStatus;
 use pocketmine\world\World;
 
 class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
+    use PlotAreaCalculationTrait;
+    use PlotBorderAreaCalculationTrait;
+    use RoadAreaCalculationTrait;
 
     private string $worldSettings;
     private string $plot;
@@ -30,250 +33,10 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
         /** @var Plot $plot */
         $plot = unserialize($this->plot, ["allowed_classes" => [Plot::class]]);
 
-        /** @var Area[] $plotAreas */
-        $plotAreas = [];
-        /** @var Area[] $roadAreas */
-        $roadAreas = [];
-        /** @var Area[] $borderAreasToChange */
-        $borderAreasToChange = [];
-        /** @var Area[] $borderAreasToReset */
-        $borderAreasToReset = [];
-
-        $plots = array_merge([$plot], $plot->getMergedPlots());
-        /** @var BasePlot $mergedPlot */
-        foreach ($plots as $mergedPlot) {
-            $plotPos = $mergedPlot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
-
-            $plotInNorth = $mergedPlot->getSide(Facing::NORTH);
-            $plotInNorthWest = $plotInNorth->getSide(Facing::WEST);
-            $plotInNorthEast = $plotInNorth->getSide(Facing::EAST);
-            $plotInSouth = $mergedPlot->getSide(Facing::SOUTH);
-            $plotInSouthWest = $plotInSouth->getSide(Facing::WEST);
-            $plotInSouthEast = $plotInSouth->getSide(Facing::EAST);
-            $plotInWest = $mergedPlot->getSide(Facing::WEST);
-            $plotInEast = $mergedPlot->getSide(Facing::EAST);
-
-            $plotArea = new Area(
-                $plotPos->getFloorX(),
-                $plotPos->getFloorZ(),
-                ($plotPos->getFloorX() + $worldSettings->getPlotSize() - 1),
-                ($plotPos->getFloorZ() + $worldSettings->getPlotSize() - 1),
-            );
-            $plotAreas[$plotArea->toString()] = $plotArea;
-
-            if ($plot->isMerged($plotInNorth)) {
-                if ($plot->isMerged($plotInWest) && $plot->isMerged($plotInNorthWest)) {
-                    $roadAreaXMin = $plotPos->getFloorX() - $worldSettings->getRoadSize();
-                    $roadAreaZMin = $plotPos->getFloorZ() - $worldSettings->getRoadSize();
-                } else {
-                    $roadAreaXMin = $plotPos->getFloorX();
-                    $roadAreaZMin = $plotPos->getFloorZ() - $worldSettings->getRoadSize();
-                }
-                if ($plot->isMerged($plotInEast) && $plot->isMerged($plotInNorthEast)) {
-                    $roadAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                    $roadAreaZMax = $plotPos->getFloorZ() - 1;
-                } else {
-                    $roadAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() - 1);
-                    $roadAreaZMax = $plotPos->getFloorZ() - 1;
-                }
-                $roadArea = new Area($roadAreaXMin, $roadAreaZMin, $roadAreaXMax, $roadAreaZMax);
-                $key = $roadArea->toString();
-                if (!isset($roadAreas[$key])) {
-                    $roadAreas[$key] = $roadArea;
-                }
-            }
-
-            if ($plot->isMerged($plotInSouth)) {
-                if ($plot->isMerged($plotInWest) && $plot->isMerged($plotInSouthWest)) {
-                    $roadAreaXMin = $plotPos->getFloorX() - $worldSettings->getRoadSize();
-                    $roadAreaZMin = $plotPos->getFloorZ() + $worldSettings->getPlotSize();
-                } else {
-                    $roadAreaXMin = $plotPos->getFloorX();
-                    $roadAreaZMin = $plotPos->getFloorZ() + $worldSettings->getPlotSize();
-                }
-                if ($plot->isMerged($plotInEast) && $plot->isMerged($plotInSouthEast)) {
-                    $roadAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                    $roadAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                } else {
-                    $roadAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() - 1);
-                    $roadAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                }
-                $roadArea = new Area($roadAreaXMin, $roadAreaZMin, $roadAreaXMax, $roadAreaZMax);
-                $key = $roadArea->toString();
-                if (!isset($roadAreas[$key])) {
-                    $roadAreas[$key] = $roadArea;
-                }
-            }
-
-            if ($plot->isMerged($plotInWest)) {
-                if ($plot->isMerged($plotInNorth) && $plot->isMerged($plotInNorthWest)) {
-                    $roadAreaXMin = $plotPos->getFloorX() - $worldSettings->getRoadSize();
-                    $roadAreaZMin = $plotPos->getFloorZ() - $worldSettings->getRoadSize();
-                } else {
-                    $roadAreaXMin = $plotPos->getFloorX() - $worldSettings->getRoadSize();
-                    $roadAreaZMin = $plotPos->getFloorZ();
-                }
-                if ($plot->isMerged($plotInSouth) && $plot->isMerged($plotInSouthWest)) {
-                    $roadAreaXMax = $plotPos->getFloorX() - 1;
-                    $roadAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                } else {
-                    $roadAreaXMax = $plotPos->getFloorX() - 1;
-                    $roadAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() - 1);
-                }
-                $roadArea = new Area($roadAreaXMin, $roadAreaZMin, $roadAreaXMax, $roadAreaZMax);
-                $key = $roadArea->toString();
-                if (!isset($roadAreas[$key])) {
-                    $roadAreas[$key] = $roadArea;
-                }
-            }
-
-            if ($plot->isMerged($plotInEast)) {
-                if ($plot->isMerged($plotInNorth) && $plot->isMerged($plotInNorthEast)) {
-                    $roadAreaXMin = $plotPos->getFloorX() + $worldSettings->getPlotSize();
-                    $roadAreaZMin = $plotPos->getFloorZ() - $worldSettings->getRoadSize();
-                } else {
-                    $roadAreaXMin = $plotPos->getFloorX() + $worldSettings->getPlotSize();
-                    $roadAreaZMin = $plotPos->getFloorZ();
-                }
-                if ($plot->isMerged($plotInSouth) && $plot->isMerged($plotInSouthEast)) {
-                    $roadAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                    $roadAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                }  else {
-                    $roadAreaXMax = $plotPos->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                    $roadAreaZMax = $plotPos->getFloorZ() + ($worldSettings->getPlotSize() - 1);
-                }
-                $roadArea = new Area($roadAreaXMin, $roadAreaZMin, $roadAreaXMax, $roadAreaZMax);
-                $key = $roadArea->toString();
-                if (!isset($roadAreas[$key])) {
-                    $roadAreas[$key] = $roadArea;
-                }
-            }
-
-            $borderAreaToChange = new Area(
-                $plotPos->getFloorX() - 1,
-                $plotPos->getFloorZ() - 1,
-                $plotPos->getFloorX() + $worldSettings->getPlotSize(),
-                $plotPos->getFloorZ() - 1
-            );
-            $key = $borderAreaToChange->toString();
-            if (!isset($borderAreasToChange[$key])) {
-                $borderAreasToChange[$key] = $borderAreaToChange;
-            }
-            $borderAreaToChange = new Area(
-                $plotPos->getFloorX() - 1,
-                $plotPos->getFloorZ() + $worldSettings->getPlotSize(),
-                $plotPos->getFloorX() + $worldSettings->getPlotSize(),
-                $plotPos->getFloorZ() + $worldSettings->getPlotSize()
-            );
-            $key = $borderAreaToChange->toString();
-            if (!isset($borderAreasToChange[$key])) {
-                $borderAreasToChange[$key] = $borderAreaToChange;
-            }
-            $borderAreaToChange = new Area(
-                $plotPos->getFloorX() - 1,
-                $plotPos->getFloorZ() - 1,
-                $plotPos->getFloorX() - 1,
-                $plotPos->getFloorZ() + $worldSettings->getPlotSize()
-            );
-            $key = $borderAreaToChange->toString();
-            if (!isset($borderAreasToChange[$key])) {
-                $borderAreasToChange[$key] = $borderAreaToChange;
-            }
-            $borderAreaToChange = new Area(
-                $plotPos->getFloorX() + $worldSettings->getPlotSize(),
-                $plotPos->getFloorZ() - 1,
-                $plotPos->getFloorX() + $worldSettings->getPlotSize(),
-                $plotPos->getFloorZ() + $worldSettings->getPlotSize()
-            );
-            $key = $borderAreaToChange->toString();
-            if (!isset($borderAreasToChange[$key])) {
-                $borderAreasToChange[$key] = $borderAreaToChange;
-            }
-
-            $borderAreaToReset = new Area(
-                $plotPos->getFloorX() - ($worldSettings->getRoadSize() - 1),
-                $plotPos->getFloorZ() - 1,
-                $plotPos->getFloorX() - 2,
-                $plotPos->getFloorZ() - 1
-            );
-            $key = $borderAreaToReset->toString();
-            if (!isset($borderAreasToReset[$key])) {
-                $borderAreasToReset[$key] = $borderAreaToReset;
-            }
-            $borderAreaToReset = new Area(
-                $plotPos->getFloorX() + ($worldSettings->getPlotSize() + 1),
-                $plotPos->getFloorZ() - 1,
-                $plotPos->getFloorX() + ($worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 2)),
-                $plotPos->getFloorZ() - 1
-            );
-            $key = $borderAreaToReset->toString();
-            if (!isset($borderAreasToReset[$key])) {
-                $borderAreasToReset[$key] = $borderAreaToReset;
-            }
-
-            $borderAreaToReset = new Area(
-                $plotPos->getFloorX() - ($worldSettings->getRoadSize() - 1),
-                $plotPos->getFloorZ() + $worldSettings->getPlotSize(),
-                $plotPos->getFloorX() - 2,
-                $plotPos->getFloorZ() + $worldSettings->getPlotSize()
-            );
-            $key = $borderAreaToReset->toString();
-            if (!isset($borderAreasToReset[$key])) {
-                $borderAreasToReset[$key] = $borderAreaToReset;
-            }
-            $borderAreaToReset = new Area(
-                $plotPos->getFloorX() + ($worldSettings->getPlotSize() + 1),
-                $plotPos->getFloorZ() + $worldSettings->getPlotSize(),
-                $plotPos->getFloorX() + ($worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 2)),
-                $plotPos->getFloorZ() + $worldSettings->getPlotSize()
-            );
-            $key = $borderAreaToReset->toString();
-            if (!isset($borderAreasToReset[$key])) {
-                $borderAreasToReset[$key] = $borderAreaToReset;
-            }
-
-            $borderAreaToReset = new Area(
-                $plotPos->getFloorX() - 1,
-                $plotPos->getFloorZ() - ($worldSettings->getRoadSize() - 1),
-                $plotPos->getFloorX() - 1,
-                $plotPos->getFloorZ() - 2
-            );
-            $key = $borderAreaToReset->toString();
-            if (!isset($borderAreasToReset[$key])) {
-                $borderAreasToReset[$key] = $borderAreaToReset;
-            }
-            $borderAreaToReset = new Area(
-                $plotPos->getFloorX() - 1,
-                $plotPos->getFloorZ() + ($worldSettings->getPlotSize() + 1),
-                $plotPos->getFloorX() - 1,
-                $plotPos->getFloorZ() + $worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 2)
-            );
-            $key = $borderAreaToReset->toString();
-            if (!isset($borderAreasToReset[$key])) {
-                $borderAreasToReset[$key] = $borderAreaToReset;
-            }
-
-            $borderAreaToReset = new Area(
-                $plotPos->getFloorX() + $worldSettings->getPlotSize(),
-                $plotPos->getFloorZ() - ($worldSettings->getRoadSize() - 1),
-                $plotPos->getFloorX() + $worldSettings->getPlotSize(),
-                $plotPos->getFloorZ() - 2
-            );
-            $key = $borderAreaToReset->toString();
-            if (!isset($borderAreasToReset[$key])) {
-                $borderAreasToReset[$key] = $borderAreaToReset;
-            }
-            $borderAreaToReset = new Area(
-                $plotPos->getFloorX() + $worldSettings->getPlotSize(),
-                $plotPos->getFloorZ() + ($worldSettings->getPlotSize() + 1),
-                $plotPos->getFloorX() + $worldSettings->getPlotSize(),
-                $plotPos->getFloorZ() + $worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 2)
-            );
-            $key = $borderAreaToReset->toString();
-            if (!isset($borderAreasToReset[$key])) {
-                $borderAreasToReset[$key] = $borderAreaToReset;
-            }
-        }
+        $plotAreas = $this->calculateBasePlotAreas($worldSettings, $plot);
+        $roadAreas = $this->calculateMergeRoadAreas($worldSettings, $plot);
+        $borderAreasToChange = $this->calculatePlotBorderAreas($worldSettings, $plot);
+        $borderAreasToReset = $this->calculatePlotBorderExtensionAreas($worldSettings, $plot);
 
         $chunks = [];
         foreach ($plotAreas as $area) {
@@ -339,6 +102,7 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
 
         $this->publishProgress($chunks);
 
+        $plots = array_merge([$plot], $plot->getMergedPlots() ?? []);
         $plotCount = count($plots);
 
         $schematicRoad = null;
