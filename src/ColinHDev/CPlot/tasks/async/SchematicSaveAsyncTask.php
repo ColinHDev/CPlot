@@ -8,12 +8,12 @@ class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
 
     private string $name;
     private string $file;
-    private int $type;
+    private string $type;
 
     private int $sizeRoad;
     private int $sizePlot;
 
-    public function __construct(string $name, string $file, int $type, int $sizeRoad, int $sizePlot) {
+    public function __construct(string $name, string $file, string $type, int $sizeRoad, int $sizePlot) {
         $this->startTime();
         $this->name = $name;
         $this->file = $file;
