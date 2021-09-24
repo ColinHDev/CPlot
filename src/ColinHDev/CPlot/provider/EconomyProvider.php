@@ -6,10 +6,10 @@ use pocketmine\player\Player;
 
 abstract class EconomyProvider {
 
-    public const PRICE_CLAIM = "priceClaim";
-    public const PRICE_CLEAR = "priceClear";
-    public const PRICE_MERGE = "priceMerge";
-    public const PRICE_RESET = "priceReset";
+    public const PRICE_CLAIM = "claimPrice";
+    public const PRICE_CLEAR = "clearPrice";
+    public const PRICE_MERGE = "mergePrice";
+    public const PRICE_RESET = "resetPrice";
 
     /** @var array<string, float> */
     private array $prices = [];
