@@ -13,7 +13,6 @@ use dktapps\pmforms\FormIcon;
 use dktapps\pmforms\MenuForm;
 use dktapps\pmforms\MenuOption;
 use pocketmine\block\Block;
-use pocketmine\block\VanillaBlocks;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\DefaultPermissions;
 use pocketmine\permission\Permission;
