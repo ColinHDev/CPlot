@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlot\worlds\generators;
 
 use ColinHDev\CPlotAPI\math\CoordinateUtils;
+use ColinHDev\CPlotAPI\utils\ParseUtils;
 use ColinHDev\CPlotAPI\worlds\schematics\SchematicTypes;
 use pocketmine\world\generator\Generator;
 use pocketmine\world\ChunkManager;
@@ -40,18 +41,23 @@ class SchematicGenerator extends Generator {
             $generatorOptions = [];
         }
 
-        $this->schematicName = WorldSettings::parseStringFromArray($generatorOptions, "schematicName", "default");
-        $this->schematicType = WorldSettings::parseStringFromArray($generatorOptions, "schematicType", SchematicTypes::TYPE_ROAD);
+        $this->schematicName = ParseUtils::parseStringFromArray($generatorOptions, "schematicName", "default");
+        $this->schematicType = ParseUtils::parseStringFromArray($generatorOptions, "schematicType", SchematicTypes::TYPE_ROAD);
 
-        $this->roadSize = WorldSettings::parseIntegerFromArray($generatorOptions, "roadSize", 7);
-        $this->plotSize = WorldSettings::parseIntegerFromArray($generatorOptions, "plotSize", 32);
-        $this->groundSize = WorldSettings::parseIntegerFromArray($generatorOptions, "groundSize", 64);
+        $this->roadSize = ParseUtils::parseIntegerFromArray($generatorOptions, "roadSize", 7);
+        $this->plotSize = ParseUtils::parseIntegerFromArray($generatorOptions, "plotSize", 32);
+        $this->groundSize = ParseUtils::parseIntegerFromArray($generatorOptions, "groundSize", 64);
 
-        $this->roadBlockFullID = WorldSettings::parseBlockFromArray($generatorOptions, "roadBlock", VanillaBlocks::OAK_PLANKS())->getFullId();
-        $this->borderBlockFullID = WorldSettings::parseBlockFromArray($generatorOptions, "borderBlock", VanillaBlocks::STONE_SLAB())->getFullId();
-        $this->plotFloorBlockFullID = WorldSettings::parseBlockFromArray($generatorOptions, "plotFloorBlock", VanillaBlocks::GRASS())->getFullId();
-        $this->plotFillBlockFullID = WorldSettings::parseBlockFromArray($generatorOptions, "plotFillBlock", VanillaBlocks::DIRT())->getFullId();
-        $this->plotBottomBlockFullID = WorldSettings::parseBlockFromArray($generatorOptions, "plotBottomBlock", VanillaBlocks::BEDROCK())->getFullId();
+        $roadBlock = ParseUtils::parseBlockFromArray($generatorOptions, "roadBlock", VanillaBlocks::OAK_PLANKS());
+        $this->roadBlockFullID = $roadBlock->getFullId();
+        $borderBlock = ParseUtils::parseBlockFromArray($generatorOptions, "borderBlock", VanillaBlocks::STONE_SLAB());
+        $this->borderBlockFullID = $borderBlock->getFullId();
+        $plotFloorBlock = ParseUtils::parseBlockFromArray($generatorOptions, "plotFloorBlock", VanillaBlocks::GRASS());
+        $this->plotFloorBlockFullID = $plotFloorBlock->getFullId();
+        $plotFillBlock = ParseUtils::parseBlockFromArray($generatorOptions, "plotFillBlock", VanillaBlocks::DIRT());
+        $this->plotFillBlockFullID = $plotFillBlock->getFullId();
+        $plotBottomBlock = ParseUtils::parseBlockFromArray($generatorOptions, "plotBottomBlock", VanillaBlocks::BEDROCK());
+        $this->plotBottomBlockFullID = $plotBottomBlock->getFullId();
 
         $this->preset = (string) json_encode([
             "schematicName" => $this->schematicName,
@@ -61,11 +67,11 @@ class SchematicGenerator extends Generator {
             "plotSize" => $this->plotSize,
             "groundSize" => $this->groundSize,
 
-            "roadBlock" => $this->roadBlockFullID,
-            "borderBlock" => $this->borderBlockFullID,
-            "plotFloorBlock" => $this->plotFloorBlockFullID,
-            "plotFillBlock" => $this->plotFillBlockFullID,
-            "plotBottomBlock" => $this->plotBottomBlockFullID
+            "roadBlock" => ParseUtils::parseStringFromBlock($roadBlock),
+            "borderBlock" => ParseUtils::parseStringFromBlock($borderBlock),
+            "plotFloorBlock" => ParseUtils::parseStringFromBlock($plotFloorBlock),
+            "plotFillBlock" => ParseUtils::parseStringFromBlock($plotFillBlock),
+            "plotBottomBlock" => ParseUtils::parseStringFromBlock($plotBottomBlock)
         ]);
     }
 

@@ -3,11 +3,10 @@
 namespace ColinHDev\CPlotAPI\worlds;
 
 use ColinHDev\CPlot\provider\cache\Cacheable;
+use ColinHDev\CPlotAPI\utils\ParseUtils;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
 use ColinHDev\CPlot\ResourceManager;
-use pocketmine\item\StringToItemParser;
 
 class WorldSettings implements Cacheable {
 
@@ -101,12 +100,12 @@ class WorldSettings implements Cacheable {
             "plotSize" => $this->plotSize,
             "groundSize" => $this->groundSize,
 
-            "roadBlock" => $this->roadBlock->getFullId(),
-            "borderBlock" => $this->borderBlock->getFullId(),
-            "borderBlockOnClaim" => $this->borderBlockOnClaim->getFullId(),
-            "plotFloorBlock" => $this->plotFloorBlock->getFullId(),
-            "plotFillBlock" => $this->plotFillBlock->getFullId(),
-            "plotBottomBlock" => $this->plotBottomBlock->getFullId()
+            "roadBlock" => ParseUtils::parseStringFromBlock($this->roadBlock),
+            "borderBlock" => ParseUtils::parseStringFromBlock($this->borderBlock),
+            "borderBlockOnClaim" => ParseUtils::parseStringFromBlock($this->borderBlockOnClaim),
+            "plotFloorBlock" => ParseUtils::parseStringFromBlock($this->plotFloorBlock),
+            "plotFillBlock" => ParseUtils::parseStringFromBlock($this->plotFillBlock),
+            "plotBottomBlock" => ParseUtils::parseStringFromBlock($this->plotBottomBlock)
         ];
     }
 
@@ -116,60 +115,25 @@ class WorldSettings implements Cacheable {
     }
 
     public static function fromArray(array $settings) : self {
-        $roadSchematic = self::parseStringFromArray($settings, "roadSchematic", "default");
-        $mergeRoadSchematic = self::parseStringFromArray($settings, "mergeRoadSchematic", "default");
-        $plotSchematic = self::parseStringFromArray($settings, "plotSchematic", "default");
+        $roadSchematic = ParseUtils::parseStringFromArray($settings, "roadSchematic", "default");
+        $mergeRoadSchematic = ParseUtils::parseStringFromArray($settings, "mergeRoadSchematic", "default");
+        $plotSchematic = ParseUtils::parseStringFromArray($settings, "plotSchematic", "default");
 
-        $roadSize = self::parseIntegerFromArray($settings, "roadSize", 7);
-        $plotSize = self::parseIntegerFromArray($settings, "plotSize", 32);
-        $groundSize = self::parseIntegerFromArray($settings, "groundSize", 64);
+        $roadSize = ParseUtils::parseIntegerFromArray($settings, "roadSize", 7);
+        $plotSize = ParseUtils::parseIntegerFromArray($settings, "plotSize", 32);
+        $groundSize = ParseUtils::parseIntegerFromArray($settings, "groundSize", 64);
 
-        $roadBlock = self::parseBlockFromArray($settings, "roadBlock", VanillaBlocks::OAK_PLANKS());
-        $borderBlock = self::parseBlockFromArray($settings, "borderBlock", VanillaBlocks::STONE_SLAB());
-        $borderBlockOnClaim = self::parseBlockFromArray($settings, "borderBlockOnClaim", VanillaBlocks::COBBLESTONE_SLAB());
-        $plotFloorBlock = self::parseBlockFromArray($settings, "plotFloorBlock", VanillaBlocks::GRASS());
-        $plotFillBlock = self::parseBlockFromArray($settings, "plotFillBlock", VanillaBlocks::DIRT());
-        $plotBottomBlock = self::parseBlockFromArray($settings, "plotBottomBlock", VanillaBlocks::BEDROCK());
+        $roadBlock = ParseUtils::parseBlockFromArray($settings, "roadBlock", VanillaBlocks::OAK_PLANKS());
+        $borderBlock = ParseUtils::parseBlockFromArray($settings, "borderBlock", VanillaBlocks::STONE_SLAB());
+        $borderBlockOnClaim = ParseUtils::parseBlockFromArray($settings, "borderBlockOnClaim", VanillaBlocks::COBBLESTONE_SLAB());
+        $plotFloorBlock = ParseUtils::parseBlockFromArray($settings, "plotFloorBlock", VanillaBlocks::GRASS());
+        $plotFillBlock = ParseUtils::parseBlockFromArray($settings, "plotFillBlock", VanillaBlocks::DIRT());
+        $plotBottomBlock = ParseUtils::parseBlockFromArray($settings, "plotBottomBlock", VanillaBlocks::BEDROCK());
 
         return new self(
             $roadSchematic, $mergeRoadSchematic, $plotSchematic,
             $roadSize, $plotSize, $groundSize,
             $roadBlock, $borderBlock, $borderBlockOnClaim, $plotFloorBlock, $plotFillBlock, $plotBottomBlock
         );
-    }
-
-    // TODO: The following methods are not only used for parsing values exclusively related to world settings
-    //  but are used throughout the entire plugin and could therefore be moved to their own class
-    public static function parseBlockFromArray(array $array, string $key, ?Block $default = null) : ?Block {
-        if (isset($array[$key])) {
-            $block = self::parseBlock($array[$key], $default);
-        } else {
-            $block = $default;
-        }
-        return $block;
-    }
-
-    public static function parseBlock(string $blockIdentifier, ?Block $default = null) : ?Block {
-        $item = StringToItemParser::getInstance()->parse($blockIdentifier);
-        if ($item !== null) {
-            $block = $item->getBlock();
-        } else {
-            $block = $default;
-        }
-        return $block;
-    }
-
-    public static function parseStringFromArray(array $array, string $key, ?string $default = null) : ?string {
-        if (isset($array[$key])) {
-            return (string) $array[$key];
-        }
-        return $default;
-    }
-
-    public static function parseIntegerFromArray(array $array, string $key, ?int $default = null) : ?int {
-        if (isset($array[$key]) && is_numeric($array[$key])) {
-            return (int) $array[$key];
-        }
-        return $default;
     }
 }

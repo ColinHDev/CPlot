@@ -5,10 +5,7 @@ namespace ColinHDev\CPlotAPI\flags;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\flags\utils\InvalidValueException;
 use ColinHDev\CPlotAPI\Plot;
-use ColinHDev\CPlotAPI\worlds\WorldSettings;
-use pocketmine\block\VanillaBlocks;
-use pocketmine\item\LegacyStringToItemParser;
-use pocketmine\item\LegacyStringToItemParserException;
+use ColinHDev\CPlotAPI\utils\ParseUtils;
 use pocketmine\player\Player;
 
 class ArrayFlag extends BaseFlag {
@@ -84,7 +81,7 @@ class ArrayFlag extends BaseFlag {
         }
 
         $blockIdentifier = implode(" ", $args);
-        $block = WorldSettings::parseBlock($blockIdentifier);
+        $block = ParseUtils::parseBlockFromString($blockIdentifier);
         if ($block === null) {
             $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.invalidBlock", [$blockIdentifier]));
             return false;
@@ -118,7 +115,7 @@ class ArrayFlag extends BaseFlag {
             $this->value = null;
         } else {
             $blockIdentifier = implode(" ", $args);
-            $block = WorldSettings::parseBlock($blockIdentifier);
+            $block = ParseUtils::parseBlockFromString($blockIdentifier);
             if ($block === null) {
                 $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.invalidBlock", [$blockIdentifier]));
                 return false;

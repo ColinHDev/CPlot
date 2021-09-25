@@ -8,7 +8,7 @@ use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
 use ColinHDev\CPlotAPI\Plot;
-use ColinHDev\CPlotAPI\worlds\WorldSettings;
+use ColinHDev\CPlotAPI\utils\ParseUtils;
 use dktapps\pmforms\FormIcon;
 use dktapps\pmforms\MenuForm;
 use dktapps\pmforms\MenuOption;
@@ -36,7 +36,7 @@ class BorderSubcommand extends Subcommand {
         $operatorRoot = $permissionManager->getPermission(DefaultPermissions::ROOT_OPERATOR);
 
         foreach (ResourceManager::getInstance()->getBordersConfig()->getAll() as $borderData) {
-            $block = WorldSettings::parseBlockFromArray($borderData, "block");
+            $block = ParseUtils::parseBlockFromArray($borderData, "block");
             if ($block !== null) {
                 $this->blocks[] = $block;
 

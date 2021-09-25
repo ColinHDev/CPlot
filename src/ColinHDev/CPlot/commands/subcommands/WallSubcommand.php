@@ -8,7 +8,7 @@ use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
 use ColinHDev\CPlotAPI\Plot;
-use ColinHDev\CPlotAPI\worlds\WorldSettings;
+use ColinHDev\CPlotAPI\utils\ParseUtils;
 use dktapps\pmforms\FormIcon;
 use dktapps\pmforms\MenuForm;
 use dktapps\pmforms\MenuOption;
@@ -36,7 +36,7 @@ class WallSubcommand extends Subcommand {
         $operatorRoot = $permissionManager->getPermission(DefaultPermissions::ROOT_OPERATOR);
 
         foreach (ResourceManager::getInstance()->getWallsConfig()->getAll() as $wallData) {
-            $block = WorldSettings::parseBlockFromArray($wallData, "block");
+            $block = ParseUtils::parseBlockFromArray($wallData, "block");
             if ($block !== null) {
                 $this->blocks[] = $block;
 
