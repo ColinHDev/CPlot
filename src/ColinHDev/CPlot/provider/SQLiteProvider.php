@@ -7,6 +7,7 @@ use ColinHDev\CPlotAPI\players\Player;
 use ColinHDev\CPlotAPI\players\SettingManager;
 use ColinHDev\CPlotAPI\PlotPlayer;
 use ColinHDev\CPlotAPI\PlotRate;
+use ColinHDev\CPlotAPI\utils\ParseUtils;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
@@ -89,7 +90,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS playerSettings (
-            playerUUID VARCHAR(256) NOT NULL, ID VARCHAR(256) NOT NULL, value TEXT NOT NULL,
+            playerUUID VARCHAR(256) NOT NULL, ID TEXT NOT NULL, value TEXT NOT NULL,
             PRIMARY KEY (playerUUID, ID), 
             FOREIGN KEY (playerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
             )";
@@ -107,10 +108,10 @@ class SQLiteProvider extends DataProvider {
         $sql = "
             CREATE TABLE IF NOT EXISTS worlds (
                 worldName VARCHAR(256) NOT NULL,
-                roadSchematic VARCHAR(256) NOT NULL, mergeRoadSchematic VARCHAR(256) NOT NULL, plotSchematic VARCHAR(256) NOT NULL,
-                roadSize INTEGER NOT NULL, plotSize INTEGER NOT NULL, groundSize INTEGER NOT NULL,
-                roadBlock INTEGER NOT NULL, borderBlock INTEGER NOT NULL, borderBlockOnClaim INTEGER NOT NULL, 
-                plotFloorBlock INTEGER NOT NULL, plotFillBlock INTEGER NOT NULL, plotBottomBlock INTEGER NOT NULL, 
+                roadSchematic TEXT NOT NULL, mergeRoadSchematic TEXT NOT NULL, plotSchematic TEXT NOT NULL,
+                roadSize TEXT NOT NULL, plotSize TEXT NOT NULL, groundSize TEXT NOT NULL,
+                roadBlock TEXT NOT NULL, borderBlock TEXT NOT NULL, borderBlockOnClaim TEXT NOT NULL, 
+                plotFloorBlock TEXT NOT NULL, plotFillBlock TEXT NOT NULL, plotBottomBlock TEXT NOT NULL, 
                 PRIMARY KEY (worldName)
             );";
         $this->database->exec($sql);
@@ -126,7 +127,7 @@ class SQLiteProvider extends DataProvider {
         $sql =
             "CREATE TABLE IF NOT EXISTS plots (
             worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL,
-            biomeID INTEGER NOT NULL, ownerUUID VARCHAR(256), claimTime INTEGER, alias VARCHAR(128),
+            biomeID INTEGER NOT NULL, ownerUUID VARCHAR(256), claimTime INTEGER, alias TEXT,
             PRIMARY KEY (worldName, x, z),
             FOREIGN KEY (worldName) REFERENCES worlds (worldName) ON DELETE CASCADE,
             FOREIGN KEY (ownerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
@@ -184,7 +185,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plotPlayers (
-            worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL, playerUUID VARCHAR(256) NOT NULL, state VARCHAR(32) NOT NULL, addTime INTEGER NOT NULL,
+            worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL, playerUUID VARCHAR(256) NOT NULL, state TEXT NOT NULL, addTime INTEGER NOT NULL,
             PRIMARY KEY (worldName, x, z, playerUUID),
             FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE,
             FOREIGN KEY (playerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
@@ -202,7 +203,7 @@ class SQLiteProvider extends DataProvider {
 
         $sql =
             "CREATE TABLE IF NOT EXISTS plotFlags (
-            worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL, ID VARCHAR(256) NOT NULL, value TEXT NOT NULL,
+            worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL, ID TEXT NOT NULL, value TEXT NOT NULL,
             PRIMARY KEY (worldName, x, z, ID),
             FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE
             )";
@@ -390,12 +391,12 @@ class SQLiteProvider extends DataProvider {
         $this->setWorld->bindValue(":plotSize", $worldSettings->getPlotSize(), SQLITE3_INTEGER);
         $this->setWorld->bindValue(":groundSize", $worldSettings->getGroundSize(), SQLITE3_INTEGER);
 
-        $this->setWorld->bindValue(":roadBlock", $worldSettings->getRoadBlock()->getFullId(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":borderBlock", $worldSettings->getBorderBlock()->getFullId(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":borderBlockOnClaim", $worldSettings->getBorderBlockOnClaim()->getFullId(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":plotFloorBlock", $worldSettings->getPlotFloorBlock()->getFullId(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":plotFillBlock", $worldSettings->getPlotFillBlock()->getFullId(), SQLITE3_INTEGER);
-        $this->setWorld->bindValue(":plotBottomBlock", $worldSettings->getPlotBottomBlock()->getFullId(), SQLITE3_INTEGER);
+        $this->setWorld->bindValue(":roadBlock", ParseUtils::parseStringFromBlock($worldSettings->getRoadBlock()), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":borderBlock", ParseUtils::parseStringFromBlock($worldSettings->getBorderBlock()), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":borderBlockOnClaim", ParseUtils::parseStringFromBlock($worldSettings->getBorderBlockOnClaim()), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":plotFloorBlock", ParseUtils::parseStringFromBlock($worldSettings->getPlotFloorBlock()), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":plotFillBlock", ParseUtils::parseStringFromBlock($worldSettings->getPlotFillBlock()), SQLITE3_TEXT);
+        $this->setWorld->bindValue(":plotBottomBlock", ParseUtils::parseStringFromBlock($worldSettings->getPlotBottomBlock()), SQLITE3_TEXT);
 
         $this->setWorld->reset();
         $result = $this->setWorld->execute();
