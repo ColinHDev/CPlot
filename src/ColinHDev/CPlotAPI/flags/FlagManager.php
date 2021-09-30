@@ -12,7 +12,7 @@ class FlagManager {
 
     use SingletonTrait;
 
-    /** @var BaseFlag[] */
+    /** @var class-string<BaseFlag>[] */
     private array $flags = [];
 
     public function __construct() {
@@ -43,14 +43,20 @@ class FlagManager {
         $this->register($config, FlagIDs::FLAG_USE, ArrayFlag::class);
     }
 
+    /**
+     * @param Config $config
+     * @param string $ID
+     * @param class-string<BaseFlag> $className
+     */
     private function register(Config $config, string $ID, string $className) : void {
         Utils::testValidInstance($className, BaseFlag::class);
-        $this->flags[$ID] = new $className($ID, $config->get($ID), "cplot.flag." . $ID);
+        $className::init($ID, $config->get("category"), $config->get("type"), $config->get("description"), "cplot.flag." . $ID, $config->get("default"));
+        $this->flags[$ID] = $className;
     }
 
 
     /**
-     * @return BaseFlag[]
+     * @return class-string<BaseFlag>[]
      */
     public function getFlags() : array {
         return $this->flags;
@@ -58,6 +64,6 @@ class FlagManager {
 
     public function getFlagByID(string $ID) : ?BaseFlag {
         if (!isset($this->flags[$ID])) return null;
-        return clone $this->flags[$ID];
+        return new $this->flags[$ID];
     }
 }

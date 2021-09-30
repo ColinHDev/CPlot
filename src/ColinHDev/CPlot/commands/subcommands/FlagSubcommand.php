@@ -47,7 +47,7 @@ class FlagSubcommand extends Subcommand {
                 $sender->sendMessage($this->translateString("flag.info.ID", [$flag->getID()]));
                 $sender->sendMessage($this->translateString("flag.info.category", [$flag->getCategory()]));
                 $sender->sendMessage($this->translateString("flag.info.description", [$flag->getDescription()]));
-                $sender->sendMessage($this->translateString("flag.info.valueType", [$flag->getValueType()]));
+                $sender->sendMessage($this->translateString("flag.info.valueType", [$flag->getType()]));
                 $sender->sendMessage($this->translateString("flag.info.default", [$flag->serializeValueType($flag->getDefault())]));
                 break;
 

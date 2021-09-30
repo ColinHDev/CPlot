@@ -5,67 +5,102 @@ namespace ColinHDev\CPlotAPI\flags;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\player\Player;
 
+/**
+ * @template TFlagType of BaseFlag
+ * @template TFlagValue
+ */
 abstract class BaseFlag implements FlagIDs {
 
-    protected string $ID;
-    protected string $category;
-    protected string $valueType;
-    protected string $description;
-    protected string $permission;
+    protected static string $ID;
+    protected static string $category;
+    protected static string $type;
+    protected static string $description;
+    protected static string $permission;
+    /** @var TFlagValue | null */
+    protected static mixed $default;
 
-    public function __construct(string $ID, array $data, string $permission) {
-        $this->ID = $ID;
-        $this->category = $data["category"];
-        $this->valueType = $data["type"];
-        $this->description = $data["description"];
-        $this->permission = $permission;
+    /**
+     * @param TFlagValue | null $default
+     */
+    public static function init(string $ID, string $category, string $type, string $description, string $permission, mixed $default) {
+        self::$ID = $ID;
+        self::$category = $category;
+        self::$type = $type;
+        self::$description = $description;
+        self::$permission = $permission;
+        self::$default = $default;
     }
 
+    /**
+     * @param TFlagValue | null $value
+     */
+    abstract public function __construct(mixed $value = null);
+
     public function getID() : string {
-        return $this->ID;
+        return self::$ID;
     }
 
     public function getCategory() : string {
-        return $this->category;
+        return self::$category;
     }
 
-    public function getValueType() : string {
-        return $this->valueType;
+    public function getType() : string {
+        return self::$type;
     }
 
     public function getDescription() : string {
-        return $this->description;
+        return self::$description;
     }
 
     public function getPermission() : string {
-        return $this->permission;
+        return self::$permission;
     }
 
-    abstract public function getDefault() : mixed;
+    /**
+     * @return TFlagValue | null
+     */
+    public function getDefault() : mixed {
+        return self::$default;
+    }
 
+    /**
+     * @return TFlagValue | null
+     */
     abstract public function getValue() : mixed;
-    abstract public function getValueNonNull() : mixed;
-    abstract public function setValue(mixed $value) : void;
 
-    abstract public function serializeValueType(mixed $data) : string;
-    abstract public function unserializeValueType(string $serializedValue) : mixed;
+    /**
+     * @param TFlagValue $value
+     * @return TFlagType
+     */
+    abstract public function merge(mixed $value) : BaseFlag;
 
-    abstract public function set(Plot $plot, Player $player, array $args) : bool;
-    abstract public function remove(Plot $plot, Player $player, array $args) : bool;
+    /**
+     * @param TFlagValue $value
+     * @return TFlagType
+     */
+    abstract public function flagOf(mixed $value) : BaseFlag;
+
+    abstract public function toString() : string;
+
+    /**
+     * @return TFlagType
+     */
+    abstract public static function parse(string $value) : BaseFlag;
 
     public function __serialize() : array {
         return [
-            "ID" => $this->ID,
-            "category" => $this->category,
-            "valueType" => $this->valueType,
-            "description" => $this->description,
+            "ID" => self::$ID,
+            "category" => self::$category,
+            "type" => self::$type,
+            "description" => self::$description,
+            "default" => self::$default
         ];
     }
 
     public function __unserialize(array $data) : void {
-        $this->ID = $data["ID"];
-        $this->category = $data["category"];
-        $this->valueType = $data["valueType"];
-        $this->description = $data["description"];
+        self::$ID = $data["ID"];
+        self::$category = $data["category"];
+        self::$type = $data["type"];
+        self::$description = $data["description"];
     }
 }
