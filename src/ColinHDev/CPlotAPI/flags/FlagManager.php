@@ -3,8 +3,25 @@
 namespace ColinHDev\CPlotAPI\flags;
 
 use ColinHDev\CPlot\ResourceManager;
+use ColinHDev\CPlotAPI\flags\implementations\BreakFlag;
+use ColinHDev\CPlotAPI\flags\implementations\BurningFlag;
+use ColinHDev\CPlotAPI\flags\implementations\CheckInactiveFlag;
+use ColinHDev\CPlotAPI\flags\implementations\ExplosionFlag;
+use ColinHDev\CPlotAPI\flags\implementations\FlowingFlag;
+use ColinHDev\CPlotAPI\flags\implementations\GrowingFlag;
+use ColinHDev\CPlotAPI\flags\implementations\ItemDropFlag;
+use ColinHDev\CPlotAPI\flags\implementations\ItemPickupFlag;
+use ColinHDev\CPlotAPI\flags\implementations\MessageFlag;
+use ColinHDev\CPlotAPI\flags\implementations\PlaceFlag;
+use ColinHDev\CPlotAPI\flags\implementations\PlayerInteractFlag;
+use ColinHDev\CPlotAPI\flags\implementations\PlotEnterFlag;
+use ColinHDev\CPlotAPI\flags\implementations\PlotLeaveFlag;
+use ColinHDev\CPlotAPI\flags\implementations\PveFlag;
+use ColinHDev\CPlotAPI\flags\implementations\PvpFlag;
+use ColinHDev\CPlotAPI\flags\implementations\ServerPlotFlag;
 use ColinHDev\CPlotAPI\flags\implementations\SpawnFlag;
-use pocketmine\utils\Config;
+use ColinHDev\CPlotAPI\flags\implementations\TitleFlag;
+use ColinHDev\CPlotAPI\flags\implementations\UseFlag;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\Utils;
 
@@ -16,44 +33,42 @@ class FlagManager {
     private array $flags = [];
 
     public function __construct() {
-        $config = ResourceManager::getInstance()->getFlagsConfig();
+        $this->register(FlagIDs::FLAG_TITLE, TitleFlag::class);
+        $this->register(FlagIDs::FLAG_PLOT_ENTER, PlotEnterFlag::class);
+        $this->register(FlagIDs::FLAG_PLOT_LEAVE, PlotLeaveFlag::class);
+        $this->register(FlagIDs::FLAG_MESSAGE, MessageFlag::class);
 
-        $this->register($config, FlagIDs::FLAG_TITLE, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_PLOT_ENTER, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_PLOT_LEAVE, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_MESSAGE, StringFlag::class);
+        $this->register(FlagIDs::FLAG_SPAWN, SpawnFlag::class);
 
-        $this->register($config, FlagIDs::FLAG_SPAWN, SpawnFlag::class);
+        $this->register(FlagIDs::FLAG_ITEM_DROP, ItemDropFlag::class);
+        $this->register(FlagIDs::FLAG_ITEM_PICKUP, ItemPickupFlag::class);
 
-        $this->register($config, FlagIDs::FLAG_ITEM_DROP, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_ITEM_PICKUP, BooleanFlag::class);
+        $this->register(FlagIDs::FLAG_PVP, PvpFlag::class);
+        $this->register(FlagIDs::FLAG_PVE, PveFlag::class);
+        $this->register(FlagIDs::FLAG_EXPLOSION, ExplosionFlag::class);
+        $this->register(FlagIDs::FLAG_BURNING, BurningFlag::class);
+        $this->register(FlagIDs::FLAG_FLOWING, FlowingFlag::class);
+        $this->register(FlagIDs::FLAG_GROWING, GrowingFlag::class);
+        $this->register(FlagIDs::FLAG_PLAYER_INTERACT, PlayerInteractFlag::class);
+        $this->register(FlagIDs::FLAG_SERVER_PLOT, ServerPlotFlag::class);
+        $this->register(FlagIDs::FLAG_CHECK_INACTIVE, CheckInactiveFlag::class);
 
-        $this->register($config, FlagIDs::FLAG_PVP, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_PVE, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_EXPLOSION, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_BURNING, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_FLOWING, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_GROWING, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_PLAYER_INTERACT, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_SERVER_PLOT, BooleanFlag::class);
-        $this->register($config, FlagIDs::FLAG_CHECK_INACTIVE, BooleanFlag::class);
-
-        $this->register($config, FlagIDs::FLAG_PLACE, ArrayFlag::class);
-        $this->register($config, FlagIDs::FLAG_BREAK, ArrayFlag::class);
-        $this->register($config, FlagIDs::FLAG_USE, ArrayFlag::class);
+        $this->register(FlagIDs::FLAG_PLACE, PlaceFlag::class);
+        $this->register(FlagIDs::FLAG_BREAK, BreakFlag::class);
+        $this->register(FlagIDs::FLAG_USE, UseFlag::class);
     }
 
     /**
-     * @param Config $config
      * @param string $ID
      * @param class-string<BaseFlag> $className
      */
-    private function register(Config $config, string $ID, string $className) : void {
+    private function register(string $ID, string $className) : void {
         Utils::testValidInstance($className, BaseFlag::class);
-        $className::init($ID, $config->get("category"), $config->get("type"), $config->get("description"), "cplot.flag." . $ID, $config->get("default"));
+
+        $flagData = ResourceManager::getInstance()->getFlagsConfig()->get($ID);
+        $className::init($ID, $flagData["category"], $flagData["type"], $flagData["description"], "cplot.flag." . $ID, $flagData["default"]);
         $this->flags[$ID] = $className;
     }
-
 
     /**
      * @return class-string<BaseFlag>[]

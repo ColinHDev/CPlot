@@ -2,8 +2,7 @@
 
 namespace ColinHDev\CPlotAPI\flags;
 
-use ColinHDev\CPlotAPI\Plot;
-use pocketmine\player\Player;
+use ColinHDev\CPlotAPI\flags\utils\FlagParseException;
 
 /**
  * @template TFlagType of BaseFlag
@@ -16,13 +15,9 @@ abstract class BaseFlag implements FlagIDs {
     protected static string $type;
     protected static string $description;
     protected static string $permission;
-    /** @var TFlagValue | null */
-    protected static mixed $default;
+    protected static string $default;
 
-    /**
-     * @param TFlagValue | null $default
-     */
-    public static function init(string $ID, string $category, string $type, string $description, string $permission, mixed $default) {
+    public static function init(string $ID, string $category, string $type, string $description, string $permission, string $default) {
         self::$ID = $ID;
         self::$category = $category;
         self::$type = $type;
@@ -32,9 +27,9 @@ abstract class BaseFlag implements FlagIDs {
     }
 
     /**
-     * @param TFlagValue | null $value
+     * @param TFlagValue $value
      */
-    abstract public function __construct(mixed $value = null);
+    abstract public function __construct(mixed $value);
 
     public function getID() : string {
         return self::$ID;
@@ -57,10 +52,11 @@ abstract class BaseFlag implements FlagIDs {
     }
 
     /**
-     * @return TFlagValue | null
+     * @return TFlagValue
+     * @throws FlagParseException
      */
     public function getDefault() : mixed {
-        return self::$default;
+        return $this->parse(self::$default);
     }
 
     /**
@@ -80,12 +76,13 @@ abstract class BaseFlag implements FlagIDs {
      */
     abstract public function flagOf(mixed $value) : BaseFlag;
 
-    abstract public function toString() : string;
+    abstract public function toString(mixed $value = null) : string;
 
     /**
-     * @return TFlagType
+     * @return TFlagValue
+     * @throws FlagParseException
      */
-    abstract public static function parse(string $value) : BaseFlag;
+    abstract public function parse(string $value) : mixed;
 
     public function __serialize() : array {
         return [
@@ -102,5 +99,6 @@ abstract class BaseFlag implements FlagIDs {
         self::$category = $data["category"];
         self::$type = $data["type"];
         self::$description = $data["description"];
+        self::$default = $data["default"];
     }
 }

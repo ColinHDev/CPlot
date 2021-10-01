@@ -2,93 +2,69 @@
 
 namespace ColinHDev\CPlotAPI\flags\implementations;
 
-use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
-use ColinHDev\CPlotAPI\flags\utils\InvalidValueException;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\flags\utils\FlagParseException;
 use pocketmine\entity\Location;
-use pocketmine\player\Player;
 
+/**
+ * @extends BaseFlag<SpawnFlag, Location>
+ */
 class SpawnFlag extends BaseFlag {
 
-    protected ?Location $value = null;
+    protected Location $value;
 
-    public function getDefault() : mixed {
-        return null;
-    }
-
-    public function getValue() : ?Location {
-        return $this->value;
-    }
-
-    public function getValueNonNull() : ?Location {
-        return $this->getValue();
-    }
-
-    /**
-     * @throws InvalidValueException
-     */
-    public function setValue(mixed $value) : void {
-        if ($value !== null) {
-            if (!$value instanceof Location) {
-                throw new InvalidValueException("Expected value to be instance of Location or null, got " . gettype($value) . ".");
-            }
-        }
+    public function __construct(mixed $value) {
         $this->value = $value;
     }
 
-
-    public function serializeValueType(mixed $data) : string {
-        if (!$data instanceof Location) return "null";
-        return $data->getX() . ";" . $data->getY() . ";" . $data->getZ() . ";" . $data->getYaw() . ";" . $data->getPitch();
+    public function getValue() : Location {
+        return $this->value;
     }
 
-    public function unserializeValueType(string $serializedValue) : ?Location {
-        if ($serializedValue === "null") return null;
-        [$x, $y, $z, $yaw, $pitch] = explode(";", $serializedValue);
-        return new Location((float) $x, (float) $y, (float) $z, (float) $yaw, (float) $pitch);
+    public function flagOf(mixed $value) : SpawnFlag {
+        return new self($value);
+    }
+
+    /**
+     * @param Location $value
+     * @return SpawnFlag
+     */
+    public function merge(mixed $value) : SpawnFlag {
+        return $this->flagOf($value);
+    }
+
+    /**
+     * @param Location | null $value
+     */
+    public function toString(mixed $value = null) : string {
+        if ($value === null) {
+            $value = $this->value;
+        }
+        return $value->getX() . ";" . $value->getY() . ";" . $value->getZ() . ";" . $value->getYaw() . ";" . $value->getPitch();
+    }
+
+    /**
+     * @throws FlagParseException
+     */
+    public function parse(string $value) : Location {
+        [$x, $y, $z, $yaw, $pitch] = explode(";", $value);
+        if ($x !== null && $y !== null && $z !== null && $yaw !== null && $pitch !== null) {
+            return new Location((float) $x, (float) $y, (float) $z, (float) $yaw, (float) $pitch);
+        }
+        throw new FlagParseException($this, $value);
     }
 
     public function __serialize() : array {
         $data = parent::__serialize();
-        $data["value"] = $this->serializeValueType($this->value);
+        $data["value"] = $this->toString();
         return $data;
     }
 
+    /**
+     * @throws FlagParseException
+     */
     public function __unserialize(array $data) : void {
         parent::__unserialize($data);
-        $this->value = $this->unserializeValueType($data["value"]);
-    }
-
-
-    public function set(Plot $plot, Player $player, array $args) : bool {
-        $flag = $plot->getFlagNonNullByID(self::FLAG_SERVER_PLOT);
-        if ($flag === null || $flag->getValueNonNull() === true) {
-            $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.serverPlotFlag", [$flag->getID() ?? self::FLAG_SERVER_PLOT]));
-            return false;
-        }
-
-        $location = $player->getLocation();
-        $this->value = new Location(
-            round($location->x, 1),
-            round($location->y, 1),
-            round($location->z, 1),
-            round($location->yaw, 3),
-            round($location->pitch, 3)
-        );
-        $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.set.success", [$this->ID, $this->serializeValueType($this->value)]));
-        return true;
-    }
-
-    public function remove(Plot $plot, Player $player, array $args) : bool {
-        $flag = $plot->getFlagNonNullByID(self::FLAG_SERVER_PLOT);
-        if ($flag === null || $flag->getValueNonNull() === true) {
-            $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.serverPlotFlag", [$flag->getID() ?? self::FLAG_SERVER_PLOT]));
-            return false;
-        }
-
-        $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("flag.remove.success", [$this->ID, $this->serializeValueType($this->value)]));
-        $this->value = null;
-        return true;
+        $this->value = $this->parse($data["value"]);
     }
 }
