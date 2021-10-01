@@ -30,7 +30,7 @@ abstract class BooleanFlag extends BaseFlag {
      * @return TFlagType
      */
     public function merge(mixed $value) : BooleanFlag {
-        return $this->flagOf($this->value || $value);
+        return $this->flagOf($value);
     }
 
     public function toString(mixed $value = null) : string {

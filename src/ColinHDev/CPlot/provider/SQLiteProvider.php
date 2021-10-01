@@ -2,6 +2,7 @@
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlotAPI\flags\utils\FlagParseException;
 use ColinHDev\CPlotAPI\players\BaseSetting;
 use ColinHDev\CPlotAPI\players\Player;
 use ColinHDev\CPlotAPI\players\SettingManager;
@@ -680,8 +681,10 @@ class SQLiteProvider extends DataProvider {
         return true;
     }
 
+
     /**
      * @return BaseFlag[] | null
+     * @throws FlagParseException
      */
     public function getPlotFlags(Plot $plot) : ?array {
         $this->getPlotFlags->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
@@ -695,11 +698,10 @@ class SQLiteProvider extends DataProvider {
         $flags = [];
         while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
             $flag = FlagManager::getInstance()->getFlagByID($var["ID"]);
-            if ($flag === null) continue;
-            $flag->setValue(
-                $flag->unserializeValueType($var["value"])
-            );
-            $flags[$flag->getID()] = $flag;
+            if ($flag === null) {
+                continue;
+            }
+            $flags[$flag->getID()] = $flag->flagOf($flag->parse($var["value"]));
         }
         return $flags;
     }
@@ -713,7 +715,7 @@ class SQLiteProvider extends DataProvider {
         $this->setPlotFlag->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
 
         $this->setPlotFlag->bindValue(":ID", $flag->getID(), SQLITE3_TEXT);
-        $this->setPlotFlag->bindValue(":value", $flag->serializeValueType($flag->getValue()), SQLITE3_TEXT);
+        $this->setPlotFlag->bindValue(":value", $flag->toString(), SQLITE3_TEXT);
 
         $this->setPlotFlag->reset();
         $result = $this->setPlotFlag->execute();

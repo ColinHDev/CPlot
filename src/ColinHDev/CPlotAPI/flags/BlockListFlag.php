@@ -2,8 +2,8 @@
 
 namespace ColinHDev\CPlotAPI\flags;
 
+use ColinHDev\CPlotAPI\utils\ParseUtils;
 use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
 
 /**
  * @template TFlagType of BlockListFlag
@@ -20,11 +20,7 @@ abstract class BlockListFlag extends ArrayFlag {
         }
         $blocks = [];
         foreach ($value as $block) {
-            $blocks[] = [
-                "StringID" => $block->getName(),
-                "ID" => $block->getId(),
-                "Meta" => $block->getMeta()
-            ];
+            $blocks[] = ParseUtils::parseStringFromBlock($block);
         }
         return json_encode($blocks);
     }
@@ -33,9 +29,13 @@ abstract class BlockListFlag extends ArrayFlag {
      * @return array<int, Block>
      */
     public function parse(string $value) : array {
+        $block = ParseUtils::parseBlockFromString($value);
+        if ($block !== null) {
+            return [$block];
+        }
         $blocks = [];
         foreach (json_decode($value, true) as $block) {
-            $blocks[] = BlockFactory::getInstance()->get($block["ID"], $block["Meta"]);
+            $blocks[] = ParseUtils::parseBlockFromString($block);
         }
         return $blocks;
     }

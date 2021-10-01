@@ -7,6 +7,7 @@ use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotResetAsyncTask;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
+use ColinHDev\CPlotAPI\flags\FlagManager;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -45,8 +46,13 @@ class ResetSubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->translateString("reset.loadFlagsError"));
             return;
         }
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag === null || $flag->getValueNonNull() === true) {
+        $flag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
+        if ($flag === null) {
+            $value = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SERVER_PLOT)?->getParsedDefault();
+        } else {
+            $value = $flag->getValue();
+        }
+        if ($value === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("reset.serverPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
             return;
         }

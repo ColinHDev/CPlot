@@ -3,14 +3,21 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlotAPI\flags\ArrayFlag;
 use ColinHDev\CPlotAPI\flags\BaseFlag;
+use ColinHDev\CPlotAPI\flags\FlagIDs;
 use ColinHDev\CPlotAPI\flags\FlagManager;
+use ColinHDev\CPlotAPI\flags\implementations\ServerPlotFlag;
+use ColinHDev\CPlotAPI\flags\utils\FlagParseException;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 class FlagSubcommand extends Subcommand {
 
+    /**
+     * @throws FlagParseException
+     */
     public function execute(CommandSender $sender, array $args) : void {
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
@@ -21,7 +28,9 @@ class FlagSubcommand extends Subcommand {
             case "list":
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.list.success"));
                 $flagsByCategory = [];
-                foreach (FlagManager::getInstance()->getFlags() as $flag) {
+                /** @var class-string<BaseFlag> $flagClass */
+                foreach (FlagManager::getInstance()->getFlags() as $flagClass) {
+                    $flag = new $flagClass;
                     if (!isset($flagsByCategory[$flag->getCategory()])) {
                         $flagsByCategory[$flag->getCategory()] = $flag->getID();
                     } else {
@@ -47,8 +56,8 @@ class FlagSubcommand extends Subcommand {
                 $sender->sendMessage($this->translateString("flag.info.ID", [$flag->getID()]));
                 $sender->sendMessage($this->translateString("flag.info.category", [$flag->getCategory()]));
                 $sender->sendMessage($this->translateString("flag.info.description", [$flag->getDescription()]));
-                $sender->sendMessage($this->translateString("flag.info.valueType", [$flag->getType()]));
-                $sender->sendMessage($this->translateString("flag.info.default", [$flag->serializeValueType($flag->getDefault())]));
+                $sender->sendMessage($this->translateString("flag.info.type", [$flag->getType()]));
+                $sender->sendMessage($this->translateString("flag.info.default", [$flag->getDefault()]));
                 break;
 
             case "here":
@@ -75,7 +84,7 @@ class FlagSubcommand extends Subcommand {
                 }
                 $flags = array_map(
                     function (BaseFlag $flag) : string {
-                        return $this->translateString("flag.here.success.format", [$flag->getID(), $flag->serializeValueType($flag->getValueNonNull())]);
+                        return $this->translateString("flag.here.success.format", [$flag->getID(), $flag->toString()]);
                     },
                     $plot->getFlags()
                 );
@@ -123,7 +132,8 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                $flag = $plot->getFlagNonNullByID($args[1]);
+                /** @var BaseFlag | null $flag */
+                $flag = FlagManager::getInstance()->getFlagByID($args[1]);
                 if ($flag === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noFlag", [$args[1]]));
                     break;
@@ -133,12 +143,42 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
+                if (!$flag instanceof ServerPlotFlag) {
+                    $oldFlag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
+                    if ($oldFlag === null) {
+                        $value = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SERVER_PLOT)?->getParsedDefault();
+                    } else {
+                        $value = $oldFlag->getValue();
+                    }
+                    if ($value === true) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.serverPlotFlag", [FlagIDs::FLAG_SERVER_PLOT]));
+                        break;
+                    }
+                }
+
                 array_splice($args, 0, 2);
-                if (!$flag->set($plot, $sender, $args)) return;
+                $arg = implode(" ", $args);
+                try {
+                    $parsedValue = $flag->parse($arg);
+                } catch (FlagParseException) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.parseError", [$arg, $flag->getID()]));
+                    break;
+                }
+
+                $flag = $flag->flagOf($parsedValue);
+                $oldFlag = $plot->getFlagByID($flag->getID());
+                if ($oldFlag !== null) {
+                    $flag = $flag->merge($oldFlag->getValue());
+                }
+                $plot->addFlag(
+                    $flag
+                );
+
                 if (!$this->getPlugin()->getProvider()->savePlotFlag($plot, $flag)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.saveError"));
                     break;
                 }
+                $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.success", [$flag->getID(), $flag->toString($parsedValue)]));
                 break;
 
             case "remove":
@@ -176,6 +216,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
+                /** @var BaseFlag | null $flag */
                 $flag = $plot->getFlagByID($args[1]);
                 if ($flag === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flagNotSet", [$args[1]]));
@@ -186,19 +227,63 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
+                if (!$flag instanceof ServerPlotFlag) {
+                    $oldFlag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
+                    if ($oldFlag === null) {
+                        $value = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SERVER_PLOT)?->getParsedDefault();
+                    } else {
+                        $value = $oldFlag->getValue();
+                    }
+                    if ($value === true) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.serverPlotFlag", [FlagIDs::FLAG_SERVER_PLOT]));
+                        break;
+                    }
+                }
+
                 array_splice($args, 0, 2);
-                if (!$flag->remove($plot, $sender, $args)) return;
-                if ($flag->getValue() === null) {
-                    if ($this->getPlugin()->getProvider()->deletePlotFlag($plot, $flag->getID())) break;
+                if (count($args) > 0 && $flag instanceof ArrayFlag) {
+                    $arg = implode(" ", $args);
+                    try {
+                        $parsedValues = $flag->parse($arg);
+                    } catch (FlagParseException) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.parseError", [$arg, $flag->getID()]));
+                        break;
+                    }
+
+                    $values = $flag->getValue();
+                    foreach ($parsedValues as $parsedValue) {
+                        $key = array_search($parsedValue, $values, true);
+                        if ($key === false) {
+                            continue;
+                        }
+                        unset($values[$key]);
+                    }
+
+                    if (count($values) > 0) {
+                        $flag = $flag->flagOf($values);
+                        if ($this->getPlugin()->getProvider()->savePlotFlag($plot, $flag)) {
+                            $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.value.success", [$flag->getID(), $flag->toString()]));
+                            break;
+                        }
+                    } else {
+                        if ($this->getPlugin()->getProvider()->deletePlotFlag($plot, $flag->getID())) {
+                            $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flag.success", [$flag->getID()]));
+                            break;
+                        }
+                    }
+
                 } else {
-                    if ($this->getPlugin()->getProvider()->savePlotFlag($plot, $flag)) break;
+                    if ($this->getPlugin()->getProvider()->deletePlotFlag($plot, $flag->getID())) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flag.success", [$flag->getID()]));
+                        break;
+                    }
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.saveError"));
                 break;
 
             default:
                 $sender->sendMessage($this->getPrefix() . $this->getUsage());
-                return;
+                break;
         }
     }
 }

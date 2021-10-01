@@ -4,6 +4,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
+use ColinHDev\CPlotAPI\flags\FlagManager;
 use ColinHDev\CPlotAPI\players\SettingIDs;
 use ColinHDev\CPlotAPI\Plot;
 use ColinHDev\CPlotAPI\PlotPlayer;
@@ -74,8 +75,13 @@ class AddSubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.loadFlagsError"));
             return;
         }
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag === null || $flag->getValueNonNull() === true) {
+        $flag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
+        if ($flag === null) {
+            $value = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SERVER_PLOT)?->getParsedDefault();
+        } else {
+            $value = $flag->getValue();
+        }
+        if ($value === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.serverPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
             return;
         }

@@ -51,11 +51,15 @@ abstract class BaseFlag implements FlagIDs {
         return self::$permission;
     }
 
+    public function getDefault() : string {
+        return self::$default;
+    }
+
     /**
      * @return TFlagValue
      * @throws FlagParseException
      */
-    public function getDefault() : mixed {
+    public function getParsedDefault() : mixed {
         return $this->parse(self::$default);
     }
 

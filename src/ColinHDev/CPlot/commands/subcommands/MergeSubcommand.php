@@ -7,6 +7,7 @@ use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
+use ColinHDev\CPlotAPI\flags\FlagManager;
 use pocketmine\command\CommandSender;
 use pocketmine\math\Facing;
 use pocketmine\player\Player;
@@ -42,8 +43,13 @@ class MergeSubcommand extends Subcommand {
             }
         }
         $plot->loadFlags();
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag === null || $flag->getValueNonNull() === true) {
+        $flag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
+        if ($flag === null) {
+            $value = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SERVER_PLOT)?->getParsedDefault();
+        } else {
+            $value = $flag->getValue();
+        }
+        if ($value === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.serverPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
             return;
         }
@@ -79,8 +85,13 @@ class MergeSubcommand extends Subcommand {
             return;
         }
 
-        $flag = $plotToMerge->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag === null || $flag->getValueNonNull() === true) {
+        $flag = $plotToMerge->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
+        if ($flag === null) {
+            $value = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SERVER_PLOT)?->getParsedDefault();
+        } else {
+            $value = $flag->getValue();
+        }
+        if ($value === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.secondPlotServerPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
             return;
         }

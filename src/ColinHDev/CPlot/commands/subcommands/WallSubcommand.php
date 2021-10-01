@@ -7,6 +7,7 @@ use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
 use ColinHDev\CPlotAPI\BasePlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
+use ColinHDev\CPlotAPI\flags\FlagManager;
 use ColinHDev\CPlotAPI\Plot;
 use ColinHDev\CPlotAPI\utils\ParseUtils;
 use dktapps\pmforms\FormIcon;
@@ -101,8 +102,13 @@ class WallSubcommand extends Subcommand {
             $player->sendMessage($this->getPrefix() . $this->translateString("wall.loadFlagsError"));
             return;
         }
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag === null || $flag->getValueNonNull() === true) {
+        $flag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
+        if ($flag === null) {
+            $value = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SERVER_PLOT)?->getParsedDefault();
+        } else {
+            $value = $flag->getValue();
+        }
+        if ($value === true) {
             $player->sendMessage($this->getPrefix() . $this->translateString("wall.serverPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
             return;
         }
