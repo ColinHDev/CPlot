@@ -22,8 +22,8 @@ use ColinHDev\CPlot\provider\SQLiteProvider;
 use ColinHDev\CPlot\tasks\EntityMovementTask;
 use pocketmine\plugin\PluginBase;
 use pocketmine\world\generator\GeneratorManager;
-use ColinHDev\CPlot\worlds\generators\PlotGenerator;
-use ColinHDev\CPlot\worlds\generators\SchematicGenerator;
+use ColinHDev\CPlot\worlds\PlotGenerator;
+use ColinHDev\CPlot\worlds\SchematicGenerator;
 
 class CPlot extends PluginBase {
 

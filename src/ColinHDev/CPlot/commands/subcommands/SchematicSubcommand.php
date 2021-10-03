@@ -3,7 +3,7 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\tasks\async\SchematicSaveAsyncTask;
-use ColinHDev\CPlot\worlds\generators\SchematicGenerator;
+use ColinHDev\CPlot\worlds\SchematicGenerator;
 use ColinHDev\CPlotAPI\worlds\SchematicTypes;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\math\Vector3;

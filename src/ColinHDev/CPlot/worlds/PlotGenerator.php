@@ -1,10 +1,9 @@
 <?php
 
-namespace ColinHDev\CPlot\worlds\generators;
+namespace ColinHDev\CPlot\worlds;
 
 use ColinHDev\CPlotAPI\math\CoordinateUtils;
 use ColinHDev\CPlotAPI\utils\ParseUtils;
-use ColinHDev\CPlotAPI\worlds\SchematicTypes;
 use pocketmine\world\generator\Generator;
 use pocketmine\world\ChunkManager;
 use pocketmine\data\bedrock\BiomeIds;
@@ -12,13 +11,14 @@ use pocketmine\block\VanillaBlocks;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\worlds\Schematic;
 
-class SchematicGenerator extends Generator {
+class PlotGenerator extends Generator {
 
-    public const GENERATOR_NAME = "cplot_schematic";
+    public const GENERATOR_NAME = "cplot_plot";
 
-    private string $schematicName;
-    private string $schematicType;
-    private ?Schematic $schematic = null;
+    private string $schematicRoadName;
+    private ?Schematic $schematicRoad = null;
+    private string $schematicPlotName;
+    private ?Schematic $schematicPlot = null;
 
     private int $roadSize;
     private int $plotSize;
@@ -41,8 +41,8 @@ class SchematicGenerator extends Generator {
             $generatorOptions = [];
         }
 
-        $this->schematicName = ParseUtils::parseStringFromArray($generatorOptions, "schematicName", "default");
-        $this->schematicType = ParseUtils::parseStringFromArray($generatorOptions, "schematicType", SchematicTypes::TYPE_ROAD);
+        $this->schematicRoadName = ParseUtils::parseStringFromArray($generatorOptions, "roadSchematic", "default");
+        $this->schematicPlotName = ParseUtils::parseStringFromArray($generatorOptions, "plotSchematic", "default");
 
         $this->roadSize = ParseUtils::parseIntegerFromArray($generatorOptions, "roadSize", 7);
         $this->plotSize = ParseUtils::parseIntegerFromArray($generatorOptions, "plotSize", 32);
@@ -60,8 +60,8 @@ class SchematicGenerator extends Generator {
         $this->plotBottomBlockFullID = $plotBottomBlock->getFullId();
 
         $this->preset = (string) json_encode([
-            "schematicName" => $this->schematicName,
-            "schematicType" => $this->schematicType,
+            "roadSchematic" => $this->schematicRoadName,
+            "plotSchematic" => $this->schematicPlotName,
 
             "roadSize" => $this->roadSize,
             "plotSize" => $this->plotSize,
@@ -77,29 +77,36 @@ class SchematicGenerator extends Generator {
 
     public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
 
-        if ($this->schematicName !== "default" && $this->schematic === null) {
-            $this->schematic = new Schematic($this->schematicName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $this->schematicName . "." . Schematic::FILE_EXTENSION);
-            if (!$this->schematic->loadFromFile()) {
-                $this->schematicName = "default";
+        if ($this->schematicRoadName !== "default" && $this->schematicRoad === null) {
+            $this->schematicRoad = new Schematic($this->schematicRoadName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $this->schematicRoadName . "." . Schematic::FILE_EXTENSION);
+            if (!$this->schematicRoad->loadFromFile()) {
+                $this->schematicRoadName = "default";
+            }
+        }
+        if ($this->schematicPlotName !== "default" && $this->schematicPlot === null) {
+            $this->schematicPlot = new Schematic($this->schematicPlotName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $this->schematicPlotName . "." . Schematic::FILE_EXTENSION);
+            if (!$this->schematicPlot->loadFromFile()) {
+                $this->schematicPlotName = "default";
             }
         }
 
         $chunk = $world->getChunk($chunkX, $chunkZ);
+        for ($X = 0; $X < 16; $X++) {
+            $x = CoordinateUtils::getRasterCoordinate($chunkX * 16 + $X, $this->roadSize + $this->plotSize);
+            $xPlot = $x - $this->roadSize;
 
-        if ($this->schematicName === "default") {
-            if ($this->schematicType === SchematicTypes::TYPE_ROAD) {
-                for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
-                    for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
-                        $chunk->setBiomeId($X, $Z, BiomeIds::PLAINS);
-                        if ($x < 0 || $x >= $this->roadSize + $this->plotSize) {
-                            continue;
+            for ($Z = 0; $Z < 16; $Z++) {
+                $z = CoordinateUtils::getRasterCoordinate($chunkZ * 16 + $Z, $this->roadSize + $this->plotSize);
+                $zPlot = $z - $this->roadSize;
+
+                $chunk->setBiomeId($X, $Z, BiomeIds::PLAINS);
+
+                if ($x < $this->roadSize || $z < $this->roadSize) {
+                    if ($this->schematicRoadName !== "default" && $this->schematicRoad !== null) {
+                        for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
+                            $chunk->setFullBlock($X, $y, $Z, $this->schematicRoad->getFullBlock($x, $y, $z));
                         }
-                        if ($z < 0 || $z >= $this->roadSize + $this->plotSize) {
-                            continue;
-                        }
-                        if ($x >= $this->roadSize && $z >= $this->roadSize) {
-                            continue;
-                        }
+                    } else {
                         for ($y = $world->getMinY(); $y <= $this->groundSize + 1; $y++) {
                             if ($y === $world->getMinY()) {
                                 $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
@@ -112,18 +119,12 @@ class SchematicGenerator extends Generator {
                             }
                         }
                     }
-                }
-
-            } else if ($this->schematicType === SchematicTypes::TYPE_PLOT) {
-                for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
-                    for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
-                        $chunk->setBiomeId($X, $Z, BiomeIds::PLAINS);
-                        if ($x < 0 || $x >= $this->plotSize) {
-                            continue;
+                } else {
+                    if ($this->schematicPlotName !== "default" && $this->schematicPlot !== null) {
+                        for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
+                            $chunk->setFullBlock($X, $y, $Z, $this->schematicPlot->getFullBlock($xPlot, $y, $zPlot));
                         }
-                        if ($z < 0 || $z >= $this->plotSize) {
-                            continue;
-                        }
+                    } else {
                         for ($y = $world->getMinY(); $y <= $this->groundSize; $y++) {
                             if ($y === $world->getMinY()) {
                                 $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
@@ -133,14 +134,6 @@ class SchematicGenerator extends Generator {
                                 $chunk->setFullBlock($X, $y, $Z, $this->plotFillBlockFullID);
                             }
                         }
-                    }
-                }
-            }
-        } else if ($this->schematic !== null) {
-            for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
-                for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
-                    for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                        $chunk->setFullBlock($X, $y, $Z, $this->schematic->getFullBlock($x, $y, $z));
                     }
                 }
             }
