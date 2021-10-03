@@ -3,10 +3,10 @@
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
-use ColinHDev\CPlotAPI\flags\FlagIDs;
-use ColinHDev\CPlotAPI\flags\implementations\PlaceFlag;
-use ColinHDev\CPlotAPI\Plot;
-use ColinHDev\CPlotAPI\PlotPlayer;
+use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
+use ColinHDev\CPlotAPI\plots\flags\implementations\PlaceFlag;
+use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlotAPI\plots\PlotPlayer;
 use pocketmine\block\Block;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;

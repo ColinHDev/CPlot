@@ -3,10 +3,10 @@
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
-use ColinHDev\CPlotAPI\flags\FlagIDs;
-use ColinHDev\CPlotAPI\flags\implementations\BreakFlag;
-use ColinHDev\CPlotAPI\Plot;
-use ColinHDev\CPlotAPI\PlotPlayer;
+use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
+use ColinHDev\CPlotAPI\plots\flags\implementations\BreakFlag;
+use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlotAPI\plots\PlotPlayer;
 use pocketmine\block\Block;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;

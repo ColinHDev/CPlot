@@ -2,9 +2,9 @@
 
 namespace ColinHDev\CPlot\tasks\utils;
 
-use ColinHDev\CPlotAPI\BasePlot;
+use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\math\Area;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\Plot;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 
 trait PlotAreaCalculationTrait {

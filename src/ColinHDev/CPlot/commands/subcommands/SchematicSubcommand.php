@@ -4,13 +4,13 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\tasks\async\SchematicSaveAsyncTask;
 use ColinHDev\CPlot\worlds\generators\SchematicGenerator;
-use ColinHDev\CPlotAPI\worlds\schematics\SchematicTypes;
+use ColinHDev\CPlotAPI\worlds\SchematicTypes;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\command\CommandSender;
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlotAPI\worlds\schematics\Schematic;
+use ColinHDev\CPlotAPI\worlds\Schematic;
 use pocketmine\world\generator\GeneratorManager;
 use pocketmine\world\WorldCreationOptions;
 use pocketmine\Server;

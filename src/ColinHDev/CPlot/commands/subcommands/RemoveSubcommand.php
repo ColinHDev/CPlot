@@ -3,11 +3,11 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlotAPI\flags\FlagIDs;
-use ColinHDev\CPlotAPI\flags\FlagManager;
-use ColinHDev\CPlotAPI\players\SettingIDs;
-use ColinHDev\CPlotAPI\Plot;
-use ColinHDev\CPlotAPI\PlotPlayer;
+use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
+use ColinHDev\CPlotAPI\plots\flags\FlagManager;
+use ColinHDev\CPlotAPI\players\settings\SettingIDs;
+use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlotAPI\plots\PlotPlayer;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 

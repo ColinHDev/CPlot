@@ -4,9 +4,9 @@ namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\tasks\async\EntityExplodeAsyncTask;
-use ColinHDev\CPlotAPI\BasePlot;
-use ColinHDev\CPlotAPI\flags\FlagIDs;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\BasePlot;
+use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
+use ColinHDev\CPlotAPI\plots\Plot;
 use pocketmine\block\BlockFactory;
 use pocketmine\event\entity\EntityExplodeEvent;
 use pocketmine\event\Listener;

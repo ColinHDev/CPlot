@@ -4,12 +4,12 @@ namespace ColinHDev\CPlot\tasks\async;
 
 use ColinHDev\CPlot\tasks\utils\PlotBorderAreaCalculationTrait;
 use ColinHDev\CPlot\tasks\utils\RoadAreaCalculationTrait;
-use ColinHDev\CPlotAPI\worlds\schematics\Schematic;
+use ColinHDev\CPlotAPI\worlds\Schematic;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
-use ColinHDev\CPlotAPI\BasePlot;
+use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\math\CoordinateUtils;
-use ColinHDev\CPlotAPI\MergePlot;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\MergePlot;
+use ColinHDev\CPlotAPI\plots\Plot;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\utils\SubChunkExplorer;
 use pocketmine\world\utils\SubChunkExplorerStatus;

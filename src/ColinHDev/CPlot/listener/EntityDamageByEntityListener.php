@@ -2,8 +2,8 @@
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlotAPI\flags\FlagIDs;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
+use ColinHDev\CPlotAPI\plots\Plot;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;

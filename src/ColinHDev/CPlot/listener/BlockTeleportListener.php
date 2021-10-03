@@ -3,8 +3,8 @@
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
-use ColinHDev\CPlotAPI\BasePlot;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\BasePlot;
+use ColinHDev\CPlotAPI\plots\Plot;
 use pocketmine\event\block\BlockTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\world\Position;

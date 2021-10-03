@@ -4,13 +4,13 @@ namespace ColinHDev\CPlot\worlds\generators;
 
 use ColinHDev\CPlotAPI\math\CoordinateUtils;
 use ColinHDev\CPlotAPI\utils\ParseUtils;
-use ColinHDev\CPlotAPI\worlds\schematics\SchematicTypes;
+use ColinHDev\CPlotAPI\worlds\SchematicTypes;
 use pocketmine\world\generator\Generator;
 use pocketmine\world\ChunkManager;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\block\VanillaBlocks;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
-use ColinHDev\CPlotAPI\worlds\schematics\Schematic;
+use ColinHDev\CPlotAPI\worlds\Schematic;
 
 class SchematicGenerator extends Generator {
 

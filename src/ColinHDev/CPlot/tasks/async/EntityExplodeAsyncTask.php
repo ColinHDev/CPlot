@@ -4,7 +4,7 @@ namespace ColinHDev\CPlot\tasks\async;
 
 use ColinHDev\CPlot\tasks\utils\PlotAreaCalculationTrait;
 use ColinHDev\CPlot\tasks\utils\RoadAreaCalculationTrait;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\Plot;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\world\World;
 

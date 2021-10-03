@@ -2,19 +2,19 @@
 
 namespace ColinHDev\CPlot\provider;
 
-use ColinHDev\CPlotAPI\flags\utils\FlagParseException;
-use ColinHDev\CPlotAPI\players\BaseSetting;
+use ColinHDev\CPlotAPI\plots\flags\utils\FlagParseException;
+use ColinHDev\CPlotAPI\players\settings\BaseSetting;
 use ColinHDev\CPlotAPI\players\Player;
-use ColinHDev\CPlotAPI\players\SettingManager;
-use ColinHDev\CPlotAPI\PlotPlayer;
-use ColinHDev\CPlotAPI\PlotRate;
+use ColinHDev\CPlotAPI\players\settings\SettingManager;
+use ColinHDev\CPlotAPI\plots\PlotPlayer;
+use ColinHDev\CPlotAPI\plots\PlotRate;
 use ColinHDev\CPlotAPI\utils\ParseUtils;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
-use ColinHDev\CPlotAPI\BasePlot;
-use ColinHDev\CPlotAPI\flags\BaseFlag;
-use ColinHDev\CPlotAPI\flags\FlagManager;
-use ColinHDev\CPlotAPI\MergePlot;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\BasePlot;
+use ColinHDev\CPlotAPI\plots\flags\BaseFlag;
+use ColinHDev\CPlotAPI\plots\flags\FlagManager;
+use ColinHDev\CPlotAPI\plots\MergePlot;
+use ColinHDev\CPlotAPI\plots\Plot;
 use Exception;
 use pocketmine\data\bedrock\BiomeIds;
 use SQLite3;

@@ -4,14 +4,14 @@ namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlot\provider\cache\Cache;
 use ColinHDev\CPlot\provider\cache\CacheIDs;
-use ColinHDev\CPlotAPI\players\BaseSetting;
+use ColinHDev\CPlotAPI\players\settings\BaseSetting;
 use ColinHDev\CPlotAPI\players\Player;
-use ColinHDev\CPlotAPI\PlotPlayer;
-use ColinHDev\CPlotAPI\PlotRate;
+use ColinHDev\CPlotAPI\plots\PlotPlayer;
+use ColinHDev\CPlotAPI\plots\PlotRate;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
-use ColinHDev\CPlotAPI\BasePlot;
-use ColinHDev\CPlotAPI\flags\BaseFlag;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\BasePlot;
+use ColinHDev\CPlotAPI\plots\flags\BaseFlag;
+use ColinHDev\CPlotAPI\plots\Plot;
 
 abstract class DataProvider {
 

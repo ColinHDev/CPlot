@@ -3,8 +3,8 @@
 namespace ColinHDev\CPlot\tasks;
 
 use ColinHDev\CPlot\CPlot;
-use ColinHDev\CPlotAPI\BasePlot;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\BasePlot;
+use ColinHDev\CPlotAPI\plots\Plot;
 use pocketmine\entity\object\PrimedTNT;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;

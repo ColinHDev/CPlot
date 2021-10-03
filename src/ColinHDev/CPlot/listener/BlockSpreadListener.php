@@ -3,8 +3,8 @@
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
-use ColinHDev\CPlotAPI\flags\FlagIDs;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
+use ColinHDev\CPlotAPI\plots\Plot;
 use pocketmine\block\Liquid;
 use pocketmine\event\block\BlockSpreadEvent;
 use pocketmine\event\Listener;

@@ -3,7 +3,7 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\Plot;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 

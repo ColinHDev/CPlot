@@ -4,6 +4,8 @@ namespace ColinHDev\CPlotAPI\players;
 
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\provider\cache\Cacheable;
+use ColinHDev\CPlotAPI\players\settings\BaseSetting;
+use ColinHDev\CPlotAPI\players\settings\SettingManager;
 
 class Player implements Cacheable {
 

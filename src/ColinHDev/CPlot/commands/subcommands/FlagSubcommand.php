@@ -3,14 +3,14 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlotAPI\flags\ArrayFlag;
-use ColinHDev\CPlotAPI\flags\BaseFlag;
-use ColinHDev\CPlotAPI\flags\FlagIDs;
-use ColinHDev\CPlotAPI\flags\FlagManager;
-use ColinHDev\CPlotAPI\flags\implementations\ServerPlotFlag;
-use ColinHDev\CPlotAPI\flags\implementations\SpawnFlag;
-use ColinHDev\CPlotAPI\flags\utils\FlagParseException;
-use ColinHDev\CPlotAPI\Plot;
+use ColinHDev\CPlotAPI\plots\flags\ArrayFlag;
+use ColinHDev\CPlotAPI\plots\flags\BaseFlag;
+use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
+use ColinHDev\CPlotAPI\plots\flags\FlagManager;
+use ColinHDev\CPlotAPI\plots\flags\implementations\ServerPlotFlag;
+use ColinHDev\CPlotAPI\plots\flags\implementations\SpawnFlag;
+use ColinHDev\CPlotAPI\plots\flags\utils\FlagParseException;
+use ColinHDev\CPlotAPI\plots\Plot;
 use pocketmine\command\CommandSender;
 use pocketmine\entity\Location;
 use pocketmine\player\Player;
