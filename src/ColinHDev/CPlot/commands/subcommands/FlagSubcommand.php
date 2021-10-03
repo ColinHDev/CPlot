@@ -144,13 +144,8 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 if (!$flag instanceof ServerPlotFlag) {
-                    $oldFlag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
-                    if ($oldFlag === null) {
-                        $value = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SERVER_PLOT)?->getParsedDefault();
-                    } else {
-                        $value = $oldFlag->getValue();
-                    }
-                    if ($value === true) {
+                    $oldFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+                    if ($oldFlag->getValue() === true) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.serverPlotFlag", [FlagIDs::FLAG_SERVER_PLOT]));
                         break;
                     }
@@ -228,13 +223,8 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 if (!$flag instanceof ServerPlotFlag) {
-                    $oldFlag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
-                    if ($oldFlag === null) {
-                        $value = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SERVER_PLOT)?->getParsedDefault();
-                    } else {
-                        $value = $oldFlag->getValue();
-                    }
-                    if ($value === true) {
+                    $oldFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+                    if ($oldFlag->getValue() === true) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.serverPlotFlag", [FlagIDs::FLAG_SERVER_PLOT]));
                         break;
                     }

@@ -227,11 +227,12 @@ class Plot extends BasePlot {
         return null;
     }
 
-    /**
-     * @param BaseFlag[] | null $flags
-     */
-    public function setFlags(?array $flags) : void {
-        $this->flags = $flags;
+    public function getFlagNonNullByID(string $flagID) : ?BaseFlag {
+        $flag = $this->getFlagByID($flagID);
+        if ($flag === null && $this->flags !== null) {
+            $flag = FlagManager::getInstance()->getFlagByID($flagID);
+        }
+        return $flag;
     }
 
     public function addFlag(BaseFlag $flag) : bool {

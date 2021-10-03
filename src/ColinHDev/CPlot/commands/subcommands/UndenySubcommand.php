@@ -71,13 +71,8 @@ class UndenySubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->translateString("undeny.loadFlagsError"));
             return;
         }
-        $flag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag === null) {
-            $value = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SERVER_PLOT)?->getParsedDefault();
-        } else {
-            $value = $flag->getValue();
-        }
-        if ($value === true) {
+        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+        if ($flag->getValue() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("undeny.serverPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
             return;
         }

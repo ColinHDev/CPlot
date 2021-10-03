@@ -102,13 +102,8 @@ class WallSubcommand extends Subcommand {
             $player->sendMessage($this->getPrefix() . $this->translateString("wall.loadFlagsError"));
             return;
         }
-        $flag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag === null) {
-            $value = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SERVER_PLOT)?->getParsedDefault();
-        } else {
-            $value = $flag->getValue();
-        }
-        if ($value === true) {
+        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+        if ($flag->getValue() === true) {
             $player->sendMessage($this->getPrefix() . $this->translateString("wall.serverPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
             return;
         }
