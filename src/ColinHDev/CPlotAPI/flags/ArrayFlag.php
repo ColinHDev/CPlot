@@ -12,8 +12,15 @@ abstract class ArrayFlag extends BaseFlag {
 
     protected array $value;
 
-    public function __construct(mixed $value) {
-        $this->value = $value;
+    /**
+     * @throws FlagParseException
+     */
+    public function __construct(mixed $value = null) {
+        if ($value === null) {
+            $this->value = $this->getParsedDefault();
+        } else {
+            $this->value = $value;
+        }
     }
 
     public function getValue() : array {

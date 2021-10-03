@@ -12,8 +12,15 @@ abstract class StringFlag extends BaseFlag {
 
     protected string $value;
 
-    public function __construct(mixed $value) {
-        $this->value = $value;
+    /**
+     * @throws FlagParseException
+     */
+    public function __construct(mixed $value = null) {
+        if ($value === null) {
+            $this->value = $this->getParsedDefault();
+        } else {
+            $this->value = $value;
+        }
     }
 
     public function getValue() : string {

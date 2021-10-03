@@ -66,6 +66,7 @@ class FlagManager {
         Utils::testValidInstance($className, BaseFlag::class);
 
         $flagData = ResourceManager::getInstance()->getFlagsConfig()->get($ID);
+        /** @var class-string<BaseFlag> $className */
         $className::init($ID, $flagData["category"], $flagData["type"], $flagData["description"], "cplot.flag." . $ID, $flagData["default"]);
         $this->flags[$ID] = $className;
     }
