@@ -55,6 +55,70 @@ worldSettings:
     # default value: "Bedrock"
     plotBottomBlock: "Bedrock"
 
+# Define the default values of all flags.
+flags:
+    # Define the default value of the title flag.
+    # default: "true"
+    title: "true"
+    # Define the default value of the plot_enter flag.
+    # default: "false"
+    plot_enter: "false"
+    # Define the default value of the plot_leave flag.
+    # default: "false"
+    plot_leave: "false"
+    # Define the default value of the message flag.
+    # default: ""
+    message: ""
+
+    # Define the default value of the spawn flag.
+    # default: "-1;1;16;180;0"
+    spawn: "-1;1;16;180;0"
+
+    # Define the default value of the item_drop flag.
+    # default: "true"
+    item_drop: "true"
+    # Define the default value of the item_pickup flag.
+    # default: "true"
+    item_pickup: "true"
+
+    # Define the default value of the pvp flag.
+    # default: "false"
+    pvp: "false"
+    # Define the default value of the pve flag.
+    # default: "false"
+    pve: "false"
+    # Define the default value of the explosion flag.
+    # default: "false"
+    explosion: "false"
+    # Define the default value of the burning flag.
+    # default: "false"
+    burning: "false"
+    # Define the default value of the flowing flag.
+    # default: "true"
+    flowing: "true"
+    # Define the default value of the growing flag.
+    # default: "true"
+    growing: "true"
+    # Define the default value of the player_interact flag.
+    # default: "false"
+    player_interact: "false"
+    # Define the default value of the server_plot flag.
+    # default: "false"
+    server_plot: "false"
+    # Define the default value of the check_inactive flag.
+    # default: "true"
+    check_inactive: "true"
+
+    # Define the default value of the place flag.
+    # default: "[]"
+    place: "[]"
+    # Define the default value of the break flag.
+    # default: "[]"
+    break: "[]"
+    # Define the default value of the use flag.
+    # default: "[]"
+    use: "[]"
+
 # database settings
 database:
     # define which provider will be used

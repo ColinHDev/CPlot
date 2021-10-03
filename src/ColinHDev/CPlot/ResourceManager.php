@@ -7,12 +7,10 @@ use pocketmine\lang\Language;
 use pocketmine\utils\SingletonTrait;
 
 class ResourceManager {
-
     use SingletonTrait;
 
     private Config $bordersConfig;
     private Config $config;
-    private Config $flagsConfig;
     private Language $language;
     private Config $settingsConfig;
     private Config $wallsConfig;
@@ -23,14 +21,12 @@ class ResourceManager {
 
         CPlot::getInstance()->saveResource("borders.yml");
         CPlot::getInstance()->saveResource("config.yml");
-        CPlot::getInstance()->saveResource("flags.yml");
         CPlot::getInstance()->saveResource("language.ini");
         CPlot::getInstance()->saveResource("settings.yml");
         CPlot::getInstance()->saveResource("walls.yml");
 
         $this->bordersConfig = new Config(CPlot::getInstance()->getDataFolder() . "borders.yml", Config::YAML);
         $this->config = new Config(CPlot::getInstance()->getDataFolder() . "config.yml", Config::YAML);
-        $this->flagsConfig = new Config(CPlot::getInstance()->getDataFolder() . "flags.yml", Config::YAML);
         $this->language = new Language("language", CPlot::getInstance()->getDataFolder(), "language");
         $this->settingsConfig = new Config(CPlot::getInstance()->getDataFolder() . "settings.yml", Config::YAML);
         $this->wallsConfig = new Config(CPlot::getInstance()->getDataFolder() . "walls.yml", Config::YAML);
@@ -65,11 +61,6 @@ class ResourceManager {
     public function getConfig() : Config {
         $this->config->reload();
         return $this->config;
-    }
-
-    public function getFlagsConfig() : Config {
-        $this->flagsConfig->reload();
-        return $this->flagsConfig;
     }
 
     public function getSettingsConfig() : Config {
