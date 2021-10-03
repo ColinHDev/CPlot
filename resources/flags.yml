@@ -1,16 +1,16 @@
 # Notifications
 title:
-    default: true
+    default: "true"
     type: "boolean (Wahrheitswert)"
     description: "Aktiviere / Deaktiviere den Titel mit Information über das Grundstück. (X;Z | Inhaber)"
     category: "notifications"
 plot_enter:
-    default: false
+    default: "false"
     type: "boolean (Wahrheitswert)"
     description: "Erhalte eine Benachrichtigung, wenn ein Spieler dein Grundstück betritt."
     category: "notifications"
 plot_leave:
-    default: false
+    default: "false"
     type: "boolean (Wahrheitswert)"
     description: "Erhalte eine Benachrichtigung, wenn ein Spieler dein Grundstück verlässt."
     category: "notifications"
@@ -33,12 +33,12 @@ spawn:
 
 # Items
 item_drop:
-    default: true
+    default: "true"
     type: "boolean (Wahrheitswert)"
     description: "Spieler können Items auf deinem Grundstück auf den Boden werfen."
     category: "items"
 item_pickup:
-    default: true
+    default: "true"
     type: "boolean (Wahrheitswert)"
     description: "Spieler können Items auf deinem Grundstück vom Boden aufnehmen."
     category: "items"
@@ -47,47 +47,47 @@ item_pickup:
 
 # Protection
 pvp:
-    default: false
+    default: "false"
     type: "boolean (Wahrheitswert)"
     description: "Aktiviere / Deaktiviere PvP (Player vs. Player) auf dem Grundstück."
     category: "protection"
 pve:
-    default: false
+    default: "false"
     type: "boolean (Wahrheitswert)"
     description: "Aktiviere / Deaktiviere PvE (Player vs. Environment) auf dem Grundstück."
     category: "protection"
 explosion:
-    default: false
+    default: "false"
     type: "boolean (Wahrheitswert)"
     description: "Aktiviere / Deaktiviere Explosionen auf dem Grundstück."
     category: "protection"
 burning:
-    default: false
+    default: "false"
     type: "boolean (Wahrheitswert)"
     description: "Aktiviere / Deaktiviere das (Ab)brennen von Blöcken."
     category: "protection"
 flowing:
-    default: true
+    default: "true"
     type: "boolean (Wahrheitswert)"
     description: "Aktiviere / Deaktiviere das Fließen von Flüssigkeiten."
     category: "protection"
 growing:
-    default: true
+    default: "true"
     type: "boolean (Wahrheitswert)"
     description: "Aktiviere / Deaktiviere das Wachsen von Pflanzen."
     category: "protection"
 player_interact:
-    default: false
+    default: "false"
     type: "boolean (Wahrheitswert)"
     description: "Erlaube Spielern mit Türen, Falltüren und Toren zu interagieren."
     category: "protection"
 server_plot:
-    default: false
+    default: "false"
     type: "boolean (Wahrheitswert)"
     description: "Auf Grundstücken mit dieser Flag sind viele Funktionen zum Schutz des Grundstückes deaktiviert."
     category: "protection"
 check_inactive:
-    default: true
+    default: "true"
     type: "boolean (Wahrheitswert)"
     description: "Aktiviere / Deaktiviere die Inaktivitäts-Kontrolle eines Grundstückes."
     category: "protection"
@@ -96,17 +96,17 @@ check_inactive:
 
 # Block-Protection
 place:
-    default: []
+    default: "[]"
     type: "array (Feld)"
     description: "Erlaube Spielern Blöcke mit den angegebenen Werten zu platzieren."
     category: "block-protection"
 break:
-    default: []
+    default: "[]"
     type: "array (Feld)"
     description: "Erlaube Spielern Blöcke mit den angegebenen Werten abzubauen."
     category: "block-protection"
 use:
-    default: []
+    default: "[]"
     type: "array (Feld)"
     description: "Erlaube Spielern mit Blöcken mit den angegebenen Werten zu interagieren."
     category: "block-protection"
