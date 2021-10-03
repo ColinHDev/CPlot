@@ -24,6 +24,7 @@ use ColinHDev\CPlot\commands\subcommands\TrustSubcommand;
 use ColinHDev\CPlot\commands\subcommands\UndenySubcommand;
 use ColinHDev\CPlot\commands\subcommands\UntrustSubcommand;
 use ColinHDev\CPlot\commands\subcommands\VisitSubcommand;
+use ColinHDev\CPlot\commands\subcommands\WallSubcommand;
 use ColinHDev\CPlot\commands\subcommands\WarpSubcommand;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\Command;
@@ -73,6 +74,7 @@ class PlotCommand extends Command {
         $this->loadSubcommand(new UndenySubcommand($resourceManager->getCommandData("undeny"), "cplot.subcommand.undeny"));
         $this->loadSubcommand(new UntrustSubcommand($resourceManager->getCommandData("untrust"), "cplot.subcommand.untrust"));
         $this->loadSubcommand(new VisitSubcommand($resourceManager->getCommandData("visit"), "cplot.subcommand.visit"));
+        $this->loadSubcommand(new WallSubcommand($resourceManager->getCommandData("wall"), "cplot.subcommand.wall"));
         $this->loadSubcommand(new WarpSubcommand($resourceManager->getCommandData("warp"), "cplot.subcommand.warp"));
     }
 
