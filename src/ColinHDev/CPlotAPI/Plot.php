@@ -280,13 +280,20 @@ class Plot extends BasePlot {
         $world = Server::getInstance()->getWorldManager()->getWorldByName($this->worldName);
         if ($world === null) return false;
 
-        if ($this->loadFlags()) {
-            $flag = $this->getFlagNonNullByID(FlagIDs::FLAG_SPAWN);
-            $spawn = $flag?->getValueNonNull();
-            if ($spawn instanceof Location) {
-                return $player->teleport(
-                    Location::fromObject($spawn, $world, $spawn->getYaw(), $spawn->getPitch())
-                );
+        if (!$toPlotCenter) {
+            if ($this->loadFlags()) {
+                $flag = $this->getFlagNonNullByID(FlagIDs::FLAG_SPAWN);
+                $relativeSpawnLocation = $flag?->getValue();
+                if ($relativeSpawnLocation instanceof Location) {
+                    return $player->teleport(
+                        Location::fromObject(
+                            $relativeSpawnLocation->addVector($this->getPosition()),
+                            $world,
+                            $relativeSpawnLocation->getYaw(),
+                            $relativeSpawnLocation->getPitch()
+                        )
+                    );
+                }
             }
         }
 

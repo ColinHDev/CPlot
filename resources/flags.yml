@@ -24,7 +24,7 @@ message:
 
 # Attributes
 spawn:
-    default: null
+    default: "-1;1;16;180;0"
     type: "Position"
     description: "Setze einen eigenen Spawnpunkt für dein Grundstück."
     category: "attributes"

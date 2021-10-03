@@ -12,6 +12,7 @@ use ColinHDev\CPlotAPI\flags\implementations\SpawnFlag;
 use ColinHDev\CPlotAPI\flags\utils\FlagParseException;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\command\CommandSender;
+use pocketmine\entity\Location;
 use pocketmine\player\Player;
 
 class FlagSubcommand extends Subcommand {
@@ -153,7 +154,15 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 if ($flag instanceof SpawnFlag) {
-                    $arg = $flag->toString($sender->getLocation());
+                    $location = $sender->getLocation();
+                    $arg = $flag->toString(
+                        Location::fromObject(
+                            $location->subtractVector($plot->getPosition()),
+                            $location->getWorld(),
+                            $location->getYaw(),
+                            $location->getPitch()
+                        )
+                    );
                 } else {
                     array_splice($args, 0, 2);
                     $arg = implode(" ", $args);
