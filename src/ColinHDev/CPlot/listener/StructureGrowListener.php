@@ -23,7 +23,7 @@ class StructureGrowListener implements Listener {
         if ($plot !== null) {
 
             $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_GROWING);
-            if ($flag !== null && $flag->getValueNonNull() === true) {
+            if ($flag !== null && $flag->getValue() === true) {
 
                 $transaction = $event->getTransaction();
                 foreach ($transaction->getBlocks() as [$x, $y, $z, $block]) {

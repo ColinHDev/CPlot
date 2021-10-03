@@ -4,8 +4,10 @@ namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
+use ColinHDev\CPlotAPI\flags\implementations\UseFlag;
 use ColinHDev\CPlotAPI\Plot;
 use ColinHDev\CPlotAPI\PlotPlayer;
+use pocketmine\block\Block;
 use pocketmine\block\Door;
 use pocketmine\block\FenceGate;
 use pocketmine\block\Trapdoor;
@@ -50,17 +52,19 @@ class PlayerInteractListener implements Listener {
 
             $plot->loadFlags();
             $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PLAYER_INTERACT);
-            if ($flag !== null && $flag->getValueNonNull() === true) {
-                if ($block instanceof Door) return;
-                if ($block instanceof Trapdoor) return;
-                if ($block instanceof FenceGate) return;
+            if ($flag !== null && $flag->getValue() === true) {
+                if ($block instanceof Door || $block instanceof Trapdoor || $block instanceof FenceGate) {
+                    return;
+                }
             }
+            /** @var UseFlag | null $flag */
             $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_USE);
             if ($flag !== null) {
-                $value = $flag->getValueNonNull();
-                if (is_array($value)) {
-                    // TODO flag value should be reparsed to ensure backwards compatibility on block name changes
-                    if (array_search($block->getName(), $value, true) !== false) return;
+                /** @var Block $value */
+                foreach ($flag->getValue() as $value) {
+                    if ($block->isSameType($value)) {
+                        return;
+                    }
                 }
             }
 

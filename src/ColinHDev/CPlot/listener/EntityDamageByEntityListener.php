@@ -25,7 +25,7 @@ class EntityDamageByEntityListener implements Listener {
                 if ($damager->hasPermission("cplot.pvp.plot")) return;
                 $plot->loadFlags();
                 $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVP);
-                if ($flag !== null && $flag->getValueNonNull() === true) return;
+                if ($flag !== null && $flag->getValue() === true) return;
 
             } else {
                 if ($damager->hasPermission("cplot.pvp.road")) return;
@@ -37,7 +37,7 @@ class EntityDamageByEntityListener implements Listener {
             if ($plot !== null) {
                 $plot->loadFlags();
                 $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVE);
-                if ($flag !== null && $flag->getValueNonNull() === true) return;
+                if ($flag !== null && $flag->getValue() === true) return;
             }
         }
 

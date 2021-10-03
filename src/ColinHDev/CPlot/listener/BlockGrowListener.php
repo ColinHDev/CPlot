@@ -21,7 +21,7 @@ class BlockGrowListener implements Listener {
         $plot = Plot::fromPosition(Position::fromObject($position, $world));
         if ($plot !== null) {
             $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_GROWING);
-            if ($flag !== null && $flag->getValueNonNull() === true) return;
+            if ($flag !== null && $flag->getValue() === true) return;
         }
 
         $event->cancel();

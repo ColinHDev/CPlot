@@ -47,7 +47,7 @@ class PlayerMoveListener implements Listener {
                 // TODO: Settings on plot enter
                 $plotTo->loadFlags();
                 $flag = $plotTo->getFlagNonNullByID(FlagIDs::FLAG_TITLE);
-                if ($flag !== null && $flag->getValueNonNull() === true) {
+                if ($flag !== null && $flag->getValue() === true) {
                     $title = ResourceManager::getInstance()->translateString(
                         "player.move.plotEnter.title.coordinates",
                         [$plotTo->getWorldName(), $plotTo->getX(), $plotTo->getZ()]
@@ -59,10 +59,10 @@ class PlayerMoveListener implements Listener {
                         );
                     }
                     $flag = $plotTo->getFlagNonNullByID(FlagIDs::FLAG_MESSAGE);
-                    if ($flag !== null && $flag->getValueNonNull() !== "") {
+                    if ($flag !== null && $flag->getValue() !== "") {
                         $title .= ResourceManager::getInstance()->translateString(
                             "player.move.plotEnter.title.flag.message",
-                            [$flag->getValueNonNull()]
+                            [$flag->getValue()]
                         );
                     }
                     $player->sendTip($title);
@@ -72,7 +72,7 @@ class PlayerMoveListener implements Listener {
                 if ($plotTo->getOwnerUUID() !== null) {
                     $plotTo->loadFlags();
                     $flag = $plotTo->getFlagNonNullByID(FlagIDs::FLAG_PLOT_ENTER);
-                    if ($flag !== null && $flag->getValueNonNull() === true) {
+                    if ($flag !== null && $flag->getValue() === true) {
                         $owner = $player->getServer()->getPlayerByUUID(Uuid::fromString($plotTo->getOwnerUUID()));
                         if ($owner !== null) {
                             $owner->sendMessage(
@@ -96,7 +96,7 @@ class PlayerMoveListener implements Listener {
             if ($plotFrom->getOwnerUUID() !== null) {
                 $plotFrom->loadFlags();
                 $flag = $plotFrom->getFlagNonNullByID(FlagIDs::FLAG_PLOT_LEAVE);
-                if ($flag !== null && $flag->getValueNonNull() === true) {
+                if ($flag !== null && $flag->getValue() === true) {
                     $owner = $player->getServer()->getPlayerByUUID(Uuid::fromString($plotFrom->getOwnerUUID()));
                     if ($owner !== null) {
                         $owner->sendMessage(

@@ -4,8 +4,10 @@ namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
+use ColinHDev\CPlotAPI\flags\implementations\BreakFlag;
 use ColinHDev\CPlotAPI\Plot;
 use ColinHDev\CPlotAPI\PlotPlayer;
+use pocketmine\block\Block;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use Ramsey\Uuid\Uuid;
@@ -46,12 +48,14 @@ class BlockBreakListener implements Listener {
             $block = $event->getBlock();
 
             $plot->loadFlags();
+            /** @var BreakFlag | null $flag */
             $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_BREAK);
             if ($flag !== null) {
-                $value = $flag->getValueNonNull();
-                if (is_array($value)) {
-                    // TODO flag value should be reparsed to ensure backwards compatibility on block name changes
-                    if (array_search($block->getName(), $value, true) !== false) return;
+                /** @var Block $value */
+                foreach ($flag->getValue() as $value) {
+                    if ($block->isSameType($value)) {
+                        return;
+                    }
                 }
             }
 
