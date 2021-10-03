@@ -8,6 +8,7 @@ use ColinHDev\CPlotAPI\flags\BaseFlag;
 use ColinHDev\CPlotAPI\flags\FlagIDs;
 use ColinHDev\CPlotAPI\flags\FlagManager;
 use ColinHDev\CPlotAPI\flags\implementations\ServerPlotFlag;
+use ColinHDev\CPlotAPI\flags\implementations\SpawnFlag;
 use ColinHDev\CPlotAPI\flags\utils\FlagParseException;
 use ColinHDev\CPlotAPI\Plot;
 use pocketmine\command\CommandSender;
@@ -151,8 +152,12 @@ class FlagSubcommand extends Subcommand {
                     }
                 }
 
-                array_splice($args, 0, 2);
-                $arg = implode(" ", $args);
+                if ($flag instanceof SpawnFlag) {
+                    $arg = $flag->toString($sender->getLocation());
+                } else {
+                    array_splice($args, 0, 2);
+                    $arg = implode(" ", $args);
+                }
                 try {
                     $parsedValue = $flag->parse($arg);
                 } catch (FlagParseException) {
