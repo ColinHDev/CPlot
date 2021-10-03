@@ -11,17 +11,11 @@ use ColinHDev\CPlotAPI\flags\utils\FlagParseException;
 abstract class BaseFlag implements FlagIDs {
 
     protected static string $ID;
-    protected static string $category;
-    protected static string $type;
-    protected static string $description;
     protected static string $permission;
     protected static string $default;
 
-    public static function init(string $ID, string $category, string $type, string $description, string $permission, string $default) {
+    public static function init(string $ID, string $permission, string $default) {
         self::$ID = $ID;
-        self::$category = $category;
-        self::$type = $type;
-        self::$description = $description;
         self::$permission = $permission;
         self::$default = $default;
     }
@@ -33,18 +27,6 @@ abstract class BaseFlag implements FlagIDs {
 
     public function getID() : string {
         return self::$ID;
-    }
-
-    public function getCategory() : string {
-        return self::$category;
-    }
-
-    public function getType() : string {
-        return self::$type;
-    }
-
-    public function getDescription() : string {
-        return self::$description;
     }
 
     public function getPermission() : string {
@@ -91,18 +73,14 @@ abstract class BaseFlag implements FlagIDs {
     public function __serialize() : array {
         return [
             "ID" => self::$ID,
-            "category" => self::$category,
-            "type" => self::$type,
-            "description" => self::$description,
+            "permission" => self::$permission,
             "default" => self::$default
         ];
     }
 
     public function __unserialize(array $data) : void {
         self::$ID = $data["ID"];
-        self::$category = $data["category"];
-        self::$type = $data["type"];
-        self::$description = $data["description"];
+        self::$permission = $data["permission"];
         self::$default = $data["default"];
     }
 }

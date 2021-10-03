@@ -17,9 +17,6 @@ use pocketmine\player\Player;
 
 class FlagSubcommand extends Subcommand {
 
-    /**
-     * @throws FlagParseException
-     */
     public function execute(CommandSender $sender, array $args) : void {
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
@@ -32,11 +29,12 @@ class FlagSubcommand extends Subcommand {
                 $flagsByCategory = [];
                 /** @var class-string<BaseFlag> $flagClass */
                 foreach (FlagManager::getInstance()->getFlags() as $flagClass) {
-                    $flag = new $flagClass;
-                    if (!isset($flagsByCategory[$flag->getCategory()])) {
-                        $flagsByCategory[$flag->getCategory()] = $flag->getID();
+                    $flag = new $flagClass();
+                    $flagCategory = $this->translateString("flag.category." . $flag->getID());
+                    if (!isset($flagsByCategory[$flagCategory])) {
+                        $flagsByCategory[$flagCategory] = $flag->getID();
                     } else {
-                        $flagsByCategory[$flag->getCategory()] .= $this->translateString("flag.list.success.separator") . $flag->getID();
+                        $flagsByCategory[$flagCategory] .= $this->translateString("flag.list.success.separator") . $flag->getID();
                     }
                 }
                 foreach ($flagsByCategory as $category => $flags) {
@@ -56,9 +54,9 @@ class FlagSubcommand extends Subcommand {
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.info.flag", [$flag->getID()]));
                 $sender->sendMessage($this->translateString("flag.info.ID", [$flag->getID()]));
-                $sender->sendMessage($this->translateString("flag.info.category", [$flag->getCategory()]));
-                $sender->sendMessage($this->translateString("flag.info.description", [$flag->getDescription()]));
-                $sender->sendMessage($this->translateString("flag.info.type", [$flag->getType()]));
+                $sender->sendMessage($this->translateString("flag.info.category", [$this->translateString("flag.category." . $flag->getID())]));
+                $sender->sendMessage($this->translateString("flag.info.description", [$this->translateString("flag.description." . $flag->getID())]));
+                $sender->sendMessage($this->translateString("flag.info.type", [$this->translateString("flag.type." . $flag->getID())]));
                 $sender->sendMessage($this->translateString("flag.info.default", [$flag->getDefault()]));
                 break;
 
