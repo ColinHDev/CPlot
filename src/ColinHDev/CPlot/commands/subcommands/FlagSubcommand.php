@@ -175,7 +175,7 @@ class FlagSubcommand extends Subcommand {
                 $flag = $flag->flagOf($parsedValue);
                 $oldFlag = $plot->getFlagByID($flag->getID());
                 if ($oldFlag !== null) {
-                    $flag = $flag->merge($oldFlag->getValue());
+                    $flag = $oldFlag->merge($flag->getValue());
                 }
                 $plot->addFlag(
                     $flag
