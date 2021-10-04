@@ -28,15 +28,15 @@ trait PlotBorderAreaCalculationTrait {
             $plotInWest = $plot->getSide(Facing::WEST);
             $plotInEast = $plot->getSide(Facing::EAST);
 
-            if (!$plot->isMerged($plotInNorth)) {
-                if ($plot->isMerged($plotInWest)) {
+            if (!$originPlot->isMerged($plotInNorth)) {
+                if ($originPlot->isMerged($plotInWest)) {
                     $areaXMin = $plotPosition->getX() - $worldSettings->getRoadSize();
                     $areaZMin = $plotPosition->getZ() - 1;
                 } else {
                     $areaXMin = $plotPosition->getX() - 1;
                     $areaZMin = $plotPosition->getZ() - 1;
                 }
-                if ($plot->isMerged($plotInEast)) {
+                if ($originPlot->isMerged($plotInEast)) {
                     $areaXMax = $plotPosition->getX() + $worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 1);
                     $areaZMax = $plotPosition->getZ() - 1;
                 } else {
@@ -50,15 +50,15 @@ trait PlotBorderAreaCalculationTrait {
                 }
             }
 
-            if (!$plot->isMerged($plotInSouth)) {
-                if ($plot->isMerged($plotInWest)) {
+            if (!$originPlot->isMerged($plotInSouth)) {
+                if ($originPlot->isMerged($plotInWest)) {
                     $areaXMin = $plotPosition->getX() - $worldSettings->getRoadSize();
                     $areaZMin = $plotPosition->getZ() + $worldSettings->getPlotSize();
                 } else {
                     $areaXMin = $plotPosition->getX() - 1;
                     $areaZMin = $plotPosition->getZ() + $worldSettings->getPlotSize();
                 }
-                if ($plot->isMerged($plotInEast)) {
+                if ($originPlot->isMerged($plotInEast)) {
                     $areaXMax = $plotPosition->getX() + $worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 1);
                     $areaZMax = $plotPosition->getZ() + $worldSettings->getPlotSize();
                 } else {
@@ -72,15 +72,15 @@ trait PlotBorderAreaCalculationTrait {
                 }
             }
 
-            if (!$plot->isMerged($plotInWest)) {
-                if ($plot->isMerged($plotInNorth)) {
+            if (!$originPlot->isMerged($plotInWest)) {
+                if ($originPlot->isMerged($plotInNorth)) {
                     $areaXMin = $plotPosition->getX() - 1;
                     $areaZMin = $plotPosition->getZ() - $worldSettings->getRoadSize();
                 } else {
                     $areaXMin = $plotPosition->getX() - 1;
                     $areaZMin = $plotPosition->getZ() - 1;
                 }
-                if ($plot->isMerged($plotInSouth)) {
+                if ($originPlot->isMerged($plotInSouth)) {
                     $areaXMax = $plotPosition->getX() - 1;
                     $areaZMax = $plotPosition->getZ() + $worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 1);
                 } else {
@@ -94,15 +94,15 @@ trait PlotBorderAreaCalculationTrait {
                 }
             }
 
-            if (!$plot->isMerged($plotInEast)) {
-                if ($plot->isMerged($plotInNorth)) {
+            if (!$originPlot->isMerged($plotInEast)) {
+                if ($originPlot->isMerged($plotInNorth)) {
                     $areaXMin = $plotPosition->getX() + $worldSettings->getPlotSize();
                     $areaZMin = $plotPosition->getZ() - $worldSettings->getRoadSize();
                 } else {
                     $areaXMin = $plotPosition->getX() + $worldSettings->getPlotSize();
                     $areaZMin = $plotPosition->getZ() - 1;
                 }
-                if ($plot->isMerged($plotInSouth)) {
+                if ($originPlot->isMerged($plotInSouth)) {
                     $areaXMax = $plotPosition->getX() + $worldSettings->getPlotSize();
                     $areaZMax = $plotPosition->getZ() + $worldSettings->getPlotSize() + ($worldSettings->getRoadSize() - 1);
                 } else {
@@ -138,8 +138,8 @@ trait PlotBorderAreaCalculationTrait {
             $plotInWest = $plot->getSide(Facing::WEST);
             $plotInEast = $plot->getSide(Facing::EAST);
 
-            if (!$plot->isMerged($plotInNorth)) {
-                if (!$plot->isMerged($plotInWest)) {
+            if (!$originPlot->isMerged($plotInNorth)) {
+                if (!$originPlot->isMerged($plotInWest)) {
                     $area = new Area(
                         $plotPosition->getX() - ($worldSettings->getRoadSize() - 1),
                         $plotPosition->getZ() - 1,
@@ -151,7 +151,7 @@ trait PlotBorderAreaCalculationTrait {
                         $areas[$key] = $area;
                     }
                 }
-                if (!$plot->isMerged($plotInEast)) {
+                if (!$originPlot->isMerged($plotInEast)) {
                     $area = new Area(
                         $plotPosition->getX() + ($worldSettings->getPlotSize() + 1),
                         $plotPosition->getZ() - 1,
@@ -165,8 +165,8 @@ trait PlotBorderAreaCalculationTrait {
                 }
             }
 
-            if (!$plot->isMerged($plotInSouth)) {
-                if (!$plot->isMerged($plotInWest)) {
+            if (!$originPlot->isMerged($plotInSouth)) {
+                if (!$originPlot->isMerged($plotInWest)) {
                     $area = new Area(
                         $plotPosition->getX() - ($worldSettings->getRoadSize() - 1),
                         $plotPosition->getZ() + $worldSettings->getPlotSize(),
@@ -178,7 +178,7 @@ trait PlotBorderAreaCalculationTrait {
                         $areas[$key] = $area;
                     }
                 }
-                if (!$plot->isMerged($plotInEast)) {
+                if (!$originPlot->isMerged($plotInEast)) {
                     $area = new Area(
                         $plotPosition->getX() + ($worldSettings->getPlotSize() + 1),
                         $plotPosition->getZ() + $worldSettings->getPlotSize(),
@@ -192,8 +192,8 @@ trait PlotBorderAreaCalculationTrait {
                 }
             }
 
-            if (!$plot->isMerged($plotInWest)) {
-                if (!$plot->isMerged($plotInNorth)) {
+            if (!$originPlot->isMerged($plotInWest)) {
+                if (!$originPlot->isMerged($plotInNorth)) {
                     $area = new Area(
                         $plotPosition->getX() - 1,
                         $plotPosition->getZ() - ($worldSettings->getRoadSize() - 1),
@@ -205,7 +205,7 @@ trait PlotBorderAreaCalculationTrait {
                         $areas[$key] = $area;
                     }
                 }
-                if (!$plot->isMerged($plotInSouth)) {
+                if (!$originPlot->isMerged($plotInSouth)) {
                     $area = new Area(
                         $plotPosition->getX() - 1,
                         $plotPosition->getZ() + ($worldSettings->getPlotSize() + 1),
@@ -219,8 +219,8 @@ trait PlotBorderAreaCalculationTrait {
                 }
             }
 
-            if (!$plot->isMerged($plotInEast)) {
-                if (!$plot->isMerged($plotInNorth)) {
+            if (!$originPlot->isMerged($plotInEast)) {
+                if (!$originPlot->isMerged($plotInNorth)) {
                     $area = new Area(
                         $plotPosition->getX() + $worldSettings->getPlotSize(),
                         $plotPosition->getZ() - ($worldSettings->getRoadSize() - 1),
@@ -232,7 +232,7 @@ trait PlotBorderAreaCalculationTrait {
                         $areas[$key] = $area;
                     }
                 }
-                if (!$plot->isMerged($plotInSouth)) {
+                if (!$originPlot->isMerged($plotInSouth)) {
                     $area = new Area(
                         $plotPosition->getX() + $worldSettings->getPlotSize(),
                         $plotPosition->getZ() + ($worldSettings->getPlotSize() + 1),
