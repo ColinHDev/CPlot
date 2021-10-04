@@ -10,6 +10,10 @@ use pocketmine\block\Block;
  */
 class PlaceFlag extends BlockListFlag {
 
+    protected static string $ID;
+    protected static string $permission;
+    protected static string $default;
+
     public function flagOf(mixed $value) : PlaceFlag {
         return new self($value);
     }

@@ -11,6 +11,10 @@ use pocketmine\entity\Location;
  */
 class SpawnFlag extends BaseFlag {
 
+    protected static string $ID;
+    protected static string $permission;
+    protected static string $default;
+
     protected Location $value;
 
     public function __construct(mixed $value) {

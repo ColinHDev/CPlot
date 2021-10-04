@@ -15,9 +15,9 @@ abstract class BaseFlag implements FlagIDs {
     protected static string $default;
 
     public static function init(string $ID, string $permission, string $default) {
-        self::$ID = $ID;
-        self::$permission = $permission;
-        self::$default = $default;
+        static::$ID = $ID;
+        static::$permission = $permission;
+        static::$default = $default;
     }
 
     /**
@@ -26,15 +26,15 @@ abstract class BaseFlag implements FlagIDs {
     abstract public function __construct(mixed $value);
 
     public function getID() : string {
-        return self::$ID;
+        return static::$ID;
     }
 
     public function getPermission() : string {
-        return self::$permission;
+        return static::$permission;
     }
 
     public function getDefault() : string {
-        return self::$default;
+        return static::$default;
     }
 
     /**
@@ -42,7 +42,7 @@ abstract class BaseFlag implements FlagIDs {
      * @throws FlagParseException
      */
     public function getParsedDefault() : mixed {
-        return $this->parse(self::$default);
+        return $this->parse(static::$default);
     }
 
     /**
@@ -72,15 +72,15 @@ abstract class BaseFlag implements FlagIDs {
 
     public function __serialize() : array {
         return [
-            "ID" => self::$ID,
-            "permission" => self::$permission,
-            "default" => self::$default
+            "ID" => static::$ID,
+            "permission" => static::$permission,
+            "default" => static::$default
         ];
     }
 
     public function __unserialize(array $data) : void {
-        self::$ID = $data["ID"];
-        self::$permission = $data["permission"];
-        self::$default = $data["default"];
+        static::$ID = $data["ID"];
+        static::$permission = $data["permission"];
+        static::$default = $data["default"];
     }
 }

@@ -9,6 +9,10 @@ use ColinHDev\CPlotAPI\plots\flags\BooleanFlag;
  */
 class PveFlag extends BooleanFlag {
 
+    protected static string $ID;
+    protected static string $permission;
+    protected static string $default;
+
     public function flagOf(mixed $value) : PveFlag {
         return new self($value);
     }
