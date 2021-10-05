@@ -17,8 +17,15 @@ class SpawnFlag extends BaseFlag {
 
     protected Location $value;
 
-    public function __construct(mixed $value) {
-        $this->value = $value;
+    /**
+     * @throws FlagParseException
+     */
+    public function __construct(mixed $value = null) {
+        if ($value === null) {
+            $this->value = $this->getParsedDefault();
+        } else {
+            $this->value = $value;
+        }
     }
 
     public function getValue() : Location {
