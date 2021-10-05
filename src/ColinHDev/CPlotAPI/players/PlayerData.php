@@ -7,7 +7,7 @@ use ColinHDev\CPlot\provider\cache\Cacheable;
 use ColinHDev\CPlotAPI\players\settings\BaseSetting;
 use ColinHDev\CPlotAPI\players\settings\SettingManager;
 
-class Player implements Cacheable {
+class PlayerData implements Cacheable {
 
     private string $playerUUID;
     private string $playerName;

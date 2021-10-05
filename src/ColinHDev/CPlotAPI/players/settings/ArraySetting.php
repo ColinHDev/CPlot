@@ -5,7 +5,7 @@ namespace ColinHDev\CPlotAPI\players\settings;
 use Closure;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\plots\flags\utils\InvalidValueException;
-use ColinHDev\CPlotAPI\players\Player as PlayerData;
+use ColinHDev\CPlotAPI\players\PlayerData;
 use pocketmine\player\Player;
 
 class ArraySetting extends BaseSetting {

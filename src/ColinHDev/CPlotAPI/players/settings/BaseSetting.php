@@ -2,7 +2,7 @@
 
 namespace ColinHDev\CPlotAPI\players\settings;
 
-use ColinHDev\CPlotAPI\players\Player as PlayerData;
+use ColinHDev\CPlotAPI\players\PlayerData;
 use pocketmine\player\Player;
 
 abstract class BaseSetting implements SettingIDs {

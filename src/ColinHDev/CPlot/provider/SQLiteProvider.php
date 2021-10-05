@@ -4,7 +4,7 @@ namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlotAPI\plots\flags\utils\FlagParseException;
 use ColinHDev\CPlotAPI\players\settings\BaseSetting;
-use ColinHDev\CPlotAPI\players\Player;
+use ColinHDev\CPlotAPI\players\PlayerData;
 use ColinHDev\CPlotAPI\players\settings\SettingManager;
 use ColinHDev\CPlotAPI\plots\PlotPlayer;
 use ColinHDev\CPlotAPI\plots\PlotRate;
@@ -247,9 +247,9 @@ class SQLiteProvider extends DataProvider {
         return $stmt;
     }
 
-    public function getPlayerByUUID(string $playerUUID) : ?Player {
+    public function getPlayerByUUID(string $playerUUID) : ?PlayerData {
         $player = $this->getPlayerCache()->getObjectFromCache($playerUUID);
-        if ($player instanceof Player) return $player;
+        if ($player instanceof PlayerData) return $player;
 
         $this->getPlayerByUUID->bindValue(":playerUUID", $playerUUID, SQLITE3_TEXT);
 
@@ -258,7 +258,7 @@ class SQLiteProvider extends DataProvider {
         if (!$result instanceof SQLite3Result) return null;
 
         if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            $player = new Player(
+            $player = new PlayerData(
                 $playerUUID, $var["playerName"], $var["lastPlayed"]
             );
             $this->getPlayerCache()->cacheObject($playerUUID, $player);
@@ -267,7 +267,7 @@ class SQLiteProvider extends DataProvider {
         return null;
     }
 
-    public function getPlayerByName(string $playerName) : ?Player {
+    public function getPlayerByName(string $playerName) : ?PlayerData {
         $this->getPlayerByName->bindValue(":playerName", $playerName, SQLITE3_TEXT);
 
         $this->getPlayerByName->reset();
@@ -275,7 +275,7 @@ class SQLiteProvider extends DataProvider {
         if (!$result instanceof SQLite3Result) return null;
 
         if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            $player = new Player(
+            $player = new PlayerData(
                 $var["playerUUID"], $playerName, $var["lastPlayed"]
             );
             $this->getPlayerCache()->cacheObject($player->getPlayerUUID(), $player);
@@ -296,7 +296,7 @@ class SQLiteProvider extends DataProvider {
         return $player->getPlayerUUID();
     }
 
-    public function setPlayer(Player $player) : bool {
+    public function setPlayer(PlayerData $player) : bool {
         $this->setPlayer->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
         $this->setPlayer->bindValue(":playerName", $player->getPlayerName(), SQLITE3_TEXT);
         $this->setPlayer->bindValue(":lastPlayed", $player->getLastPlayed(), SQLITE3_INTEGER);
@@ -313,7 +313,7 @@ class SQLiteProvider extends DataProvider {
     /**
      * @return BaseSetting[] | null
      */
-    public function getPlayerSettings(Player $player) : ?array {
+    public function getPlayerSettings(PlayerData $player) : ?array {
         $this->getPlayerSettings->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
 
         $this->getPlayerSettings->reset();
@@ -332,7 +332,7 @@ class SQLiteProvider extends DataProvider {
         return $settings;
     }
 
-    public function savePlayerSetting(Player $player, BaseSetting $setting) : bool {
+    public function savePlayerSetting(PlayerData $player, BaseSetting $setting) : bool {
         if ($setting->getValue() === null) return false;
         if (!$player->addSetting($setting)) return false;
 
@@ -348,7 +348,7 @@ class SQLiteProvider extends DataProvider {
         return true;
     }
 
-    public function deletePlayerSetting(Player $player, string $settingID) : bool {
+    public function deletePlayerSetting(PlayerData $player, string $settingID) : bool {
         if (!$player->removeSetting($settingID)) return false;
 
         $this->deletePlayerSetting->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);

@@ -5,7 +5,7 @@ namespace ColinHDev\CPlot\provider;
 use ColinHDev\CPlot\provider\cache\Cache;
 use ColinHDev\CPlot\provider\cache\CacheIDs;
 use ColinHDev\CPlotAPI\players\settings\BaseSetting;
-use ColinHDev\CPlotAPI\players\Player;
+use ColinHDev\CPlotAPI\players\PlayerData;
 use ColinHDev\CPlotAPI\plots\PlotPlayer;
 use ColinHDev\CPlotAPI\plots\PlotRate;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
@@ -38,8 +38,8 @@ abstract class DataProvider {
         return $this->caches[CacheIDs::CACHE_PLOT];
     }
 
-    abstract public function getPlayerByUUID(string $playerUUID) : ?Player;
-    abstract public function getPlayerByName(string $playerName) : ?Player;
+    abstract public function getPlayerByUUID(string $playerUUID) : ?PlayerData;
+    abstract public function getPlayerByName(string $playerName) : ?PlayerData;
     /**
      * @deprecated due to @see Provider::getPlayerByUUID()
      */
@@ -48,11 +48,11 @@ abstract class DataProvider {
      * @deprecated due to @see Provider::getPlayerByName()
      */
     abstract public function getPlayerUUIDByName(string $playerName) : ?string;
-    abstract public function setPlayer(Player $player) : bool;
+    abstract public function setPlayer(PlayerData $player) : bool;
 
-    abstract public function getPlayerSettings(Player $player) : ?array;
-    abstract public function savePlayerSetting(Player $player, BaseSetting $setting) : bool;
-    abstract public function deletePlayerSetting(Player $player, string $settingID) : bool;
+    abstract public function getPlayerSettings(PlayerData $player) : ?array;
+    abstract public function savePlayerSetting(PlayerData $player, BaseSetting $setting) : bool;
+    abstract public function deletePlayerSetting(PlayerData $player, string $settingID) : bool;
 
     abstract public function getWorld(string $worldName) : ?WorldSettings;
     abstract public function addWorld(string $worldName, WorldSettings $worldSettings) : bool;
