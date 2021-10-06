@@ -33,7 +33,7 @@ class UntrustSubcommand extends Subcommand {
             } else {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.playerNotOnline", [$args[0]]));
                 $playerName = $args[0];
-                $playerData = $this->getPlugin()->getProvider()->getPlayerByName($playerName);
+                $playerData = $this->getPlugin()->getProvider()->getPlayerDataByName($playerName);
                 if ($playerData === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.playerNotFound", [$playerName]));
                     return;
@@ -97,7 +97,7 @@ class UntrustSubcommand extends Subcommand {
         if ($playerUUID === "*") return;
         if ($player === null) return;
         if ($playerData === null) {
-            $playerData = $this->getPlugin()->getProvider()->getPlayerByName($playerName);
+            $playerData = $this->getPlugin()->getProvider()->getPlayerDataByName($playerName);
         }
         if (!$playerData->loadSettings()) return;
         $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_TRUSTED_REMOVE);

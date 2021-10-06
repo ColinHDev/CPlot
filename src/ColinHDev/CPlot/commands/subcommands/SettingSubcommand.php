@@ -59,7 +59,7 @@ class SettingSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.senderNotOnline"));
                     break;
                 }
-                $player = $this->getPlugin()->getProvider()->getPlayerByUUID($sender->getUniqueId()->toString());
+                $player = $this->getPlugin()->getProvider()->getPlayerDataByUUID($sender->getUniqueId()->toString());
                 if ($player === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.loadPlayerDataError"));
                     break;
@@ -93,7 +93,7 @@ class SettingSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.senderNotOnline"));
                     break;
                 }
-                $player = $this->getPlugin()->getProvider()->getPlayerByUUID($sender->getUniqueId()->toString());
+                $player = $this->getPlugin()->getProvider()->getPlayerDataByUUID($sender->getUniqueId()->toString());
                 if ($player === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.loadPlayerDataError"));
                     break;

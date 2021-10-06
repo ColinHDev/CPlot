@@ -69,7 +69,7 @@ class VisitSubcommand extends Subcommand {
                         $playerName = $player->getName();
                     } else {
                         $playerName = $args[0];
-                        $playerData = $this->getPlugin()->getProvider()->getPlayerByName($playerName);
+                        $playerData = $this->getPlugin()->getProvider()->getPlayerDataByName($playerName);
                         $playerUUID = $playerData?->getPlayerUUID();
                     }
 
@@ -117,7 +117,7 @@ class VisitSubcommand extends Subcommand {
                     $playerName = $player->getName();
                 } else {
                     $playerName = $args[0];
-                    $playerData = $this->getPlugin()->getProvider()->getPlayerByName($playerName);
+                    $playerData = $this->getPlugin()->getProvider()->getPlayerDataByName($playerName);
                     if ($playerData === null) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.playerNotFound", [$playerName]));
                         return;

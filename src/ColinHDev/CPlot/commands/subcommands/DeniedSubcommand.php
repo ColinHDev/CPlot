@@ -35,7 +35,7 @@ class DeniedSubcommand extends Subcommand {
             if ($plotPlayer->getState() !== PlotPlayer::STATE_DENIED) continue;
             [$d, $m, $y, $h, $min, $s] = explode(".", date("d.m.Y.H.i.s", (int) (round($plotPlayer->getAddTime() / 1000))));
             $trustedPlayers[] = $this->translateString("denied.success.list", [
-                $this->getPlugin()->getProvider()->getPlayerByUUID($plotPlayer->getPlayerUUID())?->getPlayerName() ?? "ERROR",
+                $this->getPlugin()->getProvider()->getPlayerDataByUUID($plotPlayer->getPlayerUUID())?->getPlayerName() ?? "ERROR",
                 $this->translateString("denied.success.list.addTime.format", [$d, $m, $y, $h, $min, $s])
             ]);
         }

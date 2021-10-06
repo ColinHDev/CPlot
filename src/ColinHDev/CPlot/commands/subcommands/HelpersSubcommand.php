@@ -35,7 +35,7 @@ class HelpersSubcommand extends Subcommand {
             if ($plotPlayer->getState() !== PlotPlayer::STATE_HELPER) continue;
             [$d, $m, $y, $h, $min, $s] = explode(".", date("d.m.Y.H.i.s", (int) (round($plotPlayer->getAddTime() / 1000))));
             $trustedPlayers[] = $this->translateString("helpers.success.list", [
-                $this->getPlugin()->getProvider()->getPlayerByUUID($plotPlayer->getPlayerUUID())?->getPlayerName() ?? "ERROR",
+                $this->getPlugin()->getProvider()->getPlayerDataByUUID($plotPlayer->getPlayerUUID())?->getPlayerName() ?? "ERROR",
                 $this->translateString("helpers.success.list.addTime.format", [$d, $m, $y, $h, $min, $s])
             ]);
         }

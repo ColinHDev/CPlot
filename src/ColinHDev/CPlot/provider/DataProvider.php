@@ -38,8 +38,8 @@ abstract class DataProvider {
         return $this->caches[CacheIDs::CACHE_PLOT];
     }
 
-    abstract public function getPlayerByUUID(string $playerUUID) : ?PlayerData;
-    abstract public function getPlayerByName(string $playerName) : ?PlayerData;
+    abstract public function getPlayerDataByUUID(string $playerUUID) : ?PlayerData;
+    abstract public function getPlayerDataByName(string $playerName) : ?PlayerData;
     /**
      * @deprecated due to @see Provider::getPlayerByUUID()
      */
@@ -48,7 +48,7 @@ abstract class DataProvider {
      * @deprecated due to @see Provider::getPlayerByName()
      */
     abstract public function getPlayerUUIDByName(string $playerName) : ?string;
-    abstract public function setPlayer(PlayerData $player) : bool;
+    abstract public function setPlayerData(PlayerData $player) : bool;
 
     abstract public function getPlayerSettings(PlayerData $player) : ?array;
     abstract public function savePlayerSetting(PlayerData $player, BaseSetting $setting) : bool;

@@ -19,7 +19,7 @@ class PlayerPreLoginListener implements Listener {
             $playerInfo->getUsername(),
             (int) (round(microtime(true) * 1000))
         );
-        if (CPlot::getInstance()->getProvider()->setPlayer($player)) return;
+        if (CPlot::getInstance()->getProvider()->setPlayerData($player)) return;
 
         $event->setKickReason(
             PlayerPreLoginEvent::KICK_REASON_PLUGIN,

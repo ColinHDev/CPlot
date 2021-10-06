@@ -84,7 +84,7 @@ class Plot extends BasePlot {
             case "database":
                 // plot owner's data couldn't be fetched from the database
                 // we return null so the plot doesn't get falsely stated as inactive because of a database error
-                $owner = CPlot::getInstance()->getProvider()->getPlayerByUUID($this->ownerUUID);
+                $owner = CPlot::getInstance()->getProvider()->getPlayerDataByUUID($this->ownerUUID);
                 if ($owner === null) return null;
 
                 $lastPlayed = $owner->getLastPlayed();
@@ -185,7 +185,7 @@ class Plot extends BasePlot {
 
     public function addPlotPlayer(PlotPlayer $plotPlayer) : bool {
         if ($this->plotPlayers === null) return false;
-        $this->plotPlayers[$plotPlayer->getPlayerUUID()] = $plotPlayer;
+        $this->plotPlayers[$plotPlayer->getPlayerData()->getPlayerUUID()] = $plotPlayer;
         return true;
     }
 
