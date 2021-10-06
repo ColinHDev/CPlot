@@ -151,20 +151,20 @@ class SQLiteProvider extends DataProvider {
         $this->deletePlot = $this->createSQLite3Stmt($sql);
 
         $sql =
-            "CREATE TABLE IF NOT EXISTS mergedPlots (
-            worldName VARCHAR(256) NOT NULL, originX INTEGER NOT NULL, originZ INTEGER NOT NULL, mergedX INTEGER NOT NULL, mergedZ INTEGER NOT NULL, 
-            PRIMARY KEY (worldName, originX, originZ, mergedX, mergedZ),
+            "CREATE TABLE IF NOT EXISTS mergePlots (
+            worldName VARCHAR(256) NOT NULL, originX INTEGER NOT NULL, originZ INTEGER NOT NULL, mergeX INTEGER NOT NULL, mergeZ INTEGER NOT NULL, 
+            PRIMARY KEY (worldName, originX, originZ, mergeX, mergeZ),
             FOREIGN KEY (worldName, originX, originZ) REFERENCES plots (worldName, x, z) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
-            "SELECT originX, originZ FROM mergedPlots WHERE worldName = :worldName AND mergedX = :mergedX AND mergedZ = :mergedZ;";
+            "SELECT originX, originZ FROM mergePlots WHERE worldName = :worldName AND mergeX = :mergeX AND mergeZ = :mergeZ;";
         $this->getOriginPlot = $this->createSQLite3Stmt($sql);
         $sql =
-            "SELECT mergedX, mergedZ FROM mergedPlots WHERE worldName = :worldName AND originX = :originX AND originZ = :originZ;";
+            "SELECT mergeX, mergeZ FROM mergePlots WHERE worldName = :worldName AND originX = :originX AND originZ = :originZ;";
         $this->getMergedPlots = $this->createSQLite3Stmt($sql);
         $sql =
-            "INSERT OR REPLACE INTO mergedPlots (worldName, originX, originZ, mergedX, mergedZ) VALUES (:worldName, :originX, :originZ, :mergedX, :mergedZ);";
+            "INSERT OR REPLACE INTO mergePlots (worldName, originX, originZ, mergeX, mergeZ) VALUES (:worldName, :originX, :originZ, :mergeX, :mergeZ);";
         $this->addMergedPlot = $this->createSQLite3Stmt($sql);
 
         /** code (modified here) from @see https://github.com/jasonwynn10/MyPlot */
@@ -176,10 +176,10 @@ class SQLiteProvider extends DataProvider {
                 )
 			)
             UNION 
-            SELECT mergedX, mergedZ FROM mergedPlots WHERE (
+            SELECT mergeX, mergeZ FROM mergePlots WHERE (
                 worldName = :worldName AND (
-                    (abs(mergedX) = :number AND abs(mergedZ) <= :number) OR
-                    (abs(mergedZ) = :number AND abs(mergedX) <= :number)
+                    (abs(mergeX) = :number AND abs(mergeZ) <= :number) OR
+                    (abs(mergeZ) = :number AND abs(mergeX) <= :number)
                 )
 			);";
         $this->getExistingPlotXZ = $this->createSQLite3Stmt($sql);
@@ -514,7 +514,7 @@ class SQLiteProvider extends DataProvider {
     /**
      * @return MergePlot[] | null
      */
-    public function getMergedPlots(Plot $plot) : ?array {
+    public function getMergePlots(Plot $plot) : ?array {
         $this->getMergedPlots->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
         $this->getMergedPlots->bindValue(":originX", $plot->getX(), SQLITE3_INTEGER);
         $this->getMergedPlots->bindValue(":originZ", $plot->getZ(), SQLITE3_INTEGER);
@@ -525,7 +525,7 @@ class SQLiteProvider extends DataProvider {
 
         $mergedPlots = [];
         while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            $mergedPlot = new MergePlot($plot->getWorldName(), $var["mergedX"], $var["mergedZ"], $plot->getX(), $plot->getZ());
+            $mergedPlot = new MergePlot($plot->getWorldName(), $var["mergeX"], $var["mergeZ"], $plot->getX(), $plot->getZ());
             $this->getPlotCache()->cacheObject($mergedPlot->toString(), $mergedPlot);
             $mergedPlots[$mergedPlot->toString()] = $mergedPlot;
         }
@@ -538,8 +538,8 @@ class SQLiteProvider extends DataProvider {
         }
 
         $this->getOriginPlot->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
-        $this->getOriginPlot->bindValue(":mergedX", $plot->getX(), SQLITE3_INTEGER);
-        $this->getOriginPlot->bindValue(":mergedZ", $plot->getZ(), SQLITE3_INTEGER);
+        $this->getOriginPlot->bindValue(":mergeX", $plot->getX(), SQLITE3_INTEGER);
+        $this->getOriginPlot->bindValue(":mergeZ", $plot->getZ(), SQLITE3_INTEGER);
 
         $this->getOriginPlot->reset();
         $result = $this->getOriginPlot->execute();
@@ -564,8 +564,8 @@ class SQLiteProvider extends DataProvider {
             $this->addMergedPlot->bindValue(":worldName", $origin->getWorldName(), SQLITE3_TEXT);
             $this->addMergedPlot->bindValue(":originX", $origin->getX(), SQLITE3_INTEGER);
             $this->addMergedPlot->bindValue(":originZ", $origin->getZ(), SQLITE3_INTEGER);
-            $this->addMergedPlot->bindValue(":mergedX", $plot->getX(), SQLITE3_INTEGER);
-            $this->addMergedPlot->bindValue(":mergedZ", $plot->getZ(), SQLITE3_INTEGER);
+            $this->addMergedPlot->bindValue(":mergeX", $plot->getX(), SQLITE3_INTEGER);
+            $this->addMergedPlot->bindValue(":mergeZ", $plot->getZ(), SQLITE3_INTEGER);
 
             $this->addMergedPlot->reset();
             $result = $this->addMergedPlot->execute();

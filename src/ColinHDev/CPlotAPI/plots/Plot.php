@@ -117,7 +117,7 @@ class Plot extends BasePlot {
 
     public function loadMergedPlots() : bool {
         if ($this->mergedPlots !== null) return true;
-        $this->mergedPlots = CPlot::getInstance()->getProvider()->getMergedPlots($this);
+        $this->mergedPlots = CPlot::getInstance()->getProvider()->getMergePlots($this);
         if ($this->mergedPlots === null) return false;
         CPlot::getInstance()->getProvider()->getPlotCache()->cacheObject($this->toString(), $this);
         return true;
@@ -390,7 +390,7 @@ class Plot extends BasePlot {
         $data["claimTime"] = $this->claimTime;
         $data["alias"] = $this->alias;
 
-        $data["mergedPlots"] = serialize($this->mergedPlots);
+        $data["mergePlots"] = serialize($this->mergedPlots);
         $data["plotPlayers"] = serialize($this->plotPlayers);
         $data["flags"] = serialize($this->flags);
         $data["plotRates"] = serialize($this->plotRates);
@@ -405,7 +405,7 @@ class Plot extends BasePlot {
         $this->claimTime = $data["claimTime"];
         $this->alias = $data["alias"];
 
-        $this->mergedPlots = unserialize($data["mergedPlots"]);
+        $this->mergedPlots = unserialize($data["mergePlots"]);
         $this->plotPlayers = unserialize($data["plotPlayers"]);
         $this->flags = unserialize($data["flags"]);
         $this->plotRates = unserialize($data["plotRates"]);
