@@ -58,7 +58,6 @@ abstract class DataProvider {
     abstract public function addWorld(string $worldName, WorldSettings $worldSettings) : bool;
 
     abstract public function getPlot(string $worldName, int $x, int $z) : ?Plot;
-    abstract public function getPlotsByOwnerUUID(string $ownerUUID) : ?array;
     abstract public function getPlotByAlias(string $alias) : ?Plot;
     abstract public function savePlot(Plot $plot) : bool;
     abstract public function deletePlot(Plot $plot) : bool;
@@ -70,6 +69,7 @@ abstract class DataProvider {
     abstract public function getNextFreePlot(string $worldName, int $limitXZ = 0) : ?Plot;
 
     abstract public function getPlotPlayers(Plot $plot) : ?array;
+    abstract public function getPlotsByPlotPlayer(PlotPlayer $plotPlayer) : ?array;
     abstract public function savePlotPlayer(Plot $plot, PlotPlayer $plotPlayer) : bool;
     abstract public function deletePlotPlayer(Plot $plot, string $playerUUID) : bool;
 

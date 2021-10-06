@@ -37,7 +37,6 @@ class SQLiteProvider extends DataProvider {
     private SQLite3Stmt $setWorld;
 
     private SQLite3Stmt $getPlot;
-    private SQLite3Stmt $getPlotsByOwnerUUID;
     private SQLite3Stmt $getPlotByAlias;
     private SQLite3Stmt $setPlot;
     private SQLite3Stmt $deletePlot;
@@ -49,6 +48,7 @@ class SQLiteProvider extends DataProvider {
     private SQLite3Stmt $getExistingPlotXZ;
 
     private SQLite3Stmt $getPlotPlayers;
+    private SQLite3Stmt $getPlotsByPlotPlayer;
     private SQLite3Stmt $setPlotPlayer;
     private SQLite3Stmt $deletePlotPlayer;
 
@@ -128,23 +128,19 @@ class SQLiteProvider extends DataProvider {
         $sql =
             "CREATE TABLE IF NOT EXISTS plots (
             worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL,
-            biomeID INTEGER NOT NULL, ownerUUID VARCHAR(256), claimTime INTEGER, alias TEXT,
+            biomeID INTEGER NOT NULL, alias TEXT,
             PRIMARY KEY (worldName, x, z),
-            FOREIGN KEY (worldName) REFERENCES worlds (worldName) ON DELETE CASCADE,
-            FOREIGN KEY (ownerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
+            FOREIGN KEY (worldName) REFERENCES worlds (worldName) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
-            "SELECT biomeID, ownerUUID, claimTime, alias FROM plots WHERE worldName = :worldName AND x = :x AND z = :z;";
+            "SELECT biomeID, alias FROM plots WHERE worldName = :worldName AND x = :x AND z = :z;";
         $this->getPlot = $this->createSQLite3Stmt($sql);
         $sql =
-            "SELECT worldName, x, z, biomeID, claimTime, alias FROM plots WHERE ownerUUID = :ownerUUID;";
-        $this->getPlotsByOwnerUUID = $this->createSQLite3Stmt($sql);
-        $sql =
-            "SELECT worldName, x, z, biomeID, ownerUUID, claimTime FROM plots WHERE alias = :alias;";
+            "SELECT worldName, x, z, biomeID FROM plots WHERE alias = :alias;";
         $this->getPlotByAlias = $this->createSQLite3Stmt($sql);
         $sql =
-            "INSERT INTO plots (worldName, x, z, biomeID, ownerUUID, claimTime, alias) VALUES (:worldName, :x, :z, :biomeID, :ownerUUID, :claimTime, :alias) ON CONFLICT DO UPDATE SET biomeID = excluded.biomeID, ownerUUID = excluded.ownerUUID, claimTime = excluded.claimTime, alias = excluded.alias;";
+            "INSERT INTO plots (worldName, x, z, biomeID, alias) VALUES (:worldName, :x, :z, :biomeID, :alias) ON CONFLICT DO UPDATE SET biomeID = excluded.biomeID, alias = excluded.alias;";
         $this->setPlot = $this->createSQLite3Stmt($sql);
         $sql =
             "DELETE FROM plots WHERE worldName = :worldName AND x = :x AND z = :z;";
@@ -195,6 +191,9 @@ class SQLiteProvider extends DataProvider {
         $sql =
             "SELECT playerUUID, state, addTime FROM plotPlayers WHERE worldName = :worldName AND x = :x AND z = :z;";
         $this->getPlotPlayers = $this->createSQLite3Stmt($sql);
+        $sql =
+            "SELECT worldName, x, z FROM plotPlayers WHERE playerUUID = :playerUUID AND state = :state;";
+        $this->getPlotsByPlotPlayer = $this->createSQLite3Stmt($sql);
         $sql =
             "INSERT INTO plotPlayers (worldName, x, z, playerUUID, state, addTime) VALUES (:worldName, :x, :z, :playerUUID, :state, :addTime) ON CONFLICT DO UPDATE SET state = excluded.state, addTime = excluded.addTime;";
         $this->setPlotPlayer = $this->createSQLite3Stmt($sql);
@@ -434,28 +433,6 @@ class SQLiteProvider extends DataProvider {
         return new Plot($worldName, $x, $z);
     }
 
-    /**
-     * @return Plot[] | null
-     */
-    public function getPlotsByOwnerUUID(string $ownerUUID) : ?array {
-        $this->getPlotsByOwnerUUID->bindValue(":ownerUUID", $ownerUUID, SQLITE3_TEXT);
-
-        $this->getPlotsByOwnerUUID->reset();
-        $result = $this->getPlotsByOwnerUUID->execute();
-        if (!$result instanceof SQLite3Result) return null;
-
-        $plots = [];
-        while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            $plot = new Plot(
-                $var["worldName"], $var["x"], $var["z"],
-                $var["biomeID"] ?? BiomeIds::PLAINS, $ownerUUID, $var["claimTime"] ?? null, $var["alias"] ?? null
-            );
-            $this->getPlotCache()->cacheObject($plot->toString(), $plot);
-            $plots[] = $plot;
-        }
-        return $plots;
-    }
-
     public function getPlotByAlias(string $alias) : ?Plot {
         $this->getPlotByAlias->bindValue(":alias", $alias, SQLITE3_TEXT);
 
@@ -639,10 +616,39 @@ class SQLiteProvider extends DataProvider {
 
         $plotPlayers = [];
         while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            $plotPlayer = new PlotPlayer($var["playerUUID"], $var["state"], $var["addTime"]);
-            $plotPlayers[$plotPlayer->getPlayerUUID()] = $plotPlayer;
+            $playerData = $this->getPlayerByUUID($var["playerUUID"]);
+            if ($playerData === null) {
+                return null;
+            }
+            $plotPlayer = new PlotPlayer($playerData, $var["state"], $var["addTime"]);
+            $plotPlayers[$playerData->getPlayerUUID()] = $plotPlayer;
         }
         return $plotPlayers;
+    }
+
+    /**
+     * @return Plot[] | null
+     */
+    public function getPlotsByPlotPlayer(PlotPlayer $plotPlayer) : ?array {
+        $this->getPlotsByPlotPlayer->bindValue(":playerUUID", $plotPlayer->getPlayerData()->getPlayerUUID(), SQLITE3_TEXT);
+        $this->getPlotsByPlotPlayer->bindValue(":state", $plotPlayer->getState(), SQLITE3_TEXT);
+
+        $this->getPlotsByPlotPlayer->reset();
+        $result = $this->getPlotsByPlotPlayer->execute();
+        if (!$result instanceof SQLite3Result) {
+            return null;
+        }
+
+        $plots = [];
+        while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
+            $plot = $this->getPlot($var["worldName"], $var["x"], $var["z"]);
+            if ($plot === null) {
+                return null;
+            }
+            $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+            $plots[] = $plot;
+        }
+        return $plots;
     }
 
     public function savePlotPlayer(Plot $plot, PlotPlayer $plotPlayer) : bool {
@@ -652,7 +658,7 @@ class SQLiteProvider extends DataProvider {
         $this->setPlotPlayer->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
         $this->setPlotPlayer->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
 
-        $this->setPlotPlayer->bindValue(":playerUUID", $plotPlayer->getPlayerUUID(), SQLITE3_TEXT);
+        $this->setPlotPlayer->bindValue(":playerUUID", $plotPlayer->getPlayerData()->getPlayerUUID(), SQLITE3_TEXT);
         $this->setPlotPlayer->bindValue(":state", $plotPlayer->getState(), SQLITE3_TEXT);
         $this->setPlotPlayer->bindValue(":addTime", $plotPlayer->getAddTime(), SQLITE3_INTEGER);
 
