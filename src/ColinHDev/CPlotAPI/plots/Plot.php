@@ -35,11 +35,9 @@ class Plot extends BasePlot {
     /** @var null | PlotRate[] */
     private ?array $plotRates = null;
 
-    public function __construct(string $worldName, int $x, int $z, int $biomeID = BiomeIds::PLAINS, ?string $ownerUUID = null, ?int $claimTime = null, ?string $alias = null) {
+    public function __construct(string $worldName, int $x, int $z, int $biomeID = BiomeIds::PLAINS, ?string $alias = null) {
         parent::__construct($worldName, $x, $z);
         $this->biomeID = $biomeID;
-        $this->ownerUUID = $ownerUUID;
-        $this->claimTime = $claimTime;
         $this->alias = $alias;
     }
 

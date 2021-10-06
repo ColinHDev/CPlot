@@ -6,6 +6,7 @@ use ColinHDev\CPlotAPI\players\PlayerData;
 
 class PlotPlayer {
 
+    public const STATE_OWNER = "state_owner";
     public const STATE_TRUSTED = "state_trusted";
     public const STATE_HELPER = "state_helper";
     public const STATE_DENIED = "state_denied";
