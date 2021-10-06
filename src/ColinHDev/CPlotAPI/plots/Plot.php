@@ -24,7 +24,7 @@ class Plot extends BasePlot {
     private ?string $alias;
 
     /** @var null | MergePlot[] */
-    private ?array $mergedPlots = null;
+    private ?array $mergePlots = null;
 
     /** @var null | PlotPlayer[] */
     private ?array $plotPlayers = null;
@@ -115,10 +115,10 @@ class Plot extends BasePlot {
     }
 
 
-    public function loadMergedPlots() : bool {
-        if ($this->mergedPlots !== null) return true;
-        $this->mergedPlots = CPlot::getInstance()->getProvider()->getMergePlots($this);
-        if ($this->mergedPlots === null) return false;
+    public function loadMergePlots() : bool {
+        if ($this->mergePlots !== null) return true;
+        $this->mergePlots = CPlot::getInstance()->getProvider()->getMergePlots($this);
+        if ($this->mergePlots === null) return false;
         CPlot::getInstance()->getProvider()->getPlotCache()->cacheObject($this->toString(), $this);
         return true;
     }
@@ -126,38 +126,31 @@ class Plot extends BasePlot {
     /**
      * @return MergePlot[] | null
      */
-    public function getMergedPlots() : ?array {
-        return $this->mergedPlots;
+    public function getMergePlots() : ?array {
+        return $this->mergePlots;
     }
 
     public function isMerged(BasePlot $plot) : bool {
         if ($this->isSame($plot, false)) return true;
-        if ($this->mergedPlots === null) return false;
-        return isset($this->mergedPlots[$plot->toString()]);
+        if ($this->mergePlots === null) return false;
+        return isset($this->mergePlots[$plot->toString()]);
     }
 
-    /**
-     * @param MergePlot[] | null $mergedPlots
-     */
-    public function setMergedPlots(?array $mergedPlots) : void {
-        $this->mergedPlots = $mergedPlots;
-    }
-
-    public function addMerge(MergePlot $mergedPlot) : bool {
-        if ($this->mergedPlots === null) return false;
-        $this->mergedPlots[$mergedPlot->toString()] = $mergedPlot;
+    public function addMergePlot(MergePlot $mergedPlot) : bool {
+        if ($this->mergePlots === null) return false;
+        $this->mergePlots[$mergedPlot->toString()] = $mergedPlot;
         return true;
     }
 
     public function merge(self $plot) : bool {
-        if ($this->mergedPlots === null && !$this->loadMergedPlots()) return false;
-        if ($plot->getMergedPlots() === null && !$plot->loadMergedPlots()) return false;
+        if ($this->mergePlots === null && !$this->loadMergePlots()) return false;
+        if ($plot->getMergePlots() === null && !$plot->loadMergePlots()) return false;
 
-        foreach (array_merge([$plot], $plot->getMergedPlots()) as $mergedPlot) {
-            $this->addMerge(MergePlot::fromBasePlot($mergedPlot, $this->x, $this->z));
+        foreach (array_merge([$plot], $plot->getMergePlots()) as $mergePlot) {
+            $this->addMergePlot(MergePlot::fromBasePlot($mergePlot, $this->x, $this->z));
         }
 
-        return CPlot::getInstance()->getProvider()->mergePlots($this, $plot, ...$plot->getMergedPlots());
+        return CPlot::getInstance()->getProvider()->mergePlots($this, $plot, ...$plot->getMergePlots());
     }
 
 
@@ -297,9 +290,9 @@ class Plot extends BasePlot {
             }
         }
 
-        if ($this->loadMergedPlots() && count($this->mergedPlots) >= 1) {
+        if ($this->loadMergePlots() && count($this->mergePlots) >= 1) {
             $northestPlot = $this;
-            foreach ($this->mergedPlots as $mergedPlot) {
+            foreach ($this->mergePlots as $mergedPlot) {
                 if ($northestPlot->getZ() <= $mergedPlot->getZ()) continue;
                 $northestPlot = $mergedPlot;
             }
@@ -318,8 +311,8 @@ class Plot extends BasePlot {
     }
 
     public function isOnPlot(Position $position, bool $checkMerge = true) : bool {
-        if (!$checkMerge || !$this->loadMergedPlots()) return parent::isOnPlot($position);
-        foreach ($this->mergedPlots as $mergedPlot) {
+        if (!$checkMerge || !$this->loadMergePlots()) return parent::isOnPlot($position);
+        foreach ($this->mergePlots as $mergedPlot) {
             if ($mergedPlot->isOnPlot($position)) return true;
         }
         // TODO improve the following check, maybe @see EntityExplodeAsyncTask
@@ -390,7 +383,7 @@ class Plot extends BasePlot {
         $data["claimTime"] = $this->claimTime;
         $data["alias"] = $this->alias;
 
-        $data["mergePlots"] = serialize($this->mergedPlots);
+        $data["mergePlots"] = serialize($this->mergePlots);
         $data["plotPlayers"] = serialize($this->plotPlayers);
         $data["flags"] = serialize($this->flags);
         $data["plotRates"] = serialize($this->plotRates);
@@ -405,7 +398,7 @@ class Plot extends BasePlot {
         $this->claimTime = $data["claimTime"];
         $this->alias = $data["alias"];
 
-        $this->mergedPlots = unserialize($data["mergePlots"]);
+        $this->mergePlots = unserialize($data["mergePlots"]);
         $this->plotPlayers = unserialize($data["plotPlayers"]);
         $this->flags = unserialize($data["flags"]);
         $this->plotRates = unserialize($data["plotRates"]);

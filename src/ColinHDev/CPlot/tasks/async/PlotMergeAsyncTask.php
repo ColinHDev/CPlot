@@ -40,8 +40,8 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
         $roadAreas = $this->calculateNonMergeRoadAreas($worldSettings, $plot, $plotToMerge);
 
         /** @var BasePlot $mergedPlotToMerge */
-        foreach (array_merge([$plotToMerge], $plotToMerge->getMergedPlots()) as $mergedPlotToMerge) {
-            $plot->addMerge(MergePlot::fromBasePlot($mergedPlotToMerge, $plot->getX(), $plot->getZ()));
+        foreach (array_merge([$plotToMerge], $plotToMerge->getMergePlots()) as $mergedPlotToMerge) {
+            $plot->addMergePlot(MergePlot::fromBasePlot($mergedPlotToMerge, $plot->getX(), $plot->getZ()));
         }
 
         $borderAreasToChange = $this->calculatePlotBorderAreas($worldSettings, $plot);
@@ -96,7 +96,7 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
 
         $this->publishProgress($chunks);
 
-        $plots = array_merge([$plot], $plot->getMergedPlots());
+        $plots = array_merge([$plot], $plot->getMergePlots());
         $plotCount = count($plots);
 
         $schematicRoad = null;

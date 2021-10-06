@@ -108,7 +108,7 @@ class BorderSubcommand extends Subcommand {
             return;
         }
 
-        if (!$plot->loadMergedPlots()) {
+        if (!$plot->loadMergePlots()) {
             $player->sendMessage($this->getPrefix() . $this->translateString("border.loadMergedPlotsError"));
             return;
         }

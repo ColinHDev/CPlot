@@ -52,7 +52,7 @@ class ResetSubcommand extends Subcommand {
             return;
         }
 
-        if (!$plot->loadMergedPlots()) {
+        if (!$plot->loadMergePlots()) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("reset.loadMergedPlotsError"));
             return;
         }

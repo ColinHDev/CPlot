@@ -47,8 +47,8 @@ class InfoSubcommand extends Subcommand {
             $sender->sendMessage($this->translateString("info.plotAlias.none"));
         }
 
-        if ($plot->loadMergedPlots()) {
-            $mergedPlotsCount = count($plot->getMergedPlots());
+        if ($plot->loadMergePlots()) {
+            $mergedPlotsCount = count($plot->getMergePlots());
             if ($mergedPlotsCount > 0) {
                 $sender->sendMessage($this->translateString("info.merges", [$mergedPlotsCount]));
             } else {

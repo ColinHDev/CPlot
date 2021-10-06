@@ -31,7 +31,7 @@ class ClaimSubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlot"));
             return;
         }
-        if (!$plot->loadMergedPlots()) {
+        if (!$plot->loadMergePlots()) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadMergedPlotsError"));
             return;
         }

@@ -18,7 +18,7 @@ trait PlotBorderAreaCalculationTrait {
         /** @var Area[] $areas */
         $areas = [];
 
-        $plots = array_merge([$originPlot], $originPlot->getMergedPlots() ?? []);
+        $plots = array_merge([$originPlot], $originPlot->getMergePlots() ?? []);
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
             $plotPosition = $plot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
@@ -128,7 +128,7 @@ trait PlotBorderAreaCalculationTrait {
         /** @var Area[] $areas */
         $areas = [];
 
-        $plots = array_merge([$originPlot], $originPlot->getMergedPlots() ?? []);
+        $plots = array_merge([$originPlot], $originPlot->getMergePlots() ?? []);
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
             $plotPosition = $plot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());

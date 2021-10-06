@@ -102,7 +102,7 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
 
         $this->publishProgress($chunks);
 
-        $plots = array_merge([$plot], $plot->getMergedPlots() ?? []);
+        $plots = array_merge([$plot], $plot->getMergePlots() ?? []);
         $plotCount = count($plots);
 
         $schematicRoad = null;

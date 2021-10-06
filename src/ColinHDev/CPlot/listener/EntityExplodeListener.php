@@ -31,7 +31,7 @@ class EntityExplodeListener implements Listener {
         if (!$plot->loadFlags()) return;
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_EXPLOSION);
         if ($flag === null || $flag->getValue() === false) return;
-        if (!$plot->loadMergedPlots()) return;
+        if (!$plot->loadMergePlots()) return;
 
         $affectedBlocks = [];
         foreach ($event->getBlockList() as $block) {
@@ -45,7 +45,7 @@ class EntityExplodeListener implements Listener {
             function (BasePlot $plot) : string {
                 return $plot->toSmallString();
             },
-            array_merge([$plot], $plot->getMergedPlots())
+            array_merge([$plot], $plot->getMergePlots())
         );
         $plotString = (count($plots) > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "].";
         $task->setClosure(

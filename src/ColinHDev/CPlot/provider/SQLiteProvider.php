@@ -502,8 +502,8 @@ class SQLiteProvider extends DataProvider {
         if (!$result instanceof SQLite3Result) return false;
 
         $this->getPlotCache()->removeObjectFromCache($plot->toString());
-        if ($plot->getMergedPlots() !== null) {
-            foreach ($plot->getMergedPlots() as $key => $mergedPlot) {
+        if ($plot->getMergePlots() !== null) {
+            foreach ($plot->getMergePlots() as $key => $mergedPlot) {
                 $this->getPlotCache()->removeObjectFromCache($key);
             }
         }
@@ -558,7 +558,7 @@ class SQLiteProvider extends DataProvider {
      * @param BasePlot ...$plots
      */
     public function mergePlots(Plot $origin, BasePlot ...$plots) : bool {
-        if ($origin->getMergedPlots() === null) return false;
+        if ($origin->getMergePlots() === null) return false;
 
         foreach ($plots as $plot) {
             $this->addMergedPlot->bindValue(":worldName", $origin->getWorldName(), SQLITE3_TEXT);
