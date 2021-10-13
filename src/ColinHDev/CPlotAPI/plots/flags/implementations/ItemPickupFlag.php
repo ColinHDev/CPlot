@@ -9,11 +9,7 @@ use ColinHDev\CPlotAPI\plots\flags\BooleanFlag;
  */
 class ItemPickupFlag extends BooleanFlag {
 
-    protected static string $ID;
-    protected static string $permission;
+    protected static string $ID = self::FLAG_ITEM_PICKUP;
+    protected static string $permission = self::PERMISSION_BASE . self::FLAG_ITEM_PICKUP;
     protected static string $default;
-
-    public function flagOf(mixed $value) : ItemPickupFlag {
-        return new self($value);
-    }
 }

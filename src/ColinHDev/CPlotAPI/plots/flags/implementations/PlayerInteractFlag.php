@@ -9,11 +9,7 @@ use ColinHDev\CPlotAPI\plots\flags\BooleanFlag;
  */
 class PlayerInteractFlag extends BooleanFlag {
 
-    protected static string $ID;
-    protected static string $permission;
+    protected static string $ID = self::FLAG_PLAYER_INTERACT;
+    protected static string $permission = self::PERMISSION_BASE . self::FLAG_PLAYER_INTERACT;
     protected static string $default;
-
-    public function flagOf(mixed $value) : PlayerInteractFlag {
-        return new self($value);
-    }
 }

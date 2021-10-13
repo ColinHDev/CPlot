@@ -2,6 +2,7 @@
 
 namespace ColinHDev\CPlotAPI\plots\flags;
 
+use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\plots\flags\utils\FlagParseException;
 
 /**
@@ -10,15 +11,11 @@ use ColinHDev\CPlotAPI\plots\flags\utils\FlagParseException;
  */
 abstract class BaseFlag implements FlagIDs {
 
+    protected const PERMISSION_BASE = "cplot.flag.";
+
     protected static string $ID;
     protected static string $permission;
     protected static string $default;
-
-    public static function init(string $ID, string $permission, string $default) {
-        static::$ID = $ID;
-        static::$permission = $permission;
-        static::$default = $default;
-    }
 
     /**
      * @param TFlagValue $value
@@ -34,6 +31,9 @@ abstract class BaseFlag implements FlagIDs {
     }
 
     public function getDefault() : string {
+        if (!isset(static::$default)) {
+            static::$default = ResourceManager::getInstance()->getConfig()->getNested("flags." . static::$ID);
+        }
         return static::$default;
     }
 
@@ -42,11 +42,14 @@ abstract class BaseFlag implements FlagIDs {
      * @throws FlagParseException
      */
     public function getParsedDefault() : mixed {
+        if (!isset(static::$default)) {
+            static::$default = ResourceManager::getInstance()->getConfig()->getNested("flags." . static::$ID);
+        }
         return $this->parse(static::$default);
     }
 
     /**
-     * @return TFlagValue | null
+     * @return TFlagValue
      */
     abstract public function getValue() : mixed;
 
@@ -60,7 +63,9 @@ abstract class BaseFlag implements FlagIDs {
      * @param TFlagValue $value
      * @return TFlagType
      */
-    abstract public function flagOf(mixed $value) : BaseFlag;
+    public function flagOf(mixed $value) : BaseFlag {
+        return new static($value);
+    }
 
     abstract public function toString(mixed $value = null) : string;
 

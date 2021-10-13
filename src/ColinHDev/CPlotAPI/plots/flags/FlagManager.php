@@ -64,13 +64,7 @@ class FlagManager {
      */
     private function register(string $ID, string $className) : void {
         Utils::testValidInstance($className, BaseFlag::class);
-
         /** @var class-string<BaseFlag> $className */
-        $className::init(
-            $ID,
-            "cplot.flag." . $ID,
-            ResourceManager::getInstance()->getConfig()->getNested("flags." . $ID)
-        );
         $this->flags[$ID] = $className;
     }
 

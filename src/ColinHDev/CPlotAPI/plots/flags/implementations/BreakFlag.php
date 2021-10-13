@@ -10,11 +10,7 @@ use pocketmine\block\Block;
  */
 class BreakFlag extends BlockListFlag {
 
-    protected static string $ID;
-    protected static string $permission;
+    protected static string $ID = self::FLAG_BREAK;
+    protected static string $permission = self::PERMISSION_BASE . self::FLAG_BREAK;
     protected static string $default;
-
-    public function flagOf(mixed $value) : BreakFlag {
-        return new self($value);
-    }
 }

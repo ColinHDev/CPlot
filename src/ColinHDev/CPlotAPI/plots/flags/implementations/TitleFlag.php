@@ -9,11 +9,7 @@ use ColinHDev\CPlotAPI\plots\flags\BooleanFlag;
  */
 class TitleFlag extends BooleanFlag {
 
-    protected static string $ID;
-    protected static string $permission;
+    protected static string $ID = self::FLAG_TITLE;
+    protected static string $permission = self::PERMISSION_BASE . self::FLAG_TITLE;
     protected static string $default;
-
-    public function flagOf(mixed $value) : TitleFlag {
-        return new self($value);
-    }
 }

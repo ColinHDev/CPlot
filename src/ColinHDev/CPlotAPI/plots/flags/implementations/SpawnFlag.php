@@ -11,8 +11,8 @@ use pocketmine\entity\Location;
  */
 class SpawnFlag extends BaseFlag {
 
-    protected static string $ID;
-    protected static string $permission;
+    protected static string $ID = self::FLAG_SPAWN;
+    protected static string $permission = self::PERMISSION_BASE . self::FLAG_SPAWN;
     protected static string $default;
 
     protected Location $value;
@@ -30,10 +30,6 @@ class SpawnFlag extends BaseFlag {
 
     public function getValue() : Location {
         return $this->value;
-    }
-
-    public function flagOf(mixed $value) : SpawnFlag {
-        return new self($value);
     }
 
     /**
