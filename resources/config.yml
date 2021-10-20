@@ -56,7 +56,7 @@ worldSettings:
     plotBottomBlock: "Bedrock"
 
 # Define the default values of all flags.
-flags:
+flag:
     # Define the default value of the title flag.
     # default: "true"
     title: "true"
@@ -118,6 +118,87 @@ flags:
     # Define the default value of the use flag.
     # default: "[]"
     use: "[]"
+
+# Define the default values of all settings.
+setting:
+    # Define the default value of the inform_add_trusted setting.
+    # default: "true"
+    inform_add_trusted: "true"
+    # Define the default value of the inform_remove_trusted setting.
+    # default: "true"
+    inform_remove_trusted: "true"
+
+    # Define the default value of the inform_add_helper setting.
+    # default: "true"
+    inform_add_helper: "true"
+    # Define the default value of the inform_remove_helper setting.
+    # default: "true"
+    inform_remove_helper: "true"
+
+    # Define the default value of the inform_add_denied setting.
+    # default: "true"
+    inform_add_denied: "true"
+    # Define the default value of the inform_remove_denied setting.
+    # default: "true"
+    inform_remove_denied: "true"
+
+    # Define the default value of the inform_plot_inactive setting.
+    # default: "false"
+    inform_plot_inactive: "false"
+
+    # Define the default value of the inform_add_plot_rate setting.
+    # default: "true"
+    inform_add_plot_rate: "true"
+
+    # Define the default value of the warn_flag_item_drop setting.
+    # default: "[false]"
+    warn_flag_item_drop: "[false]"
+    # Define the default value of the warn_change_flag_item_drop setting.
+    # default: "[false]"
+    warn_change_flag_item_drop: "[false]"
+    # Define the default value of the teleport_change_flag_item_drop setting.
+    # default: "[]"
+    teleport_change_flag_item_drop: "[]"
+
+    # Define the default value of the warn_flag_item_pickup setting.
+    # default: "[false]"
+    warn_flag_item_pickup: "[false]"
+    # Define the default value of the warn_change_flag_item_pickup setting.
+    # default: "[false]"
+    warn_change_flag_item_pickup: "[false]"
+    # Define the default value of the teleport_change_flag_item_pickup setting.
+    # default: "[]"
+    teleport_change_flag_item_pickup: "[]"
+
+    # Define the default value of the warn_flag_pvp setting.
+    # default: "[true]"
+    warn_flag_pvp: "[true]"
+    # Define the default value of the warn_change_flag_pvp setting.
+    # default: "[true]"
+    warn_change_flag_pvp: "[true]"
+    # Define the default value of the teleport_change_flag_pvp setting.
+    # default: "[true]"
+    teleport_change_flag_pvp: "[true]"
+
+    # Define the default value of the warn_flag_pve setting.
+    # default: "[true]"
+    warn_flag_pve: "[true]"
+    # Define the default value of the warn_change_flag_pve setting.
+    # default: "[true]"
+    warn_change_flag_pve: "[true]"
+    # Define the default value of the teleport_change_flag_pve setting.
+    # default: "[true]"
+    teleport_change_flag_pve: "[true]"
+
+    # Define the default value of the warn_flag_explosion setting.
+    # default: "[true]"
+    warn_flag_explosion: "[true]"
+    # Define the default value of the warn_change_flag_explosion setting.
+    # default: "[true]"
+    warn_change_flag_explosion: "[true]"
+    # Define the default value of the teleport_change_flag_explosion setting.
+    # default: "[]"
+    teleport_change_flag_explosion: "[]"
 
 # database settings
 database:

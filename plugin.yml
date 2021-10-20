@@ -134,6 +134,53 @@ permissions:
     cplot.flag.use:
         default: true
 
+    cplot.setting.inform_trusted_add:
+        default: true
+    cplot.setting.inform_trusted_remove:
+        default: true
+    cplot.setting.inform_helper_add:
+        default: true
+    cplot.setting.inform_helper_remove:
+        default: true
+    cplot.setting.inform_denied_add:
+        default: true
+    cplot.setting.inform_denied_remove:
+        default: true
+    cplot.setting.inform_plot_inactive:
+        default: op
+    cplot.setting.inform_plot_rate_add:
+        default: true
+    cplot.setting.warn_flag_item_drop:
+        default: true
+    cplot.setting.warn_change_flag_item_drop:
+        default: true
+    cplot.setting.teleport_change_flag_item_drop:
+        default: true
+    cplot.setting.warn_flag_item_pickup:
+        default: true
+    cplot.setting.warn_change_flag_item_pickup:
+        default: true
+    cplot.setting.teleport_change_flag_item_pickup:
+        default: true
+    cplot.setting.warn_flag_pvp:
+        default: true
+    cplot.setting.warn_change_flag_pvp:
+        default: true
+    cplot.setting.teleport_change_flag_pvp:
+        default: true
+    cplot.setting.warn_flag_pve:
+        default: true
+    cplot.setting.warn_change_flag_pve:
+        default: true
+    cplot.setting.teleport_change_flag_pve:
+        default: true
+    cplot.setting.warn_flag_explosion:
+        default: true
+    cplot.setting.warn_change_flag_explosion:
+        default: true
+    cplot.setting.teleport_change_flag_explosion:
+        default: true
+
     cplot.interact.road:
         default: op
     cplot.interact.plot:

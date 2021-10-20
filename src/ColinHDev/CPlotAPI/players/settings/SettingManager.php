@@ -2,153 +2,72 @@
 
 namespace ColinHDev\CPlotAPI\players\settings;
 
-use Closure;
-use ColinHDev\CPlot\ResourceManager;
-use pocketmine\item\LegacyStringToItemParser;
-use pocketmine\item\LegacyStringToItemParserException;
-use pocketmine\utils\Config;
+use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\Utils;
 
 class SettingManager {
-
     use SingletonTrait;
 
-    /** @var BaseSetting[] */
+    /** @var class-string<Setting>[] */
     private array $settings = [];
 
     public function __construct() {
-        $config = ResourceManager::getInstance()->getSettingsConfig();
+        $this->register(SettingIDs::SETTING_INFORM_TRUSTED_ADD, InformTrustedAddSetting::class);
+        $this->register(SettingIDs::SETTING_INFORM_TRUSTED_REMOVE, InformTrustedRemoveSetting::class);
 
-        $this->register($config, SettingIDs::SETTING_INFORM_TRUSTED_ADD, BooleanSetting::class);
-        $this->register($config, SettingIDs::SETTING_INFORM_TRUSTED_REMOVE, BooleanSetting::class);
+        $this->register(SettingIDs::SETTING_INFORM_HELPER_ADD, InformHelperAddSetting::class);
+        $this->register(SettingIDs::SETTING_INFORM_HELPER_REMOVE, InformHelperRemoveSetting::class);
 
-        $this->register($config, SettingIDs::SETTING_INFORM_HELPER_ADD, BooleanSetting::class);
-        $this->register($config, SettingIDs::SETTING_INFORM_HELPER_REMOVE, BooleanSetting::class);
+        $this->register(SettingIDs::SETTING_INFORM_DENIED_ADD, InformDeniedAddSetting::class);
+        $this->register(SettingIDs::SETTING_INFORM_DENIED_REMOVE, InformDeniedRemoveSetting::class);
 
-        $this->register($config, SettingIDs::SETTING_INFORM_DENIED_ADD, BooleanSetting::class);
-        $this->register($config, SettingIDs::SETTING_INFORM_DENIED_REMOVE, BooleanSetting::class);
+        $this->register(SettingIDs::SETTING_INFORM_PLOT_INACTIVE, InformPlotInactiveSetting::class);
 
-        $this->register($config, SettingIDs::SETTING_INFORM_PLOT_INACTIVE, BooleanSetting::class);
+        $this->register(SettingIDs::SETTING_INFORM_PLOT_RATE_ADD, InformPlotRateAddSetting::class);
 
-        $this->register($config, SettingIDs::SETTING_INFORM_PLOT_RATE_ADD, BooleanSetting::class);
+        $this->register(SettingIDs::SETTING_WARN_FLAG_ITEM_DROP, WarnItemDropFlagSetting::class);
+        $this->register(SettingIDs::SETTING_WARN_CHANGE_FLAG_ITEM_DROP, WarnItemDropFlagChangeSetting::class);
+        $this->register(SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_ITEM_DROP, TeleportItemDropFlagChangeSetting::class);
 
-        $parseBoolean = function (string $arg) : ?bool {
-            return match ($arg) {
-                "true" => true,
-                "false" => false,
-                default => null,
-            };
-        };
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_TITLE, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_TITLE, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_TITLE, ArraySetting::class, $parseBoolean);*/
+        $this->register(SettingIDs::SETTING_WARN_FLAG_ITEM_PICKUP, WarnItemPickupFlagSetting::class);
+        $this->register(SettingIDs::SETTING_WARN_CHANGE_FLAG_ITEM_PICKUP, WarnItemPickupFlagChangeSetting::class);
+        $this->register(SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_ITEM_PICKUP, TeleportItemPickupFlagChangeSetting::class);
 
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_PLOT_ENTER, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_PLOT_ENTER, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PLOT_ENTER, ArraySetting::class, $parseBoolean);*/
+        $this->register(SettingIDs::SETTING_WARN_FLAG_PVP, WarnPvpFlagSetting::class);
+        $this->register(SettingIDs::SETTING_WARN_CHANGE_FLAG_PVP, WarnPvpFlagChangeSetting::class);
+        $this->register(SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PVP, TeleportPvpFlagChangeSetting::class);
 
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_PLOT_LEAVE, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_PLOT_LEAVE, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PLOT_LEAVE, ArraySetting::class, $parseBoolean);*/
+        $this->register(SettingIDs::SETTING_WARN_FLAG_PVE, WarnPveFlagSetting::class);
+        $this->register(SettingIDs::SETTING_WARN_CHANGE_FLAG_PVE, WarnPveFlagChangeSetting::class);
+        $this->register(SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PVE, TeleportPveFlagChangeSetting::class);
 
-        /*$parseString = function (string $arg) : ?string {
-            return $arg;
-        };*/
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_MESSAGE, ArraySetting::class, $parseString);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_MESSAGE, ArraySetting::class, $parseString);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_MESSAGE, ArraySetting::class, $parseString);*/
-
-        /*$parsePosition = function (string $arg) : ?string {
-            return null;
-        };*/
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_SPAWN, ArraySetting::class, $parsePosition);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_SPAWN, ArraySetting::class, $parsePosition);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_SPAWN, ArraySetting::class, $parsePosition);*/
-
-        $this->register($config, SettingIDs::SETTING_WARN_FLAG_ITEM_DROP, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_ITEM_DROP, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_ITEM_DROP, ArraySetting::class, $parseBoolean);
-
-        $this->register($config, SettingIDs::SETTING_WARN_FLAG_ITEM_PICKUP, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_ITEM_PICKUP, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_ITEM_PICKUP, ArraySetting::class, $parseBoolean);
-
-        $this->register($config, SettingIDs::SETTING_WARN_FLAG_PVP, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_PVP, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PVP, ArraySetting::class, $parseBoolean);
-
-        $this->register($config, SettingIDs::SETTING_WARN_FLAG_PVE, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_PVE, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PVE, ArraySetting::class, $parseBoolean);
-
-        $this->register($config, SettingIDs::SETTING_WARN_FLAG_EXPLOSION, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_EXPLOSION, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_EXPLOSION, ArraySetting::class, $parseBoolean);
-
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_BURNING, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_BURNING, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_BURNING, ArraySetting::class, $parseBoolean);*/
-
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_FLOWING, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_FLOWING, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_FLOWING, ArraySetting::class, $parseBoolean);*/
-
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_GROWING, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_GROWING, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_GROWING, ArraySetting::class, $parseBoolean);*/
-
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_PLAYER_INTERACT, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_PLAYER_INTERACT, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PLAYER_INTERACT, ArraySetting::class, $parseBoolean);*/
-
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_SERVER_PLOT, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_SERVER_PLOT, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_SERVER_PLOT, ArraySetting::class, $parseBoolean);*/
-
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_CHECK_INACTIVE, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_CHECK_INACTIVE, ArraySetting::class, $parseBoolean);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_CHECK_INACTIVE, ArraySetting::class, $parseBoolean);*/
-
-        /*$parseBlock = function (string $arg) : ?int {
-            try {
-                $block = LegacyStringToItemParser::getInstance()->parse($arg)->getBlock();
-            } catch (LegacyStringToItemParserException $exception) {
-                return null;
-            }
-            return $block->getFullId();
-        };*/
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_PLACE, ArraySetting::class, $parseBlock);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_PLACE, ArraySetting::class, $parseBlock);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PLACE, ArraySetting::class, $parseBlock);*/
-
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_BREAK, ArraySetting::class, $parseBlock);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_BREAK, ArraySetting::class, $parseBlock);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_BREAK, ArraySetting::class, $parseBlock);*/
-
-        /*$this->register($config, SettingIDs::SETTING_WARN_FLAG_USE, ArraySetting::class, $parseBlock);
-        $this->register($config, SettingIDs::SETTING_WARN_CHANGE_FLAG_USE, ArraySetting::class, $parseBlock);
-        $this->register($config, SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_USE, ArraySetting::class, $parseBlock);*/
-    }
-
-    private function register(Config $config, string $ID, string $className, ?Closure $parseValue = null) : void {
-        Utils::testValidInstance($className, BaseSetting::class);
-        if ($parseValue === null) {
-            $this->settings[$ID] = new $className($ID, $config->get($ID));
-        } else {
-            $this->settings[$ID] = new $className($ID, $config->get($ID), $parseValue);
-        }
+        $this->register(SettingIDs::SETTING_WARN_FLAG_EXPLOSION, WarnExplosionFlagSetting::class);
+        $this->register(SettingIDs::SETTING_WARN_CHANGE_FLAG_EXPLOSION, WarnExplosionFlagChangeSetting::class);
+        $this->register(SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_EXPLOSION, TeleportExplosionFlagChangeSetting::class);
     }
 
     /**
-     * @return BaseSetting[]
+     * @param string $ID
+     * @param class-string<Setting> $className
+     */
+    private function register(string $ID, string $className) : void {
+        Utils::testValidInstance($className, BaseAttribute::class);
+        /** @var class-string<Setting> $className */
+        $this->settings[$ID] = $className;
+    }
+
+    /**
+     * @return class-string<Setting>[]
      */
     public function getSettings() : array {
         return $this->settings;
     }
 
-    public function getSettingByID(string $ID) : ?BaseSetting {
-        if (!isset($this->settings[$ID])) return null;
-        return clone $this->settings[$ID];
+    public function getSettingByID(string $ID) : ?Setting {
+        if (!isset($this->settings[$ID])) {
+            return null;
+        }
+        return new $this->settings[$ID]();
     }
 }

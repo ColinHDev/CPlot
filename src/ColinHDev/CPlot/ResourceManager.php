@@ -12,7 +12,6 @@ class ResourceManager {
     private Config $bordersConfig;
     private Config $config;
     private Language $language;
-    private Config $settingsConfig;
     private Config $wallsConfig;
 
     public function __construct() {
@@ -22,13 +21,11 @@ class ResourceManager {
         CPlot::getInstance()->saveResource("borders.yml");
         CPlot::getInstance()->saveResource("config.yml");
         CPlot::getInstance()->saveResource("language.ini");
-        CPlot::getInstance()->saveResource("settings.yml");
         CPlot::getInstance()->saveResource("walls.yml");
 
         $this->bordersConfig = new Config(CPlot::getInstance()->getDataFolder() . "borders.yml", Config::YAML);
         $this->config = new Config(CPlot::getInstance()->getDataFolder() . "config.yml", Config::YAML);
         $this->language = new Language("language", CPlot::getInstance()->getDataFolder(), "language");
-        $this->settingsConfig = new Config(CPlot::getInstance()->getDataFolder() . "settings.yml", Config::YAML);
         $this->wallsConfig = new Config(CPlot::getInstance()->getDataFolder() . "walls.yml", Config::YAML);
     }
 
@@ -61,11 +58,6 @@ class ResourceManager {
     public function getConfig() : Config {
         $this->config->reload();
         return $this->config;
-    }
-
-    public function getSettingsConfig() : Config {
-        $this->settingsConfig->reload();
-        return $this->settingsConfig;
     }
 
     public function getWallsConfig() : Config {

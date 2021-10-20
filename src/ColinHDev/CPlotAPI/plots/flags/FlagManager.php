@@ -2,34 +2,14 @@
 
 namespace ColinHDev\CPlotAPI\plots\flags;
 
-use ColinHDev\CPlot\ResourceManager;
-use ColinHDev\CPlotAPI\plots\flags\implementations\BreakFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\BurningFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\CheckInactiveFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\ExplosionFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\FlowingFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\GrowingFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\ItemDropFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\ItemPickupFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\MessageFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\PlaceFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\PlayerInteractFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\PlotEnterFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\PlotLeaveFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\PveFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\PvpFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\ServerPlotFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\SpawnFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\TitleFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\UseFlag;
+use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\Utils;
 
 class FlagManager {
-
     use SingletonTrait;
 
-    /** @var class-string<BaseFlag>[] */
+    /** @var class-string<Flag>[] */
     private array $flags = [];
 
     public function __construct() {
@@ -60,23 +40,25 @@ class FlagManager {
 
     /**
      * @param string $ID
-     * @param class-string<BaseFlag> $className
+     * @param class-string<Flag> $className
      */
     private function register(string $ID, string $className) : void {
-        Utils::testValidInstance($className, BaseFlag::class);
-        /** @var class-string<BaseFlag> $className */
+        Utils::testValidInstance($className, BaseAttribute::class);
+        /** @var class-string<Flag> $className */
         $this->flags[$ID] = $className;
     }
 
     /**
-     * @return class-string<BaseFlag>[]
+     * @return class-string<Flag>[]
      */
     public function getFlags() : array {
         return $this->flags;
     }
 
-    public function getFlagByID(string $ID) : ?BaseFlag {
-        if (!isset($this->flags[$ID])) return null;
-        return new $this->flags[$ID];
+    public function getFlagByID(string $ID) : ?Flag {
+        if (!isset($this->flags[$ID])) {
+            return null;
+        }
+        return new $this->flags[$ID]();
     }
 }
