@@ -39,7 +39,7 @@ class VisitSubcommand extends Subcommand {
                 } catch (PlotException) {
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
-                break;
+                return;
 
             case 1:
                 if (is_numeric($args[0])) {
@@ -68,7 +68,7 @@ class VisitSubcommand extends Subcommand {
                     } catch (PlotException) {
                     }
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.teleportError", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
-                    break;
+                    return;
 
                 } else {
                     $player = $this->getPlugin()->getServer()->getPlayerByPrefix($args[0]);
@@ -102,7 +102,7 @@ class VisitSubcommand extends Subcommand {
                         } catch (PlotException) {
                         }
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
-                        break;
+                        return;
 
                     } else {
                         $alias = strtolower($args[0]);
@@ -110,7 +110,7 @@ class VisitSubcommand extends Subcommand {
                         $plot = $this->getPlugin()->getProvider()->getPlotByAlias($alias);
                         if ($plot === null) {
                             $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.noPlot", [$alias]));
-                            break;
+                            return;
                         }
                         try {
                             if ($plot->teleportTo($sender)) {
@@ -120,7 +120,7 @@ class VisitSubcommand extends Subcommand {
                         } catch (PlotException) {
                         }
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]));
-                        break;
+                        return;
                     }
                 }
 
@@ -164,7 +164,7 @@ class VisitSubcommand extends Subcommand {
                 } catch (PlotException) {
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.teleportError", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
-                break;
+                return;
         }
     }
 }
