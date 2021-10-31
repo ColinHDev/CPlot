@@ -5,8 +5,8 @@ namespace ColinHDev\CPlot\tasks;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\Plot;
+use pocketmine\entity\Human;
 use pocketmine\math\Vector3;
-use pocketmine\player\Player;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\world\Position;
@@ -34,7 +34,7 @@ class EntityMovementTask extends Task {
             }
 
             foreach ($world->updateEntities as $entity) {
-                if ($entity instanceof Player) {
+                if ($entity instanceof Human) {
                     continue;
                 }
 
