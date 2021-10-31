@@ -96,10 +96,12 @@ class WarpSubcommand extends Subcommand {
         }
 
         try {
-            $plot->teleportTo($sender);
-            $sender->sendMessage($this->getPrefix() . $this->translateString("warp.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+            if ($plot->teleportTo($sender)) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("warp.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+                return;
+            }
         } catch (PlotException) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("warp.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
         }
+        $sender->sendMessage($this->getPrefix() . $this->translateString("warp.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
     }
 }
