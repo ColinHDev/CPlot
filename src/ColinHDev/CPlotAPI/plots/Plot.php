@@ -11,7 +11,6 @@ use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
 use pocketmine\player\Player;
-use pocketmine\Server;
 use pocketmine\world\Position;
 
 class Plot extends BasePlot {
@@ -429,15 +428,14 @@ class Plot extends BasePlot {
      * @throws PlotException
      */
     public function teleportTo(Player $player, bool $toPlotCenter = false) : bool {
-        $world = Server::getInstance()->getWorldManager()->getWorldByName($this->worldName);
-        if ($world === null) {
-            return false;
-        }
-
         if (!$toPlotCenter) {
             $flag = $this->getFlagNonNullByID(FlagIDs::FLAG_SPAWN);
-            $relativeSpawnLocation = $flag?->getValue();
+            $relativeSpawnLocation = $flag->getValue();
             if ($relativeSpawnLocation instanceof Location) {
+                $world = $this->getWorld();
+                if ($world === null) {
+                    return false;
+                }
                 return $player->teleport(
                     Location::fromObject(
                         $relativeSpawnLocation->addVector($this->getPosition()),

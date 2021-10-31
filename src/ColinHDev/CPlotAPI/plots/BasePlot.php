@@ -9,6 +9,7 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
+use pocketmine\world\World;
 
 class BasePlot implements Cacheable {
 
@@ -34,6 +35,14 @@ class BasePlot implements Cacheable {
         return $this->z;
     }
 
+    public function getWorld() : ?World {
+        $worldManager = Server::getInstance()->getWorldManager();
+        if (!$worldManager->loadWorld($this->worldName)) {
+            return null;
+        }
+        return $worldManager->getWorldByName($this->worldName);
+    }
+
     public function teleportTo(Player $player, bool $toPlotCenter = false) : bool {
         $worldSettings = CPlot::getInstance()->getProvider()->getWorld($this->worldName);
         if ($worldSettings === null) return false;
@@ -47,8 +56,10 @@ class BasePlot implements Cacheable {
         $vector->y += 1;
         $vector->z += floor($worldSettings->getPlotSize() / 2);
 
-        $world = Server::getInstance()->getWorldManager()->getWorldByName($this->worldName);
-        if ($world === null) return false;
+        $world = $this->getWorld();
+        if ($world === null) {
+            return false;
+        }
 
         return $player->teleport(
             Position::fromObject($vector, $world)
