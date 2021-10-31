@@ -7,8 +7,8 @@ use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
-use ColinHDev\CPlotAPI\plots\flags\FlagManager;
 use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use ColinHDev\CPlotAPI\utils\ParseUtils;
 use dktapps\pmforms\FormIcon;
 use dktapps\pmforms\MenuForm;
@@ -89,26 +89,34 @@ class WallSubcommand extends Subcommand {
             return;
         }
         if (!$player->hasPermission("cplot.admin.wall")) {
-            if ($plot->getOwnerUUID() === null) {
-                $player->sendMessage($this->getPrefix() . $this->translateString("wall.noPlotOwner"));
-                return;
-            } else if ($plot->getOwnerUUID() !== $player->getUniqueId()->toString()) {
-                $player->sendMessage($this->getPrefix() . $this->translateString("wall.notPlotOwner", [$this->getPlugin()->getProvider()->getPlayerNameByUUID($plot->getOwnerUUID()) ?? "ERROR"]));
+            try {
+                if (!$plot->hasPlotOwner()) {
+                    $player->sendMessage($this->getPrefix() . $this->translateString("wall.noPlotOwner"));
+                    return;
+                } else if (!$plot->isPlotOwner($player->getUniqueId()->toString())) {
+                    $player->sendMessage($this->getPrefix() . $this->translateString("wall.notPlotOwner"));
+                    return;
+                }
+            } catch (PlotException) {
+                $player->sendMessage($this->getPrefix() . $this->translateString("wall.loadPlotPlayersError"));
                 return;
             }
         }
 
-        if (!$plot->loadFlags()) {
+        try {
+            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+            if ($flag->getValue() === true) {
+                $player->sendMessage($this->getPrefix() . $this->translateString("wall.serverPlotFlag", [$flag->getID()]));
+                return;
+            }
+        } catch (PlotException) {
             $player->sendMessage($this->getPrefix() . $this->translateString("wall.loadFlagsError"));
             return;
         }
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag->getValue() === true) {
-            $player->sendMessage($this->getPrefix() . $this->translateString("wall.serverPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
-            return;
-        }
 
-        if (!$plot->loadMergePlots()) {
+        try {
+            $plot->loadMergePlots();
+        } catch (PlotException) {
             $player->sendMessage($this->getPrefix() . $this->translateString("wall.loadMergedPlotsError"));
             return;
         }
@@ -130,8 +138,9 @@ class WallSubcommand extends Subcommand {
                 Server::getInstance()->getLogger()->debug(
                     "Changing plot wall to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $player->getUniqueId()->toString() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
-                if (!$player->isConnected()) return;
-                $player->sendMessage($this->getPrefix() . $this->translateString("wall.finish", [$elapsedTimeString, $block->getName()]));
+                if ($player->isConnected()) {
+                    $player->sendMessage($this->getPrefix() . $this->translateString("wall.finish", [$elapsedTimeString, $block->getName()]));
+                }
             }
         );
         $this->getPlugin()->getServer()->getAsyncPool()->submitTask($task);

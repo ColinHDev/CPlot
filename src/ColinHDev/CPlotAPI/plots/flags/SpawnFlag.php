@@ -38,7 +38,7 @@ class SpawnFlag extends BaseAttribute implements Flag {
     public function parse(string $value) : Location {
         [$x, $y, $z, $yaw, $pitch] = explode(";", $value);
         if ($x !== null && $y !== null && $z !== null && $yaw !== null && $pitch !== null) {
-            return new Location((float) $x, (float) $y, (float) $z, (float) $yaw, (float) $pitch);
+            return new Location((float) $x, (float) $y, (float) $z, null, (float) $yaw, (float) $pitch);
         }
         throw new AttributeParseException($this, $value);
     }

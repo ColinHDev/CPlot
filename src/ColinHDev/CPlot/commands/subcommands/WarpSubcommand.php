@@ -4,6 +4,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlotAPI\plots\BasePlot;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
@@ -81,17 +82,24 @@ class WarpSubcommand extends Subcommand {
             return;
         }
 
+
         if (!$sender->hasPermission("cplot.admin.warp")) {
-            if ($plot->getOwnerUUID() === null) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("warp.noPlotOwner"));
+            try {
+                if (!$plot->hasPlotOwner()) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("warp.noPlotOwner"));
+                    return;
+                }
+            } catch (PlotException) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("warp.loadPlotPlayersError"));
                 return;
             }
         }
 
-        if (!$plot->teleportTo($sender)) {
+        try {
+            $plot->teleportTo($sender);
+            $sender->sendMessage($this->getPrefix() . $this->translateString("warp.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+        } catch (PlotException) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
-            return;
         }
-        $sender->sendMessage($this->getPrefix() . $this->translateString("warp.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
     }
 }

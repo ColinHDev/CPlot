@@ -177,7 +177,7 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                         if ($y === $world->getMinY()) {
                             $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
                         } else if ($y === $worldSettings->getGroundSize() + 1) {
-                            if ($plot->getOwnerUUID() === null) {
+                            if (!$plot->hasPlotOwner()) {
                                 $fullBlock = $worldSettings->getBorderBlock()->getFullId();
                             } else {
                                 $fullBlock = $worldSettings->getBorderBlockOnClaim()->getFullId();
@@ -245,7 +245,7 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                 }
             }
 
-            $finishedChunks[$chunkHash] = FastChunkSerializer::serializeWithoutLight($world->getChunk($chunkX, $chunkZ));
+            $finishedChunks[$chunkHash] = FastChunkSerializer::serializeTerrain($world->getChunk($chunkX, $chunkZ));
         }
 
         $this->chunks = serialize($finishedChunks);

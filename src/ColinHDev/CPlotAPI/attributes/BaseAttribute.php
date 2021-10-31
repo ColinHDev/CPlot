@@ -3,6 +3,7 @@
 namespace ColinHDev\CPlotAPI\attributes;
 
 use ColinHDev\CPlot\ResourceManager;
+use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
 use ColinHDev\CPlotAPI\attributes\utils\AttributeTypeException;
 use ColinHDev\CPlotAPI\players\settings\Setting;
 use ColinHDev\CPlotAPI\plots\flags\Flag;
@@ -57,6 +58,7 @@ abstract class BaseAttribute {
     /**
      * @return AttributeValue
      * @throws AttributeTypeException
+     * @throws AttributeParseException
      */
     public function getParsedDefault() : mixed {
         if (!isset(static::$default)) {
@@ -78,6 +80,15 @@ abstract class BaseAttribute {
     }
 
     /**
+     * @param AttributeValue | null $value
+     * @return AttributeType
+     * @throws AttributeTypeException
+     */
+    public function newInstance(mixed $value = null) : BaseAttribute {
+        return new static($value);
+    }
+
+    /**
      * @param AttributeValue $value
      * @return AttributeType
      */
@@ -87,6 +98,7 @@ abstract class BaseAttribute {
 
     /**
      * @return AttributeValue
+     * @throws AttributeParseException
      */
     abstract public function parse(string $value) : mixed;
 

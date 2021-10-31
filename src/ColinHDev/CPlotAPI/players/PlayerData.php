@@ -5,8 +5,9 @@ namespace ColinHDev\CPlotAPI\players;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\provider\cache\Cacheable;
 use ColinHDev\CPlot\ResourceManager;
-use ColinHDev\CPlotAPI\players\settings\BaseSetting;
+use ColinHDev\CPlotAPI\players\settings\Setting;
 use ColinHDev\CPlotAPI\players\settings\SettingManager;
+use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
 use pocketmine\player\OfflinePlayer;
 use pocketmine\Server;
 use Ramsey\Uuid\Uuid;
@@ -17,7 +18,7 @@ class PlayerData implements Cacheable {
     private string $playerName;
     private int $lastPlayed;
 
-    /** @var null | BaseSetting[] */
+    /** @var null | array<string, Setting> */
     private ?array $settings = null;
 
     public function __construct(string $playerUUID, string $playerName, int $lastPlayed) {
@@ -35,11 +36,10 @@ class PlayerData implements Cacheable {
     }
 
     /**
-     * @return int | null
      * returns int as the last played time in seconds
      * returns null if the result couldn't be found
      */
-    public function getLastPlayed() : ?int {
+    public function getLastPlayed() : int {
         // player is online and therefore not inactive
         $player = Server::getInstance()->getPlayerByRawUUID(Uuid::fromString($this->playerUUID));
         if ($player !== null) {
@@ -74,52 +74,64 @@ class PlayerData implements Cacheable {
         return (int) ceil($lastPlayed / 1000);
     }
 
-
-    public function loadSettings() : bool {
-        if ($this->settings !== null) return true;
-        $this->settings = CPlot::getInstance()->getProvider()->getPlayerSettings($this);
-        if ($this->settings === null) return false;
-        CPlot::getInstance()->getProvider()->getPlayerCache()->cacheObject($this->playerUUID, $this);
-        return true;
-    }
-
     /**
-     * @return BaseSetting[] | null
+     * @return array<string, Setting>
+     * @throws PlayerDataException
      */
-    public function getSettings() : ?array {
+    public function getSettings() : array {
+        $this->loadSettings();
         return $this->settings;
     }
 
-    public function getSettingByID(string $settingID) : ?BaseSetting {
-        if ($this->settings !== null) {
-            if (isset($this->settings[$settingID])) return $this->settings[$settingID];
+    /**
+     * @throws PlayerDataException
+     */
+    public function getSettingByID(string $settingID) : ?Setting {
+        $this->loadSettings();
+        if (!isset($this->settings[$settingID])) {
+            return null;
         }
-        return null;
-    }
-
-    public function getSettingNonNullByID(string $settingID) : ?BaseSetting {
-        if ($this->settings !== null) {
-            if (isset($this->settings[$settingID])) return $this->settings[$settingID];
-        }
-        return SettingManager::getInstance()->getSettingByID($settingID);
+        return $this->settings[$settingID];
     }
 
     /**
-     * @param BaseSetting[] | null $settings
+     * @throws PlayerDataException
      */
-    public function setSettings(?array $settings) : void {
-        $this->settings = $settings;
+    public function getSettingNonNullByID(string $settingID) : ?Setting {
+        $setting = $this->getSettingByID($settingID);
+        if ($setting === null) {
+            $setting = SettingManager::getInstance()->getSettingByID($settingID);
+        }
+        return $setting;
     }
 
-    public function addSetting(BaseSetting $setting) : bool {
-        if ($this->settings === null) return false;
+    /**
+     * @throws PlayerDataException
+     */
+    public function addSetting(Setting $setting) : void {
+        $this->loadSettings();
         $this->settings[$setting->getID()] = $setting;
-        return true;
     }
 
-    public function removeSetting(string $settingID) : bool {
-        if ($this->settings === null) return false;
+    /**
+     * @throws PlayerDataException
+     */
+    public function removeSetting(string $settingID) : void {
+        $this->loadSettings();
         unset($this->settings[$settingID]);
-        return true;
+    }
+
+    /**
+     * @throws PlayerDataException
+     */
+    public function loadSettings() : void {
+        if ($this->settings !== null) {
+            return;
+        }
+        $this->settings = CPlot::getInstance()->getProvider()->getPlayerSettings($this);
+        if ($this->settings === null) {
+            throw new PlayerDataException($this,"Couldn't load player settings of player with UUID " . $this->playerUUID . " from provider.");
+        }
+        CPlot::getInstance()->getProvider()->getPlayerCache()->cacheObject($this->playerUUID, $this);
     }
 }

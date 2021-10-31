@@ -4,7 +4,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\plots\PlotPlayer;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
@@ -25,21 +25,23 @@ class DeniedSubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->translateString("denied.noPlot"));
             return;
         }
-        if (!$plot->loadPlotPlayers()) {
+
+        try {
+            $deniedPlayers = $plot->getPlotDenied();
+        } catch (PlotException) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("denied.loadPlotPlayersError"));
             return;
         }
 
-        $trustedPlayers = [];
-        foreach ($plot->getPlotPlayers() as $plotPlayer) {
-            if ($plotPlayer->getState() !== PlotPlayer::STATE_DENIED) continue;
+        $deniedPlayerData = [];
+        foreach ($deniedPlayers as $plotPlayer) {
             [$d, $m, $y, $h, $min, $s] = explode(".", date("d.m.Y.H.i.s", (int) (round($plotPlayer->getAddTime() / 1000))));
-            $trustedPlayers[] = $this->translateString("denied.success.list", [
+            $deniedPlayerData[] = $this->translateString("denied.success.list", [
                 $this->getPlugin()->getProvider()->getPlayerDataByUUID($plotPlayer->getPlayerUUID())?->getPlayerName() ?? "ERROR",
                 $this->translateString("denied.success.list.addTime.format", [$d, $m, $y, $h, $min, $s])
             ]);
         }
-        if (count($trustedPlayers) === 0) {
+        if (count($deniedPlayerData) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("denied.noDeniedPlayers"));
             return;
         }
@@ -49,7 +51,7 @@ class DeniedSubcommand extends Subcommand {
             $this->translateString(
                 "denied.success",
                 [
-                    implode($this->translateString("denied.success.list.separator"), $trustedPlayers)
+                    implode($this->translateString("denied.success.list.separator"), $deniedPlayerData)
                 ]
             )
         );

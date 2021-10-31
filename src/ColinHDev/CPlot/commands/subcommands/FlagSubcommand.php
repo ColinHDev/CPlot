@@ -3,14 +3,16 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlotAPI\plots\flags\ArrayFlag;
-use ColinHDev\CPlotAPI\plots\flags\BaseFlag;
+use ColinHDev\CPlotAPI\attributes\ArrayAttribute;
+use ColinHDev\CPlotAPI\attributes\BaseAttribute;
+use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
+use ColinHDev\CPlotAPI\plots\flags\Flag;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\flags\FlagManager;
-use ColinHDev\CPlotAPI\plots\flags\implementations\ServerPlotFlag;
-use ColinHDev\CPlotAPI\plots\flags\implementations\SpawnFlag;
-use ColinHDev\CPlotAPI\plots\flags\utils\FlagParseException;
+use ColinHDev\CPlotAPI\plots\flags\ServerPlotFlag;
+use ColinHDev\CPlotAPI\plots\flags\SpawnFlag;
 use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
 use pocketmine\entity\Location;
 use pocketmine\player\Player;
@@ -27,7 +29,7 @@ class FlagSubcommand extends Subcommand {
             case "list":
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.list.success"));
                 $flagsByCategory = [];
-                /** @var class-string<BaseFlag> $flagClass */
+                /** @var class-string<Flag> $flagClass */
                 foreach (FlagManager::getInstance()->getFlags() as $flagClass) {
                     $flag = new $flagClass();
                     $flagCategory = $this->translateString("flag.category." . $flag->getID());
@@ -74,19 +76,21 @@ class FlagSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.here.noPlot"));
                     break;
                 }
-                if (!$plot->loadFlags()) {
+                try {
+                    $flags = $plot->getFlags();
+                } catch (PlotException) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.here.loadFlagsError"));
                     break;
                 }
-                if (count($plot->getFlags()) === 0) {
+                if (count($flags) === 0) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.here.noFlags"));
                     break;
                 }
                 $flags = array_map(
-                    function (BaseFlag $flag) : string {
+                    function (Flag $flag) : string {
                         return $this->translateString("flag.here.success.format", [$flag->getID(), $flag->toString()]);
                     },
-                    $plot->getFlags()
+                    $flags
                 );
                 $sender->sendMessage(
                     $this->getPrefix() .
@@ -117,22 +121,30 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                if ($plot->getOwnerUUID() === null) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noPlotOwner"));
+                try {
+                    if ($plot->hasPlotOwner() === null) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noPlotOwner"));
+                        break;
+                    }
+                } catch (PlotException) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.loadPlotPlayersError"));
                     break;
                 }
                 if (!$sender->hasPermission("cplot.admin.flag")) {
-                    if ($plot->getOwnerUUID() !== $sender->getUniqueId()->toString()) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.notPlotOwner", [$this->getPlugin()->getProvider()->getPlayerNameByUUID($plot->getOwnerUUID()) ?? "ERROR"]));
+                    if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.notPlotOwner"));
                         break;
                     }
                 }
-                if (!$plot->loadFlags()) {
+
+                try {
+                    $plot->loadFlags();
+                } catch (PlotException) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.loadFlagsError"));
                     break;
                 }
 
-                /** @var BaseFlag | null $flag */
+                /** @var Flag&BaseAttribute | null $flag */
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
                 if ($flag === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noFlag", [$args[1]]));
@@ -146,7 +158,7 @@ class FlagSubcommand extends Subcommand {
                 if (!$flag instanceof ServerPlotFlag) {
                     $oldFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
                     if ($oldFlag->getValue() === true) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.serverPlotFlag", [FlagIDs::FLAG_SERVER_PLOT]));
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.serverPlotFlag", [$oldFlag->getID()]));
                         break;
                     }
                 }
@@ -167,12 +179,12 @@ class FlagSubcommand extends Subcommand {
                 }
                 try {
                     $parsedValue = $flag->parse($arg);
-                } catch (FlagParseException) {
+                } catch (AttributeParseException) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.parseError", [$arg, $flag->getID()]));
                     break;
                 }
 
-                $flag = $flag->flagOf($parsedValue);
+                $flag = $flag->newInstance($parsedValue);
                 $oldFlag = $plot->getFlagByID($flag->getID());
                 if ($oldFlag !== null) {
                     $flag = $oldFlag->merge($flag->getValue());
@@ -208,22 +220,30 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                if ($plot->getOwnerUUID() === null) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.noPlotOwner"));
+                try {
+                    if ($plot->hasPlotOwner() === null) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.noPlotOwner"));
+                        break;
+                    }
+                } catch (PlotException) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.loadPlotPlayersError"));
                     break;
                 }
                 if (!$sender->hasPermission("cplot.admin.flag")) {
-                    if ($plot->getOwnerUUID() !== $sender->getUniqueId()->toString()) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.notPlotOwner", [$this->getPlugin()->getProvider()->getPlayerNameByUUID($plot->getOwnerUUID()) ?? "ERROR"]));
+                    if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.notPlotOwner"));
                         break;
                     }
                 }
-                if (!$plot->loadFlags()) {
+
+                try {
+                    $plot->loadFlags();
+                } catch (PlotException) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.loadFlagsError"));
                     break;
                 }
 
-                /** @var BaseFlag | null $flag */
+                /** @var Flag | null $flag */
                 $flag = $plot->getFlagByID($args[1]);
                 if ($flag === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flagNotSet", [$args[1]]));
@@ -237,17 +257,17 @@ class FlagSubcommand extends Subcommand {
                 if (!$flag instanceof ServerPlotFlag) {
                     $oldFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
                     if ($oldFlag->getValue() === true) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.serverPlotFlag", [FlagIDs::FLAG_SERVER_PLOT]));
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.serverPlotFlag", [$oldFlag->getID()]));
                         break;
                     }
                 }
 
                 array_splice($args, 0, 2);
-                if (count($args) > 0 && $flag instanceof ArrayFlag) {
+                if (count($args) > 0 && $flag instanceof ArrayAttribute) {
                     $arg = implode(" ", $args);
                     try {
                         $parsedValues = $flag->parse($arg);
-                    } catch (FlagParseException) {
+                    } catch (AttributeParseException) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.parseError", [$arg, $flag->getID()]));
                         break;
                     }
@@ -262,12 +282,14 @@ class FlagSubcommand extends Subcommand {
                     }
 
                     if (count($values) > 0) {
-                        $flag = $flag->flagOf($values);
+                        $flag = $flag->newInstance($values);
+                        $plot->addFlag($flag);
                         if ($this->getPlugin()->getProvider()->savePlotFlag($plot, $flag)) {
                             $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.value.success", [$flag->getID(), $flag->toString()]));
                             break;
                         }
                     } else {
+                        $plot->removeFlag($flag->getID());
                         if ($this->getPlugin()->getProvider()->deletePlotFlag($plot, $flag->getID())) {
                             $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flag.success", [$flag->getID()]));
                             break;
@@ -275,6 +297,7 @@ class FlagSubcommand extends Subcommand {
                     }
 
                 } else {
+                    $plot->removeFlag($flag->getID());
                     if ($this->getPlugin()->getProvider()->deletePlotFlag($plot, $flag->getID())) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flag.success", [$flag->getID()]));
                         break;

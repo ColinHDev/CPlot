@@ -2,16 +2,18 @@
 
 namespace ColinHDev\CPlot\provider;
 
-use ColinHDev\CPlotAPI\plots\flags\utils\FlagParseException;
-use ColinHDev\CPlotAPI\players\settings\BaseSetting;
+use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
+use ColinHDev\CPlotAPI\attributes\utils\AttributeTypeException;
+use ColinHDev\CPlotAPI\players\settings\Setting;
+use ColinHDev\CPlotAPI\plots\flags\Flag;
 use ColinHDev\CPlotAPI\players\PlayerData;
 use ColinHDev\CPlotAPI\players\settings\SettingManager;
 use ColinHDev\CPlotAPI\plots\PlotPlayer;
 use ColinHDev\CPlotAPI\plots\PlotRate;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use ColinHDev\CPlotAPI\utils\ParseUtils;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\plots\BasePlot;
-use ColinHDev\CPlotAPI\plots\flags\BaseFlag;
 use ColinHDev\CPlotAPI\plots\flags\FlagManager;
 use ColinHDev\CPlotAPI\plots\MergePlot;
 use ColinHDev\CPlotAPI\plots\Plot;
@@ -285,18 +287,6 @@ class SQLiteProvider extends DataProvider {
         return null;
     }
 
-    public function getPlayerNameByUUID(string $playerUUID) : ?string {
-        $player = $this->getPlayerDataByUUID($playerUUID);
-        if ($player === null) return null;
-        return $player->getPlayerName();
-    }
-
-    public function getPlayerUUIDByName(string $playerName) : ?string {
-        $player = $this->getPlayerDataByName($playerName);
-        if ($player === null) return null;
-        return $player->getPlayerUUID();
-    }
-
     public function setPlayerData(PlayerData $player) : bool {
         $this->setPlayerData->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
         $this->setPlayerData->bindValue(":playerName", $player->getPlayerName(), SQLITE3_TEXT);
@@ -312,7 +302,7 @@ class SQLiteProvider extends DataProvider {
 
 
     /**
-     * @return BaseSetting[] | null
+     * @return Setting[] | null
      */
     public function getPlayerSettings(PlayerData $player) : ?array {
         $this->getPlayerSettings->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
@@ -324,22 +314,21 @@ class SQLiteProvider extends DataProvider {
         $settings = [];
         while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
             $setting = SettingManager::getInstance()->getSettingByID($var["ID"]);
-            if ($setting === null) continue;
-            $setting->setValue(
-                $setting->unserializeValueType($var["value"])
-            );
-            $settings[$setting->getID()] = $setting;
+            if ($setting === null) {
+                continue;
+            }
+            try {
+                $settings[$setting->getID()] = $setting->newInstance($setting->parse($var["value"]));
+            } catch (AttributeParseException | AttributeTypeException) {
+            }
         }
         return $settings;
     }
 
-    public function savePlayerSetting(PlayerData $player, BaseSetting $setting) : bool {
-        if ($setting->getValue() === null) return false;
-        if (!$player->addSetting($setting)) return false;
-
+    public function savePlayerSetting(PlayerData $player, Setting $setting) : bool {
         $this->setPlayerSetting->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
         $this->setPlayerSetting->bindValue(":ID", $setting->getID(), SQLITE3_TEXT);
-        $this->setPlayerSetting->bindValue(":value", $setting->serializeValueType($setting->getValue()), SQLITE3_TEXT);
+        $this->setPlayerSetting->bindValue(":value", $setting->toString(), SQLITE3_TEXT);
 
         $this->setPlayerSetting->reset();
         $result = $this->setPlayerSetting->execute();
@@ -350,8 +339,6 @@ class SQLiteProvider extends DataProvider {
     }
 
     public function deletePlayerSetting(PlayerData $player, string $settingID) : bool {
-        if (!$player->removeSetting($settingID)) return false;
-
         $this->deletePlayerSetting->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
         $this->deletePlayerSetting->bindValue(":ID", $settingID, SQLITE3_TEXT);
 
@@ -427,7 +414,7 @@ class SQLiteProvider extends DataProvider {
         if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
             $plot = new Plot(
                 $worldName, $x, $z,
-                $var["biomeID"] ?? BiomeIds::PLAINS, $var["ownerUUID"] ?? null, $var["claimTime"] ?? null, $var["alias"] ?? null
+                $var["biomeID"] ?? BiomeIds::PLAINS, $var["alias"] ?? null
             );
             $this->getPlotCache()->cacheObject($plot->toString(), $plot);
             return $plot;
@@ -445,7 +432,7 @@ class SQLiteProvider extends DataProvider {
         if ($var = $result->fetchArray(SQLITE3_ASSOC)) {
             $plot = new Plot(
                 $var["worldName"], $var["x"], $var["z"],
-                $var["biomeID"] ?? BiomeIds::PLAINS, $var["ownerUUID"] ?? null, $var["claimTime"] ?? null, $alias
+                $var["biomeID"] ?? BiomeIds::PLAINS, $alias
             );
             $this->getPlotCache()->cacheObject($plot->toString(), $plot);
             return $plot;
@@ -459,8 +446,6 @@ class SQLiteProvider extends DataProvider {
         $this->setPlot->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
 
         $this->setPlot->bindValue(":biomeID", $plot->getBiomeID(), SQLITE3_INTEGER);
-        $this->setPlot->bindValue(":ownerUUID", $plot->getOwnerUUID(), SQLITE3_TEXT);
-        $this->setPlot->bindValue(":claimTime", $plot->getClaimTime(), SQLITE3_INTEGER);
         $this->setPlot->bindValue(":alias", $plot->getAlias(), SQLITE3_TEXT);
 
         $this->setPlot->reset();
@@ -481,10 +466,12 @@ class SQLiteProvider extends DataProvider {
         if (!$result instanceof SQLite3Result) return false;
 
         $this->getPlotCache()->removeObjectFromCache($plot->toString());
-        if ($plot->getMergePlots() !== null) {
+        try {
             foreach ($plot->getMergePlots() as $key => $mergedPlot) {
                 $this->getPlotCache()->removeObjectFromCache($key);
             }
+        } catch (PlotException) {
+            return false;
         }
         return true;
     }
@@ -533,28 +520,19 @@ class SQLiteProvider extends DataProvider {
         return $this->getPlot($plot->getWorldName(), $plot->getX(), $plot->getZ());
     }
 
-    /**
-     * @param BasePlot ...$plots
-     */
-    public function mergePlots(Plot $origin, BasePlot ...$plots) : bool {
-        if ($origin->getMergePlots() === null) return false;
+    public function addMergePlot(Plot $origin, BasePlot $plot) : bool {
+        $this->addMergedPlot->bindValue(":worldName", $origin->getWorldName(), SQLITE3_TEXT);
+        $this->addMergedPlot->bindValue(":originX", $origin->getX(), SQLITE3_INTEGER);
+        $this->addMergedPlot->bindValue(":originZ", $origin->getZ(), SQLITE3_INTEGER);
+        $this->addMergedPlot->bindValue(":mergeX", $plot->getX(), SQLITE3_INTEGER);
+        $this->addMergedPlot->bindValue(":mergeZ", $plot->getZ(), SQLITE3_INTEGER);
 
-        foreach ($plots as $plot) {
-            $this->addMergedPlot->bindValue(":worldName", $origin->getWorldName(), SQLITE3_TEXT);
-            $this->addMergedPlot->bindValue(":originX", $origin->getX(), SQLITE3_INTEGER);
-            $this->addMergedPlot->bindValue(":originZ", $origin->getZ(), SQLITE3_INTEGER);
-            $this->addMergedPlot->bindValue(":mergeX", $plot->getX(), SQLITE3_INTEGER);
-            $this->addMergedPlot->bindValue(":mergeZ", $plot->getZ(), SQLITE3_INTEGER);
+        $this->addMergedPlot->reset();
+        $result = $this->addMergedPlot->execute();
+        if (!$result instanceof SQLite3Result) return false;
 
-            $this->addMergedPlot->reset();
-            $result = $this->addMergedPlot->execute();
-            if (!$result instanceof SQLite3Result) return false;
-        }
-
-        foreach ($plots as $plot) {
-            $mergedPlot = MergePlot::fromBasePlot($plot, $origin->getX(), $origin->getZ());
-            $this->getPlotCache()->cacheObject($mergedPlot->toString(), $mergedPlot);
-        }
+        $mergedPlot = MergePlot::fromBasePlot($plot, $origin->getX(), $origin->getZ());
+        $this->getPlotCache()->cacheObject($mergedPlot->toString(), $mergedPlot);
         $this->getPlotCache()->cacheObject($origin->toString(), $origin);
         return true;
     }
@@ -618,12 +596,8 @@ class SQLiteProvider extends DataProvider {
 
         $plotPlayers = [];
         while ($var = $result->fetchArray(SQLITE3_ASSOC)) {
-            $playerData = $this->getPlayerDataByUUID($var["playerUUID"]);
-            if ($playerData === null) {
-                return null;
-            }
-            $plotPlayer = new PlotPlayer($playerData, $var["state"], $var["addTime"]);
-            $plotPlayers[$playerData->getPlayerUUID()] = $plotPlayer;
+            $plotPlayer = new PlotPlayer($var["playerUUID"], $var["state"], $var["addTime"]);
+            $plotPlayers[$var["playerUUID"]] = $plotPlayer;
         }
         return $plotPlayers;
     }
@@ -632,7 +606,7 @@ class SQLiteProvider extends DataProvider {
      * @return Plot[] | null
      */
     public function getPlotsByPlotPlayer(PlotPlayer $plotPlayer) : ?array {
-        $this->getPlotsByPlotPlayer->bindValue(":playerUUID", $plotPlayer->getPlayerData()->getPlayerUUID(), SQLITE3_TEXT);
+        $this->getPlotsByPlotPlayer->bindValue(":playerUUID", $plotPlayer->getPlayerUUID(), SQLITE3_TEXT);
         $this->getPlotsByPlotPlayer->bindValue(":state", $plotPlayer->getState(), SQLITE3_TEXT);
 
         $this->getPlotsByPlotPlayer->reset();
@@ -654,13 +628,11 @@ class SQLiteProvider extends DataProvider {
     }
 
     public function savePlotPlayer(Plot $plot, PlotPlayer $plotPlayer) : bool {
-        if (!$plot->addPlotPlayer($plotPlayer)) return false;
-
         $this->setPlotPlayer->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
         $this->setPlotPlayer->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
         $this->setPlotPlayer->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
 
-        $this->setPlotPlayer->bindValue(":playerUUID", $plotPlayer->getPlayerData()->getPlayerUUID(), SQLITE3_TEXT);
+        $this->setPlotPlayer->bindValue(":playerUUID", $plotPlayer->getPlayerUUID(), SQLITE3_TEXT);
         $this->setPlotPlayer->bindValue(":state", $plotPlayer->getState(), SQLITE3_TEXT);
         $this->setPlotPlayer->bindValue(":addTime", $plotPlayer->getAddTime(), SQLITE3_INTEGER);
 
@@ -673,8 +645,6 @@ class SQLiteProvider extends DataProvider {
     }
 
     public function deletePlotPlayer(Plot $plot, string $playerUUID) : bool {
-        if (!$plot->removePlotPlayer($playerUUID)) return false;
-
         $this->deletePlotPlayer->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
         $this->deletePlotPlayer->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
         $this->deletePlotPlayer->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
@@ -691,8 +661,7 @@ class SQLiteProvider extends DataProvider {
 
 
     /**
-     * @return BaseFlag[] | null
-     * @throws FlagParseException
+     * @return Flag[] | null
      */
     public function getPlotFlags(Plot $plot) : ?array {
         $this->getPlotFlags->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
@@ -709,15 +678,15 @@ class SQLiteProvider extends DataProvider {
             if ($flag === null) {
                 continue;
             }
-            $flags[$flag->getID()] = $flag->flagOf($flag->parse($var["value"]));
+            try {
+                $flags[$flag->getID()] = $flag->newInstance($flag->parse($var["value"]));
+            } catch (AttributeParseException | AttributeTypeException) {
+            }
         }
         return $flags;
     }
 
-    public function savePlotFlag(Plot $plot, BaseFlag $flag) : bool {
-        if ($flag->getValue() === null) return false;
-        if (!$plot->addFlag($flag)) return false;
-
+    public function savePlotFlag(Plot $plot, Flag $flag) : bool {
         $this->setPlotFlag->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
         $this->setPlotFlag->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
         $this->setPlotFlag->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
@@ -734,8 +703,6 @@ class SQLiteProvider extends DataProvider {
     }
 
     public function deletePlotFlag(Plot $plot, string $flagID) : bool {
-        if (!$plot->removeFlag($flagID)) return false;
-
         $this->deletePlotFlag->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
         $this->deletePlotFlag->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
         $this->deletePlotFlag->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);
@@ -777,8 +744,6 @@ class SQLiteProvider extends DataProvider {
     }
 
     public function savePlotRate(Plot $plot, PlotRate $plotRate) : bool {
-        if (!$plot->addPlotRate($plotRate)) return false;
-
         $this->setPlotRate->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
         $this->setPlotRate->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
         $this->setPlotRate->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);

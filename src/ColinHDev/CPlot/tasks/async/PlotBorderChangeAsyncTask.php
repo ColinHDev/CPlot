@@ -141,7 +141,7 @@ class PlotBorderChangeAsyncTask extends ChunkModifyingAsyncTask {
                 }
             }
 
-            $finishedChunks[$chunkHash] = FastChunkSerializer::serializeWithoutLight($world->getChunk($chunkX, $chunkZ));
+            $finishedChunks[$chunkHash] = FastChunkSerializer::serializeTerrain($world->getChunk($chunkX, $chunkZ));
         }
 
         $this->chunks = serialize($finishedChunks);

@@ -7,6 +7,8 @@ use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlotAPI\plots\PlotPlayer;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\Permission;
 use pocketmine\player\Player;
@@ -31,21 +33,29 @@ class ClaimSubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlot"));
             return;
         }
-        if (!$plot->loadMergePlots()) {
+        try {
+            $plot->loadMergePlots();
+        } catch (PlotException) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadMergedPlotsError"));
             return;
         }
         $senderUUID = $sender->getUniqueId()->toString();
-        if ($plot->getOwnerUUID() !== null) {
-            if ($senderUUID !== $plot->getOwnerUUID()) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimed", [$this->getPlugin()->getProvider()->getPlayerNameByUUID($plot->getOwnerUUID()) ?? "ERROR"]));
+        try {
+            if ($plot->hasPlotOwner()) {
+                if ($plot->isPlotOwner($senderUUID)) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimedBySender"));
+                    return;
+                }
+                $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimed"));
                 return;
             }
-            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimedBySender"));
+        } catch (PlotException) {
+            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadPlotPlayersError"));
             return;
         }
 
-        $claimedPlots = $this->getPlugin()->getProvider()->getPlotsByOwnerUUID($senderUUID);
+        $senderData = new PlotPlayer($senderUUID, PlotPlayer::STATE_OWNER);
+        $claimedPlots = $this->getPlugin()->getProvider()->getPlotsByPlotPlayer($senderData);
         if ($claimedPlots === null) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadClaimedPlotsError"));
             return;
@@ -78,9 +88,8 @@ class ClaimSubcommand extends Subcommand {
             }
         }
 
-        $plot->setOwnerUUID($senderUUID);
-        $plot->setClaimTime((int) (round(microtime(true) * 1000)));
-        if (!$this->getPlugin()->getProvider()->savePlot($plot)) {
+        $plot->addPlotPlayer($senderData);
+        if (!$this->getPlugin()->getProvider()->savePlot($plot) || !$this->getPlugin()->getProvider()->savePlotPlayer($plot, $senderData)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.saveError"));
             return;
         }
@@ -109,7 +118,9 @@ class ClaimSubcommand extends Subcommand {
     }
 
     private function getMaxPlotsOfPlayer(Player $player) : int {
-        if ($player->hasPermission("cplot.claimPlots.unlimited")) return PHP_INT_MAX;
+        if ($player->hasPermission("cplot.claimPlots.unlimited")) {
+            return PHP_INT_MAX;
+        }
 
         $player->recalculatePermissions();
         $permissions = $player->getEffectivePermissions();

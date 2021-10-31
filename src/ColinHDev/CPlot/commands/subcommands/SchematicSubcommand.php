@@ -11,7 +11,6 @@ use pocketmine\player\Player;
 use pocketmine\command\CommandSender;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlotAPI\worlds\Schematic;
-use pocketmine\world\generator\GeneratorManager;
 use pocketmine\world\WorldCreationOptions;
 use pocketmine\Server;
 
@@ -173,15 +172,12 @@ class SchematicSubcommand extends Subcommand {
                     $worldSettings["schematicType"] = SchematicTypes::TYPE_PLOT;
                 }
                 $options = new WorldCreationOptions();
-                $options = $options->setGeneratorClass(GeneratorManager::getInstance()->getGenerator(SchematicGenerator::GENERATOR_NAME));
-                $options = $options->setGeneratorOptions(json_encode($worldSettings));
+                $options->setGeneratorClass(SchematicGenerator::class);
+                $options->setGeneratorOptions(json_encode($worldSettings));
+                $options->setSpawnPosition(new Vector3(0, $worldSettings["groundSize"] + 1, 0));
                 if (!$this->getPlugin()->getServer()->getWorldManager()->generateWorld($args[1], $options)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.generateError"));
                     break;
-                }
-                $world = $this->getPlugin()->getServer()->getWorldManager()->getWorldByName($args[1]);
-                if ($world !== null) {
-                    $world->setSpawnLocation(new Vector3(0, $worldSettings["groundSize"] + 1, 0));
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.success", [$args[1]]));
                 break;

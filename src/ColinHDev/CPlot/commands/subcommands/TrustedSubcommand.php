@@ -4,7 +4,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\plots\PlotPlayer;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
@@ -25,21 +25,23 @@ class TrustedSubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trusted.noPlot"));
             return;
         }
-        if (!$plot->loadPlotPlayers()) {
+
+        try {
+            $trustedPlayers = $plot->getPlotTrusted();
+        } catch (PlotException) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trusted.loadPlotPlayersError"));
             return;
         }
 
-        $trustedPlayers = [];
-        foreach ($plot->getPlotPlayers() as $plotPlayer) {
-            if ($plotPlayer->getState() !== PlotPlayer::STATE_TRUSTED) continue;
+        $trustedPlayerData = [];
+        foreach ($trustedPlayers as $plotPlayer) {
             [$d, $m, $y, $h, $min, $s] = explode(".", date("d.m.Y.H.i.s", (int) (round($plotPlayer->getAddTime() / 1000))));
-            $trustedPlayers[] = $this->translateString("trusted.success.list", [
+            $trustedPlayerData[] = $this->translateString("trusted.success.list", [
                 $this->getPlugin()->getProvider()->getPlayerDataByUUID($plotPlayer->getPlayerUUID())?->getPlayerName() ?? "ERROR",
                 $this->translateString("trusted.success.list.addTime.format", [$d, $m, $y, $h, $min, $s])
             ]);
         }
-        if (count($trustedPlayers) === 0) {
+        if (count($trustedPlayerData) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trusted.noTrustedPlayers"));
             return;
         }
@@ -49,7 +51,7 @@ class TrustedSubcommand extends Subcommand {
             $this->translateString(
                 "trusted.success",
                 [
-                    implode($this->translateString("trusted.success.list.separator"), $trustedPlayers)
+                    implode($this->translateString("trusted.success.list.separator"), $trustedPlayerData)
                 ]
             )
         );

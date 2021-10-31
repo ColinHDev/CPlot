@@ -11,7 +11,9 @@ use pocketmine\event\player\PlayerPreLoginEvent;
 class PlayerPreLoginListener implements Listener {
 
     public function onPlayerPreLogin(PlayerPreLoginEvent $event) : void {
-        if ($event->isCancelled()) return;
+        if ($event->isCancelled()) {
+            return;
+        }
 
         $playerInfo = $event->getPlayerInfo();
         $player = new PlayerData(
@@ -19,7 +21,9 @@ class PlayerPreLoginListener implements Listener {
             $playerInfo->getUsername(),
             (int) (round(microtime(true) * 1000))
         );
-        if (CPlot::getInstance()->getProvider()->setPlayerData($player)) return;
+        if (CPlot::getInstance()->getProvider()->setPlayerData($player)) {
+            return;
+        }
 
         $event->setKickReason(
             PlayerPreLoginEvent::KICK_REASON_PLUGIN,

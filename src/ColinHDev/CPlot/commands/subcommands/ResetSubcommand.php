@@ -7,8 +7,8 @@ use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotResetAsyncTask;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
-use ColinHDev\CPlotAPI\plots\flags\FlagManager;
 use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
@@ -32,28 +32,36 @@ class ResetSubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->translateString("reset.noPlot"));
             return;
         }
+        try {
+            $plot->loadMergePlots();
+        } catch (PlotException) {
+            $sender->sendMessage($this->getPrefix() . $this->translateString("reset.loadMergedPlotsError"));
+            return;
+        }
         if (!$sender->hasPermission("cplot.admin.reset")) {
-            if ($plot->getOwnerUUID() === null) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("reset.noPlotOwner"));
-                return;
-            } else if ($plot->getOwnerUUID() !== $sender->getUniqueId()->toString()) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("reset.notPlotOwner", [$this->getPlugin()->getProvider()->getPlayerNameByUUID($plot->getOwnerUUID()) ?? "ERROR"]));
+            try {
+                if (!$plot->hasPlotOwner()) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("reset.noPlotOwner"));
+                    return;
+                }
+                if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("reset.notPlotOwner"));
+                    return;
+                }
+            } catch (PlotException) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("reset.loadPlotPlayersError"));
                 return;
             }
         }
 
-        if (!$plot->loadFlags()) {
+        try {
+            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+        } catch (PlotException) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("reset.loadFlagsError"));
             return;
         }
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("reset.serverPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
-            return;
-        }
-
-        if (!$plot->loadMergePlots()) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("reset.loadMergedPlotsError"));
+            $sender->sendMessage($this->getPrefix() . $this->translateString("reset.serverPlotFlag", [$flag->getID()]));
             return;
         }
 
@@ -94,8 +102,9 @@ class ResetSubcommand extends Subcommand {
                 Server::getInstance()->getLogger()->debug(
                     "Resetting plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
-                if (!$sender->isConnected()) return;
-                $sender->sendMessage($this->getPrefix() . $this->translateString("reset.finish", [$elapsedTimeString]));
+                if ($sender->isConnected()) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("reset.finish", [$elapsedTimeString]));
+                }
             }
         );
         if (!$this->getPlugin()->getProvider()->deletePlot($plot)) {

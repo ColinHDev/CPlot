@@ -4,6 +4,8 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlotAPI\plots\PlotPlayer;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
@@ -18,7 +20,7 @@ class VisitSubcommand extends Subcommand {
         switch (count($args)) {
             case 0:
                 /** @var Plot[] | null $plots */
-                $plots = $this->getPlugin()->getProvider()->getPlotsByOwnerUUID($sender->getUniqueId()->toString());
+                $plots = $this->getPlugin()->getProvider()->getPlotsByPlotPlayer(new PlotPlayer($sender->getUniqueId()->toString(), PlotPlayer::STATE_OWNER));
                 if ($plots === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.loadPlotsError"));
                     return;
@@ -29,17 +31,19 @@ class VisitSubcommand extends Subcommand {
                 }
                 /** @var Plot $plot */
                 $plot = $plots[0];
-                if (!$plot->teleportTo($sender)) {
+                try {
+                    $plot->teleportTo($sender);
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+                } catch (PlotException) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
                     return;
                 }
-                $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
                 break;
 
             case 1:
                 if (is_numeric($args[0])) {
                     /** @var Plot[] | null $plots */
-                    $plots = $this->getPlugin()->getProvider()->getPlotsByOwnerUUID($sender->getUniqueId()->toString());
+                    $plots = $this->getPlugin()->getProvider()->getPlotsByPlotPlayer(new PlotPlayer($sender->getUniqueId()->toString(), PlotPlayer::STATE_OWNER));
                     if ($plots === null) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.loadPlotsError"));
                         return;
@@ -55,11 +59,13 @@ class VisitSubcommand extends Subcommand {
                     }
                     /** @var Plot $plot */
                     $plot = $plots[($plotNumber - 1)];
-                    if (!$plot->teleportTo($sender)) {
+                    try {
+                        $plot->teleportTo($sender);
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.success", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+                    } catch (PlotException) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.teleportError", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
                         return;
                     }
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.success", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
                     break;
 
                 } else {
@@ -75,7 +81,7 @@ class VisitSubcommand extends Subcommand {
 
                     if ($playerUUID !== null) {
                         /** @var Plot[] | null $plots */
-                        $plots = $this->getPlugin()->getProvider()->getPlotsByOwnerUUID($playerUUID);
+                        $plots = $this->getPlugin()->getProvider()->getPlotsByPlotPlayer(new PlotPlayer($playerUUID, PlotPlayer::STATE_OWNER));
                         if ($plots === null) {
                             $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.loadPlotsError"));
                             return;
@@ -86,11 +92,13 @@ class VisitSubcommand extends Subcommand {
                         }
                         /** @var Plot $plot */
                         $plot = $plots[0];
-                        if (!$plot->teleportTo($sender)) {
+                        try {
+                            $plot->teleportTo($sender);
+                            $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
+                        } catch (PlotException) {
                             $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
                             return;
                         }
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
                         break;
 
                     } else {
@@ -101,11 +109,13 @@ class VisitSubcommand extends Subcommand {
                             $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.noPlot", [$alias]));
                             break;
                         }
-                        if (!$plot->teleportTo($sender)) {
+                        try {
+                            $plot->teleportTo($sender);
+                            $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]));
+                        } catch (PlotException) {
                             $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]));
                             return;
                         }
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]));
                         break;
                     }
                 }
@@ -126,7 +136,7 @@ class VisitSubcommand extends Subcommand {
                 }
 
                 /** @var Plot[] | null $plots */
-                $plots = $this->getPlugin()->getProvider()->getPlotsByOwnerUUID($playerUUID);
+                $plots = $this->getPlugin()->getProvider()->getPlotsByPlotPlayer(new PlotPlayer($playerUUID, PlotPlayer::STATE_OWNER));
                 if ($plots === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.loadPlotsError"));
                     return;
@@ -135,18 +145,20 @@ class VisitSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.noPlots", [$playerName]));
                     return;
                 }
-                $plotNumber = (int) $args[0];
+                $plotNumber = (int) $args[1];
                 if ($plotNumber > count($plots)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.noPlot", [$playerName, $plotNumber]));
                     return;
                 }
                 /** @var Plot $plot */
                 $plot = $plots[($plotNumber - 1)];
-                if (!$plot->teleportTo($sender)) {
+                try {
+                    $plot->teleportTo($sender);
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.success", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
+                } catch (PlotException) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.teleportError", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
                     return;
                 }
-                $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.success", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
                 break;
         }
     }

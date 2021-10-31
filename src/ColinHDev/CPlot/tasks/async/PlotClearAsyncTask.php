@@ -106,7 +106,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
         $plotCount = count($plots);
 
         $schematicRoad = null;
-        if ($plot->getOwnerUUID() === null) {
+        if (!$plot->hasPlotOwner()) {
             if ($worldSettings->getRoadSchematic() !== "default") {
                 $schematicRoad = new Schematic($worldSettings->getRoadSchematic(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getRoadSchematic() . "." . Schematic::FILE_EXTENSION);
                 if (!$schematicRoad->loadFromFile()) {
@@ -205,7 +205,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
                             }
                         }
                     } else {
-                        if ($plot->getOwnerUUID() === null) {
+                        if (!$plot->hasPlotOwner()) {
                             for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                                 if ($y === $world->getMinY()) {
                                     $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
@@ -261,7 +261,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
                         if ($y === $world->getMinY()) {
                             $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
                         } else if ($y === $worldSettings->getGroundSize() + 1) {
-                            if ($plot->getOwnerUUID() === null) {
+                            if (!$plot->hasPlotOwner()) {
                                 $fullBlock = $worldSettings->getBorderBlock()->getFullId();
                             } else {
                                 $fullBlock = $worldSettings->getBorderBlockOnClaim()->getFullId();
@@ -329,7 +329,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
                 }
             }
 
-            $finishedChunks[$chunkHash] = FastChunkSerializer::serializeWithoutLight($world->getChunk($chunkX, $chunkZ));
+            $finishedChunks[$chunkHash] = FastChunkSerializer::serializeTerrain($world->getChunk($chunkX, $chunkZ));
         }
 
         $this->chunks = serialize($finishedChunks);

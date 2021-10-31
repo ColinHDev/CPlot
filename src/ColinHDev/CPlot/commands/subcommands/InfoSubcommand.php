@@ -4,7 +4,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\plots\PlotPlayer;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
@@ -29,16 +29,29 @@ class InfoSubcommand extends Subcommand {
 
         $sender->sendMessage($this->getPrefix() . $this->translateString("info.plot", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
 
-        if ($plot->getOwnerUUID() !== null) {
-            if ($plot->getClaimTime() !== null) {
-                [$d, $m, $y, $h, $min, $s] = explode(".", date("d.m.Y.H.i.s", (int) (round($plot->getClaimTime() / 1000))));
-                $time = $this->translateString("info.owner.claimTime.format", [$d, $m, $y, $h, $min, $s]);
-            } else {
-                $time = "NOT FOUND";
+        try {
+            $plotOwnerData = [];
+            foreach ($plot->getPlotOwners() as $plotOwner) {
+                [$d, $m, $y, $h, $min, $s] = explode(".", date("d.m.Y.H.i.s", (int) (round($plotOwner->getAddTime() / 1000))));
+                $plotOwnerData[] = $this->translateString("info.owners.list", [
+                    $this->getPlugin()->getProvider()->getPlayerDataByUUID($plotOwner->getPlayerUUID())?->getPlayerName() ?? "ERROR",
+                    $this->translateString("info.owners.time.format", [$d, $m, $y, $h, $min, $s])
+                ]);
             }
-            $sender->sendMessage($this->translateString("info.owner", [$this->getPlugin()->getProvider()->getPlayerNameByUUID($plot->getOwnerUUID()), $time]));
-        } else {
-            $sender->sendMessage($this->translateString("info.owner.none"));
+            if (count($plotOwnerData) === 0) {
+                $sender->sendMessage($this->translateString("info.owners.none"));
+            } else {
+                $sender->sendMessage(
+                    $this->translateString(
+                        "info.owners",
+                        [
+                            implode($this->translateString("info.owners.list.separator"), $plotOwnerData)
+                        ]
+                    )
+                );
+            }
+        } catch (PlotException) {
+            $sender->sendMessage($this->translateString("info.loadPlotPlayersError"));
         }
 
         if ($plot->getAlias() !== null) {
@@ -47,72 +60,59 @@ class InfoSubcommand extends Subcommand {
             $sender->sendMessage($this->translateString("info.plotAlias.none"));
         }
 
-        if ($plot->loadMergePlots()) {
+        try {
             $mergedPlotsCount = count($plot->getMergePlots());
             if ($mergedPlotsCount > 0) {
                 $sender->sendMessage($this->translateString("info.merges", [$mergedPlotsCount]));
             } else {
                 $sender->sendMessage($this->translateString("info.merges.none"));
             }
-        } else {
+        } catch (PlotException) {
             $sender->sendMessage($this->translateString("info.loadMergedPlotsError"));
         }
 
-        if ($plot->loadPlotPlayers()) {
-            $trustedCount = 0;
-            $helpersCount = 0;
-            $deniedCount = 0;
-            foreach ($plot->getPlotPlayers() as $plotPlayer) {
-                switch ($plotPlayer->getState()) {
-                    case PlotPlayer::STATE_TRUSTED:
-                        $trustedCount++;
-                        break;
-                    case PlotPlayer::STATE_HELPER:
-                        $helpersCount++;
-                        break;
-                    case PlotPlayer::STATE_DENIED:
-                        $deniedCount++;
-                        break;
-                }
-            }
+        try {
+            $trustedCount = count($plot->getPlotTrusted());
             if ($trustedCount > 0) {
                 $sender->sendMessage($this->translateString("info.trusted", [$trustedCount]));
             } else {
                 $sender->sendMessage($this->translateString("info.trusted.none"));
             }
+            $helpersCount = count($plot->getPlotHelpers());
             if ($helpersCount > 0) {
                 $sender->sendMessage($this->translateString("info.helpers", [$helpersCount]));
             } else {
                 $sender->sendMessage($this->translateString("info.helpers.none"));
             }
+            $deniedCount = count($plot->getPlotDenied());
             if ($deniedCount > 0) {
                 $sender->sendMessage($this->translateString("info.denied", [$deniedCount]));
             } else {
                 $sender->sendMessage($this->translateString("info.denied.none"));
             }
-        } else {
-            $sender->sendMessage($this->translateString("info.loadFlagsError"));
+        } catch (PlotException) {
+            $sender->sendMessage($this->translateString("info.loadPlotPlayersError"));
         }
 
-        if ($plot->loadFlags()) {
+        try {
             $flagsCount = count($plot->getFlags());
             if ($flagsCount > 0) {
                 $sender->sendMessage($this->translateString("info.flags", [$flagsCount]));
             } else {
                 $sender->sendMessage($this->translateString("info.flags.none"));
             }
-        } else {
+        } catch (PlotException) {
             $sender->sendMessage($this->translateString("info.loadFlagsError"));
         }
 
-        if ($plot->loadPlotRates()) {
+        try {
             $ratesCount = count($plot->getPlotRates());
             if ($ratesCount > 0) {
                 $sender->sendMessage($this->translateString("info.rates", [$ratesCount]));
             } else {
                 $sender->sendMessage($this->translateString("info.rates.none"));
             }
-        } else {
+        } catch (PlotException) {
             $sender->sendMessage($this->translateString("info.loadRatesError"));
         }
     }

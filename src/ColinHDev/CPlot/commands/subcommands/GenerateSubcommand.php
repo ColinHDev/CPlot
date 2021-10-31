@@ -3,7 +3,6 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use pocketmine\command\CommandSender;
-use pocketmine\world\generator\GeneratorManager;
 use pocketmine\world\WorldCreationOptions;
 use pocketmine\math\Vector3;
 use ColinHDev\CPlot\commands\Subcommand;
@@ -23,9 +22,11 @@ class GenerateSubcommand extends Subcommand {
             return;
         }
 
-        $generator = GeneratorManager::getInstance()->getGenerator(PlotGenerator::GENERATOR_NAME, true);
+        $options = new WorldCreationOptions();
+        $options->setGeneratorClass(PlotGenerator::class);
         $worldSettings = WorldSettings::fromConfig();
-        $options = WorldCreationOptions::create()->setGeneratorClass($generator)->setGeneratorOptions(json_encode($worldSettings->toArray()));
+        $options->setGeneratorOptions(json_encode($worldSettings->toArray()));
+        $options->setSpawnPosition(new Vector3(0, $worldSettings->getGroundSize() + 1, 0));
         if (!$this->getPlugin()->getServer()->getWorldManager()->generateWorld($worldName, $options)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("generate.generateError"));
             return;
@@ -33,10 +34,6 @@ class GenerateSubcommand extends Subcommand {
         if (!$this->getPlugin()->getProvider()->addWorld($worldName, $worldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("generate.saveError"));
             return;
-        }
-        $world = $this->getPlugin()->getServer()->getWorldManager()->getWorldByName($worldName);
-        if ($world !== null) {
-            $world->setSpawnLocation(new Vector3(0, $worldSettings->getGroundSize() + 1, 0));
         }
         $sender->sendMessage($this->getPrefix() . $this->translateString("generate.success", [$worldName]));
     }

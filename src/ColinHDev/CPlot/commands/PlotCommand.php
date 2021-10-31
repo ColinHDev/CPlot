@@ -52,8 +52,8 @@ class PlotCommand extends Command {
         $this->setPermission("cplot.command.plot");
         $this->setPermissionMessage($resourceManager->getPrefix() . $commandData["permissionMessage"]);
 
-        $this->loadSubcommand(new AutoSubcommand($resourceManager->getCommandData("auto"), "cplot.subcommand.auto"));
         $this->loadSubcommand(new AddSubcommand($resourceManager->getCommandData("add"), "cplot.subcommand.add"));
+        $this->loadSubcommand(new AutoSubcommand($resourceManager->getCommandData("auto"), "cplot.subcommand.auto"));
         $this->loadSubcommand(new BorderSubcommand($resourceManager->getCommandData("border"), "cplot.subcommand.border"));
         $this->loadSubcommand(new ClaimSubcommand($resourceManager->getCommandData("claim"), "cplot.subcommand.claim"));
         $this->loadSubcommand(new ClearSubcommand($resourceManager->getCommandData("clear"), "cplot.subcommand.clear"));

@@ -17,6 +17,10 @@ interface SettingIDs {
 
     public const SETTING_INFORM_PLOT_RATE_ADD = "inform_plot_rate_add";
 
+    public const BASE_SETTING_WARN_FLAG = "warn_flag_";
+    public const BASE_SETTING_WARN_CHANGE_FLAG = "warn_change_flag_";
+    public const BASE_SETTING_TELEPORT_CHANGE_FLAG = "teleport_change_flag_";
+
     public const SETTING_WARN_FLAG_ITEM_DROP = "warn_flag_item_drop";
     public const SETTING_WARN_CHANGE_FLAG_ITEM_DROP = "warn_change_flag_item_drop";
     public const SETTING_TELEPORT_CHANGE_FLAG_ITEM_DROP = "teleport_change_flag_item_drop";

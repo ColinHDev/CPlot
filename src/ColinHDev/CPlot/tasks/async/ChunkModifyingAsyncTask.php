@@ -24,7 +24,7 @@ abstract class ChunkModifyingAsyncTask extends ChunkFetchingAsyncTask {
             World::getXZ($chunkHash, $chunkX, $chunkZ);
             $chunk = $world->loadChunk($chunkX, $chunkZ);
             if ($chunk === null) continue;
-            $chunks[$chunkHash] = FastChunkSerializer::serializeWithoutLight($chunk);
+            $chunks[$chunkHash] = FastChunkSerializer::serializeTerrain($chunk);
         }
 
         $this->chunks = serialize($chunks);
@@ -34,7 +34,7 @@ abstract class ChunkModifyingAsyncTask extends ChunkFetchingAsyncTask {
         $world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
         foreach (unserialize($this->chunks) as $hash => $chunk) {
             World::getXZ($hash, $chunkX, $chunkZ);
-            $world->setChunk($chunkX, $chunkZ, FastChunkSerializer::deserialize($chunk), false);
+            $world->setChunk($chunkX, $chunkZ, FastChunkSerializer::deserializeTerrain($chunk));
         }
         parent::onCompletion();
     }

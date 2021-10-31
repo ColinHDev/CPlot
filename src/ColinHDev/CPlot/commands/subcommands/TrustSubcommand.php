@@ -3,11 +3,12 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
-use ColinHDev\CPlotAPI\plots\flags\FlagManager;
 use ColinHDev\CPlotAPI\players\settings\SettingIDs;
+use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
+use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\Plot;
 use ColinHDev\CPlotAPI\plots\PlotPlayer;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
@@ -23,8 +24,8 @@ class TrustSubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
             return;
         }
+
         $player = null;
-        $playerData = null;
         if ($args[0] !== "*") {
             $player = $this->getPlugin()->getServer()->getPlayerByPrefix($args[0]);
             if ($player instanceof Player) {
@@ -60,53 +61,59 @@ class TrustSubcommand extends Subcommand {
             return;
         }
 
-        if ($plot->getOwnerUUID() === null) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("trust.noPlotOwner"));
+        try {
+            if ($plot->hasPlotOwner() === null) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("trust.noPlotOwner"));
+                return;
+            }
+        } catch (PlotException) {
+            $sender->sendMessage($this->getPrefix() . $this->translateString("trust.loadPlotPlayersError"));
             return;
         }
         if (!$sender->hasPermission("cplot.admin.trust")) {
-            if ($plot->getOwnerUUID() !== $sender->getUniqueId()->toString()) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("trust.notPlotOwner", [$this->getPlugin()->getProvider()->getPlayerNameByUUID($plot->getOwnerUUID()) ?? "ERROR"]));
+            if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("trust.notPlotOwner"));
                 return;
             }
         }
 
-        if (!$plot->loadFlags()) {
+        try {
+            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+        } catch (PlotException) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trust.loadFlagsError"));
             return;
         }
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("trust.serverPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
+            $sender->sendMessage($this->getPrefix() . $this->translateString("trust.serverPlotFlag", [$flag->getID()]));
             return;
         }
 
-        if (!$plot->loadPlotPlayers()) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("trust.loadPlotPlayersError"));
-            return;
-        }
-        foreach ($plot->getPlotPlayers() as $plotPlayer) {
-            if ($playerUUID !== $plotPlayer->getPlayerUUID()) continue;
-            if ($plotPlayer->getState() !== PlotPlayer::STATE_TRUSTED) break;
+        if ($plot->isPlotTrustedExact($playerUUID)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trust.playerAlreadyTrusted", [$playerName]));
             return;
         }
 
         $plotPlayer = new PlotPlayer($playerUUID, PlotPlayer::STATE_TRUSTED);
+        $plot->addPlotPlayer($plotPlayer);
         if (!$this->getPlugin()->getProvider()->savePlotPlayer($plot, $plotPlayer)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trust.saveError"));
             return;
         }
         $sender->sendMessage($this->getPrefix() . $this->translateString("trust.success", [$playerName]));
 
-        if ($playerUUID === "*") return;
-        if ($player === null) return;
-        if ($playerData === null) {
-            $playerData = $this->getPlugin()->getProvider()->getPlayerDataByName($playerName);
+        if ($player instanceof Player) {
+            $playerData = $this->getPlugin()->getProvider()->getPlayerDataByUUID($playerUUID);
+            if ($playerData === null) {
+                return;
+            }
+            try {
+                $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_TRUSTED_ADD);
+            } catch (PlayerDataException) {
+                return;
+            }
+            if ($setting->getValue() === true) {
+                $player->sendMessage($this->getPrefix() . $this->translateString("trust.success.player", [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+            }
         }
-        if (!$playerData->loadSettings()) return;
-        $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_TRUSTED_ADD);
-        if ($setting === null || $setting->getValueNonNull() === false) return;
-        $player->sendMessage($this->getPrefix() . $this->translateString("trust.success.player", [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
     }
 }

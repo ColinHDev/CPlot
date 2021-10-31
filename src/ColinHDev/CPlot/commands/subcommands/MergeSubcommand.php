@@ -7,7 +7,7 @@ use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
-use ColinHDev\CPlotAPI\plots\flags\FlagManager;
+use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
 use pocketmine\math\Facing;
 use pocketmine\player\Player;
@@ -32,23 +32,31 @@ class MergeSubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.noPlot"));
             return;
         }
-        if ($plot->getOwnerUUID() === null) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.noPlotOwner"));
+
+        try {
+            if ($plot->hasPlotOwner() === null) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("merge.noPlotOwner"));
+                return;
+            }
+        } catch (PlotException) {
+            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.loadPlotPlayersError"));
             return;
         }
         if (!$sender->hasPermission("cplot.admin.merge")) {
-            if ($plot->getOwnerUUID() !== $sender->getUniqueId()->toString()) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notPlotOwner", [$this->getPlugin()->getProvider()->getPlayerNameByUUID($plot->getOwnerUUID()) ?? "ERROR"]));
+            if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notPlotOwner"));
                 return;
             }
         }
-        if (!$plot->loadFlags()) {
+
+        try {
+            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+        } catch (PlotException) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.loadFlagsError"));
             return;
         }
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.serverPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
+            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.serverPlotFlag", [$flag->getID()]));
             return;
         }
 
@@ -78,26 +86,43 @@ class MergeSubcommand extends Subcommand {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.alreadyMerged"));
             return;
         }
-        if ($plot->getOwnerUUID() !== $plotToMerge->getOwnerUUID()) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notSamePlotOwner"));
+        try {
+            $hasSameOwner = false;
+            foreach ($plotToMerge->getPlotOwners() as $plotOwner) {
+                if ($plot->isPlotOwner($plotOwner->getPlayerUUID())) {
+                    $hasSameOwner = true;
+                    break;
+                }
+            }
+            if (!$hasSameOwner) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notSamePlotOwner"));
+                return;
+            }
+        } catch (PlotException) {
+            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.loadPlotPlayersOfSecondPlotError"));
             return;
         }
 
-        if (!$plotToMerge->loadFlags()) {
+        try {
+            $flag = $plotToMerge->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+        } catch (PlotException) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.secondPlotLoadFlagsError"));
             return;
         }
-        $flag = $plotToMerge->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.secondPlotServerPlotFlag", [$flag->getID() ?? FlagIDs::FLAG_SERVER_PLOT]));
+            $sender->sendMessage($this->getPrefix() . $this->translateString("merge.secondPlotServerPlotFlag", [$flag->getID()]));
             return;
         }
 
-        if (!$plot->loadMergePlots()) {
+        try {
+            $plot->loadMergePlots();
+        } catch (PlotException) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.loadMergedPlotsError"));
             return;
         }
-        if (!$plotToMerge->loadMergePlots()) {
+        try {
+            $plotToMerge->loadMergePlots();
+        } catch (PlotException) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.loadMergedPlotsOfSecondPlotError"));
             return;
         }
@@ -139,11 +164,14 @@ class MergeSubcommand extends Subcommand {
                 Server::getInstance()->getLogger()->debug(
                     "Merging plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
-                if (!$sender->isConnected()) return;
-                $sender->sendMessage($this->getPrefix() . $this->translateString("merge.finish", [$elapsedTimeString]));
+                if ($sender->isConnected()) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("merge.finish", [$elapsedTimeString]));
+                }
             }
         );
-        if (!$plot->merge($plotToMerge)) {
+        try {
+            $plot->merge($plotToMerge);
+        } catch (PlotException) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.saveError"));
             return;
         }
