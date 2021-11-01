@@ -10,10 +10,10 @@ use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
  */
 abstract class BooleanAttribute extends BaseAttribute {
 
-    /** @var string[] */
-    public const TRUE_VALUES = ["1", "y", "yes", "allow", "true"];
-    /** @var string[] */
-    public const FALSE_VALUES = ["0", "no", "deny", "disallow", "false"];
+    /** @var array{true, string} */
+    public const TRUE_VALUES = [true, "1", "y", "yes", "allow", "true"];
+    /** @var array{false, string} */
+    public const FALSE_VALUES = [false, "0", "no", "deny", "disallow", "false"];
 
     /**
      * @param bool $value
