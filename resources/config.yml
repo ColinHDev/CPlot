@@ -71,8 +71,8 @@ flag:
     message: ""
 
     # Define the default value of the spawn flag.
-    # default: "-1;1;16;180;0"
-    spawn: "-1;1;16;180;0"
+    # default: "16;1;-1;0;0"
+    spawn: "16;1;-1;0;0"
 
     # Define the default value of the item_drop flag.
     # default: "true"
