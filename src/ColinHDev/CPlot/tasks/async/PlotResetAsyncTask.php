@@ -35,8 +35,8 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
 
         $plotAreas = $this->calculateBasePlotAreas($worldSettings, $plot);
         $roadAreas = $this->calculateMergeRoadAreas($worldSettings, $plot);
-        $borderAreasToChange = $this->calculatePlotBorderAreas($worldSettings, $plot);
-        $borderAreasToReset = $this->calculatePlotBorderExtensionAreas($worldSettings, $plot);
+        $borderAreasToChange = $this->calculateIndividualPlotBorderAreas($worldSettings, $plot);
+        $borderAreasToReset = $this->calculateIndividualPlotBorderExtensionAreas($worldSettings, $plot);
 
         $chunks = [];
         foreach ($plotAreas as $area) {
