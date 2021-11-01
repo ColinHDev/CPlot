@@ -4,6 +4,9 @@ namespace ColinHDev\CPlotAPI\plots;
 
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\provider\cache\Cacheable;
+use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
+use ColinHDev\CPlotAPI\plots\flags\FlagManager;
+use pocketmine\entity\Location;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
@@ -45,25 +48,27 @@ class BasePlot implements Cacheable {
 
     public function teleportTo(Player $player, bool $toPlotCenter = false) : bool {
         $worldSettings = CPlot::getInstance()->getProvider()->getWorld($this->worldName);
-        if ($worldSettings === null) return false;
-
-        $vector = $this->getPosition();
-        if ($toPlotCenter) {
-            $vector->x += floor($worldSettings->getPlotSize() / 2);
-        } else {
-            $vector->x -= 1;
-        }
-        $vector->y += 1;
-        $vector->z += floor($worldSettings->getPlotSize() / 2);
-
-        $world = $this->getWorld();
-        if ($world === null) {
+        if ($worldSettings === null) {
             return false;
         }
 
-        return $player->teleport(
-            Position::fromObject($vector, $world)
-        );
+        $flag = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SPAWN);
+        $relativeSpawnLocation = $flag->getValue();
+        if ($relativeSpawnLocation instanceof Location) {
+            $world = $this->getWorld();
+            if ($world === null) {
+                return false;
+            }
+            return $player->teleport(
+                Location::fromObject(
+                    $relativeSpawnLocation->addVector($this->getPosition()),
+                    $world,
+                    $relativeSpawnLocation->getYaw(),
+                    $relativeSpawnLocation->getPitch()
+                )
+            );
+        }
+        return false;
     }
 
     public function getSide(int $side, int $step = 1) : ?self {
