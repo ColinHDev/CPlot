@@ -17,7 +17,17 @@ abstract class ArrayAttribute extends BaseAttribute {
      * @throws AttributeTypeException
      */
     public function merge(mixed $value) : ArrayAttribute {
-        return new static(array_merge($this->value, $value));
+        $values = $this->value;
+        foreach ($value as $newValue) {
+            $newValueString = $this->toString([$newValue]);
+            foreach ($values as $oldValue) {
+                if ($this->toString([$oldValue]) === $newValueString) {
+                    continue 2;
+                }
+            }
+            $values[] = $newValue;
+        }
+        return new static($values);
     }
 
     /**
