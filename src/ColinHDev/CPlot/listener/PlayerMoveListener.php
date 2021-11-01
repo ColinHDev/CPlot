@@ -40,7 +40,7 @@ class PlayerMoveListener implements Listener {
                             $event->cancel();
                             return;
                         } else {
-                            $plotTo->teleportTo($player);
+                            $plotTo->teleportTo($player, false, false);
                             return;
                         }
                     }
