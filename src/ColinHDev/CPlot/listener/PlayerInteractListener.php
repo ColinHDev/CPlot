@@ -65,7 +65,7 @@ class PlayerInteractListener implements Listener {
                 }
 
                 /** @var UseFlag | null $flag */
-                $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_BREAK);
+                $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_USE);
                 /** @var Block $value */
                 foreach ($flag->getValue() as $value) {
                     if ($block->isSameType($value)) {
