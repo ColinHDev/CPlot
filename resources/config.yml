@@ -121,34 +121,34 @@ flag:
 
 # Define the default values of all settings.
 setting:
-    # Define the default value of the inform_add_trusted setting.
+    # Define the default value of the inform_trusted_add setting.
     # default: "true"
-    inform_add_trusted: "true"
-    # Define the default value of the inform_remove_trusted setting.
+    inform_trusted_add: "true"
+    # Define the default value of the inform_trusted_remove setting.
     # default: "true"
-    inform_remove_trusted: "true"
+    inform_trusted_remove: "true"
 
-    # Define the default value of the inform_add_helper setting.
+    # Define the default value of the inform_helper_add setting.
     # default: "true"
-    inform_add_helper: "true"
-    # Define the default value of the inform_remove_helper setting.
+    inform_helper_add: "true"
+    # Define the default value of the inform_helper_remove setting.
     # default: "true"
-    inform_remove_helper: "true"
+    inform_helper_remove: "true"
 
-    # Define the default value of the inform_add_denied setting.
+    # Define the default value of the inform_denied_add setting.
     # default: "true"
-    inform_add_denied: "true"
-    # Define the default value of the inform_remove_denied setting.
+    inform_denied_add: "true"
+    # Define the default value of the inform_denied_remove setting.
     # default: "true"
-    inform_remove_denied: "true"
+    inform_denied_remove: "true"
 
     # Define the default value of the inform_plot_inactive setting.
     # default: "false"
     inform_plot_inactive: "false"
 
-    # Define the default value of the inform_add_plot_rate setting.
+    # Define the default value of the inform_plot_rate_add setting.
     # default: "true"
-    inform_add_plot_rate: "true"
+    inform_plot_rate_add: "true"
 
     # Define the default value of the warn_flag_item_drop setting.
     # default: "[false]"
