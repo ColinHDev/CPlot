@@ -121,7 +121,7 @@ class PlayerMoveListener implements Listener {
                             $owner?->sendMessage(
                                 ResourceManager::getInstance()->getPrefix() .
                                 ResourceManager::getInstance()->translateString(
-                                    "player.move.plotLeave.flag.plot_enter",
+                                    "player.move.plotEnter.flag.plot_enter",
                                     [$player->getName(), $plotTo->getWorldName(), $plotTo->getX(), $plotTo->getZ()]
                                 )
                             );
