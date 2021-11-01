@@ -427,8 +427,8 @@ class Plot extends BasePlot {
     /**
      * @throws PlotException
      */
-    public function teleportTo(Player $player, bool $toPlotCenter = false) : bool {
-        if (!$toPlotCenter) {
+    public function teleportTo(Player $player, bool $toPlotCenter = false, bool $checkSpawnFlag = true) : bool {
+        if (!$toPlotCenter && $checkSpawnFlag) {
             $flag = $this->getFlagNonNullByID(FlagIDs::FLAG_SPAWN);
             $relativeSpawnLocation = $flag->getValue();
             if ($relativeSpawnLocation instanceof Location) {
