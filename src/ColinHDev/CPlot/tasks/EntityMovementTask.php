@@ -6,6 +6,7 @@ use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\Plot;
 use pocketmine\entity\Human;
+use pocketmine\entity\object\ItemEntity;
 use pocketmine\math\Vector3;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
@@ -34,7 +35,7 @@ class EntityMovementTask extends Task {
             }
 
             foreach ($world->updateEntities as $entity) {
-                if ($entity instanceof Human) {
+                if ($entity instanceof Human || $entity instanceof ItemEntity) {
                     continue;
                 }
 
