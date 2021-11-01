@@ -23,6 +23,10 @@ class MergePlot extends BasePlot {
         return $this->originZ;
     }
 
+    public function toBasePlot() : BasePlot {
+        return new BasePlot($this->worldName, $this->x, $this->z);
+    }
+
     public function toPlot() : ?Plot {
         return CPlot::getInstance()->getProvider()->getPlot($this->worldName, $this->originX, $this->originZ);
     }
