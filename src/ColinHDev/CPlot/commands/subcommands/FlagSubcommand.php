@@ -151,7 +151,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
                 if (!$sender->hasPermission($flag->getPermission())) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noPermissionForFlag", [$flag->getID()]));
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.permissionMessageForFlag", [$flag->getID()]));
                     break;
                 }
 
@@ -250,7 +250,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
                 if (!$sender->hasPermission($flag->getPermission())) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.noPermissionForFlag", [$flag->getID()]));
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.permissionMessageForFlag", [$flag->getID()]));
                     break;
                 }
 
