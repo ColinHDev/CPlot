@@ -273,19 +273,22 @@ class FlagSubcommand extends Subcommand {
                     }
 
                     $values = $flag->getValue();
+                    $removedValues = [];
                     foreach ($parsedValues as $parsedValue) {
-                        $key = array_search($parsedValue, $values, true);
-                        if ($key === false) {
-                            continue;
+                        $parsedValueString = $flag->toString([$parsedValue]);
+                        foreach ($flag->getValue() as $key => $value) {
+                            if ($flag->toString([$value]) === $parsedValueString) {
+                                $removedValues[] = $parsedValue;
+                                unset($values[$key]);
+                            }
                         }
-                        unset($values[$key]);
                     }
 
                     if (count($values) > 0) {
                         $flag = $flag->newInstance($values);
                         $plot->addFlag($flag);
                         if ($this->getPlugin()->getProvider()->savePlotFlag($plot, $flag)) {
-                            $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.value.success", [$flag->getID(), $flag->toString()]));
+                            $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.value.success", [$flag->getID(), $flag->toString($removedValues)]));
                             break;
                         }
                     } else {
