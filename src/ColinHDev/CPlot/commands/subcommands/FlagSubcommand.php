@@ -6,6 +6,8 @@ use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlotAPI\attributes\ArrayAttribute;
 use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
+use ColinHDev\CPlotAPI\players\settings\SettingIDs;
+use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
 use ColinHDev\CPlotAPI\plots\flags\Flag;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\flags\FlagManager;
@@ -184,7 +186,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                $flag = $flag->newInstance($parsedValue);
+                $flag = $newFlag = $flag->newInstance($parsedValue);
                 $oldFlag = $plot->getFlagByID($flag->getID());
                 if ($oldFlag !== null) {
                     $flag = $oldFlag->merge($flag->getValue());
@@ -198,6 +200,50 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.success", [$flag->getID(), $flag->toString($parsedValue)]));
+                foreach ($sender->getWorld()->getPlayers() as $player) {
+                    $playerUUID = $player->getUniqueId()->toString();
+                    if ($sender->getUniqueId()->toString() === $playerUUID) {
+                        continue;
+                    }
+                    $plotOfPlayer = Plot::fromPosition($player->getPosition());
+                    if ($plotOfPlayer === null || !$plotOfPlayer->isSame($plot)) {
+                        continue;
+                    }
+                    $playerData = $this->getPlugin()->getProvider()->getPlayerDataByUUID($playerUUID);
+                    if ($playerData === null) {
+                        continue;
+                    }
+                    try {
+                        $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_CHANGE_FLAG . $newFlag->getID());
+                        if ($setting === null) {
+                            continue;
+                        }
+                        foreach ($setting->getValue() as $value) {
+                            if ($value === $newFlag->getValue()) {
+                                $player->sendMessage(
+                                    $this->getPrefix() . $this->translateString("flag.set.setting.warn_change_flag", [$newFlag->getID(), $newFlag->toString()])
+                                );
+                                break;
+                            }
+                        }
+
+                        $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_TELEPORT_CHANGE_FLAG . $newFlag->getID());
+                        if ($setting === null) {
+                            continue;
+                        }
+                        foreach ($setting->getValue() as $value) {
+                            if ($value === $newFlag->getValue()) {
+                                $player->sendMessage(
+                                    $this->getPrefix() . $this->translateString("flag.set.setting.teleport_change_flag", [$newFlag->getID(), $newFlag->toString()])
+                                );
+                                $plot->teleportTo($player, false, false);
+                                break;
+                            }
+                        }
+                    } catch (PlayerDataException | PlotException) {
+                        continue;
+                    }
+                }
                 break;
 
             case "remove":
