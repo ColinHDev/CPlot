@@ -12,6 +12,7 @@ use ColinHDev\CPlot\listener\BlockTeleportListener;
 use ColinHDev\CPlot\listener\EntityDamageByEntityListener;
 use ColinHDev\CPlot\listener\EntityExplodeListener;
 use ColinHDev\CPlot\listener\EntityItemPickupListener;
+use ColinHDev\CPlot\listener\EntityTrampleFarmlandListener;
 use ColinHDev\CPlot\listener\PlayerDropItemListener;
 use ColinHDev\CPlot\listener\PlayerInteractListener;
 use ColinHDev\CPlot\listener\PlayerMoveListener;
@@ -83,6 +84,7 @@ class CPlot extends PluginBase {
         $this->getServer()->getPluginManager()->registerEvents(new EntityDamageByEntityListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new EntityExplodeListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new EntityItemPickupListener(), $this);
+        $this->getServer()->getPluginManager()->registerEvents(new EntityTrampleFarmlandListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new PlayerDropItemListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new PlayerInteractListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new PlayerMoveListener(), $this);
