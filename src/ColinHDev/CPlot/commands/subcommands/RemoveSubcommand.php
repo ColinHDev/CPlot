@@ -57,7 +57,7 @@ class RemoveSubcommand extends Subcommand {
         }
 
         try {
-            if ($plot->hasPlotOwner() === null) {
+            if (!$plot->hasPlotOwner()) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("remove.noPlotOwner"));
                 return;
             }

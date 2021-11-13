@@ -62,7 +62,7 @@ class TrustSubcommand extends Subcommand {
         }
 
         try {
-            if ($plot->hasPlotOwner() === null) {
+            if (!$plot->hasPlotOwner()) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("trust.noPlotOwner"));
                 return;
             }

@@ -124,7 +124,7 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 try {
-                    if ($plot->hasPlotOwner() === null) {
+                    if (!$plot->hasPlotOwner()) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noPlotOwner"));
                         break;
                     }
@@ -267,7 +267,7 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 try {
-                    if ($plot->hasPlotOwner() === null) {
+                    if (!$plot->hasPlotOwner()) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.noPlotOwner"));
                         break;
                     }

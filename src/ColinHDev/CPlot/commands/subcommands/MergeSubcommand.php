@@ -34,7 +34,7 @@ class MergeSubcommand extends Subcommand {
         }
 
         try {
-            if ($plot->hasPlotOwner() === null) {
+            if (!$plot->hasPlotOwner()) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("merge.noPlotOwner"));
                 return;
             }
