@@ -3,18 +3,15 @@
 namespace ColinHDev\CPlotAPI\attributes;
 
 use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
-use ColinHDev\CPlotAPI\attributes\utils\AttributeTypeException;
 
 /**
- * @template AttributeType of ArrayAttribute
- * @extends BaseAttribute<AttributeType, array>
+ * @extends BaseAttribute<array>
  */
-abstract class ArrayAttribute extends BaseAttribute {
+class ArrayAttribute extends BaseAttribute {
 
     /**
      * @param array $value
-     * @return AttributeType
-     * @throws AttributeTypeException
+     * @return ArrayAttribute
      */
     public function merge(mixed $value) : ArrayAttribute {
         $values = $this->value;
@@ -27,23 +24,30 @@ abstract class ArrayAttribute extends BaseAttribute {
             }
             $values[] = $newValue;
         }
-        return new static($values);
+        return $this->newInstance($values);
     }
 
     /**
      * @param array | null $value
+     * @throws \JsonException
      */
     public function toString(mixed $value = null) : string {
         if ($value === null) {
             $value = $this->value;
         }
-        return json_encode($value);
+        return json_encode($value, JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * @throws AttributeParseException
+     */
     public function parse(string $value) : array {
-        $parsed = json_decode($value, true);
-        if (is_array($parsed)) {
-            return $parsed;
+        try {
+            $parsed = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+            if (is_array($parsed)) {
+                return $parsed;
+            }
+        } catch (\JsonException) {
         }
         throw new AttributeParseException($this, $value);
     }

@@ -2,10 +2,8 @@
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
-use ColinHDev\CPlotAPI\attributes\utils\AttributeTypeException;
-use ColinHDev\CPlotAPI\players\settings\Setting;
-use ColinHDev\CPlotAPI\plots\flags\Flag;
 use ColinHDev\CPlotAPI\players\PlayerData;
 use ColinHDev\CPlotAPI\players\settings\SettingManager;
 use ColinHDev\CPlotAPI\plots\PlotPlayer;
@@ -302,7 +300,7 @@ class SQLiteProvider extends DataProvider {
 
 
     /**
-     * @return Setting[] | null
+     * @return BaseAttribute[] | null
      */
     public function getPlayerSettings(PlayerData $player) : ?array {
         $this->getPlayerSettings->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
@@ -319,13 +317,13 @@ class SQLiteProvider extends DataProvider {
             }
             try {
                 $settings[$setting->getID()] = $setting->newInstance($setting->parse($var["value"]));
-            } catch (AttributeParseException | AttributeTypeException) {
+            } catch (AttributeParseException) {
             }
         }
         return $settings;
     }
 
-    public function savePlayerSetting(PlayerData $player, Setting $setting) : bool {
+    public function savePlayerSetting(PlayerData $player, BaseAttribute $setting) : bool {
         $this->setPlayerSetting->bindValue(":playerUUID", $player->getPlayerUUID(), SQLITE3_TEXT);
         $this->setPlayerSetting->bindValue(":ID", $setting->getID(), SQLITE3_TEXT);
         $this->setPlayerSetting->bindValue(":value", $setting->toString(), SQLITE3_TEXT);
@@ -661,7 +659,7 @@ class SQLiteProvider extends DataProvider {
 
 
     /**
-     * @return Flag[] | null
+     * @return BaseAttribute[] | null
      */
     public function getPlotFlags(Plot $plot) : ?array {
         $this->getPlotFlags->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
@@ -680,13 +678,13 @@ class SQLiteProvider extends DataProvider {
             }
             try {
                 $flags[$flag->getID()] = $flag->newInstance($flag->parse($var["value"]));
-            } catch (AttributeParseException | AttributeTypeException) {
+            } catch (AttributeParseException) {
             }
         }
         return $flags;
     }
 
-    public function savePlotFlag(Plot $plot, Flag $flag) : bool {
+    public function savePlotFlag(Plot $plot, BaseAttribute $flag) : bool {
         $this->setPlotFlag->bindValue(":worldName", $plot->getWorldName(), SQLITE3_TEXT);
         $this->setPlotFlag->bindValue(":x", $plot->getX(), SQLITE3_INTEGER);
         $this->setPlotFlag->bindValue(":z", $plot->getZ(), SQLITE3_INTEGER);

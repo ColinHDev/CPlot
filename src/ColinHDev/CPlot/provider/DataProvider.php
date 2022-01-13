@@ -4,9 +4,8 @@ namespace ColinHDev\CPlot\provider;
 
 use ColinHDev\CPlot\provider\cache\Cache;
 use ColinHDev\CPlot\provider\cache\CacheIDs;
+use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\players\PlayerData;
-use ColinHDev\CPlotAPI\players\settings\Setting;
-use ColinHDev\CPlotAPI\plots\flags\Flag;
 use ColinHDev\CPlotAPI\plots\PlotPlayer;
 use ColinHDev\CPlotAPI\plots\PlotRate;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
@@ -43,7 +42,7 @@ abstract class DataProvider {
     abstract public function setPlayerData(PlayerData $player) : bool;
 
     abstract public function getPlayerSettings(PlayerData $player) : ?array;
-    abstract public function savePlayerSetting(PlayerData $player, Setting $setting) : bool;
+    abstract public function savePlayerSetting(PlayerData $player, BaseAttribute $setting) : bool;
     abstract public function deletePlayerSetting(PlayerData $player, string $settingID) : bool;
 
     abstract public function getWorld(string $worldName) : ?WorldSettings;
@@ -66,7 +65,7 @@ abstract class DataProvider {
     abstract public function deletePlotPlayer(Plot $plot, string $playerUUID) : bool;
 
     abstract public function getPlotFlags(Plot $plot) : ?array;
-    abstract public function savePlotFlag(Plot $plot, Flag $flag) : bool;
+    abstract public function savePlotFlag(Plot $plot, BaseAttribute $flag) : bool;
     abstract public function deletePlotFlag(Plot $plot, string $flagID) : bool;
 
     abstract public function getPlotRates(Plot $plot) : ?array;

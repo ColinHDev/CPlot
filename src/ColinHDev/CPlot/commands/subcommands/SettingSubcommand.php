@@ -6,7 +6,6 @@ use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlotAPI\attributes\ArrayAttribute;
 use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
-use ColinHDev\CPlotAPI\players\settings\Setting;
 use ColinHDev\CPlotAPI\players\settings\SettingManager;
 use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
 use pocketmine\command\CommandSender;
@@ -24,9 +23,8 @@ class SettingSubcommand extends Subcommand {
             case "list":
                 $sender->sendMessage($this->getPrefix() . $this->translateString("setting.list.success"));
                 $settingsByCategory = [];
-                /** @var class-string<Setting> $settingClass */
-                foreach (SettingManager::getInstance()->getSettings() as $settingClass) {
-                    $setting = new $settingClass();
+                /** @var BaseAttribute $settingClass */
+                foreach (SettingManager::getInstance()->getSettings() as $setting) {
                     $settingCategory = $this->translateString("setting.category." . $setting->getID());
                     if (!isset($settingsByCategory[$settingCategory])) {
                         $settingsByCategory[$settingCategory] = $setting->getID();
@@ -78,7 +76,7 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
                 $settings = array_map(
-                    function (Setting $setting) : string {
+                    function (BaseAttribute $setting) : string {
                         return $this->translateString("setting.my.success.format", [$setting->getID(), $setting->toString()]);
                     },
                     $settings
@@ -114,7 +112,7 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
 
-                /** @var Setting & BaseAttribute | null $setting */
+                /** @var BaseAttribute | null $setting */
                 $setting = SettingManager::getInstance()->getSettingByID($args[1]);
                 if ($setting === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.noSetting", [$args[1]]));
@@ -172,7 +170,7 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
 
-                /** @var Setting & BaseAttribute | null $setting */
+                /** @var BaseAttribute | null $setting */
                 $setting = $playerData->getSettingByID($args[1]);
                 if ($setting === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.remove.settingNotSet", [$args[1]]));

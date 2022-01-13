@@ -2,17 +2,18 @@
 
 namespace ColinHDev\CPlotAPI\attributes;
 
+use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
 use ColinHDev\CPlotAPI\utils\ParseUtils;
 use pocketmine\block\Block;
 
 /**
- * @template AttributeType of BlockListAttribute
- * @extends BaseAttribute<AttributeType, array<int, Block>>
+ * @extends BaseAttribute<array<int, Block>>
  */
-abstract class BlockListAttribute extends ArrayAttribute {
+class BlockListAttribute extends ArrayAttribute {
 
     /**
      * @param array<int, Block> | null $value
+     * @throws \JsonException
      */
     public function toString(mixed $value = null) : string {
         if ($value === null) {
@@ -22,11 +23,12 @@ abstract class BlockListAttribute extends ArrayAttribute {
         foreach ($value as $block) {
             $blocks[] = ParseUtils::parseStringFromBlock($block);
         }
-        return json_encode($blocks);
+        return json_encode($blocks, JSON_THROW_ON_ERROR);
     }
 
     /**
      * @return array<int, Block>
+     * @throws AttributeParseException
      */
     public function parse(string $value) : array {
         $block = ParseUtils::parseBlockFromString($value);
@@ -34,8 +36,12 @@ abstract class BlockListAttribute extends ArrayAttribute {
             return [$block];
         }
         $blocks = [];
-        foreach (json_decode($value, true) as $block) {
-            $blocks[] = ParseUtils::parseBlockFromString($block);
+        try {
+            foreach (json_decode($value, true, 512, JSON_THROW_ON_ERROR) as $block) {
+                $blocks[] = ParseUtils::parseBlockFromString($block);
+            }
+        } catch (\JsonException) {
+            throw new AttributeParseException($this, $value);
         }
         return $blocks;
     }

@@ -2,29 +2,27 @@
 
 namespace ColinHDev\CPlotAPI\attributes;
 
-use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
-use ColinHDev\CPlotAPI\attributes\utils\AttributeTypeException;
-use ColinHDev\CPlotAPI\players\settings\Setting;
-use ColinHDev\CPlotAPI\plots\flags\Flag;
 
 /**
- * @template AttributeType of BaseAttribute
  * @template AttributeValue
  */
 abstract class BaseAttribute {
 
-    protected static string $ID;
-    protected static string $permission;
-    protected static string $default;
+    protected string $ID;
+    protected string $permission;
+    protected string $default;
     /** @var AttributeValue */
     protected mixed $value;
 
     /**
      * @param AttributeValue $value
-     * @throws AttributeTypeException
+     * @throws AttributeParseException
      */
-    public function __construct(mixed $value = null) {
+    final public function __construct(string $ID, string $permission, string $default, mixed $value = null) {
+        $this->ID = $ID;
+        $this->permission = $permission;
+        $this->default = $default;
         if ($value === null) {
             $this->value = $this->getParsedDefault();
         } else {
@@ -33,43 +31,23 @@ abstract class BaseAttribute {
     }
 
     public function getID() : string {
-        return static::$ID;
+        return $this->ID;
     }
 
     public function getPermission() : string {
-        return static::$permission;
+        return $this->permission;
     }
 
-    /**
-     * @throws AttributeTypeException
-     */
     public function getDefault() : string {
-        if (!isset(static::$default)) {
-            $type = match (true) {
-                $this instanceof Flag => "flag",
-                $this instanceof Setting => "setting",
-                default => throw new AttributeTypeException($this)
-            };
-            static::$default = ResourceManager::getInstance()->getConfig()->getNested($type . "." . static::$ID);
-        }
-        return static::$default;
+        return $this->default;
     }
 
     /**
      * @return AttributeValue
-     * @throws AttributeTypeException
      * @throws AttributeParseException
      */
     public function getParsedDefault() : mixed {
-        if (!isset(static::$default)) {
-            $type = match (true) {
-                $this instanceof Flag => "flag",
-                $this instanceof Setting => "setting",
-                default => throw new AttributeTypeException($this)
-            };
-            static::$default = ResourceManager::getInstance()->getConfig()->getNested($type . "." . static::$ID);
-        }
-        return $this->parse(static::$default);
+        return $this->parse($this->default);
     }
 
     /**
@@ -80,17 +58,16 @@ abstract class BaseAttribute {
     }
 
     /**
-     * @param AttributeValue | null $value
-     * @return AttributeType
-     * @throws AttributeTypeException
+     * @param AttributeValue $value
+     * @return BaseAttribute
      */
-    public function newInstance(mixed $value = null) : BaseAttribute {
-        return new static($value);
+    public function newInstance(mixed $value) : BaseAttribute {
+        return new static($this->ID, $this->permission, $this->default, $value);
     }
 
     /**
      * @param AttributeValue $value
-     * @return AttributeType
+     * @return BaseAttribute
      */
     abstract public function merge(mixed $value) : BaseAttribute;
 
@@ -102,22 +79,22 @@ abstract class BaseAttribute {
      */
     abstract public function parse(string $value) : mixed;
 
-    /**
-     * @throws AttributeTypeException
-     */
     public function __serialize() : array {
         return [
-            "ID" => $this->getID(),
-            "permission" => $this->getPermission(),
-            "default" => $this->getDefault(),
+            "ID" => $this->ID,
+            "permission" => $this->permission,
+            "default" => $this->default,
             "value" => $this->toString()
         ];
     }
 
+    /**
+     * @throws AttributeParseException
+     */
     public function __unserialize(array $data) : void {
-        static::$ID = $data["ID"];
-        static::$permission = $data["permission"];
-        static::$default = $data["default"];
+        $this->ID = $data["ID"];
+        $this->permission = $data["permission"];
+        $this->default = $data["default"];
         $this->value = $this->parse($data["value"]);
     }
 }

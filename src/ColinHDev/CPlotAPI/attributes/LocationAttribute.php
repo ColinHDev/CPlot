@@ -1,25 +1,17 @@
 <?php
 
-namespace ColinHDev\CPlotAPI\plots\flags;
+namespace ColinHDev\CPlotAPI\attributes;
 
-use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
 use pocketmine\entity\Location;
 
-/**
- * @extends BaseAttribute<SpawnFlag, Location>
- */
-class SpawnFlag extends BaseAttribute implements Flag {
-
-    protected static string $ID = self::FLAG_SPAWN;
-    protected static string $permission = self::PERMISSION_BASE . self::FLAG_SPAWN;
-    protected static string $default;
+class LocationAttribute extends BaseAttribute {
 
     /**
      * @param Location $value
      */
-    public function merge(mixed $value) : SpawnFlag {
-        return new static($value);
+    public function merge(mixed $value) : LocationAttribute {
+        return $this->newInstance($value);
     }
 
     /**

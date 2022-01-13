@@ -3,7 +3,7 @@
 namespace ColinHDev\CPlotAPI\plots;
 
 use ColinHDev\CPlot\CPlot;
-use ColinHDev\CPlotAPI\plots\flags\Flag;
+use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\flags\FlagManager;
 use ColinHDev\CPlotAPI\plots\utils\PlotException;
@@ -22,7 +22,7 @@ class Plot extends BasePlot {
     private ?array $mergePlots = null;
     /** @var null | array<string, PlotPlayer> */
     private ?array $plotPlayers = null;
-    /** @var null | array<string, Flag> */
+    /** @var null | array<string, BaseAttribute> */
     private ?array $flags = null;
     /** @var null | array<string, PlotRate> */
     private ?array $plotRates = null;
@@ -331,7 +331,7 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @return array<string, Flag>
+     * @return array<string, BaseAttribute>
      * @throws PlotException
      */
     public function getFlags() : array {
@@ -342,7 +342,7 @@ class Plot extends BasePlot {
     /**
      * @throws PlotException
      */
-    public function getFlagByID(string $flagID) : ?Flag {
+    public function getFlagByID(string $flagID) : ?BaseAttribute {
         $this->loadFlags();
         if (!isset($this->flags[$flagID])) {
             return null;
@@ -353,7 +353,7 @@ class Plot extends BasePlot {
     /**
      * @throws PlotException
      */
-    public function getFlagNonNullByID(string $flagID) : ?Flag {
+    public function getFlagNonNullByID(string $flagID) : ?BaseAttribute {
         $flag = $this->getFlagByID($flagID);
         if ($flag === null) {
             $flag = FlagManager::getInstance()->getFlagByID($flagID);
@@ -364,7 +364,7 @@ class Plot extends BasePlot {
     /**
      * @throws PlotException
      */
-    public function addFlag(Flag $flag) : void {
+    public function addFlag(BaseAttribute $flag) : void {
         $this->loadFlags();
         $this->flags[$flag->getID()] = $flag;
     }

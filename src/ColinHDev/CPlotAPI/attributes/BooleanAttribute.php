@@ -5,10 +5,9 @@ namespace ColinHDev\CPlotAPI\attributes;
 use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
 
 /**
- * @template AttributeType of BooleanAttribute
- * @extends BaseAttribute<AttributeType, bool>
+ * @extends BaseAttribute<bool>
  */
-abstract class BooleanAttribute extends BaseAttribute {
+class BooleanAttribute extends BaseAttribute {
 
     /** @var array{true, string} */
     public const TRUE_VALUES = [true, "1", "y", "yes", "allow", "true"];
@@ -17,10 +16,10 @@ abstract class BooleanAttribute extends BaseAttribute {
 
     /**
      * @param bool $value
-     * @return AttributeType
+     * @return BooleanAttribute
      */
     public function merge(mixed $value) : BooleanAttribute {
-        return new static($value);
+        return $this->newInstance($value);
     }
 
     /**
@@ -38,10 +37,10 @@ abstract class BooleanAttribute extends BaseAttribute {
      */
     public function parse(string $value) : bool {
         $value = strtolower($value);
-        if (array_search($value, self::TRUE_VALUES, true) !== false) {
+        if (in_array($value, self::TRUE_VALUES, true)) {
             return true;
         }
-        if (array_search($value, self::FALSE_VALUES, true) !== false) {
+        if (in_array($value, self::FALSE_VALUES, true)) {
             return false;
         }
         throw new AttributeParseException($this, $value);

@@ -5,7 +5,7 @@ namespace ColinHDev\CPlotAPI\players;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\provider\cache\Cacheable;
 use ColinHDev\CPlot\ResourceManager;
-use ColinHDev\CPlotAPI\players\settings\Setting;
+use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\players\settings\SettingManager;
 use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
 use pocketmine\player\OfflinePlayer;
@@ -18,7 +18,7 @@ class PlayerData implements Cacheable {
     private string $playerName;
     private int $lastPlayed;
 
-    /** @var null | array<string, Setting> */
+    /** @var null | array<string, BaseAttribute> */
     private ?array $settings = null;
 
     public function __construct(string $playerUUID, string $playerName, int $lastPlayed) {
@@ -75,7 +75,7 @@ class PlayerData implements Cacheable {
     }
 
     /**
-     * @return array<string, Setting>
+     * @return array<string, BaseAttribute>
      * @throws PlayerDataException
      */
     public function getSettings() : array {
@@ -86,7 +86,7 @@ class PlayerData implements Cacheable {
     /**
      * @throws PlayerDataException
      */
-    public function getSettingByID(string $settingID) : ?Setting {
+    public function getSettingByID(string $settingID) : ?BaseAttribute {
         $this->loadSettings();
         if (!isset($this->settings[$settingID])) {
             return null;
@@ -97,7 +97,7 @@ class PlayerData implements Cacheable {
     /**
      * @throws PlayerDataException
      */
-    public function getSettingNonNullByID(string $settingID) : ?Setting {
+    public function getSettingNonNullByID(string $settingID) : ?BaseAttribute {
         $setting = $this->getSettingByID($settingID);
         if ($setting === null) {
             $setting = SettingManager::getInstance()->getSettingByID($settingID);
@@ -108,7 +108,7 @@ class PlayerData implements Cacheable {
     /**
      * @throws PlayerDataException
      */
-    public function addSetting(Setting $setting) : void {
+    public function addSetting(BaseAttribute $setting) : void {
         $this->loadSettings();
         $this->settings[$setting->getID()] = $setting;
     }

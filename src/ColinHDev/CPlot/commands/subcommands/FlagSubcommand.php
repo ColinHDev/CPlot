@@ -8,11 +8,8 @@ use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
 use ColinHDev\CPlotAPI\players\settings\SettingIDs;
 use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
-use ColinHDev\CPlotAPI\plots\flags\Flag;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\flags\FlagManager;
-use ColinHDev\CPlotAPI\plots\flags\ServerPlotFlag;
-use ColinHDev\CPlotAPI\plots\flags\SpawnFlag;
 use ColinHDev\CPlotAPI\plots\Plot;
 use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
@@ -31,9 +28,8 @@ class FlagSubcommand extends Subcommand {
             case "list":
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.list.success"));
                 $flagsByCategory = [];
-                /** @var class-string<Flag> $flagClass */
-                foreach (FlagManager::getInstance()->getFlags() as $flagClass) {
-                    $flag = new $flagClass();
+                /** @var BaseAttribute $flag */
+                foreach (FlagManager::getInstance()->getFlags() as $flag) {
                     $flagCategory = $this->translateString("flag.category." . $flag->getID());
                     if (!isset($flagsByCategory[$flagCategory])) {
                         $flagsByCategory[$flagCategory] = $flag->getID();
@@ -89,7 +85,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
                 $flags = array_map(
-                    function (Flag $flag) : string {
+                    function (BaseAttribute $flag) : string {
                         return $this->translateString("flag.here.success.format", [$flag->getID(), $flag->toString()]);
                     },
                     $flags
@@ -146,7 +142,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                /** @var Flag&BaseAttribute | null $flag */
+                /** @var BaseAttribute | null $flag */
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
                 if ($flag === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noFlag", [$args[1]]));
@@ -157,15 +153,15 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                if (!$flag instanceof ServerPlotFlag) {
-                    $oldFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-                    if ($oldFlag->getValue() === true) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.serverPlotFlag", [$oldFlag->getID()]));
+                if ($flag->getID() !== FlagIDs::FLAG_SERVER_PLOT) {
+                    $serverPlotFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+                    if ($serverPlotFlag->getValue() === true) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.serverPlotFlag", [$serverPlotFlag->getID()]));
                         break;
                     }
                 }
 
-                if ($flag instanceof SpawnFlag) {
+                if ($flag->getID() === FlagIDs::FLAG_SPAWN) {
                     $location = $sender->getLocation();
                     $arg = $flag->toString(
                         Location::fromObject(
@@ -289,7 +285,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                /** @var Flag | null $flag */
+                /** @var BaseAttribute | null $flag */
                 $flag = $plot->getFlagByID($args[1]);
                 if ($flag === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flagNotSet", [$args[1]]));
@@ -300,10 +296,10 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                if (!$flag instanceof ServerPlotFlag) {
-                    $oldFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-                    if ($oldFlag->getValue() === true) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.serverPlotFlag", [$oldFlag->getID()]));
+                if ($flag->getID() !== FlagIDs::FLAG_SERVER_PLOT) {
+                    $serverPlotFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+                    if ($serverPlotFlag->getValue() === true) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.serverPlotFlag", [$serverPlotFlag->getID()]));
                         break;
                     }
                 }
