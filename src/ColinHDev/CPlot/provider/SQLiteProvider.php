@@ -97,7 +97,7 @@ class SQLiteProvider extends DataProvider {
             "CREATE TABLE IF NOT EXISTS playerSettings (
             playerUUID VARCHAR(256) NOT NULL, ID TEXT NOT NULL, value TEXT NOT NULL,
             PRIMARY KEY (playerUUID, ID), 
-            FOREIGN KEY (playerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
+            FOREIGN KEY (playerUUID) REFERENCES playerData (playerUUID) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
