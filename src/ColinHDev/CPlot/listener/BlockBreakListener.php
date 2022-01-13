@@ -3,7 +3,8 @@
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
-use ColinHDev\CPlotAPI\plots\flags\BreakFlag;
+use ColinHDev\CPlot\events\CPlotBlockEvent;
+use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\Plot;
 use ColinHDev\CPlotAPI\plots\utils\PlotException;
@@ -28,6 +29,13 @@ class BlockBreakListener implements Listener {
 
         $plot = Plot::fromPosition($position);
         if ($plot !== null) {
+            $ev = new CPlotBlockEvent($plot, $player, $event->getBlock(), CPlotBlockEvent::ACTION_BREAK);
+            $ev->call();
+            if ($ev->isCancelled()) {
+                $ev->cancel();
+                return;
+            }
+
             if ($player->hasPermission("cplot.break.plot")) {
                 return;
             }
@@ -53,7 +61,7 @@ class BlockBreakListener implements Listener {
 
             try {
                 $block = $event->getBlock();
-                /** @var BreakFlag | null $flag */
+                /** @var BaseAttribute | null $flag */
                 $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_BREAK);
                 /** @var Block $value */
                 foreach ($flag->getValue() as $value) {

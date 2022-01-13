@@ -3,6 +3,8 @@
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\events\CPlotEnterEvent;
+use ColinHDev\CPlot\events\CPlotLeaveEvent;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\players\settings\SettingIDs;
 use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
@@ -52,6 +54,10 @@ class PlayerMoveListener implements Listener {
 
             // flags on plot enter
             if ($plotFrom === null) {
+                $ev = new CPlotEnterEvent($plotFrom, $player);
+                $ev->call();
+                if ($ev->isCancelled()) return; //TODO: cancel event or teleport???
+
                 // settings on plot enter
                 try {
                     $playerData = CPlot::getInstance()->getProvider()->getPlayerDataByUUID($playerUUID);
@@ -136,6 +142,10 @@ class PlayerMoveListener implements Listener {
 
         // plot leave
         if ($plotFrom !== null && $plotTo === null) {
+            $ev = new CPlotLeaveEvent($plotFrom, $player);
+            $ev->call();
+            if ($ev->isCancelled()) return; //TODO: cancel event or teleport???
+
             // plot_leave flag
             try {
                 $flag = $plotFrom->getFlagNonNullByID(FlagIDs::FLAG_PLOT_LEAVE);

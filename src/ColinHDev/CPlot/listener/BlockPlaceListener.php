@@ -3,8 +3,9 @@
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\events\CPlotBlockEvent;
+use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
-use ColinHDev\CPlotAPI\plots\flags\PlaceFlag;
 use ColinHDev\CPlotAPI\plots\Plot;
 use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\block\Block;
@@ -28,6 +29,13 @@ class BlockPlaceListener implements Listener {
 
         $plot = Plot::fromPosition($position);
         if ($plot !== null) {
+            $ev = new CPlotBlockEvent($plot, $player, $event->getBlock(), CPlotBlockEvent::ACTION_PLACE);
+            $ev->call();
+            if ($ev->isCancelled()) {
+                $ev->cancel();
+                return;
+            }
+
             if ($player->hasPermission("cplot.place.plot")) {
                 return;
             }
@@ -53,7 +61,7 @@ class BlockPlaceListener implements Listener {
 
             try {
                 $block = $event->getBlock();
-                /** @var PlaceFlag | null $flag */
+                /** @var BaseAttribute | null $flag */
                 $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PLACE);
                 /** @var Block $value */
                 foreach ($flag->getValue() as $value) {
