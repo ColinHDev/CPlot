@@ -189,7 +189,7 @@ class SQLiteProvider extends DataProvider {
             worldName VARCHAR(256) NOT NULL, x INTEGER NOT NULL, z INTEGER NOT NULL, playerUUID VARCHAR(256) NOT NULL, state TEXT NOT NULL, addTime INTEGER NOT NULL,
             PRIMARY KEY (worldName, x, z, playerUUID),
             FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE,
-            FOREIGN KEY (playerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
+            FOREIGN KEY (playerUUID) REFERENCES playerData (playerUUID) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
@@ -228,7 +228,7 @@ class SQLiteProvider extends DataProvider {
             rate DECIMAL(4, 2) NOT NULL, playerUUID VARCHAR(256) NOT NULL, rateTime INTEGER NOT NULL, comment TEXT,
             PRIMARY KEY (worldName, x, z, playerUUID, rateTime),
             FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE,
-            FOREIGN KEY (playerUUID) REFERENCES players (playerUUID) ON DELETE CASCADE
+            FOREIGN KEY (playerUUID) REFERENCES playerData (playerUUID) ON DELETE CASCADE
             )";
         $this->database->exec($sql);
         $sql =
