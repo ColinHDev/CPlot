@@ -18,19 +18,29 @@ class Plot extends BasePlot {
     private int $biomeID;
     private ?string $alias;
 
-    /** @var null | array<string, MergePlot> */
-    private ?array $mergePlots = null;
-    /** @var null | array<string, PlotPlayer> */
-    private ?array $plotPlayers = null;
-    /** @var null | array<string, BaseAttribute> */
-    private ?array $flags = null;
-    /** @var null | array<string, PlotRate> */
-    private ?array $plotRates = null;
+    /** @var array<string, MergePlot> */
+    private array $mergePlots;
+    /** @var array<string, PlotPlayer> */
+    private array $plotPlayers;
+    /** @var array<string, BaseAttribute> */
+    private array $flags;
+    /** @var array<string, PlotRate> */
+    private array $plotRates;
 
-    public function __construct(string $worldName, int $x, int $z, int $biomeID = BiomeIds::PLAINS, ?string $alias = null) {
+    /**
+     * @param array<string, MergePlot> $mergePlots
+     * @param array<string, PlotPlayer> $plotPlayers
+     * @param array<string, BaseAttribute> $flags
+     * @param array<string, PlotRate> $plotRates
+     */
+    public function __construct(string $worldName, int $x, int $z, int $biomeID = BiomeIds::PLAINS, ?string $alias = null, array $mergePlots = [], array $plotPlayers = [], array $flags = [], array $plotRates = []) {
         parent::__construct($worldName, $x, $z);
         $this->biomeID = $biomeID;
         $this->alias = $alias;
+        $this->mergePlots = $mergePlots;
+        $this->plotPlayers = $plotPlayers;
+        $this->flags = $flags;
+        $this->plotRates = $plotRates;
     }
 
     public function getBiomeID() : int {
@@ -43,35 +53,22 @@ class Plot extends BasePlot {
 
     /**
      * @return array<string, MergePlot>
-     * @throws PlotException
      */
     public function getMergePlots() : array {
-        $this->loadMergePlots();
         return $this->mergePlots;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function isMerged(BasePlot $plot) : bool {
         if ($this->isSame($plot, false)) {
             return true;
         }
-        $this->loadMergePlots();
         return isset($this->mergePlots[$plot->toString()]);
     }
 
-    /**
-     * @throws PlotException
-     */
     public function addMergePlot(MergePlot $mergedPlot) : void {
-        $this->loadMergePlots();
         $this->mergePlots[$mergedPlot->toString()] = $mergedPlot;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function merge(self $plot) : void {
         foreach (array_merge([$plot], $plot->getMergePlots()) as $mergePlot) {
             $mergePlot = MergePlot::fromBasePlot($mergePlot->toBasePlot(), $this->x, $this->z);
@@ -110,32 +107,14 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @internal
-     * @throws PlotException
-     */
-    public function loadMergePlots() : void {
-        if ($this->mergePlots !== null) {
-            return;
-        }
-        $this->mergePlots = CPlot::getInstance()->getProvider()->getMergePlots($this);
-        if ($this->mergePlots === null) {
-            throw new PlotException($this,"Couldn't load merge plots of plot " . $this->toString() . " from provider.");
-        }
-        CPlot::getInstance()->getProvider()->getPlotCache()->cacheObject($this->toString(), $this);
-    }
-
-    /**
      * @return array<string, PlotPlayer>
-     * @throws PlotException
      */
     public function getPlotPlayers() : array {
-        $this->loadPlotPlayers();
         return $this->plotPlayers;
     }
 
     /**
      * @return array<string, PlotPlayer>
-     * @throws PlotException
      */
     public function getPlotPlayersByState(string $state) : array {
         $plotPlayers = [];
@@ -149,22 +128,17 @@ class Plot extends BasePlot {
 
     /**
      * @return array<string, PlotPlayer>
-     * @throws PlotException
      */
     public function getPlotOwners() : array {
         return $this->getPlotPlayersByState(PlotPlayer::STATE_OWNER);
     }
 
-    /**
-     * @throws PlotException
-     */
     public function hasPlotOwner() : bool {
         return count($this->getPlotOwners()) !== 0;
     }
 
     /**
      * @return array<string, PlotPlayer>
-     * @throws PlotException
      */
     public function getPlotTrusted() : array {
         return $this->getPlotPlayersByState(PlotPlayer::STATE_TRUSTED);
@@ -172,7 +146,6 @@ class Plot extends BasePlot {
 
     /**
      * @return array<string, PlotPlayer>
-     * @throws PlotException
      */
     public function getPlotHelpers() : array {
         return $this->getPlotPlayersByState(PlotPlayer::STATE_HELPER);
@@ -180,26 +153,18 @@ class Plot extends BasePlot {
 
     /**
      * @return array<string, PlotPlayer>
-     * @throws PlotException
      */
     public function getPlotDenied() : array {
         return $this->getPlotPlayersByState(PlotPlayer::STATE_DENIED);
     }
 
-    /**
-     * @throws PlotException
-     */
     public function getPlotPlayerExact(string $playerUUID) : ?PlotPlayer {
-        $this->loadPlotPlayers();
         if (isset($this->plotPlayers[$playerUUID])) {
             return $this->plotPlayers[$playerUUID];
         }
         return null;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function getPlotPlayer(string $playerUUID) : ?PlotPlayer {
         $plotPlayer = $this->getPlotPlayerExact($playerUUID);
         if ($plotPlayer !== null) {
@@ -211,9 +176,6 @@ class Plot extends BasePlot {
         return null;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function isPlotOwnerExact(string $playerUUID) : bool {
         $plotPlayer = $this->getPlotPlayerExact($playerUUID);
         if ($plotPlayer === null) {
@@ -222,9 +184,6 @@ class Plot extends BasePlot {
         return $plotPlayer->getState() === PlotPlayer::STATE_OWNER;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function isPlotOwner(string $playerUUID) : bool {
         $plotPlayer = $this->getPlotPlayer($playerUUID);
         if ($plotPlayer === null) {
@@ -233,9 +192,6 @@ class Plot extends BasePlot {
         return $plotPlayer->getState() === PlotPlayer::STATE_OWNER;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function isPlotTrustedExact(string $playerUUID) : bool {
         $plotPlayer = $this->getPlotPlayerExact($playerUUID);
         if ($plotPlayer === null) {
@@ -244,9 +200,6 @@ class Plot extends BasePlot {
         return $plotPlayer->getState() === PlotPlayer::STATE_TRUSTED;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function isPlotTrusted(string $playerUUID) : bool {
         $plotPlayer = $this->getPlotPlayer($playerUUID);
         if ($plotPlayer === null) {
@@ -255,9 +208,6 @@ class Plot extends BasePlot {
         return $plotPlayer->getState() === PlotPlayer::STATE_TRUSTED;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function isPlotHelperExact(string $playerUUID) : bool {
         $plotPlayer = $this->getPlotPlayerExact($playerUUID);
         if ($plotPlayer === null) {
@@ -266,9 +216,6 @@ class Plot extends BasePlot {
         return $plotPlayer->getState() === PlotPlayer::STATE_HELPER;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function isPlotHelper(string $playerUUID) : bool {
         $plotPlayer = $this->getPlotPlayer($playerUUID);
         if ($plotPlayer === null) {
@@ -277,9 +224,6 @@ class Plot extends BasePlot {
         return $plotPlayer->getState() === PlotPlayer::STATE_HELPER;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function isPlotDeniedExact(string $playerUUID) : bool {
         $plotPlayer = $this->getPlotPlayerExact($playerUUID);
         if ($plotPlayer === null) {
@@ -288,9 +232,6 @@ class Plot extends BasePlot {
         return $plotPlayer->getState() === PlotPlayer::STATE_DENIED;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function isPlotDenied(string $playerUUID) : bool {
         $plotPlayer = $this->getPlotPlayer($playerUUID);
         if ($plotPlayer === null) {
@@ -299,60 +240,28 @@ class Plot extends BasePlot {
         return $plotPlayer->getState() === PlotPlayer::STATE_DENIED;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function addPlotPlayer(PlotPlayer $plotPlayer) : void {
-        $this->loadPlotPlayers();
         $this->plotPlayers[$plotPlayer->getPlayerUUID()] = $plotPlayer;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function removePlotPlayer(string $playerUUID) : void {
-        $this->loadPlotPlayers();
         unset($this->plotPlayers[$playerUUID]);
     }
 
     /**
-     * @internal
-     * @throws PlotException
-     */
-    public function loadPlotPlayers() : void {
-        if ($this->plotPlayers !== null) {
-            return;
-        }
-        $this->plotPlayers = CPlot::getInstance()->getProvider()->getPlotPlayers($this);
-        if ($this->plotPlayers === null) {
-            throw new PlotException($this, "Couldn't load plot players of plot " . $this->toString() . " from provider.");
-        }
-        CPlot::getInstance()->getProvider()->getPlotCache()->cacheObject($this->toString(), $this);
-    }
-
-    /**
      * @return array<string, BaseAttribute>
-     * @throws PlotException
      */
     public function getFlags() : array {
-        $this->loadFlags();
         return $this->flags;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function getFlagByID(string $flagID) : ?BaseAttribute {
-        $this->loadFlags();
         if (!isset($this->flags[$flagID])) {
             return null;
         }
         return $this->flags[$flagID];
     }
 
-    /**
-     * @throws PlotException
-     */
     public function getFlagNonNullByID(string $flagID) : ?BaseAttribute {
         $flag = $this->getFlagByID($flagID);
         if ($flag === null) {
@@ -361,67 +270,23 @@ class Plot extends BasePlot {
         return $flag;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function addFlag(BaseAttribute $flag) : void {
-        $this->loadFlags();
         $this->flags[$flag->getID()] = $flag;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function removeFlag(string $flagID) : void {
-        $this->loadFlags();
         unset($this->flags[$flagID]);
     }
 
     /**
-     * @internal
-     * @throws PlotException
-     */
-    public function loadFlags() : void {
-        if ($this->flags !== null) {
-            return;
-        }
-        $this->flags = CPlot::getInstance()->getProvider()->getPlotFlags($this);
-        if ($this->flags === null) {
-            throw new PlotException($this,"Couldn't load flags of plot " . $this->toString() . " from provider.");
-        }
-        CPlot::getInstance()->getProvider()->getPlotCache()->cacheObject($this->toString(), $this);
-    }
-
-    /**
      * @return array<string, PlotRate>
-     * @throws PlotException
      */
     public function getPlotRates() : array {
-        $this->loadPlotRates();
         return $this->plotRates;
     }
 
-    /**
-     * @throws PlotException
-     */
     public function addPlotRate(PlotRate $plotRate) : void {
-        $this->loadPlotRates();
         $this->plotRates[$plotRate->toString()] = $plotRate;
-    }
-
-    /**
-     * @internal
-     * @throws PlotException
-     */
-    public function loadPlotRates() : void {
-        if ($this->plotRates !== null) {
-            return;
-        }
-        $this->plotRates = CPlot::getInstance()->getProvider()->getPlotRates($this);
-        if ($this->plotRates === null) {
-            throw new PlotException($this,"Couldn't load plot rates of plot " . $this->toString() . " from provider.");
-        }
-        CPlot::getInstance()->getProvider()->getPlotCache()->cacheObject($this->toString(), $this);
     }
 
     /**
@@ -468,9 +333,6 @@ class Plot extends BasePlot {
         return parent::isSame($plot);
     }
 
-    /**
-     * @throws PlotException
-     */
     public function isOnPlot(Position $position, bool $checkMerge = true) : bool {
         if (!$checkMerge) {
             return parent::isOnPlot($position);

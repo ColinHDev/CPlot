@@ -2,12 +2,10 @@
 
 namespace ColinHDev\CPlotAPI\players;
 
-use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\provider\cache\Cacheable;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\players\settings\SettingManager;
-use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
 use pocketmine\player\OfflinePlayer;
 use pocketmine\Server;
 use Ramsey\Uuid\Uuid;
@@ -18,13 +16,17 @@ class PlayerData implements Cacheable {
     private string $playerName;
     private int $lastPlayed;
 
-    /** @var null | array<string, BaseAttribute> */
-    private ?array $settings = null;
+    /** @var array<string, BaseAttribute> */
+    private array $settings;
 
-    public function __construct(string $playerUUID, string $playerName, int $lastPlayed) {
+    /**
+     * @param array<string, BaseAttribute> $settings
+     */
+    public function __construct(string $playerUUID, string $playerName, int $lastPlayed, array $settings) {
         $this->playerUUID = $playerUUID;
         $this->playerName = $playerName;
         $this->lastPlayed = $lastPlayed;
+        $this->settings = $settings;
     }
 
     public function getPlayerUUID() : string {
@@ -74,29 +76,17 @@ class PlayerData implements Cacheable {
         return (int) ceil($lastPlayed / 1000);
     }
 
-    /**
-     * @return array<string, BaseAttribute>
-     * @throws PlayerDataException
-     */
     public function getSettings() : array {
-        $this->loadSettings();
         return $this->settings;
     }
 
-    /**
-     * @throws PlayerDataException
-     */
     public function getSettingByID(string $settingID) : ?BaseAttribute {
-        $this->loadSettings();
         if (!isset($this->settings[$settingID])) {
             return null;
         }
         return $this->settings[$settingID];
     }
 
-    /**
-     * @throws PlayerDataException
-     */
     public function getSettingNonNullByID(string $settingID) : ?BaseAttribute {
         $setting = $this->getSettingByID($settingID);
         if ($setting === null) {
@@ -105,33 +95,11 @@ class PlayerData implements Cacheable {
         return $setting;
     }
 
-    /**
-     * @throws PlayerDataException
-     */
     public function addSetting(BaseAttribute $setting) : void {
-        $this->loadSettings();
         $this->settings[$setting->getID()] = $setting;
     }
 
-    /**
-     * @throws PlayerDataException
-     */
     public function removeSetting(string $settingID) : void {
-        $this->loadSettings();
         unset($this->settings[$settingID]);
-    }
-
-    /**
-     * @throws PlayerDataException
-     */
-    public function loadSettings() : void {
-        if ($this->settings !== null) {
-            return;
-        }
-        $this->settings = CPlot::getInstance()->getProvider()->getPlayerSettings($this);
-        if ($this->settings === null) {
-            throw new PlayerDataException($this,"Couldn't load player settings of player with UUID " . $this->playerUUID . " from provider.");
-        }
-        CPlot::getInstance()->getProvider()->getPlayerCache()->cacheObject($this->playerUUID, $this);
     }
 }
