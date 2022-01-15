@@ -71,6 +71,7 @@ class PlayerData implements Cacheable {
             default:
             case "database":
                 // Since CPlot stores the last time a player joined in seconds, we do not need to divide anything here.
+                /** @noinspection SuspiciousAssignmentsInspection */
                 $lastPlayed = $this->lastPlayed;
                 break;
         }
