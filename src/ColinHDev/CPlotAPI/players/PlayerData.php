@@ -62,18 +62,19 @@ class PlayerData implements Cacheable {
                 // this could be null if the server admin deleted the player's offline data file
                 $lastPlayed = $offlinePlayer->getLastPlayed();
                 if ($lastPlayed !== null) {
+                    // The last time a player joined is saved in milliseconds by PocketMine-MP. Therefore we divide by
+                    // 1000 and cast it to an integer. The float gets rounded up in favour of the player.
+                    $lastPlayed = (int) ceil($lastPlayed / 1000);
                     break;
                 }
 
             default:
             case "database":
+                // Since CPlot stores the last time a player joined in seconds, we do not need to divide anything here.
                 $lastPlayed = $this->lastPlayed;
                 break;
         }
-
-        // the last played time is saved in milliseconds therefore we devide by 1000 and cast it to an integer
-        // the float gets rounded up in favor of the player
-        return (int) ceil($lastPlayed / 1000);
+        return $lastPlayed;
     }
 
     public function getSettings() : array {
