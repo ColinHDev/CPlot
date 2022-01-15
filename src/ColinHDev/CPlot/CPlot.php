@@ -16,7 +16,7 @@ use ColinHDev\CPlot\listener\EntityTrampleFarmlandListener;
 use ColinHDev\CPlot\listener\PlayerDropItemListener;
 use ColinHDev\CPlot\listener\PlayerInteractListener;
 use ColinHDev\CPlot\listener\PlayerMoveListener;
-use ColinHDev\CPlot\listener\PlayerPreLoginListener;
+use ColinHDev\CPlot\listener\PlayerLoginListener;
 use ColinHDev\CPlot\listener\StructureGrowListener;
 use ColinHDev\CPlot\provider\CEconomyProvider;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -88,7 +88,7 @@ class CPlot extends PluginBase {
         $this->getServer()->getPluginManager()->registerEvents(new PlayerDropItemListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new PlayerInteractListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new PlayerMoveListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new PlayerPreLoginListener(), $this);
+        $this->getServer()->getPluginManager()->registerEvents(new PlayerLoginListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new StructureGrowListener(), $this);
 
         $this->getServer()->getCommandMap()->register("plot", new PlotCommand());

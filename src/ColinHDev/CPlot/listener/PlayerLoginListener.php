@@ -6,16 +6,16 @@ use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlotAPI\players\PlayerData;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerPreLoginEvent;
+use pocketmine\event\player\PlayerLoginEvent;
 
-class PlayerPreLoginListener implements Listener {
+class PlayerLoginListener implements Listener {
 
-    public function onPlayerPreLogin(PlayerPreLoginEvent $event) : void {
+    public function onPlayerLogin(PlayerLoginEvent $event) : void {
         if ($event->isCancelled()) {
             return;
         }
 
-        $playerInfo = $event->getPlayerInfo();
+        $playerInfo = $event->getPlayer();
         $player = new PlayerData(
             $playerInfo->getUuid()->toString(),
             $playerInfo->getUsername(),
@@ -25,9 +25,7 @@ class PlayerPreLoginListener implements Listener {
             return;
         }
 
-        $event->setKickReason(
-            PlayerPreLoginEvent::KICK_REASON_PLUGIN,
-            ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("player.prelogin.savePlayerDataError")
-        );
+        $event->cancel();
+        $event->setKickMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("player.login.savePlayerDataError"));
     }
 }
