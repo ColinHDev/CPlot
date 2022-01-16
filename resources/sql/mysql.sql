@@ -185,7 +185,7 @@ FROM plotPlayers
 WHERE worldName = :worldName AND x = :x AND z = :z;
 -- #    }
 -- #    { plotsByPlotPlayer
--- #      :worldName string
+-- #      :playerUUID string
 -- #      :state string
 SELECT worldName, x, z
 FROM plotPlayers
