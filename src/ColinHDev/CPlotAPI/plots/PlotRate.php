@@ -4,19 +4,19 @@ namespace ColinHDev\CPlotAPI\plots;
 
 class PlotRate {
 
-    private float $rate;
+    private string $rate;
     private string $playerUUID;
     private int $rateTime;
     private ?string $comment;
 
-    public function __construct(float $rate, string $playerUUID, int $rateTime, ?string $comment = null) {
+    public function __construct(string $rate, string $playerUUID, int $rateTime, ?string $comment = null) {
         $this->rate = $rate;
         $this->playerUUID = $playerUUID;
         $this->rateTime = $rateTime;
         $this->comment = $comment;
     }
 
-    public function getRate() : float {
+    public function getRate() : string {
         return $this->rate;
     }
 
