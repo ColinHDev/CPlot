@@ -450,8 +450,8 @@ final class DataProvider {
             self::GET_ORIGINPLOT,
             [
                 "worldName" => $plot->getWorldName(),
-                "x" => $plot->getX(),
-                "z" => $plot->getZ()
+                "mergeX" => $plot->getX(),
+                "mergeZ" => $plot->getZ()
             ]
         );
         $plotData = $rows[array_key_first($rows)] ?? null;
