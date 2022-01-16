@@ -2,11 +2,12 @@
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\ResourceManager;
-use ColinHDev\CPlotAPI\players\PlayerData;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerLoginEvent;
+use poggit\libasynql\SqlError;
+use SOFe\AwaitGenerator\Await;
 
 class PlayerLoginListener implements Listener {
 
@@ -15,17 +16,20 @@ class PlayerLoginListener implements Listener {
             return;
         }
 
-        $playerInfo = $event->getPlayer();
-        $player = new PlayerData(
-            $playerInfo->getUuid()->toString(),
-            $playerInfo->getUsername(),
-            (int) (round(microtime(true) * 1000))
+        $player = $event->getPlayer();
+        Await::g2c(
+            DataProvider::getInstance()->updatePlayerData(
+                $player->getUniqueId()->toString(),
+                $player->getName()
+            ),
+            null,
+            static function (SqlError $error) use ($player) : void {
+                if ($player->isConnected()) {
+                    $player->kick(
+                        ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("player.login.savePlayerDataError")
+                    );
+                }
+            }
         );
-        if (CPlot::getInstance()->getProvider()->setPlayerData($player)) {
-            return;
-        }
-
-        $event->cancel();
-        $event->setKickMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("player.login.savePlayerDataError"));
     }
 }

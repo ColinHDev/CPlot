@@ -2,7 +2,7 @@
 
 namespace ColinHDev\CPlotAPI\plots;
 
-use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\provider\DataProvider;
 
 class MergePlot extends BasePlot {
 
@@ -27,8 +27,8 @@ class MergePlot extends BasePlot {
         return new BasePlot($this->worldName, $this->x, $this->z);
     }
 
-    public function toPlot() : ?Plot {
-        return CPlot::getInstance()->getProvider()->getPlot($this->worldName, $this->originX, $this->originZ);
+    public function toPlot() : \Generator {
+        return yield DataProvider::getInstance()->getPlot($this->worldName, $this->originX, $this->originZ);
     }
 
     public static function fromBasePlot(BasePlot $basePlot, int $originX, int $originZ) : self {

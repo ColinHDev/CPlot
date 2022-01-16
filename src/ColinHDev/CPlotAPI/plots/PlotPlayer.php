@@ -16,7 +16,7 @@ class PlotPlayer {
     public function __construct(string $playerUUID, string $state, ?int $addTime = null) {
         $this->playerUUID = $playerUUID;
         $this->state = $state;
-        $this->addTime = ($addTime !== null) ? $addTime : (int) (round(microtime(true) * 1000));
+        $this->addTime = $addTime ?? time();
     }
 
     public function getPlayerUUID() : string {

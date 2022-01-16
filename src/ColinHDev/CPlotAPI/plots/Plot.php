@@ -2,11 +2,10 @@
 
 namespace ColinHDev\CPlotAPI\plots;
 
-use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\flags\FlagManager;
-use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
@@ -69,19 +68,15 @@ class Plot extends BasePlot {
         $this->mergePlots[$mergedPlot->toString()] = $mergedPlot;
     }
 
-    public function merge(self $plot) : void {
+    public function merge(self $plot) : \Generator {
         foreach (array_merge([$plot], $plot->getMergePlots()) as $mergePlot) {
             $mergePlot = MergePlot::fromBasePlot($mergePlot->toBasePlot(), $this->x, $this->z);
-            if (!CPlot::getInstance()->getProvider()->addMergePlot($this, $mergePlot)) {
-                throw new PlotException($this, "Couldn't merge plot " . $mergePlot->toString() . " into " . $this->toString() . ".");
-            }
+            yield DataProvider::getInstance()->addMergePlot($this, $mergePlot);
             $this->addMergePlot($mergePlot);
         }
 
         foreach ($plot->getPlotPlayers() as $mergePlotPlayer) {
-            if (!CPlot::getInstance()->getProvider()->savePlotPlayer($this, $mergePlotPlayer)) {
-                throw new PlotException($this, "Couldn't merge plot player " . $mergePlotPlayer->getPlayerUUID() . " from plot " . $plot->toString() . " into " . $this->toString() . ".");
-            }
+            yield DataProvider::getInstance()->savePlotPlayer($this, $mergePlotPlayer);
             $this->addPlotPlayer($mergePlotPlayer);
         }
 
@@ -92,16 +87,12 @@ class Plot extends BasePlot {
             } else {
                 $flag = $flag->merge($mergeFlag->getValue());
             }
-            if (!CPlot::getInstance()->getProvider()->savePlotFlag($this, $flag)) {
-                throw new PlotException($this, "Couldn't merge plot flag " . $flag->getID() . " from plot " . $plot->toString() . " into " . $this->toString() . ".");
-            }
+            yield DataProvider::getInstance()->savePlotFlag($this, $flag);
             $this->addFlag($flag);
         }
 
         foreach ($plot->getPlotRates() as $mergePlotRate) {
-            if (!CPlot::getInstance()->getProvider()->savePlotRate($this, $mergePlotRate)) {
-                throw new PlotException($this, "Couldn't merge plot rate " . $mergePlotRate->toString() . " from plot " . $plot->toString() . " into " . $this->toString() . ".");
-            }
+            yield DataProvider::getInstance()->savePlotRate($this, $mergePlotRate);
             $this->addPlotRate($mergePlotRate);
         }
     }
@@ -290,23 +281,23 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @throws PlotException
+     * @throws \RuntimeException when called outside of main thread.
      */
-    public function teleportTo(Player $player, bool $toPlotCenter = false, bool $checkSpawnFlag = true) : bool {
+    public function teleportTo(Player $player, bool $toPlotCenter = false, bool $checkSpawnFlag = true) : \Generator {
         if (!$toPlotCenter && $checkSpawnFlag) {
             $flag = $this->getFlagNonNullByID(FlagIDs::FLAG_SPAWN);
-            $relativeSpawnLocation = $flag->getValue();
-            if ($relativeSpawnLocation instanceof Location) {
+            $relativeSpawn = $flag?->getValue();
+            if ($relativeSpawn instanceof Location) {
                 $world = $this->getWorld();
                 if ($world === null) {
                     return false;
                 }
                 return $player->teleport(
                     Location::fromObject(
-                        $relativeSpawnLocation->addVector($this->getPosition()),
+                        $relativeSpawn->addVector(yield $this->getPosition()),
                         $world,
-                        $relativeSpawnLocation->getYaw(),
-                        $relativeSpawnLocation->getPitch()
+                        $relativeSpawn->getYaw(),
+                        $relativeSpawn->getPitch()
                     )
                 );
             }
@@ -320,51 +311,48 @@ class Plot extends BasePlot {
                     $northestPlot = $mergePlot;
                 }
             }
-            $northestPlot->teleportTo($player, $toPlotCenter);
+            return yield $northestPlot->teleportTo($player, $toPlotCenter);
         }
 
-        return parent::teleportTo($player, $toPlotCenter);
+        return yield parent::teleportTo($player, $toPlotCenter);
     }
 
-    public function isSame(BasePlot $plot, bool $checkMerge = true) : bool {
-        if ($checkMerge && !$plot instanceof Plot) {
-            $plot = $plot->toPlot() ?? $plot;
+    public function isSame(BasePlot $plot, bool $checkMerge = true) : \Generator {
+        if ($checkMerge && !$plot instanceof self) {
+            $plot = (yield $plot->toPlot()) ?? $plot;
         }
         return parent::isSame($plot);
     }
 
-    public function isOnPlot(Position $position, bool $checkMerge = true) : bool {
+    public function isOnPlot(Position $position, bool $checkMerge = true) : \Generator {
         if (!$checkMerge) {
-            return parent::isOnPlot($position);
+            return yield parent::isOnPlot($position);
         }
 
         foreach ($this->getMergePlots() as $mergePlot) {
-            if ($mergePlot->isOnPlot($position)) {
+            if ((yield $mergePlot->isOnPlot($position))) {
                 return true;
             }
         }
 
-        $plot = self::fromPosition($position);
-        if ($plot !== null && $this->isSame($plot)) {
-            return true;
-        }
-        return false;
+        $plot = yield self::fromPosition($position);
+        return $plot !== null && (yield $this->isSame($plot));
     }
 
     public function toBasePlot() : BasePlot {
         return new BasePlot($this->worldName, $this->x, $this->z);
     }
 
-    public static function fromPosition(Position $position, bool $checkMerge = true) : ?self {
-        $worldSettings = CPlot::getInstance()->getProvider()->getWorld($position->getWorld()->getFolderName());
+    public static function fromPosition(Position $position, bool $checkMerge = true) : \Generator {
+        $worldSettings = yield DataProvider::getInstance()->getWorld($position->getWorld()->getFolderName());
         if ($worldSettings === null) {
             return null;
         }
 
         // check for: position = plot
-        $basePlot = parent::fromPosition($position);
+        $basePlot = yield parent::fromPosition($position);
         if ($basePlot !== null) {
-            return $basePlot->toPlot();
+            return yield $basePlot->toPlot();
         }
 
         if (!$checkMerge) {
@@ -372,44 +360,48 @@ class Plot extends BasePlot {
         }
 
         // check for: position = road between plots in north (-z) and south (+z)
-        $basePlotInNorth = parent::fromPosition($position->getSide(Facing::NORTH, $worldSettings->getRoadSize()));
-        $basePlotInSouth = parent::fromPosition($position->getSide(Facing::SOUTH, $worldSettings->getRoadSize()));
+        $basePlotInNorth = yield parent::fromPosition($position->getSide(Facing::NORTH, $worldSettings->getRoadSize()));
+        $basePlotInSouth = yield parent::fromPosition($position->getSide(Facing::SOUTH, $worldSettings->getRoadSize()));
         if ($basePlotInNorth !== null && $basePlotInSouth !== null) {
-            $plotInNorth = $basePlotInNorth->toPlot();
+            $plotInNorth = yield $basePlotInNorth->toPlot();
             if ($plotInNorth === null) {
                 return null;
             }
-            if (!$plotInNorth->isSame($basePlotInSouth)) {
+            if (!(yield $plotInNorth->isSame($basePlotInSouth))) {
                 return null;
             }
             return $plotInNorth;
         }
 
         // check for: position = road between plots in west (-x) and east (+x)
-        $basePlotInWest = parent::fromPosition($position->getSide(Facing::WEST, $worldSettings->getRoadSize()));
-        $basePlotInEast = parent::fromPosition($position->getSide(Facing::EAST, $worldSettings->getRoadSize()));
+        $basePlotInWest = yield parent::fromPosition($position->getSide(Facing::WEST, $worldSettings->getRoadSize()));
+        $basePlotInEast = yield parent::fromPosition($position->getSide(Facing::EAST, $worldSettings->getRoadSize()));
         if ($basePlotInWest !== null && $basePlotInEast !== null) {
-            $plotInWest = $basePlotInWest->toPlot();
+            $plotInWest = yield $basePlotInWest->toPlot();
             if ($plotInWest === null) {
                 return null;
             }
-            if (!$plotInWest->isSame($basePlotInEast)) {
+            if (!(yield $plotInWest->isSame($basePlotInEast))) {
                 return null;
             }
             return $plotInWest;
         }
 
         // check for: position = road center
-        $basePlotInNorthWest = parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
-        $basePlotInNorthEast = parent::fromPosition(Position::fromObject($position->add($worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
-        $basePlotInSouthWest = parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
-        $basePlotInSouthEast = parent::fromPosition(Position::fromObject($position->add($worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInNorthWest = yield parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInNorthEast = yield parent::fromPosition(Position::fromObject($position->add($worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInSouthWest = yield parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInSouthEast = yield parent::fromPosition(Position::fromObject($position->add($worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
         if ($basePlotInNorthWest !== null && $basePlotInNorthEast !== null && $basePlotInSouthWest !== null && $basePlotInSouthEast !== null) {
-            $plotInNorthWest = $basePlotInNorthWest->toPlot();
+            $plotInNorthWest = yield $basePlotInNorthWest->toPlot();
             if ($plotInNorthWest === null) {
                 return null;
             }
-            if (!$plotInNorthWest->isSame($basePlotInNorthEast) || !$plotInNorthWest->isSame($basePlotInSouthWest) || !$plotInNorthWest->isSame($basePlotInSouthEast)) {
+            if (
+                !(yield $plotInNorthWest->isSame($basePlotInNorthEast)) ||
+                !(yield $plotInNorthWest->isSame($basePlotInSouthWest)) ||
+                !(yield $plotInNorthWest->isSame($basePlotInSouthEast))
+            ) {
                 return null;
             }
             return $plotInNorthWest;

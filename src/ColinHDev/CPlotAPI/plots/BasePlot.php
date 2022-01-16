@@ -2,8 +2,8 @@
 
 namespace ColinHDev\CPlotAPI\plots;
 
-use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\provider\cache\Cacheable;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\flags\FlagManager;
 use pocketmine\entity\Location;
@@ -38,6 +38,9 @@ class BasePlot implements Cacheable {
         return $this->z;
     }
 
+    /**
+     * @throws \RuntimeException when called outside of main thread.
+     */
     public function getWorld() : ?World {
         $worldManager = Server::getInstance()->getWorldManager();
         if (!$worldManager->loadWorld($this->worldName)) {
@@ -46,25 +49,34 @@ class BasePlot implements Cacheable {
         return $worldManager->getWorldByName($this->worldName);
     }
 
-    public function teleportTo(Player $player, bool $toPlotCenter = false) : bool {
-        $worldSettings = CPlot::getInstance()->getProvider()->getWorld($this->worldName);
+    /**
+     * @throws \RuntimeException when called outside of main thread.
+     */
+    public function teleportTo(Player $player, bool $toPlotCenter = false) : \Generator {
+        $worldSettings = yield DataProvider::getInstance()->getWorld($this->worldName);
         if ($worldSettings === null) {
             return false;
         }
 
         $flag = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SPAWN);
-        $relativeSpawnLocation = $flag->getValue();
-        if ($relativeSpawnLocation instanceof Location) {
+        $relativeSpawn = $flag?->getValue();
+        if ($relativeSpawn instanceof Location) {
             $world = $this->getWorld();
             if ($world === null) {
                 return false;
             }
             return $player->teleport(
                 Location::fromObject(
-                    $relativeSpawnLocation->addVector($this->getPosition()),
+                    $relativeSpawn->addVector(
+                        $this->getPositionNonNull(
+                            $worldSettings->getRoadSize(),
+                            $worldSettings->getPlotSize(),
+                            $worldSettings->getGroundSize()
+                        )
+                    ),
                     $world,
-                    $relativeSpawnLocation->getYaw(),
-                    $relativeSpawnLocation->getPitch()
+                    $relativeSpawn->getYaw(),
+                    $relativeSpawn->getPitch()
                 )
             );
         }
@@ -81,14 +93,15 @@ class BasePlot implements Cacheable {
         };
     }
 
-    public function isSame(self $plot) : bool {
+    public function isSame(self $plot) : \Generator {
+        0 && yield;
         return $this->worldName === $plot->getWorldName() && $this->x === $plot->getX() && $this->z === $plot->getZ();
     }
 
-    public function isOnPlot(Position $position) : bool {
+    public function isOnPlot(Position $position) : \Generator {
         if ($position->getWorld()->getFolderName() !== $this->worldName) return false;
 
-        $worldSettings = CPlot::getInstance()->getProvider()->getWorld($this->worldName);
+        $worldSettings = yield DataProvider::getInstance()->getWorld($this->worldName);
         if ($worldSettings === null) return false;
 
         $totalSize = $worldSettings->getRoadSize() + $worldSettings->getPlotSize();
@@ -108,12 +121,12 @@ class BasePlot implements Cacheable {
         return $this->x . ";" . $this->z;
     }
 
-    public function toPlot() : ?Plot {
-        return CPlot::getInstance()->getProvider()->getMergeOrigin($this);
+    public function toPlot() : \Generator {
+        return yield DataProvider::getInstance()->getMergeOrigin($this);
     }
 
-    public function getPosition() : ?Vector3 {
-        $worldSettings = CPlot::getInstance()->getProvider()->getWorld($this->worldName);
+    public function getPosition() : \Generator {
+        $worldSettings = yield DataProvider::getInstance()->getWorld($this->worldName);
         if ($worldSettings === null) return null;
         return $this->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
     }
@@ -126,8 +139,8 @@ class BasePlot implements Cacheable {
         );
     }
 
-    public static function fromPosition(Position $position) : ?self {
-        $worldSettings = CPlot::getInstance()->getProvider()->getWorld($position->getWorld()->getFolderName());
+    public static function fromPosition(Position $position) : \Generator {
+        $worldSettings = yield DataProvider::getInstance()->getWorld($position->getWorld()->getFolderName());
         if ($worldSettings === null) return null;
 
         $totalSize = $worldSettings->getPlotSize() + $worldSettings->getRoadSize();

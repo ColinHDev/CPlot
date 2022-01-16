@@ -38,14 +38,14 @@ class PlayerData implements Cacheable {
     }
 
     /**
-     * returns int as the last played time in seconds
-     * returns null if the result couldn't be found
+     * Returns the last time a player joined in seconds.
+     * @throws \RuntimeException when called outside of main thread.
      */
     public function getLastPlayed() : int {
         // player is online and therefore not inactive
         $player = Server::getInstance()->getPlayerByRawUUID(Uuid::fromString($this->playerUUID));
         if ($player !== null) {
-            return (int) (microtime(true) * 1000);
+            return time();
         }
 
         // check if the last time the player played should be fetched from the offline data file or the database
@@ -54,7 +54,7 @@ class PlayerData implements Cacheable {
                 // if the player isn't an instance of OfflinePlayer it is one of Player and therefore online on the server
                 $offlinePlayer = Server::getInstance()->getOfflinePlayer($this->playerName);
                 if (!$offlinePlayer instanceof OfflinePlayer) {
-                    return (int) (microtime(true) * 1000);
+                    return time();
                 }
 
                 // check if the player's offline player data even exists
