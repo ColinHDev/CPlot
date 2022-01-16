@@ -1,9 +1,0 @@
-{
-    "require": {
-        "pocketmine/pocketmine-mp": "^4.0",
-        "sof3/libasynql": "^4.0.1"
-    },
-    "require-dev": {
-        "phpstan/phpstan": "^1.3"
-    }
-}
