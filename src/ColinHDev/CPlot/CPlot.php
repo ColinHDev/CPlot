@@ -19,9 +19,7 @@ use ColinHDev\CPlot\listener\PlayerMoveListener;
 use ColinHDev\CPlot\listener\PlayerLoginListener;
 use ColinHDev\CPlot\listener\StructureGrowListener;
 use ColinHDev\CPlot\provider\CEconomyProvider;
-use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyProvider;
-use ColinHDev\CPlot\provider\SQLiteProvider;
 use ColinHDev\CPlot\tasks\EntityMovementTask;
 use pocketmine\plugin\PluginBase;
 use pocketmine\world\generator\GeneratorManager;
@@ -36,13 +34,6 @@ class CPlot extends PluginBase {
         return self::$instance;
     }
 
-
-    private DataProvider $provider;
-
-    public function getProvider() : DataProvider {
-        return $this->provider;
-    }
-
     private ?EconomyProvider $economyProvider;
 
     public function getEconomyProvider() : ?EconomyProvider {
@@ -53,12 +44,6 @@ class CPlot extends PluginBase {
         self::$instance = $this;
 
         $config = ResourceManager::getInstance()->getConfig();
-        switch (strtolower($config->getNested("database.provider", ""))) {
-            case "sqlite":
-            default:
-                $this->provider = new SQLiteProvider($config->getNested("database.sqlite", []));
-                break;
-        }
         switch (strtolower($config->getNested("economy.provider", ""))) {
             case "ceconomy":
                 $this->economyProvider = new CEconomyProvider($config->get("economy", []));
