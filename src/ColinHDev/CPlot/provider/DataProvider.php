@@ -284,7 +284,9 @@ final class DataProvider {
         );
         $plotData = $rows[array_key_first($rows)] ?? null;
         if ($plotData === null) {
-            return null;
+            $plot = new Plot($worldName, $x, $z);
+            $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+            return $plot;
         }
         $plot = new Plot(
             $worldName,
