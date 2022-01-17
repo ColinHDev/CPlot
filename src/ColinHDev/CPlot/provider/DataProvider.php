@@ -101,15 +101,15 @@ final class DataProvider {
         ];
     }
 
-    private function getPlayerCache() : Cache {
+    public function getPlayerCache() : Cache {
         return $this->caches[CacheIDs::CACHE_PLAYER];
     }
 
-    private function getWorldSettingCache() : Cache {
+    public function getWorldSettingCache() : Cache {
         return $this->caches[CacheIDs::CACHE_WORLDSETTING];
     }
 
-    private function getPlotCache() : Cache {
+    public function getPlotCache() : Cache {
         return $this->caches[CacheIDs::CACHE_PLOT];
     }
 
