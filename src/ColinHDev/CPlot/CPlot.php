@@ -19,6 +19,7 @@ use ColinHDev\CPlot\listener\PlayerMoveListener;
 use ColinHDev\CPlot\listener\PlayerLoginListener;
 use ColinHDev\CPlot\listener\StructureGrowListener;
 use ColinHDev\CPlot\provider\CEconomyProvider;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\EntityMovementTask;
 use pocketmine\plugin\PluginBase;
@@ -52,6 +53,8 @@ class CPlot extends PluginBase {
                 $this->economyProvider = null;
                 break;
         }
+
+        DataProvider::getInstance();
 
         GeneratorManager::getInstance()->addGenerator(PlotGenerator::class, PlotGenerator::GENERATOR_NAME, fn() => null, true);
         GeneratorManager::getInstance()->addGenerator(SchematicGenerator::class, SchematicGenerator::GENERATOR_NAME, fn() => null, true);
