@@ -15,6 +15,7 @@ use ColinHDev\CPlotAPI\plots\MergePlot;
 use ColinHDev\CPlotAPI\plots\PlotPlayer;
 use ColinHDev\CPlotAPI\plots\PlotRate;
 use ColinHDev\CPlotAPI\utils\ParseUtils;
+use ColinHDev\CPlotAPI\worlds\NonWorldSettings;
 use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\Plot;
@@ -228,7 +229,7 @@ final class DataProvider {
 
     public function getWorld(string $worldName) : \Generator {
         $worldSettings = $this->getWorldSettingCache()->getObjectFromCache($worldName);
-        if ($worldSettings instanceof WorldSettings) {
+        if ($worldSettings !== null) {
             return $worldSettings;
         }
         $rows = yield $this->database->asyncSelect(
@@ -237,9 +238,10 @@ final class DataProvider {
         );
         $worldData = $rows[array_key_first($rows)] ?? null;
         if ($worldData === null) {
-            return null;
+            $worldSettings = new NonWorldSettings();
+        } else {
+            $worldSettings = WorldSettings::fromArray($worldData);
         }
-        $worldSettings = WorldSettings::fromArray($worldData);
         $this->getWorldSettingCache()->cacheObject($worldName, $worldSettings);
         return $worldSettings;
     }

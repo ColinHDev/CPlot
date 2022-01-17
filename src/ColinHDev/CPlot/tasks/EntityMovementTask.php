@@ -5,6 +5,7 @@ namespace ColinHDev\CPlot\tasks;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\entity\Human;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\math\Vector3;
@@ -30,7 +31,7 @@ class EntityMovementTask extends Task {
             Await::f2c(
                 function () use ($world) : \Generator {
                     $worldSettings = yield DataProvider::getInstance()->getWorld($world->getFolderName());
-                    if ($worldSettings === null) return;
+                    if (!$worldSettings instanceof WorldSettings) return;
 
                     $worldId = $world->getId();
                     if (!isset($this->lastVector[$worldId])) {

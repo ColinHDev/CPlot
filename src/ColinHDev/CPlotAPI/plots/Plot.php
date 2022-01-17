@@ -6,6 +6,7 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\flags\FlagManager;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
@@ -345,7 +346,7 @@ class Plot extends BasePlot {
 
     public static function fromPosition(Position $position, bool $checkMerge = true) : \Generator {
         $worldSettings = yield DataProvider::getInstance()->getWorld($position->getWorld()->getFolderName());
-        if ($worldSettings === null) {
+        if (!$worldSettings instanceof WorldSettings) {
             return null;
         }
 

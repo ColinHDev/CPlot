@@ -6,6 +6,7 @@ use ColinHDev\CPlot\provider\cache\Cacheable;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\flags\FlagManager;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
@@ -54,7 +55,7 @@ class BasePlot implements Cacheable {
      */
     public function teleportTo(Player $player, bool $toPlotCenter = false) : \Generator {
         $worldSettings = yield DataProvider::getInstance()->getWorld($this->worldName);
-        if ($worldSettings === null) {
+        if (!$worldSettings instanceof WorldSettings) {
             return false;
         }
 
@@ -102,7 +103,7 @@ class BasePlot implements Cacheable {
         if ($position->getWorld()->getFolderName() !== $this->worldName) return false;
 
         $worldSettings = yield DataProvider::getInstance()->getWorld($this->worldName);
-        if ($worldSettings === null) return false;
+        if (!$worldSettings instanceof WorldSettings) return false;
 
         $totalSize = $worldSettings->getRoadSize() + $worldSettings->getPlotSize();
         if ($position->getX() < $this->x * $totalSize + $worldSettings->getRoadSize()) return false;
@@ -127,7 +128,7 @@ class BasePlot implements Cacheable {
 
     public function getPosition() : \Generator {
         $worldSettings = yield DataProvider::getInstance()->getWorld($this->worldName);
-        if ($worldSettings === null) return null;
+        if (!$worldSettings instanceof WorldSettings) return null;
         return $this->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
     }
 
@@ -141,7 +142,7 @@ class BasePlot implements Cacheable {
 
     public static function fromPosition(Position $position) : \Generator {
         $worldSettings = yield DataProvider::getInstance()->getWorld($position->getWorld()->getFolderName());
-        if ($worldSettings === null) return null;
+        if (!$worldSettings instanceof WorldSettings) return null;
 
         $totalSize = $worldSettings->getPlotSize() + $worldSettings->getRoadSize();
 
