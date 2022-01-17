@@ -426,9 +426,9 @@ class Plot extends BasePlot {
         parent::__unserialize($data);
         $this->biomeID = $data["biomeID"];
         $this->alias = $data["alias"];
-        $this->mergePlots = unserialize($data["mergePlots"]);
-        $this->plotPlayers = unserialize($data["plotPlayers"]);
-        $this->flags = unserialize($data["flags"]);
-        $this->plotRates = unserialize($data["plotRates"]);
+        $this->mergePlots = unserialize($data["mergePlots"], false);
+        $this->plotPlayers = unserialize($data["plotPlayers"], false);
+        $this->flags = unserialize($data["flags"], false);
+        $this->plotRates = unserialize($data["plotRates"], false);
     }
 }
