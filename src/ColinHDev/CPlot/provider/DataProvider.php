@@ -629,7 +629,7 @@ final class DataProvider {
     /**
      * Fetches {@see Plot}s by a common {@see PlotPlayer} asynchronously from the database and returns a {@see \Generator}.
      * It can be get by using {@see Await}.
-     * @phpstan-return \Generator<null, \Generator, array[]|Plot|null, Plot[]|null>
+     * @phpstan-return \Generator<null, \Generator, array[]|Plot|null, array<string, Plot>>
      */
     public function awaitPlotsByPlotPlayer(string $playerUUID, string $state) : \Generator {
         $rows = yield $this->database->asyncSelect(
@@ -642,10 +642,9 @@ final class DataProvider {
         $plots = [];
         foreach ($rows as $row) {
             $plot = yield $this->awaitPlot($row["worldName"], $row["x"], $row["z"]);
-            if ($plot === null) {
-                return null;
+            if ($plot instanceof Plot) {
+                $plots[$plot->toString()] = $plot;
             }
-            $plots[] = $plot;
         }
         return $plots;
     }
