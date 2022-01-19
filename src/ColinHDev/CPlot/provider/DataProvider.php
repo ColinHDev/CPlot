@@ -540,10 +540,35 @@ final class DataProvider {
     }
 
     /**
+     * Fetches and returns the origin plot ({@see Plot}) of another plot synchronously from the {@see DataProvider::getPlotCache()}.
+     * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
+     * is synchronously available the next time this method is called.
+     */
+    public function loadMergeOriginIntoCache(BasePlot $plot) : ?Plot {
+        if ($plot instanceof Plot) {
+            return $plot;
+        }
+        if ($plot instanceof MergePlot) {
+            return $this->loadPlotIntoCache($plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ());
+        }
+        $plotInCache = $this->getPlotCache()->getObjectFromCache($plot->toString());
+        if ($plotInCache instanceof Plot) {
+            return $plotInCache;
+        }
+        if ($plotInCache instanceof MergePlot) {
+            return $this->loadPlotIntoCache($plotInCache->getWorldName(), $plotInCache->getOriginX(), $plotInCache->getOriginZ());
+        }
+        Await::g2c(
+            $this->awaitMergeOrigin($plot),
+        );
+        return null;
+    }
+
+    /**
      * Fetches the origin plot ({@see Plot}) of another plot asynchronously from the database (or synchronously from the
      * {@see DataProvider::getPlotCache()} if contained) and returns a {@see \Generator}. It can be get
      * by using {@see Await}.
-     * @phpstan-return \Generator<null, \Generator, array|array[], Plot|null>
+     * @phpstan-return \Generator<null, \Generator, array[]|Plot|null, Plot|null>
      */
     public function awaitMergeOrigin(BasePlot $plot) : \Generator {
         if ($plot instanceof Plot) {
@@ -551,6 +576,13 @@ final class DataProvider {
         }
         if ($plot instanceof MergePlot) {
             return yield $this->awaitPlot($plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ());
+        }
+        $plotInCache = $this->getPlotCache()->getObjectFromCache($plot->toString());
+        if ($plotInCache instanceof Plot) {
+            return $plotInCache;
+        }
+        if ($plotInCache instanceof MergePlot) {
+            return yield $this->awaitPlot($plotInCache->getWorldName(), $plotInCache->getOriginX(), $plotInCache->getOriginZ());
         }
         $rows = yield $this->database->asyncSelect(
             self::GET_ORIGINPLOT,
