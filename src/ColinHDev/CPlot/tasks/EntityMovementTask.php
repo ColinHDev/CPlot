@@ -18,8 +18,8 @@ use SOFe\AwaitGenerator\Await;
 class EntityMovementTask extends Task {
 
     private WorldManager $worldManager;
-    /** @var Vector3[] */
-    private array $lastVector = [];
+    /** @var Position[] */
+    private array $lastPositions = [];
 
     public function __construct() {
         $this->worldManager = Server::getInstance()->getWorldManager();
@@ -40,22 +40,22 @@ class EntityMovementTask extends Task {
 
                         $entityId = $entity->getId();
                         if ($entity->isClosed()) {
-                            unset($this->lastVector[$entityId]);
+                            unset($this->lastPositions[$entityId]);
                             continue;
                         }
 
                         if (!$entity->hasMovementUpdate()) continue;
 
-                        $position = $entity->getPosition();
-                        if (!isset($this->lastVector[$entityId])) {
-                            $this->lastVector[$entityId] = $position->asVector3();
+                        if (!isset($this->lastPositions[$entityId])) {
+                            $this->lastPositions[$entityId] = $entity->getPosition();
                             continue;
                         }
 
-                        $lastPosition = Position::fromObject($this->lastVector[$entityId], $world);
+                        $position = $entity->getPosition();
+                        $lastPosition = $this->lastPositions[$entityId];
                         if ($lastPosition->equals($position)) continue;
 
-                        $this->lastVector[$entityId] = $position->asVector3();
+                        $this->lastPositions[$entityId] = $position->asVector3();
                         $lastBasePlot = yield BasePlot::fromPosition($lastPosition);
                         $basePlot = yield BasePlot::fromPosition($position);
                         if ($lastBasePlot !== null && $basePlot !== null && (yield $lastBasePlot->isSame($basePlot))) continue;
