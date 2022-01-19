@@ -53,7 +53,17 @@ class EntityMovementTask extends Task {
 
                         $position = $entity->getPosition();
                         $lastPosition = $this->lastPositions[$entityId];
-                        if ($lastPosition->equals($position)) continue;
+                        if (
+                            // Only if the world did not change, e.g. due to a teleport, we need to check how far the entity moved.
+                            $position->world === $lastPosition->world &&
+                            // Check if the entity moved across a block and if not, we already checked that block and the entity just
+                            // moved in the borders between that one.
+                            $position->getFloorX() === $lastPosition->getFloorX() &&
+                            $position->getFloorY() === $lastPosition->getFloorY() &&
+                            $position->getFloorZ() === $lastPosition->getFloorZ()
+                        ) {
+                            return;
+                        }
 
                         $this->lastPositions[$entityId] = $position->asVector3();
                         $lastBasePlot = yield BasePlot::fromPosition($lastPosition);
