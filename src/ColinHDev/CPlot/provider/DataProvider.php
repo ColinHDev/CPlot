@@ -26,6 +26,10 @@ use poggit\libasynql\SqlError;
 use poggit\libasynql\SqlThread;
 use SOFe\AwaitGenerator\Await;
 
+/**
+ * This is an @internal class for handling the storage of data of this plugin in a database.
+ * This is NOT an API for other plugins.
+ */
 final class DataProvider {
     use SingletonTrait;
 
