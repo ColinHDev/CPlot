@@ -54,7 +54,7 @@ class BasePlot implements Cacheable {
      * @throws \RuntimeException when called outside of main thread.
      */
     public function teleportTo(Player $player, bool $toPlotCenter = false) : \Generator {
-        $worldSettings = yield DataProvider::getInstance()->getWorld($this->worldName);
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($this->worldName);
         if (!$worldSettings instanceof WorldSettings) {
             return false;
         }
@@ -102,7 +102,7 @@ class BasePlot implements Cacheable {
     public function isOnPlot(Position $position) : \Generator {
         if ($position->getWorld()->getFolderName() !== $this->worldName) return false;
 
-        $worldSettings = yield DataProvider::getInstance()->getWorld($this->worldName);
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($this->worldName);
         if (!$worldSettings instanceof WorldSettings) return false;
 
         $totalSize = $worldSettings->getRoadSize() + $worldSettings->getPlotSize();
@@ -123,11 +123,11 @@ class BasePlot implements Cacheable {
     }
 
     public function toPlot() : \Generator {
-        return yield DataProvider::getInstance()->getMergeOrigin($this);
+        return yield DataProvider::getInstance()->awaitMergeOrigin($this);
     }
 
     public function getPosition() : \Generator {
-        $worldSettings = yield DataProvider::getInstance()->getWorld($this->worldName);
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($this->worldName);
         if (!$worldSettings instanceof WorldSettings) return null;
         return $this->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
     }
@@ -141,7 +141,7 @@ class BasePlot implements Cacheable {
     }
 
     public static function fromPosition(Position $position) : \Generator {
-        $worldSettings = yield DataProvider::getInstance()->getWorld($position->getWorld()->getFolderName());
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($position->getWorld()->getFolderName());
         if (!$worldSettings instanceof WorldSettings) return null;
 
         $totalSize = $worldSettings->getPlotSize() + $worldSettings->getRoadSize();

@@ -30,7 +30,7 @@ class EntityMovementTask extends Task {
 
             Await::f2c(
                 function () use ($world) : \Generator {
-                    $worldSettings = yield DataProvider::getInstance()->getWorld($world->getFolderName());
+                    $worldSettings = yield DataProvider::getInstance()->awaitWorld($world->getFolderName());
                     if (!$worldSettings instanceof WorldSettings) return;
 
                     $worldId = $world->getId();

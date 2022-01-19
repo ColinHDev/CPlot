@@ -22,7 +22,9 @@ use ColinHDev\CPlotAPI\plots\Plot;
 use pocketmine\utils\SingletonTrait;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
+use poggit\libasynql\SqlError;
 use poggit\libasynql\SqlThread;
+use SOFe\AwaitGenerator\Await;
 
 final class DataProvider {
     use SingletonTrait;
@@ -70,7 +72,7 @@ final class DataProvider {
     private array $caches;
 
     /**
-     * @throws \poggit\libasynql\SqlError
+     * @throws SqlError
      */
     public function __construct() {
         $this->database = libasynql::create(CPlot::getInstance(), ResourceManager::getInstance()->getConfig()->get("database"), [
@@ -114,7 +116,29 @@ final class DataProvider {
         return $this->caches[CacheIDs::CACHE_PLOT];
     }
 
-    public function getPlayerDataByUUID(string $playerUUID) : \Generator {
+    /**
+     * Fetches and returns the {@see PlayerData} of a player by its UUID synchronously from the {@see DataProvider::getPlayerCache()}.
+     * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
+     * is synchronously available the next time this method is called.
+     */
+    public function loadPlayerDataByUUIDIntoCache(string $playerUUID) : ?PlayerData {
+        $playerData = $this->getPlayerCache()->getObjectFromCache($playerUUID);
+        if ($playerData instanceof PlayerData) {
+            return $playerData;
+        }
+        Await::g2c(
+            $this->awaitPlayerDataByUUID($playerUUID),
+        );
+        return null;
+    }
+
+    /**
+     * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
+     * {@see DataProvider::getPlayerCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array[], PlayerData|null>
+     */
+    public function awaitPlayerDataByUUID(string $playerUUID) : \Generator {
         $playerData = $this->getPlayerCache()->getObjectFromCache($playerUUID);
         if ($playerData instanceof PlayerData) {
             return $playerData;
@@ -127,32 +151,23 @@ final class DataProvider {
         if ($playerData === null) {
             return null;
         }
-        $rows = yield $this->database->asyncSelect(
-            self::GET_PLAYERSETTINGS,
-            ["playerUUID" => $playerUUID]
-        );
-        $settings = [];
-        foreach ($rows as $row) {
-            $setting = SettingManager::getInstance()->getSettingByID($row["ID"]);
-            if ($setting === null) {
-                continue;
-            }
-            try {
-                $settings[$setting->getID()] = $setting->newInstance($setting->parse($row["value"]));
-            } catch (AttributeParseException) {
-            }
-        }
         $playerData = new PlayerData(
             $playerUUID,
             $playerData["playerName"],
             \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"])->getTimestamp(),
-            $settings
+            yield $this->awaitPlayerSettings($playerUUID)
         );
         $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
         return $playerData;
     }
 
-    public function getPlayerDataByName(string $playerName) : \Generator {
+    /**
+     * Fetches the {@see PlayerData} of a player by its name asynchronously from the database (or synchronously from the
+     * {@see DataProvider::getPlayerCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array[], PlayerData|null>
+     */
+    public function awaitPlayerDataByName(string $playerName) : \Generator {
         $rows = yield $this->database->asyncSelect(
             self::GET_PLAYERDATA_BY_NAME,
             ["playerName" => $playerName]
@@ -166,13 +181,18 @@ final class DataProvider {
             $playerUUID,
             $playerName,
             \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"])->getTimestamp(),
-            yield $this->getPlayerSettings($playerUUID)
+            yield $this->awaitPlayerSettings($playerUUID)
         );
         $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
         return $playerData;
     }
 
-    private function getPlayerSettings(string $playerUUID) : \Generator {
+    /**
+     * Fetches the settings ({@see BaseAttribute}s) of a player asynchronously from the database and returns a {@see \Generator}. The
+     * player settings can be get by using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array[], array<string, BaseAttribute>>
+     */
+    private function awaitPlayerSettings(string $playerUUID) : \Generator {
         $rows = yield $this->database->asyncSelect(
             self::GET_PLAYERSETTINGS,
             ["playerUUID" => $playerUUID]
@@ -227,7 +247,29 @@ final class DataProvider {
         $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
     }
 
-    public function getWorld(string $worldName) : \Generator {
+    /**
+     * Fetches and returns the {@see WorldSettings} of a world synchronously from the {@see DataProvider::getWorldSettingCache()}.
+     * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
+     * is synchronously available the next time this method is called.
+     */
+    public function loadWorldIntoCache(string $worldName) : WorldSettings|NonWorldSettings|null {
+        $worldSettings = $this->getWorldSettingCache()->getObjectFromCache($worldName);
+        if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
+            return $worldSettings;
+        }
+        Await::g2c(
+            $this->awaitWorld($worldName),
+        );
+        return null;
+    }
+
+    /**
+     * Fetches the {@see WorldSettings} of a world asynchronously from the database (or synchronously from the
+     * {@see DataProvider::getWorldSettingCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array[], WorldSettings|NonWorldSettings>
+     */
+    public function awaitWorld(string $worldName) : \Generator {
         $worldSettings = $this->getWorldSettingCache()->getObjectFromCache($worldName);
         if ($worldSettings !== null) {
             return $worldSettings;
@@ -268,7 +310,32 @@ final class DataProvider {
         $this->getWorldSettingCache()->cacheObject($worldName, $worldSettings);
     }
 
-    public function getPlot(string $worldName, int $x, int $z) : \Generator {
+    /**
+     * Fetches and returns a {@see Plot} synchronously from the {@see DataProvider::getPlotCache()}.
+     * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
+     * is synchronously available the next time this method is called.
+     */
+    public function loadPlotIntoCache(string $worldName, int $x, int $z) : ?Plot {
+        $plot = $this->getPlotCache()->getObjectFromCache($worldName . ";" . $x . ";" . $z);
+        if ($plot instanceof BasePlot) {
+            if ($plot instanceof Plot) {
+                return $plot;
+            }
+            return null;
+        }
+        Await::g2c(
+            $this->awaitPlot($worldName, $x, $z),
+        );
+        return null;
+    }
+
+    /**
+     * Fetches a {@see Plot} asynchronously from the database (or synchronously from the
+     * {@see DataProvider::getPlotCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array|array[], Plot|null>
+     */
+    public function awaitPlot(string $worldName, int $x, int $z) : \Generator {
         $plot = $this->getPlotCache()->getObjectFromCache($worldName . ";" . $x . ";" . $z);
         if ($plot instanceof BasePlot) {
             if ($plot instanceof Plot) {
@@ -296,16 +363,21 @@ final class DataProvider {
             $z,
             $plotData["biomeID"],
             $plotData["alias"],
-            yield $this->getMergePlots($worldName, $x, $z),
-            yield $this->getPlotPlayers($worldName, $x, $z),
-            yield $this->getPlotFlags($worldName, $x, $z),
-            yield $this->getPlotRates($worldName, $x, $z)
+            yield $this->awaitMergePlots($worldName, $x, $z),
+            yield $this->awaitPlotPlayers($worldName, $x, $z),
+            yield $this->awaitPlotFlags($worldName, $x, $z),
+            yield $this->awaitPlotRates($worldName, $x, $z)
         );
         $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return $plot;
     }
 
-    private function getMergePlots(string $worldName, int $x, int $z) : \Generator {
+    /**
+     * Fetches the {@see MergePlot}s of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * merge plots can be get by using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array[], array<string, MergePlot>>
+     */
+    private function awaitMergePlots(string $worldName, int $x, int $z) : \Generator {
         $rows = yield $this->database->asyncSelect(
             self::GET_MERGEPLOTS,
             [
@@ -324,7 +396,12 @@ final class DataProvider {
         return $mergePlots;
     }
 
-    private function getPlotPlayers(string $worldName, int $x, int $z) : \Generator {
+    /**
+     * Fetches the {@see PlotPlayer}s of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * plot players can be get by using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array[], array<string, PlotPlayer>>
+     */
+    private function awaitPlotPlayers(string $worldName, int $x, int $z) : \Generator {
         $rows = yield $this->database->asyncSelect(
             self::GET_PLOTPLAYERS,
             [
@@ -345,7 +422,12 @@ final class DataProvider {
         return $plotPlayers;
     }
 
-    private function getPlotFlags(string $worldName, int $x, int $z) : \Generator {
+    /**
+     * Fetches the flags ({@see BaseAttribute}s) of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * plot flags can be get by using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array[], array<string, BaseAttribute>>
+     */
+    private function awaitPlotFlags(string $worldName, int $x, int $z) : \Generator {
         $rows = yield $this->database->asyncSelect(
             self::GET_PLOTFLAGS,
             [
@@ -368,7 +450,12 @@ final class DataProvider {
         return $plotFlags;
     }
 
-    private function getPlotRates(string $worldName, int $x, int $z) : \Generator {
+    /**
+     * Fetches the {@see PlotRate}s of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * plot rates can be get by using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array[], array<string, PlotRate>>
+     */
+    private function awaitPlotRates(string $worldName, int $x, int $z) : \Generator {
         $rows = yield $this->database->asyncSelect(
             self::GET_PLOTRATES,
             [
@@ -390,7 +477,12 @@ final class DataProvider {
         return $plotRates;
     }
 
-    public function getPlotByAlias(string $alias) : \Generator {
+    /**
+     * Fetches a {@see Plot} by its alias asynchronously from the database and returns a {@see \Generator}. It can be get
+     * by using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array|array[], Plot|null>
+     */
+    public function awaitPlotByAlias(string $alias) : \Generator {
         $rows = yield $this->database->asyncSelect(
             self::GET_PLOT_BY_ALIAS,
             ["alias" => $alias]
@@ -408,10 +500,10 @@ final class DataProvider {
             $z,
             $plotData["biomeID"],
             $alias,
-            yield $this->getMergePlots($worldName, $x, $z),
-            yield $this->getPlotPlayers($worldName, $x, $z),
-            yield $this->getPlotFlags($worldName, $x, $z),
-            yield $this->getPlotRates($worldName, $x, $z)
+            yield $this->awaitMergePlots($worldName, $x, $z),
+            yield $this->awaitPlotPlayers($worldName, $x, $z),
+            yield $this->awaitPlotFlags($worldName, $x, $z),
+            yield $this->awaitPlotRates($worldName, $x, $z)
         );
         $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return $plot;
@@ -443,12 +535,18 @@ final class DataProvider {
         $this->getPlotCache()->removeObjectFromCache($plot->toString());
     }
 
-    public function getMergeOrigin(BasePlot $plot) : \Generator {
+    /**
+     * Fetches the origin plot ({@see Plot}) of another plot asynchronously from the database (or synchronously from the
+     * {@see DataProvider::getPlotCache()} if contained) and returns a {@see \Generator}. It can be get
+     * by using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array|array[], Plot|null>
+     */
+    public function awaitMergeOrigin(BasePlot $plot) : \Generator {
         if ($plot instanceof Plot) {
             return $plot;
         }
         if ($plot instanceof MergePlot) {
-            return yield $this->getPlot($plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ());
+            return yield $this->awaitPlot($plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ());
         }
         $rows = yield $this->database->asyncSelect(
             self::GET_ORIGINPLOT,
@@ -460,14 +558,20 @@ final class DataProvider {
         );
         $plotData = $rows[array_key_first($rows)] ?? null;
         if ($plotData === null) {
-            return yield $this->getPlot($plot->getWorldName(), $plot->getX(), $plot->getZ());
+            return yield $this->awaitPlot($plot->getWorldName(), $plot->getX(), $plot->getZ());
         }
-        return yield $this->getPlot($plot->getWorldName(), $plotData["originX"], $plotData["originZ"]);
+        return yield $this->awaitPlot($plot->getWorldName(), $plotData["originX"], $plotData["originZ"]);
     }
 
-    public function getNextFreePlot(string $worldName, int $limitXZ = 0) : \Generator {
-        $i = 0;
-        for(; $limitXZ <= 0 or $i < $limitXZ; $i++) {
+    /**
+     * Fetches asynchronously all {@see Plot}s and {@see MergePlot}s in a plot world in a certain radius around plot
+     * worldName;0;0 from the database. Returns a {@see \Generator} that returns a plot that is in the radius, closest
+     * to the spawn and has no data in the database or null if no such plot could be found, by using {@see Await}.
+     * @param int $limitXZ Limits the radius in which plots are fetched.
+     * @phpstan-return \Generator<null, \Generator, array[], Plot|null>
+     */
+    public function awaitNextFreePlot(string $worldName, int $limitXZ = 0) : \Generator {
+        for ($i = 0; $limitXZ <= 0 || $i < $limitXZ; $i++) {
             $plots = [];
             $rows = yield $this->database->asyncSelect(
                 self::GET_EXISTING_PLOTXZ,
@@ -522,7 +626,12 @@ final class DataProvider {
         $this->getPlotCache()->cacheObject($mergePlot->toString(), $mergePlot);
     }
 
-    public function getPlotsByPlotPlayer(string $playerUUID, string $state) : \Generator {
+    /**
+     * Fetches {@see Plot}s by a common {@see PlotPlayer} asynchronously from the database and returns a {@see \Generator}.
+     * It can be get by using {@see Await}.
+     * @phpstan-return \Generator<null, \Generator, array[]|Plot|null, Plot[]|null>
+     */
+    public function awaitPlotsByPlotPlayer(string $playerUUID, string $state) : \Generator {
         $rows = yield $this->database->asyncSelect(
             self::GET_PLOTS_BY_PLOTPLAYER,
             [
@@ -532,7 +641,7 @@ final class DataProvider {
         );
         $plots = [];
         foreach ($rows as $row) {
-            $plot = yield $this->getPlot($row["worldName"], $row["x"], $row["z"]);
+            $plot = yield $this->awaitPlot($row["worldName"], $row["x"], $row["z"]);
             if ($plot === null) {
                 return null;
             }

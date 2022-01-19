@@ -345,7 +345,7 @@ class Plot extends BasePlot {
     }
 
     public static function fromPosition(Position $position, bool $checkMerge = true) : \Generator {
-        $worldSettings = yield DataProvider::getInstance()->getWorld($position->getWorld()->getFolderName());
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($position->getWorld()->getFolderName());
         if (!$worldSettings instanceof WorldSettings) {
             return null;
         }

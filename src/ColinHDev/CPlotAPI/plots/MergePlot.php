@@ -28,7 +28,7 @@ class MergePlot extends BasePlot {
     }
 
     public function toPlot() : \Generator {
-        return yield DataProvider::getInstance()->getPlot($this->worldName, $this->originX, $this->originZ);
+        return yield DataProvider::getInstance()->awaitPlot($this->worldName, $this->originX, $this->originZ);
     }
 
     public static function fromBasePlot(BasePlot $basePlot, int $originX, int $originZ) : self {
