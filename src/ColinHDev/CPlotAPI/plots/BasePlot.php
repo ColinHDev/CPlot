@@ -94,8 +94,7 @@ class BasePlot implements Cacheable {
         };
     }
 
-    public function isSame(self $plot) : \Generator {
-        0 && yield;
+    public function isSame(self $plot) : bool {
         return $this->worldName === $plot->getWorldName() && $this->x === $plot->getX() && $this->z === $plot->getZ();
     }
 
@@ -122,7 +121,11 @@ class BasePlot implements Cacheable {
         return $this->x . ";" . $this->z;
     }
 
-    public function toPlot() : \Generator {
+    public function toSyncPlot() : ?Plot {
+        return DataProvider::getInstance()->loadMergeOriginIntoCache($this);
+    }
+
+    public function toAsyncPlot() : \Generator {
         return yield DataProvider::getInstance()->awaitMergeOrigin($this);
     }
 
@@ -140,13 +143,28 @@ class BasePlot implements Cacheable {
         );
     }
 
-    public static function fromPosition(Position $position) : \Generator {
-        $worldSettings = yield DataProvider::getInstance()->awaitWorld($position->getWorld()->getFolderName());
-        if (!$worldSettings instanceof WorldSettings) return null;
+    public static function loadFromPositionIntoCache(Position $position) : ?self {
+        $worldName = $position->getWorld()->getFolderName();
+        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($worldName);
+        if (!$worldSettings instanceof WorldSettings) {
+            return null;
+        }
+        return self::fromVector3($worldName, $worldSettings, $position->asVector3());
+    }
 
+    public static function awaitFromPosition(Position $position) : \Generator {
+        $worldName = $position->getWorld()->getFolderName();
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($worldName);
+        if (!$worldSettings instanceof WorldSettings) {
+            return null;
+        }
+        return self::fromVector3($worldName, $worldSettings, $position->asVector3());
+    }
+
+    public static function fromVector3(string $worldName, WorldSettings $worldSettings, Vector3 $vector3) : ?self {
         $totalSize = $worldSettings->getPlotSize() + $worldSettings->getRoadSize();
 
-        $x = $position->getFloorX() - $worldSettings->getRoadSize();
+        $x = $vector3->getFloorX() - $worldSettings->getRoadSize();
         if ($x >= 0) {
             $X = (int) floor($x / $totalSize);
             $difX = $x % $totalSize;
@@ -155,7 +173,7 @@ class BasePlot implements Cacheable {
             $difX = abs(($x - $worldSettings->getPlotSize() + 1) % $totalSize);
         }
 
-        $z = $position->getFloorZ() - $worldSettings->getRoadSize();
+        $z = $vector3->getFloorZ() - $worldSettings->getRoadSize();
         if ($z >= 0) {
             $Z = (int) floor($z / $totalSize);
             $difZ = $z % $totalSize;
@@ -164,8 +182,10 @@ class BasePlot implements Cacheable {
             $difZ = abs(($z - $worldSettings->getPlotSize() + 1) % $totalSize);
         }
 
-        if (($difX > $worldSettings->getPlotSize() - 1) || ($difZ > $worldSettings->getPlotSize() - 1)) return null;
-        return new self($position->getWorld()->getFolderName(), $X, $Z);
+        if (($difX > $worldSettings->getPlotSize() - 1) || ($difZ > $worldSettings->getPlotSize() - 1)) {
+            return null;
+        }
+        return new self($worldName, $X, $Z);
     }
 
     public function __serialize() : array {

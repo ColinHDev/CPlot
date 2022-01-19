@@ -10,6 +10,7 @@ use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
+use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
 
@@ -318,9 +319,9 @@ class Plot extends BasePlot {
         return yield parent::teleportTo($player, $toPlotCenter);
     }
 
-    public function isSame(BasePlot $plot, bool $checkMerge = true) : \Generator {
+    public function isSame(BasePlot $plot, bool $checkMerge = true) : bool {
         if ($checkMerge && !$plot instanceof self) {
-            $plot = (yield $plot->toPlot()) ?? $plot;
+            $plot = $plot->toSyncPlot() ?? $plot;
         }
         return parent::isSame($plot);
     }
@@ -336,24 +337,25 @@ class Plot extends BasePlot {
             }
         }
 
-        $plot = yield self::fromPosition($position);
-        return $plot !== null && (yield $this->isSame($plot));
+        $plot = yield self::awaitFromPosition($position);
+        return $plot !== null && $this->isSame($plot);
     }
 
     public function toBasePlot() : BasePlot {
         return new BasePlot($this->worldName, $this->x, $this->z);
     }
 
-    public static function fromPosition(Position $position, bool $checkMerge = true) : \Generator {
-        $worldSettings = yield DataProvider::getInstance()->awaitWorld($position->getWorld()->getFolderName());
+    public static function loadFromPositionIntoCache(Position $position, bool $checkMerge = true) : ?self {
+        $worldName = $position->getWorld()->getFolderName();
+        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($worldName);
         if (!$worldSettings instanceof WorldSettings) {
             return null;
         }
 
         // check for: position = plot
-        $basePlot = yield parent::fromPosition($position);
+        $basePlot = parent::fromVector3($worldName, $worldSettings, $position);
         if ($basePlot !== null) {
-            return yield $basePlot->toPlot();
+            return $basePlot->toSyncPlot();
         }
 
         if (!$checkMerge) {
@@ -361,47 +363,114 @@ class Plot extends BasePlot {
         }
 
         // check for: position = road between plots in north (-z) and south (+z)
-        $basePlotInNorth = yield parent::fromPosition($position->getSide(Facing::NORTH, $worldSettings->getRoadSize()));
-        $basePlotInSouth = yield parent::fromPosition($position->getSide(Facing::SOUTH, $worldSettings->getRoadSize()));
+        $basePlotInNorth = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::NORTH, $worldSettings->getRoadSize()));
+        $basePlotInSouth = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::SOUTH, $worldSettings->getRoadSize()));
         if ($basePlotInNorth !== null && $basePlotInSouth !== null) {
-            $plotInNorth = yield $basePlotInNorth->toPlot();
+            $plotInNorth = $basePlotInNorth->toSyncPlot();
             if ($plotInNorth === null) {
                 return null;
             }
-            if (!(yield $plotInNorth->isSame($basePlotInSouth))) {
+            if (!$plotInNorth->isSame($basePlotInSouth)) {
                 return null;
             }
             return $plotInNorth;
         }
 
         // check for: position = road between plots in west (-x) and east (+x)
-        $basePlotInWest = yield parent::fromPosition($position->getSide(Facing::WEST, $worldSettings->getRoadSize()));
-        $basePlotInEast = yield parent::fromPosition($position->getSide(Facing::EAST, $worldSettings->getRoadSize()));
+        $basePlotInWest = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::WEST, $worldSettings->getRoadSize()));
+        $basePlotInEast = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::EAST, $worldSettings->getRoadSize()));
         if ($basePlotInWest !== null && $basePlotInEast !== null) {
-            $plotInWest = yield $basePlotInWest->toPlot();
+            $plotInWest = $basePlotInWest->toSyncPlot();
             if ($plotInWest === null) {
                 return null;
             }
-            if (!(yield $plotInWest->isSame($basePlotInEast))) {
+            if (!$plotInWest->isSame($basePlotInEast)) {
                 return null;
             }
             return $plotInWest;
         }
 
         // check for: position = road center
-        $basePlotInNorthWest = yield parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
-        $basePlotInNorthEast = yield parent::fromPosition(Position::fromObject($position->add($worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
-        $basePlotInSouthWest = yield parent::fromPosition(Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
-        $basePlotInSouthEast = yield parent::fromPosition(Position::fromObject($position->add($worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInNorthWest = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInNorthEast = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add($worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInSouthWest = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInSouthEast = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add($worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
         if ($basePlotInNorthWest !== null && $basePlotInNorthEast !== null && $basePlotInSouthWest !== null && $basePlotInSouthEast !== null) {
-            $plotInNorthWest = yield $basePlotInNorthWest->toPlot();
+            $plotInNorthWest = $basePlotInNorthWest->toSyncPlot();
             if ($plotInNorthWest === null) {
                 return null;
             }
             if (
-                !(yield $plotInNorthWest->isSame($basePlotInNorthEast)) ||
-                !(yield $plotInNorthWest->isSame($basePlotInSouthWest)) ||
-                !(yield $plotInNorthWest->isSame($basePlotInSouthEast))
+                !$plotInNorthWest->isSame($basePlotInNorthEast) ||
+                !$plotInNorthWest->isSame($basePlotInSouthWest) ||
+                !$plotInNorthWest->isSame($basePlotInSouthEast)
+            ) {
+                return null;
+            }
+            return $plotInNorthWest;
+        }
+
+        return null;
+    }
+
+    public static function awaitFromPosition(Position $position, bool $checkMerge = true) : \Generator {
+        $worldName = $position->getWorld()->getFolderName();
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($position->getWorld()->getFolderName());
+        if (!$worldSettings instanceof WorldSettings) {
+            return null;
+        }
+        // check for: position = plot
+        $basePlot = parent::fromVector3($worldName, $worldSettings, $position);
+        if ($basePlot !== null) {
+            return yield $basePlot->toAsyncPlot();
+        }
+
+        if (!$checkMerge) {
+            return null;
+        }
+
+        // check for: position = road between plots in north (-z) and south (+z)
+        $basePlotInNorth = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::NORTH, $worldSettings->getRoadSize()));
+        $basePlotInSouth = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::SOUTH, $worldSettings->getRoadSize()));
+        if ($basePlotInNorth !== null && $basePlotInSouth !== null) {
+            $plotInNorth = yield $basePlotInNorth->toAsyncPlot();
+            if ($plotInNorth === null) {
+                return null;
+            }
+            if (!$plotInNorth->isSame($basePlotInSouth)) {
+                return null;
+            }
+            return $plotInNorth;
+        }
+
+        // check for: position = road between plots in west (-x) and east (+x)
+        $basePlotInWest = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::WEST, $worldSettings->getRoadSize()));
+        $basePlotInEast = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::EAST, $worldSettings->getRoadSize()));
+        if ($basePlotInWest !== null && $basePlotInEast !== null) {
+            $plotInWest = yield $basePlotInWest->toAsyncPlot();
+            if ($plotInWest === null) {
+                return null;
+            }
+            if (!$plotInWest->isSame($basePlotInEast)) {
+                return null;
+            }
+            return $plotInWest;
+        }
+
+        // check for: position = road center
+        $basePlotInNorthWest = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInNorthEast = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add($worldSettings->getRoadSize(), 0, - $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInSouthWest = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
+        $basePlotInSouthEast = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add($worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
+        if ($basePlotInNorthWest !== null && $basePlotInNorthEast !== null && $basePlotInSouthWest !== null && $basePlotInSouthEast !== null) {
+            $plotInNorthWest = yield $basePlotInNorthWest->toAsyncPlot();
+            if ($plotInNorthWest === null) {
+                return null;
+            }
+            if (
+                !$plotInNorthWest->isSame($basePlotInNorthEast) ||
+                !$plotInNorthWest->isSame($basePlotInSouthWest) ||
+                !$plotInNorthWest->isSame($basePlotInSouthEast)
             ) {
                 return null;
             }
