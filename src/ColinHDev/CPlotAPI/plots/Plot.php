@@ -345,7 +345,12 @@ class Plot extends BasePlot {
         return new BasePlot($this->worldName, $this->x, $this->z);
     }
 
-    public static function loadFromPositionIntoCache(Position $position, bool $checkMerge = true) : ?self {
+    /**
+     * Tries to load a {@see Plot} from a given {@see Position}. Returns an instance of {@see Plot} on success, an
+     * instance of {@see BasePlot} if the plot could not be loaded from the cache {@see DataProvider::getPlotCache()} or
+     * null if no plot is at that positon.
+     */
+    public static function loadFromPositionIntoCache(Position $position, bool $checkMerge = true) : self|parent|null {
         $worldName = $position->getWorld()->getFolderName();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($worldName);
         if (!$worldSettings instanceof WorldSettings) {
@@ -355,7 +360,7 @@ class Plot extends BasePlot {
         // check for: position = plot
         $basePlot = parent::fromVector3($worldName, $worldSettings, $position);
         if ($basePlot !== null) {
-            return $basePlot->toSyncPlot();
+            return $basePlot->toSyncPlot() ?? $basePlot;
         }
 
         if (!$checkMerge) {
@@ -368,9 +373,13 @@ class Plot extends BasePlot {
         if ($basePlotInNorth !== null && $basePlotInSouth !== null) {
             $plotInNorth = $basePlotInNorth->toSyncPlot();
             if ($plotInNorth === null) {
-                return null;
+                return $basePlotInNorth;
             }
-            if (!$plotInNorth->isSame($basePlotInSouth)) {
+            $plotInSouth = $basePlotInSouth->toSyncPlot();
+            if ($plotInSouth === null) {
+                return $basePlotInSouth;
+            }
+            if (!$plotInNorth->isSame($plotInSouth)) {
                 return null;
             }
             return $plotInNorth;
@@ -382,9 +391,13 @@ class Plot extends BasePlot {
         if ($basePlotInWest !== null && $basePlotInEast !== null) {
             $plotInWest = $basePlotInWest->toSyncPlot();
             if ($plotInWest === null) {
-                return null;
+                return $basePlotInWest;
             }
-            if (!$plotInWest->isSame($basePlotInEast)) {
+            $plotInEast = $basePlotInEast->toSyncPlot();
+            if ($plotInEast === null) {
+                return $basePlotInEast;
+            }
+            if (!$plotInWest->isSame($plotInEast)) {
                 return null;
             }
             return $plotInWest;
@@ -398,12 +411,24 @@ class Plot extends BasePlot {
         if ($basePlotInNorthWest !== null && $basePlotInNorthEast !== null && $basePlotInSouthWest !== null && $basePlotInSouthEast !== null) {
             $plotInNorthWest = $basePlotInNorthWest->toSyncPlot();
             if ($plotInNorthWest === null) {
-                return null;
+                return $basePlotInNorthWest;
+            }
+            $plotInNorthEast = $basePlotInNorthEast->toSyncPlot();
+            if ($plotInNorthEast === null) {
+                return $basePlotInNorthEast;
+            }
+            $plotInSouthWest = $basePlotInSouthWest->toSyncPlot();
+            if ($plotInSouthWest === null) {
+                return $basePlotInSouthWest;
+            }
+            $plotInSouthEast = $basePlotInSouthEast->toSyncPlot();
+            if ($plotInSouthEast === null) {
+                return $basePlotInSouthEast;
             }
             if (
-                !$plotInNorthWest->isSame($basePlotInNorthEast) ||
-                !$plotInNorthWest->isSame($basePlotInSouthWest) ||
-                !$plotInNorthWest->isSame($basePlotInSouthEast)
+                !$plotInNorthWest->isSame($plotInNorthEast) ||
+                !$plotInNorthWest->isSame($plotInSouthWest) ||
+                !$plotInNorthWest->isSame($plotInSouthEast)
             ) {
                 return null;
             }
