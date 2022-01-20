@@ -372,10 +372,10 @@ class Plot extends BasePlot {
         $basePlotInSouth = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::SOUTH, $worldSettings->getRoadSize()));
         if ($basePlotInNorth !== null && $basePlotInSouth !== null) {
             $plotInNorth = $basePlotInNorth->toSyncPlot();
+            $plotInSouth = $basePlotInSouth->toSyncPlot();
             if ($plotInNorth === null) {
                 return $basePlotInNorth;
             }
-            $plotInSouth = $basePlotInSouth->toSyncPlot();
             if ($plotInSouth === null) {
                 return $basePlotInSouth;
             }
@@ -390,10 +390,10 @@ class Plot extends BasePlot {
         $basePlotInEast = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::EAST, $worldSettings->getRoadSize()));
         if ($basePlotInWest !== null && $basePlotInEast !== null) {
             $plotInWest = $basePlotInWest->toSyncPlot();
+            $plotInEast = $basePlotInEast->toSyncPlot();
             if ($plotInWest === null) {
                 return $basePlotInWest;
             }
-            $plotInEast = $basePlotInEast->toSyncPlot();
             if ($plotInEast === null) {
                 return $basePlotInEast;
             }
@@ -410,18 +410,18 @@ class Plot extends BasePlot {
         $basePlotInSouthEast = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add($worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
         if ($basePlotInNorthWest !== null && $basePlotInNorthEast !== null && $basePlotInSouthWest !== null && $basePlotInSouthEast !== null) {
             $plotInNorthWest = $basePlotInNorthWest->toSyncPlot();
+            $plotInNorthEast = $basePlotInNorthEast->toSyncPlot();
+            $plotInSouthWest = $basePlotInSouthWest->toSyncPlot();
+            $plotInSouthEast = $basePlotInSouthEast->toSyncPlot();
             if ($plotInNorthWest === null) {
                 return $basePlotInNorthWest;
             }
-            $plotInNorthEast = $basePlotInNorthEast->toSyncPlot();
             if ($plotInNorthEast === null) {
                 return $basePlotInNorthEast;
             }
-            $plotInSouthWest = $basePlotInSouthWest->toSyncPlot();
             if ($plotInSouthWest === null) {
                 return $basePlotInSouthWest;
             }
-            $plotInSouthEast = $basePlotInSouthEast->toSyncPlot();
             if ($plotInSouthEast === null) {
                 return $basePlotInSouthEast;
             }
