@@ -38,13 +38,6 @@ class PlotCommand extends Command implements PluginOwned {
     /** @var SubCommand[] */
     private array $subcommands = [];
 
-    /**
-     * @return SubCommand[]
-     */
-    public function getSubcommands() : array {
-        return $this->subcommands;
-    }
-
     public function __construct() {
         $resourceManager = ResourceManager::getInstance();
         $commandData = $resourceManager->getCommandData("plot");
@@ -81,7 +74,14 @@ class PlotCommand extends Command implements PluginOwned {
         $this->registerSubcommand(new WarpSubcommand($resourceManager->getCommandData("warp"), "cplot.subcommand.warp"));
     }
 
-    private function registerSubcommand(Subcommand $subcommand) : void {
+    /**
+     * @return SubCommand[]
+     */
+    public function getSubcommands() : array {
+        return $this->subcommands;
+    }
+
+    public function registerSubcommand(Subcommand $subcommand) : void {
         $this->subcommands[$subcommand->getName()] = $subcommand;
         foreach ($subcommand->getAlias() as $alias) {
             $this->subcommands[$alias] = $subcommand;
