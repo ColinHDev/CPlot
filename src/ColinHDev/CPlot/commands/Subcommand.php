@@ -52,10 +52,6 @@ abstract class Subcommand {
         return $this->permissionMessage;
     }
 
-    public function getPlugin() : CPlot {
-        return CPlot::getInstance();
-    }
-
     protected function getPrefix() : string {
         return ResourceManager::getInstance()->getPrefix();
     }
