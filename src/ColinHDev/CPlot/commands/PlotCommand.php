@@ -138,13 +138,17 @@ class PlotCommand extends Command implements PluginOwned {
                 // If the subcommand finished executing, the entry needs to be removed from the array, so the command
                 // executor is able to perform another subcommand again.
                 unset($this->executingSubcommands[$sender->getName()]);
-                $command->onSuccess($sender, $return);
+                if ($return !== null) {
+                    $command->onSuccess($sender, $return);
+                }
             },
             function (mixed $error = null) use ($command, $sender) : void {
                 // That also needs to be done in case of an error. Otherwise, the command executor would not be able to
                 // perform another subcommand until the server restarts.
                 unset($this->executingSubcommands[$sender->getName()]);
-                $command->onError($sender, $error);
+                if ($error !== null) {
+                    $command->onError($sender, $error);
+                }
             }
         );
     }
