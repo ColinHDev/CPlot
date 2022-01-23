@@ -79,6 +79,6 @@ class CPlot extends PluginBase {
         $this->getServer()->getPluginManager()->registerEvents(new PlayerLoginListener(), $this);
         $this->getServer()->getPluginManager()->registerEvents(new StructureGrowListener(), $this);
 
-        $this->getServer()->getCommandMap()->register("plot", new PlotCommand());
+        $this->getServer()->getCommandMap()->register("CPlot", new PlotCommand());
     }
 }
