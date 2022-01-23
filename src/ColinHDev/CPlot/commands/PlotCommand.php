@@ -111,11 +111,11 @@ class PlotCommand extends Command implements PluginOwned {
         }
         Await::g2c(
             $command->execute($sender, $args),
-            static function () use ($command, $sender) : void {
-                $command->onSuccess($sender);
+            static function (mixed $return = null) use ($command, $sender) : void {
+                $command->onSuccess($sender, $return);
             },
-            static function () use ($command, $sender) : void {
-                $command->onError($sender);
+            static function (mixed $error = null) use ($command, $sender) : void {
+                $command->onError($sender, $error);
             }
         );
     }
