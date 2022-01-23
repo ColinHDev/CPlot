@@ -4,7 +4,6 @@ namespace ColinHDev\CPlot\commands;
 
 use pocketmine\command\CommandSender;
 use ColinHDev\CPlot\ResourceManager;
-use ColinHDev\CPlot\CPlot;
 
 abstract class Subcommand {
 
