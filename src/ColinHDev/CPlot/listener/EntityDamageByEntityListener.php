@@ -2,9 +2,11 @@
 
 namespace ColinHDev\CPlot\listener;
 
+use ColinHDev\CPlot\ResourceManager;
+use ColinHDev\CPlotAPI\attributes\BooleanAttribute;
+use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;
@@ -22,36 +24,39 @@ class EntityDamageByEntityListener implements Listener {
         }
         $damaged = $event->getEntity();
 
-        try {
-            // pvp flag
-            if ($damaged instanceof Player) {
-                $plot = Plot::fromPosition($damaged->getPosition());
-                if ($plot !== null) {
-                    if ($damager->hasPermission("cplot.pvp.plot")) {
-                        return;
-                    }
-                    $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVP);
-                    if ($flag->getValue() === true) {
-                        return;
-                    }
-
-                } else {
-                    if ($damager->hasPermission("cplot.pvp.road")) {
-                        return;
-                    }
+        $plot = Plot::loadFromPositionIntoCache($damaged->getPosition());
+        if ($plot instanceof BasePlot && !$plot instanceof Plot) {
+            $damager->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("player.interact.plotNotLoaded"));
+            $event->cancel();
+            return;
+        }
+        // pvp flag
+        if ($damaged instanceof Player) {
+            if ($plot !== null) {
+                if ($damager->hasPermission("cplot.pvp.plot")) {
+                    return;
+                }
+                /** @var BooleanAttribute $flag */
+                $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVP);
+                if ($flag->getValue() === true) {
+                    return;
                 }
 
-            // pve flag
             } else {
-                $plot = Plot::fromPosition($damaged->getPosition());
-                if ($plot !== null) {
-                    $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVE);
-                    if ($flag->getValue() === true) {
-                        return;
-                    }
+                if ($damager->hasPermission("cplot.pvp.road")) {
+                    return;
                 }
             }
-        } catch (PlotException) {
+
+        // pve flag
+        } else {
+            if ($plot !== null) {
+                /** @var BooleanAttribute $flag */
+                $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVE);
+                if ($flag->getValue() === true) {
+                    return;
+                }
+            }
         }
 
         $event->cancel();

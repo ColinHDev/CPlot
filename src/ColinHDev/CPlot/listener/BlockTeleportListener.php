@@ -2,9 +2,10 @@
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\event\block\BlockTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\world\Position;
@@ -18,21 +19,25 @@ class BlockTeleportListener implements Listener {
 
         $fromPosition = $event->getBlock()->getPosition();
         $world = $fromPosition->getWorld();
-        if (CPlot::getInstance()->getProvider()->getWorld($world->getFolderName()) === null) {
+        $worldName = $world->getFolderName();
+        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($worldName);
+        if (!$worldSettings instanceof WorldSettings) {
+            if ($worldSettings === null) {
+                $event->cancel();
+            }
             return;
         }
 
-        $toPosition = Position::fromObject($event->getTo(), $world);
-
-        $fromBasePlot = BasePlot::fromPosition($fromPosition);
-        $toBasePlot = BasePlot::fromPosition($toPosition);
+        $toVector3 = $event->getTo();
+        $fromBasePlot = BasePlot::fromVector3($worldName, $worldSettings, $fromPosition);
+        $toBasePlot = BasePlot::fromVector3($worldName, $worldSettings, $toVector3);
         if ($fromBasePlot !== null && $toBasePlot !== null && $fromBasePlot->isSame($toBasePlot)) {
             return;
         }
 
-        $fromPlot = $fromBasePlot?->toPlot() ?? Plot::fromPosition($fromPosition);
-        $toPlot = $toBasePlot?->toPlot() ?? Plot::fromPosition($toPosition);
-        if ($fromPlot !== null && $toPlot !== null && $fromPlot->isSame($toPlot)) {
+        $fromPlot = $fromBasePlot?->toSyncPlot() ?? Plot::loadFromPositionIntoCache($fromPosition);
+        $toPlot = $toBasePlot?->toSyncPlot() ?? Plot::loadFromPositionIntoCache(Position::fromObject($toVector3, $world));
+        if ($fromPlot instanceof Plot && $toPlot instanceof Plot && $fromPlot->isSame($toPlot)) {
             return;
         }
 
