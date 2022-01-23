@@ -56,6 +56,6 @@ class GenerateSubcommand extends Subcommand {
         if ($sender instanceof Player && !$sender->isConnected()) {
             return;
         }
-        $sender->sendMessage($this->getPrefix() . $this->translateString("generate.saveError"));
+        $sender->sendMessage($this->getPrefix() . $this->translateString("generate.saveError", [$error->getMessage()]));
     }
 }
