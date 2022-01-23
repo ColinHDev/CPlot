@@ -32,6 +32,7 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
+use SOFe\AwaitGenerator\Await;
 
 class PlotCommand extends Command implements PluginOwned {
 
@@ -108,7 +109,15 @@ class PlotCommand extends Command implements PluginOwned {
         if (!$command->testPermission($sender)) {
             return;
         }
-        $command->execute($sender, $args);
+        Await::g2c(
+            $command->execute($sender, $args),
+            static function () use ($command, $sender) : void {
+                $command->onSuccess($sender);
+            },
+            static function () use ($command, $sender) : void {
+                $command->onError($sender);
+            }
+        );
     }
 
     public function getOwningPlugin() : Plugin {

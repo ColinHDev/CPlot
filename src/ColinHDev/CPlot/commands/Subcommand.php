@@ -67,5 +67,11 @@ abstract class Subcommand {
         return false;
     }
 
-    abstract public function execute(CommandSender $sender, array $args) : void;
+    abstract public function execute(CommandSender $sender, array $args) : \Generator;
+
+    public function onSuccess(CommandSender $sender) : void {
+    }
+
+    public function onError(CommandSender $sender) : void {
+    }
 }
