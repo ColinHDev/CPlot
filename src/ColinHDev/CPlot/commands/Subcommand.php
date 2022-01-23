@@ -4,7 +4,11 @@ namespace ColinHDev\CPlot\commands;
 
 use pocketmine\command\CommandSender;
 use ColinHDev\CPlot\ResourceManager;
+use poggit\libasynql\SqlError;
 
+/**
+ * @phpstan-template GeneratorReturn
+ */
 abstract class Subcommand {
 
     private string $name;
@@ -67,11 +71,23 @@ abstract class Subcommand {
         return false;
     }
 
+    /**
+     * This generator function contains the code you want to be executed when the command is run.
+     * @phpstan-return \Generator<mixed, mixed, mixed, GeneratorReturn>
+     */
     abstract public function execute(CommandSender $sender, array $args) : \Generator;
 
+    /**
+     * Overwrite this method to handle the return value of the generator function {@see Subcommand::execute()}.
+     * @phpstan-param GeneratorReturn $return
+     */
     public function onSuccess(CommandSender $sender, mixed $return) : void {
     }
 
+    /**
+     * Overwrite this method to handle any exceptions that were thrown during the executing of
+     * {@see Subcommand::execute()}, e.g. {@see SqlError} when interacting with the database.
+     */
     public function onError(CommandSender $sender, mixed $error) : void {
     }
 }
