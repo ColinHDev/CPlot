@@ -39,6 +39,12 @@ class PlotCommand extends Command implements PluginOwned {
     /** @var SubCommand[] */
     private array $subcommands = [];
 
+    /** @var array<string, string> */
+    private array $executingSubcommands = [];
+
+    /**
+     * @throws \InvalidArgumentException
+     */
     public function __construct() {
         $resourceManager = ResourceManager::getInstance();
         $commandData = $resourceManager->getCommandData("plot");
@@ -109,12 +115,35 @@ class PlotCommand extends Command implements PluginOwned {
         if (!$command->testPermission($sender)) {
             return;
         }
+        // Since subcommands may not finish executing directly, e.g. when they await a result from the database, the
+        // command executor should not be able to execute another subcommand. Because of that, the previously typed
+        // subcommand is stored and checked until that subcommand is finished executing.
+        if (isset($this->executingSubcommands[$sender->getName()])) {
+            $sender->sendMessage(
+                ResourceManager::getInstance()->getPrefix() .
+                ResourceManager::getInstance()->translateString(
+                    "plot.subcommandExecuting",
+                    [
+                        "/" . $commandLabel . " " . $subcommand,
+                        "/" . $commandLabel . " " . $this->executingSubcommands[$sender->getName()]
+                    ]
+                )
+            );
+            return;
+        }
+        $this->executingSubcommands[$sender->getName()] = $subcommand;
         Await::g2c(
             $command->execute($sender, $args),
-            static function (mixed $return = null) use ($command, $sender) : void {
+            function (mixed $return = null) use ($command, $sender) : void {
+                // If the subcommand finished executing, the entry needs to be removed from the array, so the command
+                // executor is able to perform another subcommand again.
+                unset($this->executingSubcommands[$sender->getName()]);
                 $command->onSuccess($sender, $return);
             },
-            static function (mixed $error = null) use ($command, $sender) : void {
+            function (mixed $error = null) use ($command, $sender) : void {
+                // That also needs to be done in case of an error. Otherwise, the command executor would not be able to
+                // perform another subcommand until the server restarts.
+                unset($this->executingSubcommands[$sender->getName()]);
                 $command->onError($sender, $error);
             }
         );
