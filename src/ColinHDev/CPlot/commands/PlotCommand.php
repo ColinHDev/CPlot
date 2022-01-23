@@ -26,11 +26,14 @@ use ColinHDev\CPlot\commands\subcommands\UntrustSubcommand;
 use ColinHDev\CPlot\commands\subcommands\VisitSubcommand;
 use ColinHDev\CPlot\commands\subcommands\WallSubcommand;
 use ColinHDev\CPlot\commands\subcommands\WarpSubcommand;
+use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginOwned;
 
-class PlotCommand extends Command {
+class PlotCommand extends Command implements PluginOwned {
 
     /** @var SubCommand[] */
     private array $subcommands = [];
@@ -106,5 +109,9 @@ class PlotCommand extends Command {
             return;
         }
         $command->execute($sender, $args);
+    }
+
+    public function getOwningPlugin() : Plugin {
+        return CPlot::getInstance();
     }
 }
