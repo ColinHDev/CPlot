@@ -3,13 +3,15 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
+use ColinHDev\CPlotAPI\attributes\BooleanAttribute;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use ColinHDev\CPlotAPI\utils\ParseUtils;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use dktapps\pmforms\FormIcon;
 use dktapps\pmforms\MenuForm;
 use dktapps\pmforms\MenuOption;
@@ -20,6 +22,7 @@ use pocketmine\permission\Permission;
 use pocketmine\permission\PermissionManager;
 use pocketmine\player\Player;
 use pocketmine\Server;
+use SOFe\AwaitGenerator\Await;
 
 class WallSubcommand extends Subcommand {
 
@@ -58,11 +61,14 @@ class WallSubcommand extends Subcommand {
             $this->translateString("wall.form.title"),
             $this->translateString("wall.form.text"),
             $options,
-            \Closure::fromCallable([$this, "onFormSubmit"])
+            function (Player $player, int $selectedOption) : void {
+                Await::g2c($this->onFormSubmit($player, $selectedOption));
+            }
         );
     }
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
+        0 && yield;
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("wall.senderNotOnline"));
             return;
@@ -71,53 +77,38 @@ class WallSubcommand extends Subcommand {
         $sender->sendForm($this->form);
     }
 
-    public function onFormSubmit(Player $player, int $selectedOption) : void {
+    public function onFormSubmit(Player $player, int $selectedOption) : \Generator {
         if (!$player->hasPermission($this->permissions[$selectedOption])) {
             $player->sendMessage($this->getPrefix() . $this->translateString("wall.blockPermissionMessage"));
             return;
         }
 
-        $worldSettings = $this->getPlugin()->getProvider()->getWorld($player->getWorld()->getFolderName());
-        if ($worldSettings === null) {
+        $worldSettings = yield from DataProvider::getInstance()->awaitWorld($player->getWorld()->getFolderName());
+        if (!($worldSettings instanceof WorldSettings)) {
             $player->sendMessage($this->getPrefix() . $this->translateString("wall.noPlotWorld"));
             return;
         }
 
-        $plot = Plot::fromPosition($player->getPosition());
-        if ($plot === null) {
+        $plot = yield from Plot::awaitFromPosition($player->getPosition());
+        if (!($plot instanceof Plot)) {
             $player->sendMessage($this->getPrefix() . $this->translateString("wall.noPlot"));
             return;
         }
         if (!$player->hasPermission("cplot.admin.wall")) {
-            try {
-                if (!$plot->hasPlotOwner()) {
-                    $player->sendMessage($this->getPrefix() . $this->translateString("wall.noPlotOwner"));
-                    return;
-                } else if (!$plot->isPlotOwner($player->getUniqueId()->toString())) {
-                    $player->sendMessage($this->getPrefix() . $this->translateString("wall.notPlotOwner"));
-                    return;
-                }
-            } catch (PlotException) {
-                $player->sendMessage($this->getPrefix() . $this->translateString("wall.loadPlotPlayersError"));
+            if (!$plot->hasPlotOwner()) {
+                $player->sendMessage($this->getPrefix() . $this->translateString("wall.noPlotOwner"));
+                return;
+            }
+            if (!$plot->isPlotOwner($player->getUniqueId()->toString())) {
+                $player->sendMessage($this->getPrefix() . $this->translateString("wall.notPlotOwner"));
                 return;
             }
         }
 
-        try {
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-            if ($flag->getValue() === true) {
-                $player->sendMessage($this->getPrefix() . $this->translateString("wall.serverPlotFlag", [$flag->getID()]));
-                return;
-            }
-        } catch (PlotException) {
-            $player->sendMessage($this->getPrefix() . $this->translateString("wall.loadFlagsError"));
-            return;
-        }
-
-        try {
-            $plot->loadMergePlots();
-        } catch (PlotException) {
-            $player->sendMessage($this->getPrefix() . $this->translateString("wall.loadMergedPlotsError"));
+        /** @var BooleanAttribute $flag */
+        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+        if ($flag->getValue() === true) {
+            $player->sendMessage($this->getPrefix() . $this->translateString("wall.serverPlotFlag", [$flag->getID()]));
             return;
         }
 
@@ -130,7 +121,7 @@ class WallSubcommand extends Subcommand {
             function (int $elapsedTime, string $elapsedTimeString, array $result) use ($world, $player, $block) {
                 [$plotCount, $plots] = $result;
                 $plots = array_map(
-                    function (BasePlot $plot) : string {
+                    static function (BasePlot $plot) : string {
                         return $plot->toSmallString();
                     },
                     $plots
@@ -143,6 +134,6 @@ class WallSubcommand extends Subcommand {
                 }
             }
         );
-        $this->getPlugin()->getServer()->getAsyncPool()->submitTask($task);
+        Server::getInstance()->getAsyncPool()->submitTask($task);
     }
 }

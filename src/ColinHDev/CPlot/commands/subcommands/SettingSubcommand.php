@@ -3,17 +3,19 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlotAPI\attributes\ArrayAttribute;
 use ColinHDev\CPlotAPI\attributes\BaseAttribute;
 use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
+use ColinHDev\CPlotAPI\players\PlayerData;
 use ColinHDev\CPlotAPI\players\settings\SettingManager;
-use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use poggit\libasynql\SqlError;
 
 class SettingSubcommand extends Subcommand {
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
             return;
@@ -23,7 +25,6 @@ class SettingSubcommand extends Subcommand {
             case "list":
                 $sender->sendMessage($this->getPrefix() . $this->translateString("setting.list.success"));
                 $settingsByCategory = [];
-                /** @var BaseAttribute $settingClass */
                 foreach (SettingManager::getInstance()->getSettings() as $setting) {
                     $settingCategory = $this->translateString("setting.category." . $setting->getID());
                     if (!isset($settingsByCategory[$settingCategory])) {
@@ -60,17 +61,12 @@ class SettingSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.my.senderNotOnline"));
                     break;
                 }
-                $playerData = $this->getPlugin()->getProvider()->getPlayerDataByUUID($sender->getUniqueId()->toString());
-                if ($playerData === null) {
+                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->toString());
+                if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.my.loadPlayerDataError"));
                     break;
                 }
-                try {
-                    $settings = $playerData->getSettings();
-                } catch (PlayerDataException) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("setting.my.loadPlayerSettingsError"));
-                    break;
-                }
+                $settings = $playerData->getSettings();
                 if (count($settings) === 0) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.my.noSettings"));
                     break;
@@ -100,15 +96,9 @@ class SettingSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.senderNotOnline"));
                     break;
                 }
-                $playerData = $this->getPlugin()->getProvider()->getPlayerDataByUUID($sender->getUniqueId()->toString());
-                if ($playerData === null) {
+                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->toString());
+                if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.loadPlayerDataError"));
-                    break;
-                }
-                try {
-                    $playerData->loadSettings();
-                } catch (PlayerDataException) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.loadPlayerSettingsError"));
                     break;
                 }
 
@@ -140,11 +130,7 @@ class SettingSubcommand extends Subcommand {
                 $playerData->addSetting(
                     $setting
                 );
-
-                if (!$this->getPlugin()->getProvider()->savePlayerSetting($playerData, $setting)) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.saveError"));
-                    break;
-                }
+                yield from DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.success", [$setting->getID(), $setting->toString($parsedValue)]));
                 break;
 
@@ -158,15 +144,9 @@ class SettingSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.senderNotOnline"));
                     break;
                 }
-                $playerData = $this->getPlugin()->getProvider()->getPlayerDataByUUID($sender->getUniqueId()->toString());
-                if ($playerData === null) {
+                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->toString());
+                if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.loadPlayerDataError"));
-                    break;
-                }
-                try {
-                    $playerData->loadSettings();
-                } catch (PlayerDataException) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.loadPlayerSettingsError"));
                     break;
                 }
 
@@ -203,31 +183,29 @@ class SettingSubcommand extends Subcommand {
                     if (count($values) > 0) {
                         $setting = $setting->newInstance($values);
                         $playerData->addSetting($setting);
-                        if ($this->getPlugin()->getProvider()->savePlayerSetting($playerData, $setting)) {
-                            $sender->sendMessage($this->getPrefix() . $this->translateString("setting.remove.value.success", [$setting->getID(), $setting->toString()]));
-                            break;
-                        }
-                    } else {
-                        $playerData->removeSetting($setting->getID());
-                        if ($this->getPlugin()->getProvider()->deletePlayerSetting($playerData, $setting->getID())) {
-                            $sender->sendMessage($this->getPrefix() . $this->translateString("setting.remove.setting.success", [$setting->getID()]));
-                            break;
-                        }
-                    }
-
-                } else {
-                    $playerData->removeSetting($setting->getID());
-                    if ($this->getPlugin()->getProvider()->deletePlayerSetting($playerData, $setting->getID())) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("setting.remove.setting.success", [$setting->getID()]));
+                        yield from DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("setting.remove.value.success", [$setting->getID(), $setting->toString()]));
                         break;
                     }
                 }
-                $sender->sendMessage($this->getPrefix() . $this->translateString("setting.remove.saveError"));
+                $playerData->removeSetting($setting->getID());
+                yield from DataProvider::getInstance()->deletePlayerSetting($playerData, $setting->getID());
+                $sender->sendMessage($this->getPrefix() . $this->translateString("setting.remove.setting.success", [$setting->getID()]));
                 break;
 
             default:
                 $sender->sendMessage($this->getPrefix() . $this->getUsage());
                 break;
         }
+    }
+
+    /**
+     * @param SqlError $error
+     */
+    public function onError(CommandSender $sender, mixed $error) : void {
+        if ($sender instanceof Player && !$sender->isConnected()) {
+            return;
+        }
+        $sender->sendMessage($this->getPrefix() . $this->translateString("setting.saveError", [$error->getMessage()]));
     }
 }

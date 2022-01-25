@@ -3,14 +3,16 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlotAPI\plots\BasePlot;
-use ColinHDev\CPlotAPI\plots\utils\PlotException;
+use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 class WarpSubcommand extends Subcommand {
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.senderNotOnline"));
             return;
@@ -21,7 +23,7 @@ class WarpSubcommand extends Subcommand {
                 $plotKeys = explode(";", $args[0]);
                 switch (count($plotKeys)) {
                     case 2:
-                        if ($this->getPlugin()->getProvider()->getWorld($sender->getWorld()->getFolderName()) === null) {
+                        if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
                             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.noPlotWorld"));
                             return;
                         }
@@ -43,7 +45,7 @@ class WarpSubcommand extends Subcommand {
                 break;
 
             case 2:
-                if ($this->getPlugin()->getProvider()->getWorld($sender->getWorld()->getFolderName()) === null) {
+                if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("warp.noPlotWorld"));
                     return;
                 }
@@ -63,7 +65,7 @@ class WarpSubcommand extends Subcommand {
                 return;
         }
 
-        if ($this->getPlugin()->getProvider()->getWorld($worldName) === null) {
+        if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.invalidPlotWorld", [$worldName]));
             return;
         }
@@ -76,32 +78,24 @@ class WarpSubcommand extends Subcommand {
             return;
         }
 
-        $plot = (new BasePlot($worldName, (int) $x, (int) $z))->toPlot();
-        if ($plot === null) {
+        $plot = yield from (new BasePlot($worldName, (int) $x, (int) $z))->toAsyncPlot();
+        if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.loadPlotError"));
             return;
         }
 
 
         if (!$sender->hasPermission("cplot.admin.warp")) {
-            try {
-                if (!$plot->hasPlotOwner()) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("warp.noPlotOwner"));
-                    return;
-                }
-            } catch (PlotException) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("warp.loadPlotPlayersError"));
+            if (!$plot->hasPlotOwner()) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("warp.noPlotOwner"));
                 return;
             }
         }
 
-        try {
-            if ($plot->teleportTo($sender)) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("warp.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
-                return;
-            }
-        } catch (PlotException) {
+        if (!(yield from $plot->teleportTo($sender))) {
+            $sender->sendMessage($this->getPrefix() . $this->translateString("warp.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+            return;
         }
-        $sender->sendMessage($this->getPrefix() . $this->translateString("warp.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+        $sender->sendMessage($this->getPrefix() . $this->translateString("warp.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
     }
 }

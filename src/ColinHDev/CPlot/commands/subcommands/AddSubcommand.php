@@ -3,18 +3,22 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlotAPI\attributes\BooleanAttribute;
+use ColinHDev\CPlotAPI\players\PlayerData;
 use ColinHDev\CPlotAPI\players\settings\SettingIDs;
-use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\Plot;
 use ColinHDev\CPlotAPI\plots\PlotPlayer;
-use ColinHDev\CPlotAPI\plots\utils\PlotException;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use pocketmine\Server;
+use poggit\libasynql\SqlError;
 
 class AddSubcommand extends Subcommand {
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.senderNotOnline"));
             return;
@@ -27,14 +31,14 @@ class AddSubcommand extends Subcommand {
 
         $player = null;
         if ($args[0] !== "*") {
-            $player = $this->getPlugin()->getServer()->getPlayerByPrefix($args[0]);
+            $player = Server::getInstance()->getPlayerByPrefix($args[0]);
             if ($player instanceof Player) {
                 $playerUUID = $player->getUniqueId()->toString();
                 $playerName = $player->getName();
             } else {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("add.playerNotOnline", [$args[0]]));
                 $playerName = $args[0];
-                $playerData = $this->getPlugin()->getProvider()->getPlayerDataByName($playerName);
+                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if ($playerData === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("add.playerNotFound", [$playerName]));
                     return;
@@ -50,24 +54,19 @@ class AddSubcommand extends Subcommand {
             $playerName = "*";
         }
 
-        if ($this->getPlugin()->getProvider()->getWorld($sender->getWorld()->getFolderName()) === null) {
+        if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.noPlotWorld"));
             return;
         }
 
-        $plot = Plot::fromPosition($sender->getPosition());
-        if ($plot === null) {
+        $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+        if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.noPlot"));
             return;
         }
 
-        try {
-            if (!$plot->hasPlotOwner()) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("add.noPlotOwner"));
-                return;
-            }
-        } catch (PlotException) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("add.loadPlotPlayersError"));
+        if (!$plot->hasPlotOwner()) {
+            $sender->sendMessage($this->getPrefix() . $this->translateString("add.noPlotOwner"));
             return;
         }
         if (!$sender->hasPermission("cplot.admin.add")) {
@@ -77,12 +76,8 @@ class AddSubcommand extends Subcommand {
             }
         }
 
-        try {
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        } catch (PlotException) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("add.loadFlagsError"));
-            return;
-        }
+        /** @var BooleanAttribute $flag */
+        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.serverPlotFlag", [$flag->getID()]));
             return;
@@ -95,25 +90,29 @@ class AddSubcommand extends Subcommand {
 
         $plotPlayer = new PlotPlayer($playerUUID, PlotPlayer::STATE_HELPER);
         $plot->addPlotPlayer($plotPlayer);
-        if (!$this->getPlugin()->getProvider()->savePlotPlayer($plot, $plotPlayer)) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("add.saveError"));
-            return;
-        }
+        yield from DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
         $sender->sendMessage($this->getPrefix() . $this->translateString("add.success", [$playerName]));
 
         if ($player instanceof Player) {
-            $playerData = $this->getPlugin()->getProvider()->getPlayerDataByUUID($playerUUID);
-            if ($playerData === null) {
+            $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
+            if (!($playerData instanceof PlayerData)) {
                 return;
             }
-            try {
-                $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_ADD);
-            } catch (PlayerDataException) {
-                return;
-            }
+            /** @var BooleanAttribute $setting */
+            $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_ADD);
             if ($setting->getValue() === true) {
                 $player->sendMessage($this->getPrefix() . $this->translateString("add.success.player", [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
             }
         }
+    }
+
+    /**
+     * @param SqlError $error
+     */
+    public function onError(CommandSender $sender, mixed $error) : void {
+        if ($sender instanceof Player && !$sender->isConnected()) {
+            return;
+        }
+        $sender->sendMessage($this->getPrefix() . $this->translateString("add.saveError", [$error->getMessage()]));
     }
 }

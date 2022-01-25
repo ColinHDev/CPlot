@@ -3,22 +3,26 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlotAPI\attributes\ArrayAttribute;
 use ColinHDev\CPlotAPI\attributes\BaseAttribute;
+use ColinHDev\CPlotAPI\attributes\BooleanAttribute;
+use ColinHDev\CPlotAPI\attributes\LocationAttribute;
 use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
+use ColinHDev\CPlotAPI\players\PlayerData;
 use ColinHDev\CPlotAPI\players\settings\SettingIDs;
-use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\flags\FlagManager;
 use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\plots\utils\PlotException;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\entity\Location;
 use pocketmine\player\Player;
+use poggit\libasynql\SqlError;
 
 class FlagSubcommand extends Subcommand {
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
             return;
@@ -28,7 +32,6 @@ class FlagSubcommand extends Subcommand {
             case "list":
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.list.success"));
                 $flagsByCategory = [];
-                /** @var BaseAttribute $flag */
                 foreach (FlagManager::getInstance()->getFlags() as $flag) {
                     $flagCategory = $this->translateString("flag.category." . $flag->getID());
                     if (!isset($flagsByCategory[$flagCategory])) {
@@ -65,21 +68,16 @@ class FlagSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.here.senderNotOnline"));
                     break;
                 }
-                if ($this->getPlugin()->getProvider()->getWorld($sender->getWorld()->getFolderName()) === null) {
+                if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.here.noPlotWorld"));
                     break;
                 }
-                $plot = Plot::fromPosition($sender->getPosition());
-                if ($plot === null) {
+                $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+                if (!($plot instanceof Plot)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.here.noPlot"));
                     break;
                 }
-                try {
-                    $flags = $plot->getFlags();
-                } catch (PlotException) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.here.loadFlagsError"));
-                    break;
-                }
+                $flags = $plot->getFlags();
                 if (count($flags) === 0) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.here.noFlags"));
                     break;
@@ -109,23 +107,18 @@ class FlagSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.senderNotOnline"));
                     break;
                 }
-                if ($this->getPlugin()->getProvider()->getWorld($sender->getWorld()->getFolderName()) === null) {
+                if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noPlotWorld"));
                     break;
                 }
-                $plot = Plot::fromPosition($sender->getPosition());
-                if ($plot === null) {
+                $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+                if (!($plot instanceof Plot)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noPlot"));
                     break;
                 }
 
-                try {
-                    if (!$plot->hasPlotOwner()) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noPlotOwner"));
-                        break;
-                    }
-                } catch (PlotException) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.loadPlotPlayersError"));
+                if (!$plot->hasPlotOwner()) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noPlotOwner"));
                     break;
                 }
                 if (!$sender->hasPermission("cplot.admin.flag")) {
@@ -133,13 +126,6 @@ class FlagSubcommand extends Subcommand {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.notPlotOwner"));
                         break;
                     }
-                }
-
-                try {
-                    $plot->loadFlags();
-                } catch (PlotException) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.loadFlagsError"));
-                    break;
                 }
 
                 /** @var BaseAttribute | null $flag */
@@ -154,6 +140,7 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 if ($flag->getID() !== FlagIDs::FLAG_SERVER_PLOT) {
+                    /** @var BooleanAttribute $serverPlotFlag */
                     $serverPlotFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
                     if ($serverPlotFlag->getValue() === true) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.serverPlotFlag", [$serverPlotFlag->getID()]));
@@ -163,9 +150,10 @@ class FlagSubcommand extends Subcommand {
 
                 if ($flag->getID() === FlagIDs::FLAG_SPAWN) {
                     $location = $sender->getLocation();
+                    /** @var LocationAttribute $flag */
                     $arg = $flag->toString(
                         Location::fromObject(
-                            $location->subtractVector($plot->getPosition()),
+                            $location->subtractVector(yield from $plot->getPosition()),
                             $location->getWorld(),
                             $location->getYaw(),
                             $location->getPitch()
@@ -191,53 +179,48 @@ class FlagSubcommand extends Subcommand {
                     $flag
                 );
 
-                if (!$this->getPlugin()->getProvider()->savePlotFlag($plot, $flag)) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.saveError"));
-                    break;
-                }
+                yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.success", [$flag->getID(), $flag->toString($parsedValue)]));
                 foreach ($sender->getWorld()->getPlayers() as $player) {
                     $playerUUID = $player->getUniqueId()->toString();
                     if ($sender->getUniqueId()->toString() === $playerUUID) {
                         continue;
                     }
-                    $plotOfPlayer = Plot::fromPosition($player->getPosition());
-                    if ($plotOfPlayer === null || !$plotOfPlayer->isSame($plot)) {
+                    $plotOfPlayer = yield from Plot::awaitFromPosition($player->getPosition());
+                    if (!($plotOfPlayer instanceof Plot) || !$plotOfPlayer->isSame($plot)) {
                         continue;
                     }
-                    $playerData = $this->getPlugin()->getProvider()->getPlayerDataByUUID($playerUUID);
-                    if ($playerData === null) {
+                    $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
+                    if (!($playerData instanceof PlayerData)) {
                         continue;
                     }
-                    try {
-                        $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_CHANGE_FLAG . $newFlag->getID());
-                        if ($setting === null) {
-                            continue;
+                    /** @var ArrayAttribute $setting */
+                    $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_CHANGE_FLAG . $newFlag->getID());
+                    if ($setting === null) {
+                        continue;
+                    }
+                    foreach ($setting->getValue() as $value) {
+                        if ($value === $newFlag->getValue()) {
+                            $player->sendMessage(
+                                $this->getPrefix() . $this->translateString("flag.set.setting.warn_change_flag", [$newFlag->getID(), $newFlag->toString()])
+                            );
+                            break;
                         }
-                        foreach ($setting->getValue() as $value) {
-                            if ($value === $newFlag->getValue()) {
-                                $player->sendMessage(
-                                    $this->getPrefix() . $this->translateString("flag.set.setting.warn_change_flag", [$newFlag->getID(), $newFlag->toString()])
-                                );
-                                break;
-                            }
-                        }
+                    }
 
-                        $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_TELEPORT_CHANGE_FLAG . $newFlag->getID());
-                        if ($setting === null) {
-                            continue;
-                        }
-                        foreach ($setting->getValue() as $value) {
-                            if ($value === $newFlag->getValue()) {
-                                $player->sendMessage(
-                                    $this->getPrefix() . $this->translateString("flag.set.setting.teleport_change_flag", [$newFlag->getID(), $newFlag->toString()])
-                                );
-                                $plot->teleportTo($player, false, false);
-                                break;
-                            }
-                        }
-                    } catch (PlayerDataException | PlotException) {
+                    /** @var ArrayAttribute $setting */
+                    $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_TELEPORT_CHANGE_FLAG . $newFlag->getID());
+                    if ($setting === null) {
                         continue;
+                    }
+                    foreach ($setting->getValue() as $value) {
+                        if ($value === $newFlag->getValue()) {
+                            $player->sendMessage(
+                                $this->getPrefix() . $this->translateString("flag.set.setting.teleport_change_flag", [$newFlag->getID(), $newFlag->toString()])
+                            );
+                            yield from $plot->teleportTo($player, false, false);
+                            break;
+                        }
                     }
                 }
                 break;
@@ -252,23 +235,18 @@ class FlagSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.senderNotOnline"));
                     break;
                 }
-                if ($this->getPlugin()->getProvider()->getWorld($sender->getWorld()->getFolderName()) === null) {
+                if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.noPlotWorld"));
                     break;
                 }
-                $plot = Plot::fromPosition($sender->getPosition());
-                if ($plot === null) {
+                $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+                if (!($plot instanceof Plot)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.noPlot"));
                     break;
                 }
 
-                try {
-                    if (!$plot->hasPlotOwner()) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.noPlotOwner"));
-                        break;
-                    }
-                } catch (PlotException) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.loadPlotPlayersError"));
+                if (!$plot->hasPlotOwner()) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.noPlotOwner"));
                     break;
                 }
                 if (!$sender->hasPermission("cplot.admin.flag")) {
@@ -276,13 +254,6 @@ class FlagSubcommand extends Subcommand {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.notPlotOwner"));
                         break;
                     }
-                }
-
-                try {
-                    $plot->loadFlags();
-                } catch (PlotException) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.loadFlagsError"));
-                    break;
                 }
 
                 /** @var BaseAttribute | null $flag */
@@ -297,6 +268,7 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 if ($flag->getID() !== FlagIDs::FLAG_SERVER_PLOT) {
+                    /** @var BooleanAttribute $serverPlotFlag */
                     $serverPlotFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
                     if ($serverPlotFlag->getValue() === true) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.serverPlotFlag", [$serverPlotFlag->getID()]));
@@ -329,31 +301,30 @@ class FlagSubcommand extends Subcommand {
                     if (count($values) > 0) {
                         $flag = $flag->newInstance($values);
                         $plot->addFlag($flag);
-                        if ($this->getPlugin()->getProvider()->savePlotFlag($plot, $flag)) {
-                            $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.value.success", [$flag->getID(), $flag->toString($removedValues)]));
-                            break;
-                        }
-                    } else {
-                        $plot->removeFlag($flag->getID());
-                        if ($this->getPlugin()->getProvider()->deletePlotFlag($plot, $flag->getID())) {
-                            $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flag.success", [$flag->getID()]));
-                            break;
-                        }
-                    }
-
-                } else {
-                    $plot->removeFlag($flag->getID());
-                    if ($this->getPlugin()->getProvider()->deletePlotFlag($plot, $flag->getID())) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flag.success", [$flag->getID()]));
+                        yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.value.success", [$flag->getID(), $flag->toString($removedValues)]));
                         break;
                     }
                 }
-                $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.saveError"));
+
+                $plot->removeFlag($flag->getID());
+                yield from DataProvider::getInstance()->deletePlotFlag($plot, $flag->getID());
+                $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flag.success", [$flag->getID()]));
                 break;
 
             default:
                 $sender->sendMessage($this->getPrefix() . $this->getUsage());
                 break;
         }
+    }
+
+    /**
+     * @param SqlError $error
+     */
+    public function onError(CommandSender $sender, mixed $error) : void {
+        if ($sender instanceof Player && !$sender->isConnected()) {
+            return;
+        }
+        $sender->sendMessage($this->getPrefix() . $this->translateString("flag.saveError", [$error->getMessage()]));
     }
 }

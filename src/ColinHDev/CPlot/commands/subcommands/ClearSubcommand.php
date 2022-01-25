@@ -3,69 +3,58 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
+use ColinHDev\CPlotAPI\attributes\BooleanAttribute;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\plots\utils\PlotException;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
 
 class ClearSubcommand extends Subcommand {
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("clear.senderNotOnline"));
             return;
         }
 
-        $worldSettings = $this->getPlugin()->getProvider()->getWorld($sender->getWorld()->getFolderName());
-        if ($worldSettings === null) {
+        $worldSettings = yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
+        if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlotWorld"));
             return;
         }
 
-        $plot = Plot::fromPosition($sender->getPosition());
-        if ($plot === null) {
+        $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+        if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlot"));
             return;
         }
-        try {
-            $plot->loadMergePlots();
-        } catch (PlotException) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("clear.loadMergedPlotsError"));
-            return;
-        }
+
         if (!$sender->hasPermission("cplot.admin.clear")) {
-            try {
-                if (!$plot->hasPlotOwner()) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlotOwner"));
-                    return;
-                }
-                if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("clear.notPlotOwner"));
-                    return;
-                }
-            } catch (PlotException) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("clear.loadPlotPlayersError"));
+            if (!$plot->hasPlotOwner()) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlotOwner"));
+                return;
+            }
+            if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("clear.notPlotOwner"));
                 return;
             }
         }
 
-        try {
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        } catch (PlotException) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("clear.loadFlagsError"));
-            return;
-        }
+        /** @var BooleanAttribute $flag */
+        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("clear.serverPlotFlag", [$flag->getID()]));
             return;
         }
 
-        $economyProvider = $this->getPlugin()->getEconomyProvider();
+        $economyProvider = CPlot::getInstance()->getEconomyProvider();
         if ($economyProvider !== null) {
             $price = $economyProvider->getPrice(EconomyProvider::PRICE_CLEAR) ?? 0.0;
             if ($price > 0.0) {
@@ -94,7 +83,7 @@ class ClearSubcommand extends Subcommand {
             function (int $elapsedTime, string $elapsedTimeString, array $result) use ($world, $sender) {
                 [$plotCount, $plots] = $result;
                 $plots = array_map(
-                    function (BasePlot $plot) : string {
+                    static function (BasePlot $plot) : string {
                         return $plot->toSmallString();
                     },
                     $plots
@@ -107,6 +96,6 @@ class ClearSubcommand extends Subcommand {
                 }
             }
         );
-        $this->getPlugin()->getServer()->getAsyncPool()->submitTask($task);
+        Server::getInstance()->getAsyncPool()->submitTask($task);
     }
 }

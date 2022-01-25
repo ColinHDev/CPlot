@@ -3,71 +3,60 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlotAPI\plots\BasePlot;
 use ColinHDev\CPlotAPI\plots\Plot;
 use ColinHDev\CPlotAPI\plots\PlotPlayer;
-use ColinHDev\CPlotAPI\plots\utils\PlotException;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\Permission;
 use pocketmine\player\Player;
 use pocketmine\Server;
+use poggit\libasynql\SqlError;
 
 class ClaimSubcommand extends Subcommand {
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.senderNotOnline"));
             return;
         }
 
-        $worldSettings = $this->getPlugin()->getProvider()->getWorld($sender->getWorld()->getFolderName());
-        if ($worldSettings === null) {
+        $worldSettings = yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
+        if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlotWorld"));
             return;
         }
 
-        $plot = Plot::fromPosition($sender->getPosition(), false);
-        if ($plot === null) {
+        $plot = yield from Plot::awaitFromPosition($sender->getPosition(), false);
+        if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlot"));
             return;
         }
-        try {
-            $plot->loadMergePlots();
-        } catch (PlotException) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadMergedPlotsError"));
-            return;
-        }
+
         $senderUUID = $sender->getUniqueId()->toString();
-        try {
-            if ($plot->hasPlotOwner()) {
-                if ($plot->isPlotOwner($senderUUID)) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimedBySender"));
-                    return;
-                }
-                $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimed"));
+        if ($plot->hasPlotOwner()) {
+            if ($plot->isPlotOwner($senderUUID)) {
+                $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimedBySender"));
                 return;
             }
-        } catch (PlotException) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadPlotPlayersError"));
+            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimed"));
             return;
         }
 
-        $senderData = new PlotPlayer($senderUUID, PlotPlayer::STATE_OWNER);
-        $claimedPlots = $this->getPlugin()->getProvider()->getPlotsByPlotPlayer($senderData);
-        if ($claimedPlots === null) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadClaimedPlotsError"));
-            return;
-        }
-        $claimedPlotsCount = count($claimedPlots);
+        $claimedPlotsCount = count(
+            yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($senderUUID, PlotPlayer::STATE_OWNER)
+        );
         $maxPlots = $this->getMaxPlotsOfPlayer($sender);
         if ($claimedPlotsCount > $maxPlots) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotLimitReached", [$claimedPlotsCount, $maxPlots]));
             return;
         }
 
-        $economyProvider = $this->getPlugin()->getEconomyProvider();
+        $economyProvider = CPlot::getInstance()->getEconomyProvider();
         if ($economyProvider !== null) {
             $price = $economyProvider->getPrice(EconomyProvider::PRICE_CLAIM) ?? 0.0;
             if ($price > 0.0) {
@@ -88,11 +77,10 @@ class ClaimSubcommand extends Subcommand {
             }
         }
 
+        $senderData = new PlotPlayer($senderUUID, PlotPlayer::STATE_OWNER);
         $plot->addPlotPlayer($senderData);
-        if (!$this->getPlugin()->getProvider()->savePlot($plot) || !$this->getPlugin()->getProvider()->savePlotPlayer($plot, $senderData)) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.saveError"));
-            return;
-        }
+        yield from DataProvider::getInstance()->savePlot($plot);
+        yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
 
         $blockBorderOnClaim = $worldSettings->getBorderBlockOnClaim();
         $task = new PlotBorderChangeAsyncTask($worldSettings, $plot, $blockBorderOnClaim);
@@ -102,7 +90,7 @@ class ClaimSubcommand extends Subcommand {
             function (int $elapsedTime, string $elapsedTimeString, array $result) use ($world, $sender, $blockBorderOnClaim) {
                 [$plotCount, $plots] = $result;
                 $plots = array_map(
-                    function (BasePlot $plot) : string {
+                    static function (BasePlot $plot) : string {
                         return $plot->toSmallString();
                     },
                     $plots
@@ -112,9 +100,19 @@ class ClaimSubcommand extends Subcommand {
                 );
             }
         );
-        $this->getPlugin()->getServer()->getAsyncPool()->submitTask($task);
+        Server::getInstance()->getAsyncPool()->submitTask($task);
 
         $sender->sendMessage($this->getPrefix() . $this->translateString("claim.success", [$plot->toString(), $plot->toSmallString()]));
+    }
+
+    /**
+     * @param SqlError $error
+     */
+    public function onError(CommandSender $sender, mixed $error) : void {
+        if ($sender instanceof Player && !$sender->isConnected()) {
+            return;
+        }
+        $sender->sendMessage($this->getPrefix() . $this->translateString("claim.saveError", [$error->getMessage()]));
     }
 
     private function getMaxPlotsOfPlayer(Player $player) : int {
@@ -126,19 +124,23 @@ class ClaimSubcommand extends Subcommand {
         $permissions = $player->getEffectivePermissions();
         $permissions = array_filter(
             $permissions,
-            function(string $name) : bool {
+            static function (string $name) : bool {
                 return (str_starts_with($name, "cplot.claimPlots."));
             },
             ARRAY_FILTER_USE_KEY
         );
-        if (count($permissions) === 0) return 0;
+        if (count($permissions) === 0) {
+            return 0;
+        }
 
         krsort($permissions, SORT_FLAG_CASE | SORT_NATURAL);
         /** @var string $permissionName */
         /** @var Permission $permission */
         foreach ($permissions as $permissionName => $permission) {
             $maxPlots = substr($permissionName, 17);
-            if (!is_numeric($maxPlots)) continue;
+            if (!is_numeric($maxPlots)) {
+                continue;
+            }
             return (int) $maxPlots;
         }
         return 0;

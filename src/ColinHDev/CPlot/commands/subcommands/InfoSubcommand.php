@@ -3,55 +3,59 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlotAPI\players\PlayerData;
 use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\plots\utils\PlotException;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 class InfoSubcommand extends Subcommand {
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("info.senderNotOnline"));
             return;
         }
 
-        if ($this->getPlugin()->getProvider()->getWorld($sender->getWorld()->getFolderName()) === null) {
+        if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("info.noPlotWorld"));
             return;
         }
 
-        $plot = Plot::fromPosition($sender->getPosition());
-        if ($plot === null) {
+        $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+        if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("info.noPlot"));
             return;
         }
 
         $sender->sendMessage($this->getPrefix() . $this->translateString("info.plot", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
 
-        try {
-            $plotOwnerData = [];
-            foreach ($plot->getPlotOwners() as $plotOwner) {
-                [$d, $m, $y, $h, $min, $s] = explode(".", date("d.m.Y.H.i.s", (int) (round($plotOwner->getAddTime() / 1000))));
-                $plotOwnerData[] = $this->translateString("info.owners.list", [
-                    $this->getPlugin()->getProvider()->getPlayerDataByUUID($plotOwner->getPlayerUUID())?->getPlayerName() ?? "ERROR",
-                    $this->translateString("info.owners.time.format", [$d, $m, $y, $h, $min, $s])
-                ]);
-            }
-            if (count($plotOwnerData) === 0) {
-                $sender->sendMessage($this->translateString("info.owners.none"));
+        $plotOwnerData = [];
+        foreach ($plot->getPlotOwners() as $plotOwner) {
+            $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($plotOwner->getPlayerUUID());
+            if ($playerData instanceof PlayerData) {
+                $playerName = $playerData->getPlayerName();
             } else {
-                $sender->sendMessage(
-                    $this->translateString(
-                        "info.owners",
-                        [
-                            implode($this->translateString("info.owners.list.separator"), $plotOwnerData)
-                        ]
-                    )
-                );
+                $playerName = "ERROR";
             }
-        } catch (PlotException) {
-            $sender->sendMessage($this->translateString("info.loadPlotPlayersError"));
+            [$d, $m, $y, $h, $min, $s] = explode(".", date("d.m.Y.H.i.s", (int) (round($plotOwner->getAddTime() / 1000))));
+            $plotOwnerData[] = $this->translateString("info.owners.list", [
+                $playerName,
+                $this->translateString("info.owners.time.format", [$d, $m, $y, $h, $min, $s])
+            ]);
+        }
+        if (count($plotOwnerData) === 0) {
+            $sender->sendMessage($this->translateString("info.owners.none"));
+        } else {
+            $sender->sendMessage(
+                $this->translateString(
+                    "info.owners",
+                    [
+                        implode($this->translateString("info.owners.list.separator"), $plotOwnerData)
+                    ]
+                )
+            );
         }
 
         if ($plot->getAlias() !== null) {
@@ -60,60 +64,44 @@ class InfoSubcommand extends Subcommand {
             $sender->sendMessage($this->translateString("info.plotAlias.none"));
         }
 
-        try {
-            $mergedPlotsCount = count($plot->getMergePlots());
-            if ($mergedPlotsCount > 0) {
-                $sender->sendMessage($this->translateString("info.merges", [$mergedPlotsCount]));
-            } else {
-                $sender->sendMessage($this->translateString("info.merges.none"));
-            }
-        } catch (PlotException) {
-            $sender->sendMessage($this->translateString("info.loadMergedPlotsError"));
+        $mergedPlotsCount = count($plot->getMergePlots());
+        if ($mergedPlotsCount > 0) {
+            $sender->sendMessage($this->translateString("info.merges", [$mergedPlotsCount]));
+        } else {
+            $sender->sendMessage($this->translateString("info.merges.none"));
         }
 
-        try {
-            $trustedCount = count($plot->getPlotTrusted());
-            if ($trustedCount > 0) {
-                $sender->sendMessage($this->translateString("info.trusted", [$trustedCount]));
-            } else {
-                $sender->sendMessage($this->translateString("info.trusted.none"));
-            }
-            $helpersCount = count($plot->getPlotHelpers());
-            if ($helpersCount > 0) {
-                $sender->sendMessage($this->translateString("info.helpers", [$helpersCount]));
-            } else {
-                $sender->sendMessage($this->translateString("info.helpers.none"));
-            }
-            $deniedCount = count($plot->getPlotDenied());
-            if ($deniedCount > 0) {
-                $sender->sendMessage($this->translateString("info.denied", [$deniedCount]));
-            } else {
-                $sender->sendMessage($this->translateString("info.denied.none"));
-            }
-        } catch (PlotException) {
-            $sender->sendMessage($this->translateString("info.loadPlotPlayersError"));
+        $trustedCount = count($plot->getPlotTrusted());
+        if ($trustedCount > 0) {
+            $sender->sendMessage($this->translateString("info.trusted", [$trustedCount]));
+        } else {
+            $sender->sendMessage($this->translateString("info.trusted.none"));
+        }
+        $helpersCount = count($plot->getPlotHelpers());
+        if ($helpersCount > 0) {
+            $sender->sendMessage($this->translateString("info.helpers", [$helpersCount]));
+        } else {
+            $sender->sendMessage($this->translateString("info.helpers.none"));
+        }
+        $deniedCount = count($plot->getPlotDenied());
+        if ($deniedCount > 0) {
+            $sender->sendMessage($this->translateString("info.denied", [$deniedCount]));
+        } else {
+            $sender->sendMessage($this->translateString("info.denied.none"));
         }
 
-        try {
-            $flagsCount = count($plot->getFlags());
-            if ($flagsCount > 0) {
-                $sender->sendMessage($this->translateString("info.flags", [$flagsCount]));
-            } else {
-                $sender->sendMessage($this->translateString("info.flags.none"));
-            }
-        } catch (PlotException) {
-            $sender->sendMessage($this->translateString("info.loadFlagsError"));
+        $flagsCount = count($plot->getFlags());
+        if ($flagsCount > 0) {
+            $sender->sendMessage($this->translateString("info.flags", [$flagsCount]));
+        } else {
+            $sender->sendMessage($this->translateString("info.flags.none"));
         }
 
-        try {
-            $ratesCount = count($plot->getPlotRates());
-            if ($ratesCount > 0) {
-                $sender->sendMessage($this->translateString("info.rates", [$ratesCount]));
-            } else {
-                $sender->sendMessage($this->translateString("info.rates.none"));
-            }
-        } catch (PlotException) {
-            $sender->sendMessage($this->translateString("info.loadRatesError"));
+        $ratesCount = count($plot->getPlotRates());
+        if ($ratesCount > 0) {
+            $sender->sendMessage($this->translateString("info.rates", [$ratesCount]));
+        } else {
+            $sender->sendMessage($this->translateString("info.rates.none"));
         }
     }
 }

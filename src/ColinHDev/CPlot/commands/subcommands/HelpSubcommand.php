@@ -16,7 +16,8 @@ class HelpSubcommand extends Subcommand {
         $this->command = $command;
     }
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
+        0 && yield;
         if (count($args) === 0) {
             $page = 1;
         } else if (is_numeric($args[0])) {

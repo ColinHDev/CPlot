@@ -2,6 +2,7 @@
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
+use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\tasks\async\SchematicSaveAsyncTask;
 use ColinHDev\CPlot\worlds\SchematicGenerator;
 use ColinHDev\CPlotAPI\worlds\SchematicTypes;
@@ -16,21 +17,24 @@ use pocketmine\Server;
 
 class SchematicSubcommand extends Subcommand {
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
+        0 && yield;
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
             return;
         }
         switch ($args[0]) {
             case "list":
-                if (!is_dir($this->getPlugin()->getDataFolder() . "schematics")) {
+                if (!is_dir(CPlot::getInstance()->getDataFolder() . "schematics")) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.list.directoryNotFound"));
                     break;
                 }
                 $files = [];
-                foreach (scandir($this->getPlugin()->getDataFolder() . "schematics") as $file) {
+                foreach (scandir(CPlot::getInstance()->getDataFolder() . "schematics") as $file) {
                     $fileData = pathinfo($file);
-                    if (!isset($fileData["extension"]) || $fileData["extension"] !== Schematic::FILE_EXTENSION) continue;
+                    if (!isset($fileData["extension"]) || $fileData["extension"] !== Schematic::FILE_EXTENSION) {
+                        continue;
+                    }
                     $files[] = $fileData["filename"];
                 }
                 if (count($files) === 0) {
@@ -45,7 +49,7 @@ class SchematicSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.info.usage"));
                     break;
                 }
-                $dir = $this->getPlugin()->getDataFolder() . "schematics";
+                $dir = CPlot::getInstance()->getDataFolder() . "schematics";
                 if (!is_dir($dir)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.info.directoryNotFound"));
                     break;
@@ -92,7 +96,7 @@ class SchematicSubcommand extends Subcommand {
                     break;
                 }
                 $schematicName = $args[1];
-                $dir = $this->getPlugin()->getDataFolder() . "schematics";
+                $dir = CPlot::getInstance()->getDataFolder() . "schematics";
                 if (!is_dir($dir)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.directoryNotFound"));
                     break;
@@ -128,11 +132,12 @@ class SchematicSubcommand extends Subcommand {
                         Server::getInstance()->getLogger()->debug(
                             "Saving schematic from world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") \"" . $schematicName . "\" (" . $schematicType . ") with the size of " . $blocksCount . " blocks and a filesize of " . $fileSizeString . " (" . $fileSize . " B) took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ")."
                         );
-                        if (!$sender->isConnected()) return;
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.finish", [$schematicName, $elapsedTimeString]));
+                        if ($sender->isConnected()) {
+                            $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.finish", [$schematicName, $elapsedTimeString]));
+                        }
                     }
                 );
-                $this->getPlugin()->getServer()->getAsyncPool()->submitTask($task);
+                Server::getInstance()->getAsyncPool()->submitTask($task);
                 break;
 
             case "generate":
@@ -140,14 +145,14 @@ class SchematicSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.usage"));
                     break;
                 }
-                if ($this->getPlugin()->getServer()->getWorldManager()->isWorldGenerated($args[1])) {
+                if (Server::getInstance()->getWorldManager()->isWorldGenerated($args[1])) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.worldExists", [$args[1]]));
                     break;
                 }
 
                 $worldSettings = WorldSettings::fromConfig()->toArray();
                 if ($args[2] !== "road" && $args[2] !== "plot") {
-                    $dir = $this->getPlugin()->getDataFolder() . "schematics";
+                    $dir = CPlot::getInstance()->getDataFolder() . "schematics";
                     if (!is_dir($dir)) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.directoryNotFound"));
                         break;
@@ -175,7 +180,7 @@ class SchematicSubcommand extends Subcommand {
                 $options->setGeneratorClass(SchematicGenerator::class);
                 $options->setGeneratorOptions(json_encode($worldSettings));
                 $options->setSpawnPosition(new Vector3(0, $worldSettings["groundSize"] + 1, 0));
-                if (!$this->getPlugin()->getServer()->getWorldManager()->generateWorld($args[1], $options)) {
+                if (!Server::getInstance()->getWorldManager()->generateWorld($args[1], $options)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.generateError"));
                     break;
                 }

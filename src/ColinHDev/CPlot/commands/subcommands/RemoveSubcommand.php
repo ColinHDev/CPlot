@@ -3,17 +3,21 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlotAPI\attributes\BooleanAttribute;
+use ColinHDev\CPlotAPI\players\PlayerData;
 use ColinHDev\CPlotAPI\players\settings\SettingIDs;
-use ColinHDev\CPlotAPI\players\utils\PlayerDataException;
 use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
 use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\plots\utils\PlotException;
+use ColinHDev\CPlotAPI\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use pocketmine\Server;
+use poggit\libasynql\SqlError;
 
 class RemoveSubcommand extends Subcommand {
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("remove.senderNotOnline"));
             return;
@@ -26,14 +30,14 @@ class RemoveSubcommand extends Subcommand {
 
         $player = null;
         if ($args[0] !== "*") {
-            $player = $this->getPlugin()->getServer()->getPlayerByPrefix($args[0]);
+            $player = Server::getInstance()->getPlayerByPrefix($args[0]);
             if ($player instanceof Player) {
                 $playerUUID = $player->getUniqueId()->toString();
                 $playerName = $player->getName();
             } else {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("remove.playerNotOnline", [$args[0]]));
                 $playerName = $args[0];
-                $playerData = $this->getPlugin()->getProvider()->getPlayerDataByName($playerName);
+                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if ($playerData === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("remove.playerNotFound", [$playerName]));
                     return;
@@ -45,24 +49,19 @@ class RemoveSubcommand extends Subcommand {
             $playerName = "*";
         }
 
-        if ($this->getPlugin()->getProvider()->getWorld($sender->getWorld()->getFolderName()) === null) {
+        if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("remove.noPlotWorld"));
             return;
         }
 
-        $plot = Plot::fromPosition($sender->getPosition());
-        if ($plot === null) {
+        $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+        if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("remove.noPlot"));
             return;
         }
 
-        try {
-            if (!$plot->hasPlotOwner()) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("remove.noPlotOwner"));
-                return;
-            }
-        } catch (PlotException) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("remove.loadPlotPlayersError"));
+        if (!$plot->hasPlotOwner()) {
+            $sender->sendMessage($this->getPrefix() . $this->translateString("remove.noPlotOwner"));
             return;
         }
         if (!$sender->hasPermission("cplot.admin.remove")) {
@@ -72,12 +71,8 @@ class RemoveSubcommand extends Subcommand {
             }
         }
 
-        try {
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        } catch (PlotException) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("remove.loadFlagsError"));
-            return;
-        }
+        /** @var BooleanAttribute $flag */
+        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("remove.serverPlotFlag", [$flag->getID()]));
             return;
@@ -89,25 +84,29 @@ class RemoveSubcommand extends Subcommand {
         }
 
         $plot->removePlotPlayer($playerUUID);
-        if (!$this->getPlugin()->getProvider()->deletePlotPlayer($plot, $playerUUID)) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("remove.saveError"));
-            return;
-        }
+        yield from DataProvider::getInstance()->deletePlotPlayer($plot, $playerUUID);
         $sender->sendMessage($this->getPrefix() . $this->translateString("remove.success", [$playerName]));
 
         if ($player instanceof Player) {
-            $playerData = $this->getPlugin()->getProvider()->getPlayerDataByUUID($playerUUID);
-            if ($playerData === null) {
+            $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
+            if (!($playerData instanceof PlayerData)) {
                 return;
             }
-            try {
-                $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_REMOVE);
-            } catch (PlayerDataException) {
-                return;
-            }
+            /** @var BooleanAttribute $setting */
+            $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_REMOVE);
             if ($setting->getValue() === true) {
                 $player->sendMessage($this->getPrefix() . $this->translateString("remove.success.player", [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
             }
         }
+    }
+
+    /**
+     * @param SqlError $error
+     */
+    public function onError(CommandSender $sender, mixed $error) : void {
+        if ($sender instanceof Player && !$sender->isConnected()) {
+            return;
+        }
+        $sender->sendMessage($this->getPrefix() . $this->translateString("remove.saveError", [$error->getMessage()]));
     }
 }

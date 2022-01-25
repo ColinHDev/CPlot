@@ -3,15 +3,17 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlotAPI\plots\Plot;
 use ColinHDev\CPlotAPI\plots\PlotPlayer;
-use ColinHDev\CPlotAPI\plots\utils\PlotException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use pocketmine\Server;
+use poggit\libasynql\SqlError;
 
 class VisitSubcommand extends Subcommand {
 
-    public function execute(CommandSender $sender, array $args) : void {
+    public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("visit.senderNotOnline"));
             return;
@@ -19,36 +21,25 @@ class VisitSubcommand extends Subcommand {
 
         switch (count($args)) {
             case 0:
-                /** @var Plot[] | null $plots */
-                $plots = $this->getPlugin()->getProvider()->getPlotsByPlotPlayer(new PlotPlayer($sender->getUniqueId()->toString(), PlotPlayer::STATE_OWNER));
-                if ($plots === null) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.loadPlotsError"));
-                    return;
-                }
+                /** @var Plot[] $plots */
+                $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->toString(), PlotPlayer::STATE_OWNER);
                 if (count($plots) === 0) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.noPlots"));
                     return;
                 }
                 /** @var Plot $plot */
-                $plot = $plots[0];
-                try {
-                    if ($plot->teleportTo($sender)) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
-                        return;
-                    }
-                } catch (PlotException) {
+                $plot = array_values($plots)[0];
+                if (!(yield from $plot->teleportTo($sender))) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+                    return;
                 }
-                $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+                $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
                 return;
 
             case 1:
                 if (is_numeric($args[0])) {
-                    /** @var Plot[] | null $plots */
-                    $plots = $this->getPlugin()->getProvider()->getPlotsByPlotPlayer(new PlotPlayer($sender->getUniqueId()->toString(), PlotPlayer::STATE_OWNER));
-                    if ($plots === null) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.loadPlotsError"));
-                        return;
-                    }
+                    /** @var Plot[] $plots */
+                    $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->toString(), PlotPlayer::STATE_OWNER);
                     if (count($plots) === 0) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.noPlots"));
                         return;
@@ -59,79 +50,64 @@ class VisitSubcommand extends Subcommand {
                         return;
                     }
                     /** @var Plot $plot */
-                    $plot = $plots[($plotNumber - 1)];
-                    try {
-                        if ($plot->teleportTo($sender)) {
-                            $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.success", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
-                            return;
-                        }
-                    } catch (PlotException) {
+                    $plot = array_values($plots)[($plotNumber - 1)];
+                    if (!(yield from $plot->teleportTo($sender))) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.teleportError", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+                        return;
                     }
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.teleportError", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.success", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
                     return;
-
-                } else {
-                    $player = $this->getPlugin()->getServer()->getPlayerByPrefix($args[0]);
-                    if ($player instanceof Player) {
-                        $playerUUID = $player->getUniqueId()->toString();
-                        $playerName = $player->getName();
-                    } else {
-                        $playerName = $args[0];
-                        $playerData = $this->getPlugin()->getProvider()->getPlayerDataByName($playerName);
-                        $playerUUID = $playerData?->getPlayerUUID();
-                    }
-
-                    if ($playerUUID !== null) {
-                        /** @var Plot[] | null $plots */
-                        $plots = $this->getPlugin()->getProvider()->getPlotsByPlotPlayer(new PlotPlayer($playerUUID, PlotPlayer::STATE_OWNER));
-                        if ($plots === null) {
-                            $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.loadPlotsError"));
-                            return;
-                        }
-                        if (count($plots) === 0) {
-                            $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.noPlots", [$playerName]));
-                            return;
-                        }
-                        /** @var Plot $plot */
-                        $plot = $plots[0];
-                        try {
-                            if ($plot->teleportTo($sender)) {
-                                $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
-                                return;
-                            }
-                        } catch (PlotException) {
-                        }
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
-                        return;
-
-                    } else {
-                        $alias = strtolower($args[0]);
-                        /** @var Plot $plots */
-                        $plot = $this->getPlugin()->getProvider()->getPlotByAlias($alias);
-                        if ($plot === null) {
-                            $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.noPlot", [$alias]));
-                            return;
-                        }
-                        try {
-                            if ($plot->teleportTo($sender)) {
-                                $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]));
-                                return;
-                            }
-                        } catch (PlotException) {
-                        }
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]));
-                        return;
-                    }
                 }
 
-            default:
-                $player = $this->getPlugin()->getServer()->getPlayerByPrefix($args[0]);
+                $player = Server::getInstance()->getPlayerByPrefix($args[0]);
                 if ($player instanceof Player) {
                     $playerUUID = $player->getUniqueId()->toString();
                     $playerName = $player->getName();
                 } else {
                     $playerName = $args[0];
-                    $playerData = $this->getPlugin()->getProvider()->getPlayerDataByName($playerName);
+                    $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByName($playerName);
+                    $playerUUID = $playerData?->getPlayerUUID();
+                }
+
+                if ($playerUUID !== null) {
+                    /** @var Plot[] $plots */
+                    $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerUUID, PlotPlayer::STATE_OWNER);
+                    if (count($plots) === 0) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.noPlots", [$playerName]));
+                        return;
+                    }
+                    /** @var Plot $plot */
+                    $plot = array_values($plots)[0];
+                    if (!(yield from $plot->teleportTo($sender))) {
+                        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
+                        return;
+                    }
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
+                    return;
+                }
+
+                $alias = strtolower($args[0]);
+                /** @var Plot|null $plot */
+                $plot = yield from DataProvider::getInstance()->awaitPlotByAlias($alias);
+                if (!($plot instanceof Plot)) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.noPlot", [$alias]));
+                    return;
+                }
+                if (!(yield from $plot->teleportTo($sender))) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]));
+                    return;
+                }
+                $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]));
+                return;
+
+            default:
+                $player = Server::getInstance()->getPlayerByPrefix($args[0]);
+                if ($player instanceof Player) {
+                    $playerUUID = $player->getUniqueId()->toString();
+                    $playerName = $player->getName();
+                } else {
+                    $playerName = $args[0];
+                    $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                     if ($playerData === null) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.playerNotFound", [$playerName]));
                         return;
@@ -139,12 +115,8 @@ class VisitSubcommand extends Subcommand {
                     $playerUUID = $playerData->getPlayerUUID();
                 }
 
-                /** @var Plot[] | null $plots */
-                $plots = $this->getPlugin()->getProvider()->getPlotsByPlotPlayer(new PlotPlayer($playerUUID, PlotPlayer::STATE_OWNER));
-                if ($plots === null) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.loadPlotsError"));
-                    return;
-                }
+                /** @var Plot[] $plots */
+                $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerUUID, PlotPlayer::STATE_OWNER);
                 if (count($plots) === 0) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.noPlots", [$playerName]));
                     return;
@@ -155,16 +127,22 @@ class VisitSubcommand extends Subcommand {
                     return;
                 }
                 /** @var Plot $plot */
-                $plot = $plots[($plotNumber - 1)];
-                try {
-                    if ($plot->teleportTo($sender)) {
-                        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.success", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
-                        return;
-                    }
-                } catch (PlotException) {
+                $plot = array_values($plots)[($plotNumber - 1)];
+                if (!(yield from $plot->teleportTo($sender))) {
+                    $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.teleportError", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
+                    return;
                 }
-                $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.teleportError", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
-                return;
+                $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.success", [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]));
         }
+    }
+
+    /**
+     * @param SqlError $error
+     */
+    public function onError(CommandSender $sender, mixed $error) : void {
+        if ($sender instanceof Player && !$sender->isConnected()) {
+            return;
+        }
+        $sender->sendMessage($this->getPrefix() . $this->translateString("visit.loadPlotsError", [$error->getMessage()]));
     }
 }
