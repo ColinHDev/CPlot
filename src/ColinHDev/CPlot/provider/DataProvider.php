@@ -297,6 +297,7 @@ final class DataProvider {
             self::SET_WORLD,
             [
                 "worldName" => $worldName,
+                "worldType" => $worldSettings->getWorldType(),
                 "roadSchematic" => $worldSettings->getRoadSchematic(),
                 "mergeRoadSchematic" => $worldSettings->getMergeRoadSchematic(),
                 "plotSchematic" => $worldSettings->getPlotSchematic(),

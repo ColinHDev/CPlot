@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS playerSettings (
 -- #    { worldsTable
 CREATE TABLE IF NOT EXISTS worlds (
     worldName           VARCHAR(256)    NOT NULL,
+    worldType           TEXT            NOT NULL,
     roadSchematic       TEXT            NOT NULL,
     mergeRoadSchematic  TEXT            NOT NULL,
     plotSchematic       TEXT            NOT NULL,
@@ -227,6 +228,7 @@ VALUES (:playerUUID, :ID, :value);
 -- #    }
 -- #    { world
 -- #      :worldName string
+-- #      :worldType string
 -- #      :roadSchematic string
 -- #      :mergeRoadSchematic string
 -- #      :plotSchematic string
@@ -240,12 +242,12 @@ VALUES (:playerUUID, :ID, :value);
 -- #      :plotFillBlock string
 -- #      :plotBottomBlock string
 INSERT OR REPLACE INTO worlds (
-    worldName,
+    worldName, worldType,
     roadSchematic, mergeRoadSchematic, plotSchematic,
     roadSize, plotSize, groundSize,
     roadBlock, borderBlock, borderBlockOnClaim, plotFloorBlock, plotFillBlock, plotBottomBlock
 ) VALUES (
-    :worldName,
+    :worldName, :worldType,
     :roadSchematic, :mergeRoadSchematic, :plotSchematic,
     :roadSize, :plotSize, :groundSize,
     :roadBlock, :borderBlock, :borderBlockOnClaim, :plotFloorBlock, :plotFillBlock, :plotBottomBlock

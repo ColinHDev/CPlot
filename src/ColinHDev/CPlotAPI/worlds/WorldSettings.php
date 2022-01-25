@@ -10,6 +10,10 @@ use ColinHDev\CPlot\ResourceManager;
 
 class WorldSettings implements Cacheable {
 
+    public const TYPE_CPLOT_DEFAULT = "cplot_default";
+
+    private string $worldType;
+
     private string $roadSchematic;
     private string $mergeRoadSchematic;
     private string $plotSchematic;
@@ -25,7 +29,9 @@ class WorldSettings implements Cacheable {
     private Block $plotFillBlock;
     private Block $plotBottomBlock;
 
-    public function __construct(string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, Block $roadBlock, Block $borderBlock, Block $borderBlockOnClaim, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
+    public function __construct(string $worldType, string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, Block $roadBlock, Block $borderBlock, Block $borderBlockOnClaim, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
+        $this->worldType = $worldType;
+
         $this->roadSchematic = $roadSchematic;
         $this->mergeRoadSchematic = $mergeRoadSchematic;
         $this->plotSchematic = $plotSchematic;
@@ -40,6 +46,10 @@ class WorldSettings implements Cacheable {
         $this->plotFloorBlock = $plotFloorBlock;
         $this->plotFillBlock = $plotFillBlock;
         $this->plotBottomBlock = $plotBottomBlock;
+    }
+
+    public function getWorldType() : string {
+        return $this->worldType;
     }
 
     public function getRoadSchematic() : string {
@@ -92,6 +102,8 @@ class WorldSettings implements Cacheable {
 
     public function toArray() : array {
         return [
+            "worldType" => $this->worldType,
+
             "roadSchematic" => $this->roadSchematic,
             "mergeRoadSchematic" => $this->mergeRoadSchematic,
             "plotSchematic" => $this->plotSchematic,
@@ -115,6 +127,8 @@ class WorldSettings implements Cacheable {
     }
 
     public static function fromArray(array $settings) : self {
+        $worldType = ParseUtils::parseStringFromArray($settings, "worldType", self::TYPE_CPLOT_DEFAULT);
+
         $roadSchematic = ParseUtils::parseStringFromArray($settings, "roadSchematic", "default");
         $mergeRoadSchematic = ParseUtils::parseStringFromArray($settings, "mergeRoadSchematic", "default");
         $plotSchematic = ParseUtils::parseStringFromArray($settings, "plotSchematic", "default");
@@ -131,6 +145,7 @@ class WorldSettings implements Cacheable {
         $plotBottomBlock = ParseUtils::parseBlockFromArray($settings, "plotBottomBlock", VanillaBlocks::BEDROCK());
 
         return new self(
+            $worldType,
             $roadSchematic, $mergeRoadSchematic, $plotSchematic,
             $roadSize, $plotSize, $groundSize,
             $roadBlock, $borderBlock, $borderBlockOnClaim, $plotFloorBlock, $plotFillBlock, $plotBottomBlock
