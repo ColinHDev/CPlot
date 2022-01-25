@@ -41,7 +41,7 @@ class ClearSubcommand extends Subcommand {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlotOwner"));
                 return;
             }
-            if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
+            if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("clear.notPlotOwner"));
                 return;
             }
@@ -89,7 +89,7 @@ class ClearSubcommand extends Subcommand {
                     $plots
                 );
                 Server::getInstance()->getLogger()->debug(
-                    "Clearing plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
+                    "Clearing plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
                 if ($sender->isConnected()) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("clear.finish", [$elapsedTimeString]));

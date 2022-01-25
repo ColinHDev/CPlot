@@ -99,7 +99,7 @@ class BorderSubcommand extends Subcommand {
                 $player->sendMessage($this->getPrefix() . $this->translateString("border.noPlotOwner"));
                 return;
             }
-            if (!$plot->isPlotOwner($player->getUniqueId()->toString())) {
+            if (!$plot->isPlotOwner($player->getUniqueId()->getBytes())) {
                 $player->sendMessage($this->getPrefix() . $this->translateString("border.notPlotOwner"));
                 return;
             }
@@ -127,7 +127,7 @@ class BorderSubcommand extends Subcommand {
                     $plots
                 );
                 Server::getInstance()->getLogger()->debug(
-                    "Changing plot border to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $player->getUniqueId()->toString() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
+                    "Changing plot border to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $player->getUniqueId()->getBytes() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
                 if ($player->isConnected()) {
                     $player->sendMessage($this->getPrefix() . $this->translateString("border.finish", [$elapsedTimeString, $block->getName()]));

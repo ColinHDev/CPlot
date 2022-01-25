@@ -32,7 +32,7 @@ class UntrustSubcommand extends Subcommand {
         if ($args[0] !== "*") {
             $player = Server::getInstance()->getPlayerByPrefix($args[0]);
             if ($player instanceof Player) {
-                $playerUUID = $player->getUniqueId()->toString();
+                $playerUUID = $player->getUniqueId()->getBytes();
                 $playerName = $player->getName();
             } else {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.playerNotOnline", [$args[0]]));
@@ -65,7 +65,7 @@ class UntrustSubcommand extends Subcommand {
             return;
         }
         if (!$sender->hasPermission("cplot.admin.untrust")) {
-            if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
+            if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.notPlotOwner"));
                 return;
             }

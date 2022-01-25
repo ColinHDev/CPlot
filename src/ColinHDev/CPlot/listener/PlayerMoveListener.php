@@ -38,7 +38,7 @@ class PlayerMoveListener implements Listener {
                 if (!$player->isConnected()) {
                     return;
                 }
-                $playerUUID = $player->getUniqueId()->toString();
+                $playerUUID = $player->getUniqueId()->getBytes();
 
                 if ($plotTo !== null) {
                     // check if player is denied and hasn't bypass permission
@@ -112,7 +112,7 @@ class PlayerMoveListener implements Listener {
                         $flag = $plotTo->getFlagNonNullByID(FlagIDs::FLAG_PLOT_ENTER);
                         if ($flag->getValue() === true) {
                             foreach ($plotTo->getPlotOwners() as $plotOwner) {
-                                $owner = $player->getServer()->getPlayerByUUID(Uuid::fromString($plotOwner->getPlayerUUID()));
+                                $owner = $player->getServer()->getPlayerByUUID(Uuid::fromBytes($plotOwner->getPlayerUUID()));
                                 $owner?->sendMessage(
                                     ResourceManager::getInstance()->getPrefix() .
                                     ResourceManager::getInstance()->translateString(
@@ -134,7 +134,7 @@ class PlayerMoveListener implements Listener {
                     $flag = $plotFrom->getFlagNonNullByID(FlagIDs::FLAG_PLOT_LEAVE);
                     if ($flag->getValue() === true) {
                         foreach ($plotFrom->getPlotOwners() as $plotOwner) {
-                            $owner = $player->getServer()->getPlayerByUUID(Uuid::fromString($plotOwner->getPlayerUUID()));
+                            $owner = $player->getServer()->getPlayerByUUID(Uuid::fromBytes($plotOwner->getPlayerUUID()));
                             $owner?->sendMessage(
                                 ResourceManager::getInstance()->getPrefix() .
                                 ResourceManager::getInstance()->translateString(

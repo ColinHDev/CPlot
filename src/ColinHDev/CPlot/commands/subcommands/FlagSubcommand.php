@@ -122,7 +122,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
                 if (!$sender->hasPermission("cplot.admin.flag")) {
-                    if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
+                    if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.notPlotOwner"));
                         break;
                     }
@@ -182,8 +182,8 @@ class FlagSubcommand extends Subcommand {
                 yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.success", [$flag->getID(), $flag->toString($parsedValue)]));
                 foreach ($sender->getWorld()->getPlayers() as $player) {
-                    $playerUUID = $player->getUniqueId()->toString();
-                    if ($sender->getUniqueId()->toString() === $playerUUID) {
+                    $playerUUID = $player->getUniqueId()->getBytes();
+                    if ($sender->getUniqueId()->getBytes() === $playerUUID) {
                         continue;
                     }
                     $plotOfPlayer = yield from Plot::awaitFromPosition($player->getPosition());
@@ -250,7 +250,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
                 if (!$sender->hasPermission("cplot.admin.flag")) {
-                    if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
+                    if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.notPlotOwner"));
                         break;
                     }

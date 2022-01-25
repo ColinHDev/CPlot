@@ -43,7 +43,7 @@ class PlayerDropItemListener implements Listener {
                 return;
             }
 
-            $playerUUID = $player->getUniqueId()->toString();
+            $playerUUID = $player->getUniqueId()->getBytes();
             if ($plot->isPlotOwner($playerUUID)) {
                 return;
             }
@@ -52,7 +52,7 @@ class PlayerDropItemListener implements Listener {
             }
             if ($plot->isPlotHelper($playerUUID)) {
                 foreach ($plot->getPlotOwners() as $plotOwner) {
-                    $owner = $player->getServer()->getPlayerByUUID(Uuid::fromString($plotOwner->getPlayerUUID()));
+                    $owner = $player->getServer()->getPlayerByUUID(Uuid::fromBytes($plotOwner->getPlayerUUID()));
                     if ($owner !== null) {
                         return;
                     }

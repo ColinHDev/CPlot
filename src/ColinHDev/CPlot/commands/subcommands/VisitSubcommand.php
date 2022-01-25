@@ -22,7 +22,7 @@ class VisitSubcommand extends Subcommand {
         switch (count($args)) {
             case 0:
                 /** @var Plot[] $plots */
-                $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->toString(), PlotPlayer::STATE_OWNER);
+                $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->getBytes(), PlotPlayer::STATE_OWNER);
                 if (count($plots) === 0) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.noPlots"));
                     return;
@@ -39,7 +39,7 @@ class VisitSubcommand extends Subcommand {
             case 1:
                 if (is_numeric($args[0])) {
                     /** @var Plot[] $plots */
-                    $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->toString(), PlotPlayer::STATE_OWNER);
+                    $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->getBytes(), PlotPlayer::STATE_OWNER);
                     if (count($plots) === 0) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.noPlots"));
                         return;
@@ -61,7 +61,7 @@ class VisitSubcommand extends Subcommand {
 
                 $player = Server::getInstance()->getPlayerByPrefix($args[0]);
                 if ($player instanceof Player) {
-                    $playerUUID = $player->getUniqueId()->toString();
+                    $playerUUID = $player->getUniqueId()->getBytes();
                     $playerName = $player->getName();
                 } else {
                     $playerName = $args[0];
@@ -103,7 +103,7 @@ class VisitSubcommand extends Subcommand {
             default:
                 $player = Server::getInstance()->getPlayerByPrefix($args[0]);
                 if ($player instanceof Player) {
-                    $playerUUID = $player->getUniqueId()->toString();
+                    $playerUUID = $player->getUniqueId()->getBytes();
                     $playerName = $player->getName();
                 } else {
                     $playerName = $args[0];

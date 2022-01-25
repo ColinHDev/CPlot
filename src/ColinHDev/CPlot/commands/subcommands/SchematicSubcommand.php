@@ -130,7 +130,7 @@ class SchematicSubcommand extends Subcommand {
                     function (int $elapsedTime, string $elapsedTimeString, array $result) use ($world, $sender, $schematicName, $schematicType) {
                         [$blocksCount, $fileSize, $fileSizeString] = $result;
                         Server::getInstance()->getLogger()->debug(
-                            "Saving schematic from world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") \"" . $schematicName . "\" (" . $schematicType . ") with the size of " . $blocksCount . " blocks and a filesize of " . $fileSizeString . " (" . $fileSize . " B) took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->toString() . " (" . $sender->getName() . ")."
+                            "Saving schematic from world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") \"" . $schematicName . "\" (" . $schematicType . ") with the size of " . $blocksCount . " blocks and a filesize of " . $fileSizeString . " (" . $fileSize . " B) took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ")."
                         );
                         if ($sender->isConnected()) {
                             $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.finish", [$schematicName, $elapsedTimeString]));

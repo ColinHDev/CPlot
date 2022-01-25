@@ -33,7 +33,7 @@ class AddSubcommand extends Subcommand {
         if ($args[0] !== "*") {
             $player = Server::getInstance()->getPlayerByPrefix($args[0]);
             if ($player instanceof Player) {
-                $playerUUID = $player->getUniqueId()->toString();
+                $playerUUID = $player->getUniqueId()->getBytes();
                 $playerName = $player->getName();
             } else {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("add.playerNotOnline", [$args[0]]));
@@ -45,7 +45,7 @@ class AddSubcommand extends Subcommand {
                 }
                 $playerUUID = $playerData->getPlayerUUID();
             }
-            if ($playerUUID === $sender->getUniqueId()->toString()) {
+            if ($playerUUID === $sender->getUniqueId()->getBytes()) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("add.senderIsPlayer"));
                 return;
             }
@@ -70,7 +70,7 @@ class AddSubcommand extends Subcommand {
             return;
         }
         if (!$sender->hasPermission("cplot.admin.add")) {
-            if (!$plot->isPlotOwner($sender->getUniqueId()->toString())) {
+            if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("add.notPlotOwner"));
                 return;
             }

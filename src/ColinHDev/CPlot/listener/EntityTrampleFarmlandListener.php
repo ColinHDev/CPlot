@@ -46,7 +46,7 @@ class EntityTrampleFarmlandListener implements Listener {
                 return;
             }
 
-            $playerUUID = $entity->getUniqueId()->toString();
+            $playerUUID = $entity->getUniqueId()->getBytes();
             if ($plot->isPlotOwner($playerUUID)) {
                 return;
             }
@@ -55,7 +55,7 @@ class EntityTrampleFarmlandListener implements Listener {
             }
             if ($plot->isPlotHelper($playerUUID)) {
                 foreach ($plot->getPlotOwners() as $plotOwner) {
-                    $owner = $entity->getServer()->getPlayerByUUID(Uuid::fromString($plotOwner->getPlayerUUID()));
+                    $owner = $entity->getServer()->getPlayerByUUID(Uuid::fromBytes($plotOwner->getPlayerUUID()));
                     if ($owner !== null) {
                         return;
                     }

@@ -43,7 +43,7 @@ class PlayerData implements Cacheable {
      */
     public function getLastPlayed() : int {
         // player is online and therefore not inactive
-        $player = Server::getInstance()->getPlayerByRawUUID(Uuid::fromString($this->playerUUID));
+        $player = Server::getInstance()->getPlayerByUUID(Uuid::fromBytes($this->playerUUID));
         if ($player !== null) {
             return time();
         }

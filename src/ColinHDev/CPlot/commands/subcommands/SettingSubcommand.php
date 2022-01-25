@@ -61,7 +61,7 @@ class SettingSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.my.senderNotOnline"));
                     break;
                 }
-                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->toString());
+                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
                 if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.my.loadPlayerDataError"));
                     break;
@@ -96,7 +96,7 @@ class SettingSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.senderNotOnline"));
                     break;
                 }
-                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->toString());
+                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
                 if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.loadPlayerDataError"));
                     break;
@@ -144,7 +144,7 @@ class SettingSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.senderNotOnline"));
                     break;
                 }
-                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->toString());
+                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
                 if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.loadPlayerDataError"));
                     break;
