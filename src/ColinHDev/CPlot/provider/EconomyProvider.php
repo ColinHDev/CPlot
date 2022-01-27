@@ -35,8 +35,8 @@ abstract class EconomyProvider {
      * Since we want to support both economy plugins with asynchronous and synchronous database design, we provide
      * callbacks that can be called either directly if the plugin uses a synchronous design, or later when e.g. the
      * query for the money was finished if the plugin uses an asynchronous one.
-     * @phpstan-param callable(float|null $money): void $onSuccess
-     * @phpstan-param null|callable(mixed $error): void $onError
+     * @phpstan-param callable(float|null): void $onSuccess
+     * @phpstan-param callable(\Throwable): void $onError
      */
     abstract public function getMoney(Player $player, callable $onSuccess, callable $onError) : void;
 
@@ -53,7 +53,7 @@ abstract class EconomyProvider {
     /**
      * This method is used to remove money from a player through the economy plugin.
      * @phpstan-param callable(): void $onSuccess
-     * @phpstan-param null|callable(mixed $error): void $onError
+     * @phpstan-param callable(\Throwable): void $onError
      */
     abstract public function removeMoney(Player $player, float $money, callable $onSuccess, callable $onError) : void;
 }
