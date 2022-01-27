@@ -2,16 +2,15 @@
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\attributes\ArrayAttribute;
 use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
+use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\SettingManager;
+use ColinHDev\CPlot\provider\DataProvider;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use poggit\libasynql\SqlError;
 
 class SettingSubcommand extends Subcommand {
 

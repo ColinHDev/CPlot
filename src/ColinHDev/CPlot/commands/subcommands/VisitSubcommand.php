@@ -3,13 +3,12 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
+use ColinHDev\CPlot\provider\DataProvider;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
-use poggit\libasynql\SqlError;
 
 class VisitSubcommand extends Subcommand {
 

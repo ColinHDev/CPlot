@@ -3,20 +3,18 @@
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
-use ColinHDev\CPlot\plots\BasePlot;
-use ColinHDev\CPlot\plots\Plot;
-use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\Permission;
 use pocketmine\player\Player;
 use pocketmine\Server;
-use poggit\libasynql\SqlError;
 
 class ClaimSubcommand extends Subcommand {
 

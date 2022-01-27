@@ -2,10 +2,10 @@
 
 namespace ColinHDev\CPlot\plots;
 
-use ColinHDev\CPlot\provider\cache\Cacheable;
-use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\provider\cache\Cacheable;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;

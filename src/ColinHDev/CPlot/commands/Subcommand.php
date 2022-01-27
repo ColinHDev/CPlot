@@ -2,8 +2,8 @@
 
 namespace ColinHDev\CPlot\commands;
 
-use pocketmine\command\CommandSender;
 use ColinHDev\CPlot\ResourceManager;
+use pocketmine\command\CommandSender;
 use poggit\libasynql\SqlError;
 
 /**

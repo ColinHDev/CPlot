@@ -2,13 +2,13 @@
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\attributes\StringAttribute;
 use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerMoveEvent;

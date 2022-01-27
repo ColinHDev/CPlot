@@ -2,18 +2,18 @@
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
+use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\tasks\async\SchematicSaveAsyncTask;
 use ColinHDev\CPlot\worlds\generator\SchematicGenerator;
+use ColinHDev\CPlot\worlds\schematic\Schematic;
 use ColinHDev\CPlot\worlds\schematic\SchematicTypes;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use pocketmine\command\CommandSender;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
-use pocketmine\command\CommandSender;
-use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\worlds\schematic\Schematic;
-use pocketmine\world\WorldCreationOptions;
 use pocketmine\Server;
+use pocketmine\world\WorldCreationOptions;
 
 class SchematicSubcommand extends Subcommand {
 

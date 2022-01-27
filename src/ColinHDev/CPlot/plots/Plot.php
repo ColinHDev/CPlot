@@ -2,15 +2,14 @@
 
 namespace ColinHDev\CPlot\plots;
 
-use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
-use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
 

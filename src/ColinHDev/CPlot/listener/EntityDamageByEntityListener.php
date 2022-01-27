@@ -2,11 +2,11 @@
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\ResourceManager;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;

@@ -2,9 +2,9 @@
 
 namespace ColinHDev\CPlot\tasks\async;
 
-use ColinHDev\CPlot\tasks\utils\PlotBorderAreaCalculationTrait;
 use ColinHDev\CPlot\math\CoordinateUtils;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\tasks\utils\PlotBorderAreaCalculationTrait;
 use ColinHDev\CPlot\worlds\schematic\Schematic;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;

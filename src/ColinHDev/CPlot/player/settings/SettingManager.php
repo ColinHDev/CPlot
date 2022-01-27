@@ -2,10 +2,10 @@
 
 namespace ColinHDev\CPlot\player\settings;
 
-use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\attributes\BooleanListAttribute;
+use ColinHDev\CPlot\ResourceManager;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\Utils;
 

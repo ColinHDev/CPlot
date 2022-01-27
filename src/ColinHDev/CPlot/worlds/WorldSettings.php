@@ -3,10 +3,10 @@
 namespace ColinHDev\CPlot\worlds;
 
 use ColinHDev\CPlot\provider\cache\Cacheable;
-use ColinHDev\CPlot\utils\ParseUtils;
-use pocketmine\block\VanillaBlocks;
-use pocketmine\block\Block;
 use ColinHDev\CPlot\ResourceManager;
+use ColinHDev\CPlot\utils\ParseUtils;
+use pocketmine\block\Block;
+use pocketmine\block\VanillaBlocks;
 
 class WorldSettings implements Cacheable {
 

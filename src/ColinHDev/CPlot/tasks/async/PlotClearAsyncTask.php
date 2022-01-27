@@ -2,11 +2,11 @@
 
 namespace ColinHDev\CPlot\tasks\async;
 
+use ColinHDev\CPlot\math\CoordinateUtils;
+use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\tasks\utils\PlotAreaCalculationTrait;
 use ColinHDev\CPlot\tasks\utils\PlotBorderAreaCalculationTrait;
 use ColinHDev\CPlot\tasks\utils\RoadAreaCalculationTrait;
-use ColinHDev\CPlot\math\CoordinateUtils;
-use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\worlds\schematic\Schematic;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\world\format\io\FastChunkSerializer;

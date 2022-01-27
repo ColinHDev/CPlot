@@ -2,23 +2,23 @@
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlot\attributes\BaseAttribute;
+use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\player\PlayerData;
+use ColinHDev\CPlot\player\settings\SettingManager;
+use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\plots\MergePlot;
+use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\plots\PlotPlayer;
+use ColinHDev\CPlot\plots\PlotRate;
 use ColinHDev\CPlot\provider\cache\Cache;
 use ColinHDev\CPlot\provider\cache\CacheIDs;
 use ColinHDev\CPlot\ResourceManager;
-use ColinHDev\CPlot\attributes\BaseAttribute;
-use ColinHDev\CPlot\attributes\utils\AttributeParseException;
-use ColinHDev\CPlot\player\PlayerData;
-use ColinHDev\CPlot\player\settings\SettingManager;
-use ColinHDev\CPlot\plots\flags\FlagManager;
-use ColinHDev\CPlot\plots\MergePlot;
-use ColinHDev\CPlot\plots\PlotPlayer;
-use ColinHDev\CPlot\plots\PlotRate;
 use ColinHDev\CPlot\utils\ParseUtils;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
-use ColinHDev\CPlot\plots\BasePlot;
-use ColinHDev\CPlot\plots\Plot;
 use pocketmine\utils\SingletonTrait;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;

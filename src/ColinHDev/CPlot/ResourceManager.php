@@ -2,8 +2,8 @@
 
 namespace ColinHDev\CPlot;
 
-use pocketmine\utils\Config;
 use pocketmine\lang\Language;
+use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 
 class ResourceManager {

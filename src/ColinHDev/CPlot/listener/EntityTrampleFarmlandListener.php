@@ -2,10 +2,10 @@
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\event\entity\EntityTrampleFarmlandEvent;
 use pocketmine\event\Listener;

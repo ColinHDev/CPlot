@@ -2,12 +2,12 @@
 
 namespace ColinHDev\CPlot\plots\flags;
 
-use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\attributes\BlockListAttribute;
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\attributes\LocationAttribute;
 use ColinHDev\CPlot\attributes\StringAttribute;
+use ColinHDev\CPlot\ResourceManager;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\Utils;
 

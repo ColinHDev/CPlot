@@ -2,11 +2,11 @@
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\event\block\BlockGrowEvent;
 use pocketmine\event\Listener;

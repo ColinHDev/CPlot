@@ -4,11 +4,11 @@ namespace ColinHDev\CPlot\worlds\generator;
 
 use ColinHDev\CPlot\math\CoordinateUtils;
 use ColinHDev\CPlot\utils\ParseUtils;
-use pocketmine\world\generator\Generator;
-use pocketmine\world\ChunkManager;
-use pocketmine\data\bedrock\BiomeIds;
-use pocketmine\block\VanillaBlocks;
 use ColinHDev\CPlot\worlds\schematic\Schematic;
+use pocketmine\block\VanillaBlocks;
+use pocketmine\data\bedrock\BiomeIds;
+use pocketmine\world\ChunkManager;
+use pocketmine\world\generator\Generator;
 
 class PlotGenerator extends Generator {
 

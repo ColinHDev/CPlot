@@ -15,16 +15,16 @@ use ColinHDev\CPlot\listener\EntityItemPickupListener;
 use ColinHDev\CPlot\listener\EntityTrampleFarmlandListener;
 use ColinHDev\CPlot\listener\PlayerDropItemListener;
 use ColinHDev\CPlot\listener\PlayerInteractListener;
-use ColinHDev\CPlot\listener\PlayerMoveListener;
 use ColinHDev\CPlot\listener\PlayerLoginListener;
+use ColinHDev\CPlot\listener\PlayerMoveListener;
 use ColinHDev\CPlot\listener\StructureGrowListener;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\tasks\EntityMovementTask;
-use pocketmine\plugin\PluginBase;
-use pocketmine\world\generator\GeneratorManager;
 use ColinHDev\CPlot\worlds\generator\PlotGenerator;
 use ColinHDev\CPlot\worlds\generator\SchematicGenerator;
+use pocketmine\plugin\PluginBase;
+use pocketmine\world\generator\GeneratorManager;
 
 class CPlot extends PluginBase {
 

@@ -2,8 +2,8 @@
 
 namespace ColinHDev\CPlot\tasks\utils;
 
-use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\math\Area;
+use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\math\Facing;

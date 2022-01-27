@@ -2,22 +2,20 @@
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
+use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\BasePlot;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
-use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\math\Facing;
 use pocketmine\player\Player;
 use pocketmine\Server;
-use poggit\libasynql\SqlError;
 
 class MergeSubcommand extends Subcommand {
 

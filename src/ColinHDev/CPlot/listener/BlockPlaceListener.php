@@ -2,12 +2,12 @@
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\attributes\BlockListAttribute;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;
 use pocketmine\event\block\BlockPlaceEvent;
