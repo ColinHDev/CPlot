@@ -221,19 +221,17 @@ database:
     # Recommended: 1 for sqlite, 2 for MySQL. You may want to further increase this value if your MySQL connection is very slow.
     worker-limit: 1
 
-# economy settings
+# Change the settings for CPlot's economy plugin integration.
 economy:
-    # define which economy provider will be used
-    # possible values: "", ceconomy
-    # default value: ""
-    # TODO: more economy provider
+    # Define the economy plugin, that will be used.
+    # Supported plugins:
     provider: ""
 
-    # define how much it costs to claim a plot
+    # Define the price it costs to claim a plot.
     claimPrice: 0.0
-    # define how much it costs to clear a plot
+    # Define the price it costs to clear a plot.
     clearPrice: 0.0
-    # define how much it costs to merge plots
+    # Define the price it costs to merge plots.
     mergePrice: 0.0
-    # define how much it costs to reset a plot
+    # Define the price it costs to reset a plot.
     resetPrice: 0.0

@@ -18,9 +18,8 @@ use ColinHDev\CPlot\listener\PlayerInteractListener;
 use ColinHDev\CPlot\listener\PlayerMoveListener;
 use ColinHDev\CPlot\listener\PlayerLoginListener;
 use ColinHDev\CPlot\listener\StructureGrowListener;
-use ColinHDev\CPlot\provider\CEconomyProvider;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\EconomyProvider;
+use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\tasks\EntityMovementTask;
 use pocketmine\plugin\PluginBase;
 use pocketmine\world\generator\GeneratorManager;
@@ -35,26 +34,12 @@ class CPlot extends PluginBase {
         return self::$instance;
     }
 
-    private ?EconomyProvider $economyProvider;
-
-    public function getEconomyProvider() : ?EconomyProvider {
-        return $this->economyProvider;
-    }
-
     public function onLoad() : void {
         self::$instance = $this;
 
-        $config = ResourceManager::getInstance()->getConfig();
-        switch (strtolower($config->getNested("economy.provider", ""))) {
-            case "ceconomy":
-                $this->economyProvider = new CEconomyProvider($config->get("economy", []));
-                break;
-            default:
-                $this->economyProvider = null;
-                break;
-        }
-
+        ResourceManager::getInstance();
         DataProvider::getInstance();
+        EconomyManager::getInstance();
 
         GeneratorManager::getInstance()->addGenerator(PlotGenerator::class, PlotGenerator::GENERATOR_NAME, fn() => null, true);
         GeneratorManager::getInstance()->addGenerator(SchematicGenerator::class, SchematicGenerator::GENERATOR_NAME, fn() => null, true);

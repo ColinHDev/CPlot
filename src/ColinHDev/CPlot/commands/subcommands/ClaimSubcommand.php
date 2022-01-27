@@ -5,6 +5,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlotAPI\plots\BasePlot;
@@ -56,12 +57,12 @@ class ClaimSubcommand extends Subcommand {
             return;
         }
 
-        $economyProvider = CPlot::getInstance()->getEconomyProvider();
-        if ($economyProvider !== null) {
-            $price = $economyProvider->getPrice(EconomyProvider::PRICE_CLAIM) ?? 0.0;
+        $economyProvider = EconomyManager::getInstance()->getProvider();
+        if ($economyProvider instanceof EconomyProvider) {
+            $price = EconomyManager::getInstance()->getClaimPrice();
             if ($price > 0.0) {
-                $money = $economyProvider->getMoney($sender);
-                if ($money === null) {
+                $money = yield from $economyProvider->awaitMoney($sender);
+                if (!is_float($money)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadMoneyError"));
                     return;
                 }
@@ -69,10 +70,7 @@ class ClaimSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("claim.notEnoughMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]));
                     return;
                 }
-                if (!$economyProvider->removeMoney($sender, $price, "Paid " . $price . $economyProvider->getCurrency() . " to claim the plot " . $plot->toString() . ".")) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("claim.saveMoneyError"));
-                    return;
-                }
+                yield from $economyProvider->awaitMoneyRemoval($sender, $price);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("claim.chargedMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]));
             }
         }

@@ -5,6 +5,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
 use ColinHDev\CPlotAPI\attributes\BooleanAttribute;
@@ -110,12 +111,12 @@ class MergeSubcommand extends Subcommand {
             return;
         }
 
-        $economyProvider = CPlot::getInstance()->getEconomyProvider();
-        if ($economyProvider !== null) {
-            $price = $economyProvider->getPrice(EconomyProvider::PRICE_MERGE) ?? 0.0;
+        $economyProvider = EconomyManager::getInstance()->getProvider();
+        if ($economyProvider instanceof EconomyProvider) {
+            $price = EconomyManager::getInstance()->getMergePrice();
             if ($price > 0.0) {
-                $money = $economyProvider->getMoney($sender);
-                if ($money === null) {
+                $money = yield from $economyProvider->awaitMoney($sender);
+                if (!is_float($money)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("merge.loadMoneyError"));
                     return;
                 }
@@ -123,10 +124,7 @@ class MergeSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notEnoughMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]));
                     return;
                 }
-                if (!$economyProvider->removeMoney($sender, $price, "Paid " . $price . $economyProvider->getCurrency() . " to merge the plot " . $plot->toString() . " with the plot " . $plotToMerge->toString() . ".")) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("merge.saveMoneyError"));
-                    return;
-                }
+                yield from $economyProvider->awaitMoneyRemoval($sender, $price);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("merge.chargedMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]));
             }
         }

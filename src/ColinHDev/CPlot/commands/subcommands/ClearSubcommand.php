@@ -5,6 +5,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlotAPI\attributes\BooleanAttribute;
@@ -54,12 +55,12 @@ class ClearSubcommand extends Subcommand {
             return;
         }
 
-        $economyProvider = CPlot::getInstance()->getEconomyProvider();
-        if ($economyProvider !== null) {
-            $price = $economyProvider->getPrice(EconomyProvider::PRICE_CLEAR) ?? 0.0;
+        $economyProvider = EconomyManager::getInstance()->getProvider();
+        if ($economyProvider instanceof EconomyProvider) {
+            $price = EconomyManager::getInstance()->getClearPrice();
             if ($price > 0.0) {
-                $money = $economyProvider->getMoney($sender);
-                if ($money === null) {
+                $money = yield from $economyProvider->awaitMoney($sender);
+                if (!is_float($money)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("clear.loadMoneyError"));
                     return;
                 }
@@ -67,10 +68,7 @@ class ClearSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("clear.notEnoughMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]));
                     return;
                 }
-                if (!$economyProvider->removeMoney($sender, $price, "Paid " . $price . $economyProvider->getCurrency() . " to clear the plot " . $plot->toString() . ".")) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("clear.saveMoneyError"));
-                    return;
-                }
+                yield from $economyProvider->awaitMoneyRemoval($sender, $price);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("clear.chargedMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]));
             }
         }

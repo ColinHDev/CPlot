@@ -3,31 +3,57 @@
 namespace ColinHDev\CPlot\provider;
 
 use pocketmine\player\Player;
+use SOFe\AwaitGenerator\Await;
 
 abstract class EconomyProvider {
 
-    public const PRICE_CLAIM = "claimPrice";
-    public const PRICE_CLEAR = "clearPrice";
-    public const PRICE_MERGE = "mergePrice";
-    public const PRICE_RESET = "resetPrice";
-
-    /** @var array<string, float> */
-    private array $prices = [];
-
-    public function __construct(array $settings) {
-        $this->prices[self::PRICE_CLAIM] = (float) ($settings[self::PRICE_CLAIM] ?? 0.0);
-        $this->prices[self::PRICE_CLEAR] = (float) ($settings[self::PRICE_CLEAR] ?? 0.0);
-        $this->prices[self::PRICE_MERGE] = (float) ($settings[self::PRICE_MERGE] ?? 0.0);
-        $this->prices[self::PRICE_RESET] = (float) ($settings[self::PRICE_RESET] ?? 0.0);
-    }
-
-    public function getPrice(string $priceID) : ?float {
-        return $this->prices[$priceID] ?? null;
-    }
-
+    /**
+     * This method should return the currency that is used by the economy plugin.
+     * For example: "$" or "Coins"
+     */
     abstract public function getCurrency() : string;
+
+    /**
+     * With this method, it can be defined how a money value of the economy plugin should be represented as a string.
+     * The result will be used when displaying a money value to a player.
+     * For example: 12345.089 -> 12,345.09
+     */
     abstract public function parseMoneyToString(float $money) : string;
 
-    abstract public function getMoney(Player $player) : ?float;
-    abstract public function removeMoney(Player $player, float $money, string $message) : bool;
+    /**
+     * @internal method to get fetch a player's money from the economy plugin while also using a
+     * {@see \Generator} function which we can handle with {@see Await}.
+     * @phpstan-param \Generator<null, \Generator, float|null, float|null>
+     */
+    final public function awaitMoney(Player $player) : \Generator {
+        $this->getMoney($player, yield from, yield from Await::REJECT);
+        return yield from Await::ONCE;
+    }
+
+    /**
+     * This method is used to fetch a player's money from the economy plugin.
+     * Since we want to support both economy plugins with asynchronous and synchronous database design, we provide
+     * callbacks that can be called either directly if the plugin uses a synchronous design, or later when e.g. the
+     * query for the money was finished if the plugin uses an asynchronous one.
+     * @phpstan-param callable(float|null $money): void $onSuccess
+     * @phpstan-param null|callable(mixed $error): void $onError
+     */
+    abstract public function getMoney(Player $player, callable $onSuccess, callable $onError) : void;
+
+    /**
+     * @internal method to remove money from a player through the economy plugin while also using a
+     * {@see \Generator} function which we can handle with {@see Await}.
+     * @phpstan-param \Generator<null, \Generator, null, null>
+     */
+    final public function awaitMoneyRemoval(Player $player, float $money) : \Generator {
+        $this->removeMoney($player, $money, yield from, yield from Await::REJECT);
+        return yield from Await::ONCE;
+    }
+
+    /**
+     * This method is used to remove money from a player through the economy plugin.
+     * @phpstan-param callable(): void $onSuccess
+     * @phpstan-param null|callable(mixed $error): void $onError
+     */
+    abstract public function removeMoney(Player $player, float $money, callable $onSuccess, callable $onError) : void;
 }
