@@ -26,8 +26,8 @@ abstract class EconomyProvider {
      * @phpstan-param \Generator<null, \Generator, float|null, float|null>
      */
     final public function awaitMoney(Player $player) : \Generator {
-        $this->getMoney($player, yield from, yield from Await::REJECT);
-        return yield from Await::ONCE;
+        $this->getMoney($player, yield Await::RESOLVE, yield Await::REJECT);
+        return yield Await::ONCE;
     }
 
     /**
@@ -46,8 +46,8 @@ abstract class EconomyProvider {
      * @phpstan-param \Generator<null, \Generator, null, null>
      */
     final public function awaitMoneyRemoval(Player $player, float $money) : \Generator {
-        $this->removeMoney($player, $money, yield from, yield from Await::REJECT);
-        return yield from Await::ONCE;
+        $this->removeMoney($player, $money, yield Await::RESOLVE, yield Await::REJECT);
+        return yield Await::ONCE;
     }
 
     /**
