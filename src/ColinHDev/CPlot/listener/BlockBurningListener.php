@@ -3,11 +3,11 @@
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlotAPI\attributes\BooleanAttribute;
-use ColinHDev\CPlotAPI\plots\BasePlot;
-use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
-use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\worlds\WorldSettings;
+use ColinHDev\CPlot\attributes\BooleanAttribute;
+use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\event\block\BlockBurnEvent;
 use pocketmine\event\Listener;
 

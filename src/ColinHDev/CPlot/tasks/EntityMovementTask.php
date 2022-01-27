@@ -3,9 +3,9 @@
 namespace ColinHDev\CPlot\tasks;
 
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlotAPI\plots\BasePlot;
-use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\worlds\WorldSettings;
+use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\entity\Human;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\scheduler\Task;

@@ -4,12 +4,12 @@ namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\ResourceManager;
-use ColinHDev\CPlotAPI\attributes\BlockListAttribute;
-use ColinHDev\CPlotAPI\attributes\BooleanAttribute;
-use ColinHDev\CPlotAPI\plots\BasePlot;
-use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
-use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\worlds\WorldSettings;
+use ColinHDev\CPlot\attributes\BlockListAttribute;
+use ColinHDev\CPlot\attributes\BooleanAttribute;
+use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;
 use pocketmine\block\Door;
 use pocketmine\block\FenceGate;

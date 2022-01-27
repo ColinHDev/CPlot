@@ -4,11 +4,11 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlotAPI\attributes\ArrayAttribute;
-use ColinHDev\CPlotAPI\attributes\BaseAttribute;
-use ColinHDev\CPlotAPI\attributes\utils\AttributeParseException;
-use ColinHDev\CPlotAPI\players\PlayerData;
-use ColinHDev\CPlotAPI\players\settings\SettingManager;
+use ColinHDev\CPlot\attributes\ArrayAttribute;
+use ColinHDev\CPlot\attributes\BaseAttribute;
+use ColinHDev\CPlot\attributes\utils\AttributeParseException;
+use ColinHDev\CPlot\player\PlayerData;
+use ColinHDev\CPlot\player\settings\SettingManager;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use poggit\libasynql\SqlError;

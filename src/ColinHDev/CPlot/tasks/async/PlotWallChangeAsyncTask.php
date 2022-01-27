@@ -3,10 +3,10 @@
 namespace ColinHDev\CPlot\tasks\async;
 
 use ColinHDev\CPlot\tasks\utils\PlotBorderAreaCalculationTrait;
-use ColinHDev\CPlotAPI\math\CoordinateUtils;
-use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\worlds\Schematic;
-use ColinHDev\CPlotAPI\worlds\WorldSettings;
+use ColinHDev\CPlot\math\CoordinateUtils;
+use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\worlds\schematic\Schematic;
+use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\utils\SubChunkExplorer;

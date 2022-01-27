@@ -3,10 +3,10 @@
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\ResourceManager;
-use ColinHDev\CPlotAPI\attributes\BooleanAttribute;
-use ColinHDev\CPlotAPI\plots\BasePlot;
-use ColinHDev\CPlotAPI\plots\flags\FlagIDs;
-use ColinHDev\CPlotAPI\plots\Plot;
+use ColinHDev\CPlot\attributes\BooleanAttribute;
+use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\Plot;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;

@@ -9,8 +9,8 @@ use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
 use pocketmine\math\Vector3;
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\worlds\PlotGenerator;
-use ColinHDev\CPlotAPI\worlds\WorldSettings;
+use ColinHDev\CPlot\worlds\generator\PlotGenerator;
+use ColinHDev\CPlot\worlds\WorldSettings;
 use poggit\libasynql\SqlError;
 
 class GenerateSubcommand extends Subcommand {

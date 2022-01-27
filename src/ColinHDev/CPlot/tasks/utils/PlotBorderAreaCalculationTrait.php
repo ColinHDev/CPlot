@@ -2,10 +2,10 @@
 
 namespace ColinHDev\CPlot\tasks\utils;
 
-use ColinHDev\CPlotAPI\plots\BasePlot;
-use ColinHDev\CPlotAPI\math\Area;
-use ColinHDev\CPlotAPI\plots\Plot;
-use ColinHDev\CPlotAPI\worlds\WorldSettings;
+use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\math\Area;
+use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\math\Facing;
 
 trait PlotBorderAreaCalculationTrait {

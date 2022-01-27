@@ -23,8 +23,8 @@ use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\tasks\EntityMovementTask;
 use pocketmine\plugin\PluginBase;
 use pocketmine\world\generator\GeneratorManager;
-use ColinHDev\CPlot\worlds\PlotGenerator;
-use ColinHDev\CPlot\worlds\SchematicGenerator;
+use ColinHDev\CPlot\worlds\generator\PlotGenerator;
+use ColinHDev\CPlot\worlds\generator\SchematicGenerator;
 
 class CPlot extends PluginBase {
 
