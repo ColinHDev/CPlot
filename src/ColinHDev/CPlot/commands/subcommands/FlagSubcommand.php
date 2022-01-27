@@ -319,9 +319,9 @@ class FlagSubcommand extends Subcommand {
     }
 
     /**
-     * @param SqlError $error
+     * @param \Throwable $error
      */
-    public function onError(CommandSender $sender, mixed $error) : void {
+    public function onError(CommandSender $sender, \Throwable $error) : void {
         if ($sender instanceof Player && !$sender->isConnected()) {
             return;
         }

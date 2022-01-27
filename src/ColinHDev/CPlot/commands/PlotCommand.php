@@ -142,7 +142,7 @@ class PlotCommand extends Command implements PluginOwned {
                     $command->onSuccess($sender, $return);
                 }
             },
-            function (mixed $error = null) use ($command, $sender) : void {
+            function (?\Throwable $error = null) use ($command, $sender) : void {
                 // That also needs to be done in case of an error. Otherwise, the command executor would not be able to
                 // perform another subcommand until the server restarts.
                 unset($this->executingSubcommands[$sender->getName()]);

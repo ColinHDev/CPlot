@@ -88,6 +88,6 @@ abstract class Subcommand {
      * Overwrite this method to handle any exceptions that were thrown during the executing of
      * {@see Subcommand::execute()}, e.g. {@see SqlError} when interacting with the database.
      */
-    public function onError(CommandSender $sender, mixed $error) : void {
+    public function onError(CommandSender $sender, \Throwable $error) : void {
     }
 }
