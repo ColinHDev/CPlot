@@ -26,6 +26,7 @@ use ColinHDev\CPlot\listener\StructureGrowListener;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\tasks\EntityMovementTask;
+use ColinHDev\CPlot\worlds\generator\MyPlotGenerator;
 use ColinHDev\CPlot\worlds\generator\PlotGenerator;
 use ColinHDev\CPlot\worlds\generator\SchematicGenerator;
 use pocketmine\plugin\PluginBase;
@@ -44,9 +45,10 @@ class CPlot extends PluginBase {
         DataProvider::getInstance();
         EconomyManager::getInstance();
 
-        $generatorManager = GeneratorManager::getInstance();
-        $generatorManager->addGenerator(PlotGenerator::class, PlotGenerator::GENERATOR_NAME, fn() => null, true);
-        $generatorManager->addGenerator(SchematicGenerator::class, SchematicGenerator::GENERATOR_NAME, fn() => null, true);
+		$generatorManager = GeneratorManager::getInstance();
+		$generatorManager->addGenerator(MyPlotGenerator::class, MyPlotGenerator::GENERATOR_NAME, fn() => null, true);
+		$generatorManager->addGenerator(PlotGenerator::class, PlotGenerator::GENERATOR_NAME, fn() => null, true);
+		$generatorManager->addGenerator(SchematicGenerator::class, SchematicGenerator::GENERATOR_NAME, fn() => null, true);
 
         $this->getScheduler()->scheduleRepeatingTask(new EntityMovementTask(), 1);
 
