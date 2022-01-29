@@ -10,6 +10,7 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
+use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
@@ -76,23 +77,22 @@ class ClearSubcommand extends Subcommand {
         }
 
         $sender->sendMessage($this->getPrefix() . $this->translateString("clear.start"));
-        $task = new PlotClearAsyncTask($worldSettings, $plot);
         $world = $sender->getWorld();
-        $task->setWorld($world);
-        $task->setClosure(
-            function (int $elapsedTime, string $elapsedTimeString, array $result) use ($world, $sender) {
-                [$plotCount, $plots] = $result;
+        $task = new PlotClearAsyncTask($world, $worldSettings, $plot);
+        $task->setCallback(
+            static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $sender) {
+                $plotCount = count($plot->getMergePlots()) + 1;
                 $plots = array_map(
                     static function (BasePlot $plot) : string {
                         return $plot->toSmallString();
                     },
-                    $plots
+                    array_merge([$plot], $plot->getMergePlots())
                 );
                 Server::getInstance()->getLogger()->debug(
                     "Clearing plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
                 if ($sender->isConnected()) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("clear.finish", [$elapsedTimeString]));
+                    $sender->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("clear.finish", [$elapsedTimeString]));
                 }
             }
         );

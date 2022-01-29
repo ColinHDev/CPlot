@@ -3,6 +3,8 @@
 namespace ColinHDev\CPlot\tasks\async;
 
 use ColinHDev\CPlot\worlds\schematic\Schematic;
+use pocketmine\math\Vector3;
+use pocketmine\world\World;
 
 class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
 
@@ -13,13 +15,25 @@ class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
     private int $sizeRoad;
     private int $sizePlot;
 
-    public function __construct(string $name, string $file, string $type, int $sizeRoad, int $sizePlot) {
-        $this->startTime();
+    public function __construct(World $world, Vector3 $pos1, Vector3 $pos2, string $name, string $file, string $type, int $sizeRoad, int $sizePlot) {
         $this->name = $name;
         $this->file = $file;
         $this->type = $type;
         $this->sizeRoad = $sizeRoad;
         $this->sizePlot = $sizePlot;
+
+        $chunks = [];
+        $minChunkX = min($pos1->x, $pos2->x) >> 4;
+        $maxChunkX = max($pos1->x, $pos2->x) >> 4;
+        $minChunkZ = min($pos1->z, $pos2->z) >> 4;
+        $maxChunkZ = max($pos1->z, $pos2->z) >> 4;
+        for ($chunkX = $minChunkX; $chunkX <= $maxChunkX; ++$chunkX) {
+            for ($chunkZ = $minChunkZ; $chunkZ <= $maxChunkZ; ++$chunkZ) {
+                $chunks[World::chunkHash($chunkX, $chunkZ)] = true;
+            }
+        }
+
+        parent::__construct($world, $chunks);
     }
 
     public function onRun() : void {

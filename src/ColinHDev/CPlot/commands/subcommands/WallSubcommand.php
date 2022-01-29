@@ -116,24 +116,23 @@ class WallSubcommand extends Subcommand {
         }
 
         $player->sendMessage($this->getPrefix() . $this->translateString("wall.start"));
-        $block = $this->blocks[$selectedOption];
-        $task = new PlotWallChangeAsyncTask($worldSettings, $plot, $block);
         $world = $player->getWorld();
-        $task->setWorld($world);
-        $task->setClosure(
-            function (int $elapsedTime, string $elapsedTimeString, array $result) use ($world, $player, $block) {
-                [$plotCount, $plots] = $result;
+        $block = $this->blocks[$selectedOption];
+        $task = new PlotWallChangeAsyncTask($world, $worldSettings, $plot, $block);
+        $task->setCallback(
+            static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $player, $block) {
+                $plotCount = count($plot->getMergePlots()) + 1;
                 $plots = array_map(
                     static function (BasePlot $plot) : string {
                         return $plot->toSmallString();
                     },
-                    $plots
+                    array_merge([$plot], $plot->getMergePlots())
                 );
                 Server::getInstance()->getLogger()->debug(
                     "Changing plot wall to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $player->getUniqueId()->getBytes() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
                 if ($player->isConnected()) {
-                    $player->sendMessage($this->getPrefix() . $this->translateString("wall.finish", [$elapsedTimeString, $block->getName()]));
+                    $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("wall.finish", [$elapsedTimeString, $block->getName()]));
                 }
             }
         );

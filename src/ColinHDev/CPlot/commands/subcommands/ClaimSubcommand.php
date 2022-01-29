@@ -81,18 +81,17 @@ class ClaimSubcommand extends Subcommand {
         yield from DataProvider::getInstance()->savePlot($plot);
         yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
 
-        $blockBorderOnClaim = $worldSettings->getBorderBlockOnClaim();
-        $task = new PlotBorderChangeAsyncTask($worldSettings, $plot, $blockBorderOnClaim);
         $world = $sender->getWorld();
-        $task->setWorld($world);
-        $task->setClosure(
-            function (int $elapsedTime, string $elapsedTimeString, array $result) use ($world, $sender, $blockBorderOnClaim) {
-                [$plotCount, $plots] = $result;
+        $blockBorderOnClaim = $worldSettings->getBorderBlockOnClaim();
+        $task = new PlotBorderChangeAsyncTask($world, $worldSettings, $plot, $blockBorderOnClaim);
+        $task->setCallback(
+            static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $sender, $blockBorderOnClaim) {
+                $plotCount = count($plot->getMergePlots()) + 1;
                 $plots = array_map(
                     static function (BasePlot $plot) : string {
                         return $plot->toSmallString();
                     },
-                    $plots
+                    array_merge([$plot], $plot->getMergePlots())
                 );
                 Server::getInstance()->getLogger()->debug(
                     "Changing plot border due to plot claim to " . $blockBorderOnClaim->getName() . " (ID:Meta: " . $blockBorderOnClaim->getId() . ":" . $blockBorderOnClaim->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."

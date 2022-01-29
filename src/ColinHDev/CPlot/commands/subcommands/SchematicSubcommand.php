@@ -4,6 +4,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\CPlot;
+use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\SchematicSaveAsyncTask;
 use ColinHDev\CPlot\worlds\generator\SchematicGenerator;
 use ColinHDev\CPlot\worlds\schematic\Schematic;
@@ -125,18 +126,16 @@ class SchematicSubcommand extends Subcommand {
                     $pos2 = new Vector3($worldSettings->getPlotSize(), 0, $worldSettings->getPlotSize());
                 }
                 $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.start", [$schematicName]));
-                $task = new SchematicSaveAsyncTask($schematicName, $file, $type, $worldSettings->getRoadSize(), $worldSettings->getPlotSize());
                 $world = $sender->getWorld();
-                $task->setWorld($world);
-                $task->saveChunks($world, $pos1, $pos2);
-                $task->setClosure(
-                    function (int $elapsedTime, string $elapsedTimeString, array $result) use ($world, $sender, $schematicName, $schematicType) {
+                $task = new SchematicSaveAsyncTask($world, $pos1, $pos2, $schematicName, $file, $type, $worldSettings->getRoadSize(), $worldSettings->getPlotSize());
+                $task->setCallback(
+                    static function (int $elapsedTime, string $elapsedTimeString, array $result) use ($world, $sender, $schematicName, $schematicType) {
                         [$blocksCount, $fileSize, $fileSizeString] = $result;
                         Server::getInstance()->getLogger()->debug(
                             "Saving schematic from world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") \"" . $schematicName . "\" (" . $schematicType . ") with the size of " . $blocksCount . " blocks and a filesize of " . $fileSizeString . " (" . $fileSize . " B) took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ")."
                         );
                         if ($sender->isConnected()) {
-                            $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.finish", [$schematicName, $elapsedTimeString]));
+                            $sender->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("schematic.save.finish", [$schematicName, $elapsedTimeString]));
                         }
                     }
                 );

@@ -17,60 +17,21 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
     use PlotBorderAreaCalculationTrait;
 
     private string $worldSettings;
-    private string $plot;
     private int $blockFullID;
 
-    public function __construct(WorldSettings $worldSettings, Plot $plot, Block $block) {
-        $this->startTime();
+    public function __construct(World $world, WorldSettings $worldSettings, Plot $plot, Block $block) {
         $this->worldSettings = serialize($worldSettings->toArray());
-        $this->plot = serialize($plot);
         $this->blockFullID = $block->getFullId();
+
+        $chunks = [];
+        $this->getChunksFromAreas("borderChange", $this->calculatePlotBorderAreas($worldSettings, $plot), $chunks);
+        $this->getChunksFromAreas("borderReset", $this->calculatePlotBorderExtensionAreas($worldSettings, $plot), $chunks);
+
+        parent::__construct($world, $chunks);
     }
 
     public function onRun() : void {
         $worldSettings = WorldSettings::fromArray(unserialize($this->worldSettings, ["allowed_classes" => false]));
-        /** @var Plot $plot */
-        $plot = unserialize($this->plot, ["allowed_classes" => [Plot::class]]);
-
-        $borderAreasToChange = $this->calculatePlotBorderAreas($worldSettings, $plot);
-        $borderAreasToReset = $this->calculatePlotBorderExtensionAreas($worldSettings, $plot);
-
-        $chunks = [];
-        foreach ($borderAreasToChange as $area) {
-            for ($x = $area->getXMin(); $x <= $area->getXMax(); $x++) {
-                for ($z = $area->getZMin(); $z <= $area->getZMax(); $z++) {
-                    $chunkHash = World::chunkHash($x >> 4, $z >> 4);
-                    $blockHash = World::chunkHash($x & 0x0f, $z & 0x0f);
-                    if (!isset($chunks[$chunkHash])) {
-                        $chunks[$chunkHash] = [];
-                        $chunks[$chunkHash]["borderChange"] = [];
-                    } else if (!isset($chunks[$chunkHash]["borderChange"])) {
-                        $chunks[$chunkHash]["borderChange"] = [];
-                    } else if (in_array($blockHash, $chunks[$chunkHash]["borderChange"], true)) continue;
-                    $chunks[$chunkHash]["borderChange"][] = $blockHash;
-                }
-            }
-        }
-        foreach ($borderAreasToReset as $area) {
-            for ($x = $area->getXMin(); $x <= $area->getXMax(); $x++) {
-                for ($z = $area->getZMin(); $z <= $area->getZMax(); $z++) {
-                    $chunkHash = World::chunkHash($x >> 4, $z >> 4);
-                    $blockHash = World::chunkHash($x & 0x0f, $z & 0x0f);
-                    if (!isset($chunks[$chunkHash])) {
-                        $chunks[$chunkHash] = [];
-                        $chunks[$chunkHash]["borderReset"] = [];
-                    } else if (!isset($chunks[$chunkHash]["borderReset"])) {
-                        $chunks[$chunkHash]["borderReset"] = [];
-                    } else if (in_array($blockHash, $chunks[$chunkHash]["borderReset"], true)) continue;
-                    $chunks[$chunkHash]["borderReset"][] = $blockHash;
-                }
-            }
-        }
-
-        $this->publishProgress($chunks);
-
-        $plots = array_merge([$plot], $plot->getMergePlots() ?? []);
-        $plotCount = count($plots);
 
         $schematicRoad = null;
         if ($worldSettings->getRoadSchematic() !== "default") {
@@ -80,12 +41,10 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
             }
         }
 
-        while ($this->chunks === null);
-
         $world = $this->getChunkManager();
         $explorer = new SubChunkExplorer($world);
         $finishedChunks = [];
-        foreach ($chunks as $chunkHash => $blockHashs) {
+        foreach (unserialize($this->chunkAreas, false) as $chunkHash => $blockHashs) {
             World::getXZ($chunkHash, $chunkX, $chunkZ);
 
             if (isset($blockHashs["borderChange"])) {
@@ -149,6 +108,5 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
         }
 
         $this->chunks = serialize($finishedChunks);
-        $this->setResult([$plotCount, $plots]);
     }
 }

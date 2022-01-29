@@ -8,33 +8,27 @@ use pocketmine\world\World;
 
 abstract class ChunkModifyingAsyncTask extends ChunkFetchingAsyncTask {
 
-    private int $worldId;
+    private int $worldID;
+    private string $worldName;
 
-    public function setWorld(World $world) : void {
-        $this->worldId = $world->getId();
-        parent::setWorld($world);
-    }
-
-    public function onProgressUpdate(mixed $progress) : void {
-        $world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
-
-        $chunks = [];
-
-        foreach ($progress as $chunkHash => $data) {
-            World::getXZ($chunkHash, $chunkX, $chunkZ);
-            $chunk = $world->loadChunk($chunkX, $chunkZ);
-            if ($chunk === null) continue;
-            $chunks[$chunkHash] = FastChunkSerializer::serializeTerrain($chunk);
-        }
-
-        $this->chunks = serialize($chunks);
+    public function __construct(World $world, array $chunkAreas) {
+        parent::__construct($world, $chunkAreas);
+        $this->worldID = $world->getId();
+        $this->worldName = $world->getFolderName();
     }
 
     public function onCompletion() : void {
-        $world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
-        foreach (unserialize($this->chunks) as $hash => $chunk) {
-            World::getXZ($hash, $chunkX, $chunkZ);
-            $world->setChunk($chunkX, $chunkZ, FastChunkSerializer::deserializeTerrain($chunk));
+        $worldManager = Server::getInstance()->getWorldManager();
+        $world = $worldManager->getWorld($this->worldID);
+        if ($world === null) {
+            $worldManager->loadWorld($this->worldName);
+            $world = $worldManager->getWorldByName($this->worldName);
+        }
+        if ($world !== null) {
+            foreach (unserialize($this->chunks, false) as $hash => $chunk) {
+                World::getXZ($hash, $chunkX, $chunkZ);
+                $world->setChunk($chunkX, $chunkZ, FastChunkSerializer::deserializeTerrain($chunk));
+            }
         }
         parent::onCompletion();
     }

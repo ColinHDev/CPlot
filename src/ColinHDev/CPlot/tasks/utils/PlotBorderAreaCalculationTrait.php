@@ -9,6 +9,7 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\math\Facing;
 
 trait PlotBorderAreaCalculationTrait {
+    use AreaCalculationTrait;
 
     /**
      * @return Area[]
@@ -23,9 +24,13 @@ trait PlotBorderAreaCalculationTrait {
         foreach ($plots as $plot) {
             $plotPosition = $plot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
 
+            /** @var BasePlot $plotInNorth */
             $plotInNorth = $plot->getSide(Facing::NORTH);
+            /** @var BasePlot $plotInSouth */
             $plotInSouth = $plot->getSide(Facing::SOUTH);
+            /** @var BasePlot $plotInWest */
             $plotInWest = $plot->getSide(Facing::WEST);
+            /** @var BasePlot $plotInEast */
             $plotInEast = $plot->getSide(Facing::EAST);
 
             if (!$originPlot->isMerged($plotInNorth)) {
@@ -133,9 +138,13 @@ trait PlotBorderAreaCalculationTrait {
         foreach ($plots as $plot) {
             $plotPosition = $plot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
 
+            /** @var BasePlot $plotInNorth */
             $plotInNorth = $plot->getSide(Facing::NORTH);
+            /** @var BasePlot $plotInSouth */
             $plotInSouth = $plot->getSide(Facing::SOUTH);
+            /** @var BasePlot $plotInWest */
             $plotInWest = $plot->getSide(Facing::WEST);
+            /** @var BasePlot $plotInEast */
             $plotInEast = $plot->getSide(Facing::EAST);
 
             if (!$originPlot->isMerged($plotInNorth)) {

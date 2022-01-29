@@ -20,108 +20,40 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
     use RoadAreaCalculationTrait;
 
     private string $worldSettings;
-    private string $plot;
+    private string $hasPlotOwner;
 
-    public function __construct(WorldSettings $worldSettings, Plot $plot) {
-        $this->startTime();
+    public function __construct(World $world, WorldSettings $worldSettings, Plot $plot) {
         $this->worldSettings = serialize($worldSettings->toArray());
-        $this->plot = serialize($plot);
+        $this->hasPlotOwner = serialize($plot->hasPlotOwner());
+
+        $chunks = [];
+        $this->getChunksFromAreas("plot", $this->calculateBasePlotAreas($worldSettings, $plot), $chunks);
+        $this->getChunksFromAreas("road", $this->calculateMergeRoadAreas($worldSettings, $plot), $chunks);
+        $this->getChunksFromAreas("borderChange", $this->calculatePlotBorderAreas($worldSettings, $plot), $chunks);
+        $this->getChunksFromAreas("borderReset", $this->calculatePlotBorderExtensionAreas($worldSettings, $plot), $chunks);
+
+        parent::__construct($world, $chunks);
     }
 
     public function onRun() : void {
         $worldSettings = WorldSettings::fromArray(unserialize($this->worldSettings, ["allowed_classes" => false]));
-        /** @var Plot $plot */
-        $plot = unserialize($this->plot, ["allowed_classes" => [Plot::class]]);
-
-        $plotAreas = $this->calculateBasePlotAreas($worldSettings, $plot);
-        $roadAreas = $this->calculateMergeRoadAreas($worldSettings, $plot);
-        $borderAreasToChange = $this->calculatePlotBorderAreas($worldSettings, $plot);
-        $borderAreasToReset = $this->calculatePlotBorderExtensionAreas($worldSettings, $plot);
-
-        $chunks = [];
-        foreach ($plotAreas as $area) {
-            for ($x = $area->getXMin(); $x <= $area->getXMax(); $x++) {
-                for ($z = $area->getZMin(); $z <= $area->getZMax(); $z++) {
-                    $chunkHash = World::chunkHash($x >> 4, $z >> 4);
-                    $blockHash = World::chunkHash($x & 0x0f, $z & 0x0f);
-                    if (!isset($chunks[$chunkHash])) {
-                        $chunks[$chunkHash] = [];
-                        $chunks[$chunkHash]["plot"] = [];
-                    } else if (!isset($chunks[$chunkHash]["plot"])) {
-                        $chunks[$chunkHash]["plot"] = [];
-                    } else if (in_array($blockHash, $chunks[$chunkHash]["plot"], true)) continue;
-                    $chunks[$chunkHash]["plot"][] = $blockHash;
-                }
-            }
-        }
-        foreach ($roadAreas as $area) {
-            for ($x = $area->getXMin(); $x <= $area->getXMax(); $x++) {
-                for ($z = $area->getZMin(); $z <= $area->getZMax(); $z++) {
-                    $chunkHash = World::chunkHash($x >> 4, $z >> 4);
-                    $blockHash = World::chunkHash($x & 0x0f, $z & 0x0f);
-                    if (!isset($chunks[$chunkHash])) {
-                        $chunks[$chunkHash] = [];
-                        $chunks[$chunkHash]["road"] = [];
-                    } else if (!isset($chunks[$chunkHash]["road"])) {
-                        $chunks[$chunkHash]["road"] = [];
-                    } else if (in_array($blockHash, $chunks[$chunkHash]["road"], true)) continue;
-                    $chunks[$chunkHash]["road"][] = $blockHash;
-                }
-            }
-        }
-        foreach ($borderAreasToChange as $area) {
-            for ($x = $area->getXMin(); $x <= $area->getXMax(); $x++) {
-                for ($z = $area->getZMin(); $z <= $area->getZMax(); $z++) {
-                    $chunkHash = World::chunkHash($x >> 4, $z >> 4);
-                    $blockHash = World::chunkHash($x & 0x0f, $z & 0x0f);
-                    if (!isset($chunks[$chunkHash])) {
-                        $chunks[$chunkHash] = [];
-                        $chunks[$chunkHash]["borderChange"] = [];
-                    } else if (!isset($chunks[$chunkHash]["borderChange"])) {
-                        $chunks[$chunkHash]["borderChange"] = [];
-                    } else if (in_array($blockHash, $chunks[$chunkHash]["borderChange"], true)) continue;
-                    $chunks[$chunkHash]["borderChange"][] = $blockHash;
-                }
-            }
-        }
-        foreach ($borderAreasToReset as $area) {
-            for ($x = $area->getXMin(); $x <= $area->getXMax(); $x++) {
-                for ($z = $area->getZMin(); $z <= $area->getZMax(); $z++) {
-                    $chunkHash = World::chunkHash($x >> 4, $z >> 4);
-                    $blockHash = World::chunkHash($x & 0x0f, $z & 0x0f);
-                    if (!isset($chunks[$chunkHash])) {
-                        $chunks[$chunkHash] = [];
-                        $chunks[$chunkHash]["borderReset"] = [];
-                    } else if (!isset($chunks[$chunkHash]["borderReset"])) {
-                        $chunks[$chunkHash]["borderReset"] = [];
-                    } else if (in_array($blockHash, $chunks[$chunkHash]["borderReset"], true)) continue;
-                    $chunks[$chunkHash]["borderReset"][] = $blockHash;
-                }
-            }
-        }
-
-        $this->publishProgress($chunks);
-
-        $plots = array_merge([$plot], $plot->getMergePlots() ?? []);
-        $plotCount = count($plots);
+        /** @var bool $hasPlotOwner */
+        $hasPlotOwner = unserialize($this->hasPlotOwner, false);
 
         $schematicRoad = null;
-        if (!$plot->hasPlotOwner()) {
+        if (!$hasPlotOwner) {
             if ($worldSettings->getRoadSchematic() !== "default") {
                 $schematicRoad = new Schematic($worldSettings->getRoadSchematic(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getRoadSchematic() . "." . Schematic::FILE_EXTENSION);
                 if (!$schematicRoad->loadFromFile()) {
                     $schematicRoad = null;
                 }
             }
-        } else {
-            if ($worldSettings->getMergeRoadSchematic() !== "default") {
-                $schematicRoad = new Schematic($worldSettings->getMergeRoadSchematic(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getMergeRoadSchematic() . "." . Schematic::FILE_EXTENSION);
-                if (!$schematicRoad->loadFromFile()) {
-                    $schematicRoad = null;
-                }
+        } else if ($worldSettings->getMergeRoadSchematic() !== "default") {
+            $schematicRoad = new Schematic($worldSettings->getMergeRoadSchematic(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getMergeRoadSchematic() . "." . Schematic::FILE_EXTENSION);
+            if (!$schematicRoad->loadFromFile()) {
+                $schematicRoad = null;
             }
         }
-
         $schematicPlot = null;
         if ($worldSettings->getPlotSchematic() !== "default") {
             $schematicPlot = new Schematic($worldSettings->getPlotSchematic(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getPlotSchematic() . "." . Schematic::FILE_EXTENSION);
@@ -130,12 +62,10 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
             }
         }
 
-        while ($this->chunks === null);
-
         $world = $this->getChunkManager();
         $explorer = new SubChunkExplorer($world);
         $finishedChunks = [];
-        foreach ($chunks as $chunkHash => $blockHashs) {
+        foreach (unserialize($this->chunkAreas, false) as $chunkHash => $blockHashs) {
             World::getXZ($chunkHash, $chunkX, $chunkZ);
 
             if (isset($blockHashs["plot"])) {
@@ -205,7 +135,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
                             }
                         }
                     } else {
-                        if (!$plot->hasPlotOwner()) {
+                        if (!$hasPlotOwner) {
                             for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                                 if ($y === $world->getMinY()) {
                                     $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
@@ -261,7 +191,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
                         if ($y === $world->getMinY()) {
                             $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
                         } else if ($y === $worldSettings->getGroundSize() + 1) {
-                            if (!$plot->hasPlotOwner()) {
+                            if (!$hasPlotOwner) {
                                 $fullBlock = $worldSettings->getBorderBlock()->getFullId();
                             } else {
                                 $fullBlock = $worldSettings->getBorderBlockOnClaim()->getFullId();
@@ -333,6 +263,5 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
         }
 
         $this->chunks = serialize($finishedChunks);
-        $this->setResult([$plotCount, $plots]);
     }
 }

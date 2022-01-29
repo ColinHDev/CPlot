@@ -9,6 +9,7 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\math\Facing;
 
 trait RoadAreaCalculationTrait {
+    use AreaCalculationTrait;
 
     /**
      * @return Area[]
@@ -23,13 +24,21 @@ trait RoadAreaCalculationTrait {
         foreach ($plots as $plot) {
             $plotPosition = $plot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
 
+            /** @var BasePlot $plotInNorth */
             $plotInNorth = $plot->getSide(Facing::NORTH);
+            /** @var BasePlot $plotInNorthWest */
             $plotInNorthWest = $plotInNorth->getSide(Facing::WEST);
+            /** @var BasePlot $plotInNorthEast */
             $plotInNorthEast = $plotInNorth->getSide(Facing::EAST);
+            /** @var BasePlot $plotInSouth */
             $plotInSouth = $plot->getSide(Facing::SOUTH);
+            /** @var BasePlot $plotInSouthWest */
             $plotInSouthWest = $plotInSouth->getSide(Facing::WEST);
+            /** @var BasePlot $plotInSouthEast */
             $plotInSouthEast = $plotInSouth->getSide(Facing::EAST);
+            /** @var BasePlot $plotInWest */
             $plotInWest = $plot->getSide(Facing::WEST);
+            /** @var BasePlot $plotInEast */
             $plotInEast = $plot->getSide(Facing::EAST);
 
             if ($originPlot->isMerged($plotInNorth)) {
@@ -137,13 +146,21 @@ trait RoadAreaCalculationTrait {
         foreach ($plots as $plot) {
             $plotPosition = $plot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
 
+            /** @var BasePlot $plotInNorth */
             $plotInNorth = $plot->getSide(Facing::NORTH);
+            /** @var BasePlot $plotInNorthWest */
             $plotInNorthWest = $plotInNorth->getSide(Facing::WEST);
+            /** @var BasePlot $plotInNorthEast */
             $plotInNorthEast = $plotInNorth->getSide(Facing::EAST);
+            /** @var BasePlot $plotInSouth */
             $plotInSouth = $plot->getSide(Facing::SOUTH);
+            /** @var BasePlot $plotInSouthWest */
             $plotInSouthWest = $plotInSouth->getSide(Facing::WEST);
+            /** @var BasePlot $plotInSouthEast */
             $plotInSouthEast = $plotInSouth->getSide(Facing::EAST);
+            /** @var BasePlot $plotInWest */
             $plotInWest = $plot->getSide(Facing::WEST);
+            /** @var BasePlot $plotInEast */
             $plotInEast = $plot->getSide(Facing::EAST);
 
             if (!$originPlot->isMerged($plotInNorth) && $mergePlot->isMerged($plotInNorth)) {

@@ -2,16 +2,13 @@
 
 namespace ColinHDev\CPlot\tasks\async;
 
-use Closure;
 use pocketmine\scheduler\AsyncTask;
 
 abstract class CPlotAsyncTask extends AsyncTask {
 
     private int $startTime;
 
-    private bool $hasCallback = false;
-
-    protected function startTime() : void {
+    public function __construct() {
         $this->startTime = (int) (round(microtime(true) * 1000));
     }
 
@@ -40,18 +37,32 @@ abstract class CPlotAsyncTask extends AsyncTask {
         return $time;
     }
 
-    public function setClosure(?Closure $closure) : void {
-        if ($closure !== null) {
-            $this->storeLocal("callback", $closure);
-            $this->hasCallback = true;
-        } else {
-            $this->hasCallback = false;
+    /**
+     * @phpstan-param callable(int, string, mixed): void $onSuccess
+     * @phpstan-param null|callable(): void $onError
+     */
+    public function setCallback(callable $onSuccess, ?callable $onError = null) : void {
+        $this->storeLocal("onSuccess", $onSuccess);
+        if ($onError !== null) {
+            $this->storeLocal("onError", $onError);
         }
     }
 
     public function onCompletion() : void {
-        if ($this->hasCallback) {
-            $this->fetchLocal("callback")($this->getElapsedTime(), $this->getElapsedTimeString(), $this->getResult());
+        try {
+            /** @phpstan-var callable(int, string, mixed): void $callback */
+            $callback = $this->fetchLocal("onSuccess");
+            $callback($this->getElapsedTime(), $this->getElapsedTimeString(), $this->getResult());
+        } catch (\InvalidArgumentException) {
+        }
+    }
+
+    public function onError() : void {
+        try {
+            /** @phpstan-var callable(): void $callback */
+            $callback = $this->fetchLocal("onError");
+            $callback();
+        } catch (\InvalidArgumentException) {
         }
     }
 }

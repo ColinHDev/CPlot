@@ -8,6 +8,7 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\worlds\WorldSettings;
 
 trait PlotAreaCalculationTrait {
+    use AreaCalculationTrait;
 
     /**
      * @return Area[]
