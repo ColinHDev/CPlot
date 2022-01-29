@@ -73,6 +73,7 @@ abstract class Subcommand {
 
     /**
      * This generator function contains the code you want to be executed when the command is run.
+     * @param string[] $args
      * @phpstan-return \Generator<mixed, mixed, mixed, GeneratorReturn>
      */
     abstract public function execute(CommandSender $sender, array $args) : \Generator;

@@ -10,6 +10,9 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
 
+/**
+ * @phpstan-extends Subcommand<null>
+ */
 class VisitSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {

@@ -7,7 +7,7 @@ use ColinHDev\CPlot\utils\ParseUtils;
 use pocketmine\block\Block;
 
 /**
- * @extends BaseAttribute<array<int, Block>>
+ * @extends BaseAttribute<Block[]>
  */
 class BlockListAttribute extends ArrayAttribute {
 

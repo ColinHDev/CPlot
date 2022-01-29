@@ -16,6 +16,9 @@ use pocketmine\permission\Permission;
 use pocketmine\player\Player;
 use pocketmine\Server;
 
+/**
+ * @phpstan-extends Subcommand<null>
+ */
 class ClaimSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {

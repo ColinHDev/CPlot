@@ -10,10 +10,10 @@ class Area {
     private int $zMax;
 
     public function __construct(int $x1, int $z1, int $x2, int $z2) {
-        $this->xMin = (int) min($x1, $x2);
-        $this->zMin = (int) min($z1, $z2);
-        $this->xMax = (int) max($x1, $x2);
-        $this->zMax = (int) max($z1, $z2);
+        $this->xMin = min($x1, $x2);
+        $this->zMin = min($z1, $z2);
+        $this->xMax = max($x1, $x2);
+        $this->zMax = max($z1, $z2);
     }
 
     public function getXMin() : int {

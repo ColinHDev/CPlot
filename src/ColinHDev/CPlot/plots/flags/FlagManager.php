@@ -14,7 +14,7 @@ use pocketmine\utils\Utils;
 class FlagManager {
     use SingletonTrait;
 
-    /** @var array<string, BaseAttribute> */
+    /** @var array<string, BaseAttribute<mixed>> */
     private array $flags = [];
 
     public function __construct() {
@@ -45,7 +45,7 @@ class FlagManager {
 
     /**
      * @param string $ID
-     * @param class-string<BaseAttribute> $className
+     * @param class-string<BaseAttribute<mixed>> $className
      */
     private function register(string $ID, string $className) : void {
         Utils::testValidInstance($className, BaseAttribute::class);
@@ -57,7 +57,7 @@ class FlagManager {
     }
 
     /**
-     * @return array<string, BaseAttribute>
+     * @return array<string, BaseAttribute<mixed>>
      */
     public function getFlags() : array {
         return $this->flags;

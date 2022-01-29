@@ -32,7 +32,7 @@ class EntityDamageByEntityListener implements Listener {
         }
         // pvp flag
         if ($damaged instanceof Player) {
-            if ($plot !== null) {
+            if ($plot instanceof Plot) {
                 if ($damager->hasPermission("cplot.pvp.plot")) {
                     return;
                 }
@@ -50,7 +50,7 @@ class EntityDamageByEntityListener implements Listener {
 
         // pve flag
         } else {
-            if ($plot !== null) {
+            if ($plot instanceof Plot) {
                 /** @var BooleanAttribute $flag */
                 $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVE);
                 if ($flag->getValue() === true) {

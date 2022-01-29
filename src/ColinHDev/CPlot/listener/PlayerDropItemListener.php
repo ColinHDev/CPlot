@@ -38,7 +38,7 @@ class PlayerDropItemListener implements Listener {
             $event->cancel();
             return;
         }
-        if ($plot !== null) {
+        if ($plot instanceof Plot) {
             if ($player->hasPermission("cplot.interact.plot")) {
                 return;
             }

@@ -31,6 +31,9 @@ class PlotPlayer {
         return $this->addTime;
     }
 
+    /**
+     * @phpstan-return array{playerUUID: string, state: string, addTime: int}
+     */
     public function __serialize() : array {
         return [
             "playerUUID" => $this->playerUUID,
@@ -39,6 +42,9 @@ class PlotPlayer {
         ];
     }
 
+    /**
+     * @phpstan-param array{playerUUID: string, state: string, addTime: int} $data
+     */
     public function __unserialize(array $data) : void {
         $this->playerUUID = $data["playerUUID"];
         $this->state = $data["state"];

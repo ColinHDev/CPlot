@@ -12,6 +12,9 @@ use ColinHDev\CPlot\provider\DataProvider;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
+/**
+ * @phpstan-extends Subcommand<null>
+ */
 class SettingSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {

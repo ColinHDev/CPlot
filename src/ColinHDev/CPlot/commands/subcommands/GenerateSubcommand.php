@@ -12,6 +12,9 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
 
+/**
+ * @phpstan-extends Subcommand<string|null>
+ */
 class GenerateSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {

@@ -15,6 +15,9 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
 
+/**
+ * @phpstan-extends Subcommand<null>
+ */
 class SchematicSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {

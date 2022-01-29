@@ -2,6 +2,9 @@
 
 namespace ColinHDev\CPlot\attributes;
 
+/**
+ * @extends BaseAttribute<string>
+ */
 class StringAttribute extends BaseAttribute {
 
     /**

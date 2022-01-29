@@ -24,6 +24,9 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 
+/**
+ * @phpstan-extends Subcommand<null>
+ */
 class WallSubcommand extends Subcommand {
 
     private MenuForm $form;

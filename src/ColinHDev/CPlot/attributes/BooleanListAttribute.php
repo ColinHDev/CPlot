@@ -5,7 +5,7 @@ namespace ColinHDev\CPlot\attributes;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 
 /**
- * @extends BaseAttribute<array<int, bool>>
+ * @extends BaseAttribute<bool[]>
  */
 class BooleanListAttribute extends ArrayAttribute {
 

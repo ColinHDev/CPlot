@@ -16,6 +16,9 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
 
+/**
+ * @phpstan-extends Subcommand<null>
+ */
 class ResetSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {

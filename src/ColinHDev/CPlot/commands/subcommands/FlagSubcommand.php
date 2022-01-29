@@ -19,6 +19,9 @@ use pocketmine\command\CommandSender;
 use pocketmine\entity\Location;
 use pocketmine\player\Player;
 
+/**
+ * @phpstan-extends Subcommand<null>
+ */
 class FlagSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {

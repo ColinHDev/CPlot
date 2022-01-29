@@ -396,7 +396,7 @@ final class DataProvider {
             $mergePlot = new MergePlot($worldName, $row["mergeX"], $row["mergeZ"], $x, $z);
             $mergePlotKey = $mergePlot->toString();
             $this->getPlotCache()->cacheObject($mergePlotKey, $mergePlot);
-            $mergedPlots[$mergePlotKey] = $mergePlot;
+            $mergePlots[$mergePlotKey] = $mergePlot;
         }
         return $mergePlots;
     }

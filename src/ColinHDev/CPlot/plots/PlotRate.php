@@ -36,6 +36,9 @@ class PlotRate {
         return $this->playerUUID . ";" . $this->rateTime;
     }
 
+    /**
+     * @phpstan-return array{rate: string, playerUUID: string, rateTime: int, comment: string|null}
+     */
     public function __serialize() : array {
         return [
             "rate" => $this->rate,
@@ -45,6 +48,9 @@ class PlotRate {
         ];
     }
 
+    /**
+     * @phpstan-param array{rate: string, playerUUID: string, rateTime: int, comment: string|null} $data
+     */
     public function __unserialize(array $data) : void {
         $this->rate = $data["rate"];
         $this->playerUUID = $data["playerUUID"];

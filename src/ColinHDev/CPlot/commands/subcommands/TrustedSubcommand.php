@@ -10,6 +10,9 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
+/**
+ * @phpstan-extends Subcommand<null>
+ */
 class TrustedSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {

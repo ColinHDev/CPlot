@@ -5,6 +5,9 @@ namespace ColinHDev\CPlot\attributes;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use pocketmine\entity\Location;
 
+/**
+ * @extends BaseAttribute<Location>
+ */
 class LocationAttribute extends BaseAttribute {
 
     /**

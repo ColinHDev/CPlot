@@ -7,6 +7,9 @@ use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\CommandSender;
 
+/**
+ * @phpstan-extends Subcommand<null>
+ */
 class HelpSubcommand extends Subcommand {
 
     private PlotCommand $command;

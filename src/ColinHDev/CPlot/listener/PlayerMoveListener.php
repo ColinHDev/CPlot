@@ -40,7 +40,7 @@ class PlayerMoveListener implements Listener {
                 }
                 $playerUUID = $player->getUniqueId()->getBytes();
 
-                if ($plotTo !== null) {
+                if ($plotTo instanceof Plot) {
                     // check if player is denied and hasn't bypass permission
                     if (!$player->hasPermission("cplot.bypass.deny")) {
                         if ($plotTo->isPlotDenied($playerUUID) && yield from $plotTo->isOnPlot($player->getPosition())) {
@@ -128,7 +128,7 @@ class PlayerMoveListener implements Listener {
                 }
 
                 // plot leave
-                if ($plotFrom !== null && $plotTo === null) {
+                if ($plotFrom instanceof Plot && $plotTo === null) {
                     // plot_leave flag
                     /** @var BooleanAttribute $flag */
                     $flag = $plotFrom->getFlagNonNullByID(FlagIDs::FLAG_PLOT_LEAVE);

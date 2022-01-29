@@ -9,7 +9,7 @@ class CoordinateUtils {
     }
 
     public static function getRasterCoordinate(int $coordinate, int $totalSize) : int {
-        return $coordinate - (floor($coordinate / $totalSize) * $totalSize);
+        return $coordinate - ((int) floor($coordinate / $totalSize)) * $totalSize;
     }
 
     public static function isRasterPositionOnBorder(int $x, int $z, int $sizeRoad) : bool {

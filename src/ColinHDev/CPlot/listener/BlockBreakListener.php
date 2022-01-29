@@ -38,7 +38,7 @@ class BlockBreakListener implements Listener {
             $event->cancel();
             return;
         }
-        if ($plot !== null) {
+        if ($plot instanceof Plot) {
             $player = $event->getPlayer();
             if ($player->hasPermission("cplot.break.plot")) {
                 return;

@@ -17,6 +17,9 @@ use pocketmine\math\Facing;
 use pocketmine\player\Player;
 use pocketmine\Server;
 
+/**
+ * @phpstan-extends Subcommand<null>
+ */
 class MergeSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {

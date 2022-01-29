@@ -43,7 +43,7 @@ class EntityItemPickupListener implements Listener {
             $event->cancel();
             return;
         }
-        if ($plot !== null) {
+        if ($plot instanceof Plot) {
             if ($entity->hasPermission("cplot.interact.plot")) {
                 return;
             }
