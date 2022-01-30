@@ -1,0 +1,13 @@
+parameters:
+	level: 2
+	paths:
+		- src
+	scanDirectories:
+		- ../../../../APIs\Virions\pmforms\src
+	ignoreErrors:
+		-
+			message: '#Call to an undefined method [a-zA-Z0-9\\_]+::asyncInsert\(\)#'
+			path: src/ColinHDev/CPlot/provider/DataProvider.php
+		-
+			message: '#Call to an undefined method [a-zA-Z0-9\\_]+::asyncSelect\(\)#'
+			path: src/ColinHDev/CPlot/provider/DataProvider.php
