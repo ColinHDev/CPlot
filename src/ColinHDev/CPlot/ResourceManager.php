@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot;
 
 use pocketmine\lang\Language;
+use pocketmine\lang\Translatable;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 
@@ -36,7 +37,7 @@ class ResourceManager {
     }
 
     /**
-     * @param string[]  $params
+     * @phpstan-param (float|int|string|Translatable)[] $params
      */
     public function translateString(string $str, array $params = []) : string {
         return $this->language->translateString($str, $params);

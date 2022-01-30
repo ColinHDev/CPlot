@@ -46,7 +46,7 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
         $world = $this->getChunkManager();
         $explorer = new SubChunkExplorer($world);
         $finishedChunks = [];
-        foreach (unserialize($this->chunkAreas, false) as $chunkHash => $blockHashs) {
+        foreach (unserialize($this->chunkAreas, ["allowed_classes" => false]) as $chunkHash => $blockHashs) {
             World::getXZ($chunkHash, $chunkX, $chunkZ);
 
             if (isset($blockHashs["borderChange"])) {

@@ -35,6 +35,7 @@ class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
             }
         }
 
+        /** @phpstan-ignore-next-line */
         parent::__construct($world, $chunks);
     }
 

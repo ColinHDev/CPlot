@@ -40,7 +40,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
     public function onRun() : void {
         $worldSettings = WorldSettings::fromArray(unserialize($this->worldSettings, ["allowed_classes" => false]));
         /** @var bool $hasPlotOwner */
-        $hasPlotOwner = unserialize($this->hasPlotOwner, false);
+        $hasPlotOwner = unserialize($this->hasPlotOwner, ["allowed_classes" => false]);
 
         $schematicRoad = null;
         if (!$hasPlotOwner) {
@@ -67,7 +67,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
         $world = $this->getChunkManager();
         $explorer = new SubChunkExplorer($world);
         $finishedChunks = [];
-        foreach (unserialize($this->chunkAreas, false) as $chunkHash => $blockHashs) {
+        foreach (unserialize($this->chunkAreas, ["allowed_classes" => false]) as $chunkHash => $blockHashs) {
             World::getXZ($chunkHash, $chunkX, $chunkZ);
 
             if (isset($blockHashs["plot"])) {

@@ -48,7 +48,7 @@ class PlotBorderChangeAsyncTask extends ChunkModifyingAsyncTask {
         $finishedChunks = [];
         $y = $worldSettings->getGroundSize() + 1;
         $yInChunk = $y & 0x0f;
-        foreach (unserialize($this->chunkAreas, false) as $chunkHash => $blockHashs) {
+        foreach (unserialize($this->chunkAreas, ["allowed_classes" => false]) as $chunkHash => $blockHashs) {
             World::getXZ($chunkHash, $chunkX, $chunkZ);
 
             if (isset($blockHashs["borderChange"])) {

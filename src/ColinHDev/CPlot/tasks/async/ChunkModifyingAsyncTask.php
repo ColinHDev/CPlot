@@ -27,7 +27,7 @@ abstract class ChunkModifyingAsyncTask extends ChunkFetchingAsyncTask {
             $world = $worldManager->getWorldByName($this->worldName);
         }
         if ($world !== null) {
-            foreach (unserialize($this->chunks, false) as $hash => $chunk) {
+            foreach (unserialize($this->chunks, ["allowed_classes" => false]) as $hash => $chunk) {
                 World::getXZ($hash, $chunkX, $chunkZ);
                 $world->setChunk($chunkX, $chunkZ, FastChunkSerializer::deserializeTerrain($chunk));
             }

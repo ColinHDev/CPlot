@@ -161,7 +161,7 @@ final class DataProvider {
             $playerUUID,
             $playerData["playerName"],
             \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"])->getTimestamp(),
-            yield $this->awaitPlayerSettings($playerUUID)
+            (yield from $this->awaitPlayerSettings($playerUUID))
         );
         $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
         return $playerData;
@@ -187,7 +187,7 @@ final class DataProvider {
             $playerUUID,
             $playerName,
             \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"])->getTimestamp(),
-            yield $this->awaitPlayerSettings($playerUUID)
+            (yield from $this->awaitPlayerSettings($playerUUID))
         );
         $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
         return $playerData;

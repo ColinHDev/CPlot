@@ -8,7 +8,6 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerLoginEvent;
-use poggit\libasynql\SqlError;
 use SOFe\AwaitGenerator\Await;
 
 class PlayerLoginListener implements Listener {
@@ -25,7 +24,7 @@ class PlayerLoginListener implements Listener {
                 $player->getName()
             ),
             null,
-            static function (SqlError $error) use ($player) : void {
+            static function (\Throwable $error) use ($player) : void {
                 if ($player->isConnected()) {
                     $player->kick(
                         ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("player.login.savePlayerDataError")

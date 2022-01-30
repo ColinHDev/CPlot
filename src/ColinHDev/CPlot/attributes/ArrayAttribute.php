@@ -18,9 +18,13 @@ class ArrayAttribute extends BaseAttribute {
     public function merge(mixed $value) : ArrayAttribute {
         $values = $this->value;
         foreach ($value as $newValue) {
-            $newValueString = $this->toString([$newValue]);
+            /** @phpstan-var AttributeValue $newValueArray */
+            $newValueArray = [$newValue];
+            $newValueString = $this->toString($newValueArray);
             foreach ($values as $oldValue) {
-                if ($this->toString([$oldValue]) === $newValueString) {
+                /** @phpstan-var AttributeValue $oldValueArray */
+                $oldValueArray = [$oldValue];
+                if ($this->toString($oldValueArray) === $newValueString) {
                     continue 2;
                 }
             }
