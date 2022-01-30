@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ColinHDev\CPlot\plots;
 
 use ColinHDev\CPlot\plots\flags\FlagIDs;

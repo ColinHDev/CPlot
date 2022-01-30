@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ColinHDev\CPlot\commands;
 
 use ColinHDev\CPlot\commands\subcommands\AddSubcommand;

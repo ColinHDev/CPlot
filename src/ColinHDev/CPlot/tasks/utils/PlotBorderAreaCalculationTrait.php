@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ColinHDev\CPlot\tasks\utils;
 
 use ColinHDev\CPlot\math\Area;

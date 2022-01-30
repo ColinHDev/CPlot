@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ColinHDev\CPlot\player\settings;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
