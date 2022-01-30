@@ -11,24 +11,24 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class DeniedSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("denied.senderNotOnline"));
-            return;
+            return null;
         }
 
         if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("denied.noPlotWorld"));
-            return;
+            return null;
         }
         $plot = yield from Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("denied.noPlot"));
-            return;
+            return null;
         }
 
         $deniedPlayerData = [];
@@ -47,7 +47,7 @@ class DeniedSubcommand extends Subcommand {
         }
         if (count($deniedPlayerData) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("denied.noDeniedPlayers"));
-            return;
+            return null;
         }
 
         $sender->sendMessage(
@@ -59,5 +59,6 @@ class DeniedSubcommand extends Subcommand {
                 ]
             )
         );
+        return null;
     }
 }

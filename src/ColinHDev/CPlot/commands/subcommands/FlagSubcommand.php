@@ -20,14 +20,14 @@ use pocketmine\entity\Location;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class FlagSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
-            return;
+            return null;
         }
 
         switch ($args[0]) {
@@ -155,7 +155,7 @@ class FlagSubcommand extends Subcommand {
                     /** @var LocationAttribute $flag */
                     $arg = $flag->toString(
                         Location::fromObject(
-                            $location->subtractVector(yield from $plot->getVector3()),
+                            $location->subtractVector($plot->getVector3()),
                             $location->getWorld(),
                             $location->getYaw(),
                             $location->getPitch()
@@ -318,6 +318,7 @@ class FlagSubcommand extends Subcommand {
                 $sender->sendMessage($this->getPrefix() . $this->getUsage());
                 break;
         }
+        return null;
     }
 
     /**

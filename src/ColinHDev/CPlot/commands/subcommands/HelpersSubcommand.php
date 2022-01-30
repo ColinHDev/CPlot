@@ -11,24 +11,24 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class HelpersSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("helpers.senderNotOnline"));
-            return;
+            return null;
         }
 
         if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("helpers.noPlotWorld"));
-            return;
+            return null;
         }
         $plot = yield from Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("helpers.noPlot"));
-            return;
+            return null;
         }
 
         $helperData = [];
@@ -47,7 +47,7 @@ class HelpersSubcommand extends Subcommand {
         }
         if (count($helperData) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("helpers.noHelpers"));
-            return;
+            return null;
         }
 
         $sender->sendMessage(
@@ -59,5 +59,6 @@ class HelpersSubcommand extends Subcommand {
                 ]
             )
         );
+        return null;
     }
 }

@@ -25,7 +25,7 @@ use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class BorderSubcommand extends Subcommand {
 
@@ -75,10 +75,11 @@ class BorderSubcommand extends Subcommand {
         0 && yield;
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("border.senderNotOnline"));
-            return;
+            return null;
         }
 
         $sender->sendForm($this->form);
+        return null;
     }
 
     public function onFormSubmit(Player $player, int $selectedOption) : \Generator {

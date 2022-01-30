@@ -15,19 +15,19 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class UntrustSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.senderNotOnline"));
-            return;
+            return null;
         }
 
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
-            return;
+            return null;
         }
 
         $player = null;
@@ -42,7 +42,7 @@ class UntrustSubcommand extends Subcommand {
                 $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if ($playerData === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.playerNotFound", [$playerName]));
-                    return;
+                    return null;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
             }
@@ -53,23 +53,23 @@ class UntrustSubcommand extends Subcommand {
 
         if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.noPlotWorld"));
-            return;
+            return null;
         }
 
         $plot = yield from Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.noPlot"));
-            return;
+            return null;
         }
 
         if (!$plot->hasPlotOwner()) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.noPlotOwner"));
-            return;
+            return null;
         }
         if (!$sender->hasPermission("cplot.admin.untrust")) {
             if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.notPlotOwner"));
-                return;
+                return null;
             }
         }
 
@@ -77,12 +77,12 @@ class UntrustSubcommand extends Subcommand {
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.serverPlotFlag", [$flag->getID()]));
-            return;
+            return null;
         }
 
         if (!$plot->isPlotTrustedExact($playerUUID)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.playerNotTrusted", [$playerName]));
-            return;
+            return null;
         }
 
         $plot->removePlotPlayer($playerUUID);
@@ -92,7 +92,7 @@ class UntrustSubcommand extends Subcommand {
         if ($player instanceof Player) {
             $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
             if (!($playerData instanceof PlayerData)) {
-                return;
+                return null;
             }
             /** @var BooleanAttribute $setting */
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_TRUSTED_REMOVE);
@@ -100,6 +100,7 @@ class UntrustSubcommand extends Subcommand {
                 $player->sendMessage($this->getPrefix() . $this->translateString("untrust.success.player", [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
             }
         }
+        return null;
     }
 
     /**

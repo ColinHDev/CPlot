@@ -18,36 +18,36 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class ClearSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("clear.senderNotOnline"));
-            return;
+            return null;
         }
 
         $worldSettings = yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlotWorld"));
-            return;
+            return null;
         }
 
         $plot = yield from Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlot"));
-            return;
+            return null;
         }
 
         if (!$sender->hasPermission("cplot.admin.clear")) {
             if (!$plot->hasPlotOwner()) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlotOwner"));
-                return;
+                return null;
             }
             if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("clear.notPlotOwner"));
-                return;
+                return null;
             }
         }
 
@@ -55,7 +55,7 @@ class ClearSubcommand extends Subcommand {
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("clear.serverPlotFlag", [$flag->getID()]));
-            return;
+            return null;
         }
 
         $economyProvider = EconomyManager::getInstance()->getProvider();
@@ -65,11 +65,11 @@ class ClearSubcommand extends Subcommand {
                 $money = yield from $economyProvider->awaitMoney($sender);
                 if (!is_float($money)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("clear.loadMoneyError"));
-                    return;
+                    return null;
                 }
                 if ($money < $price) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("clear.notEnoughMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]));
-                    return;
+                    return null;
                 }
                 yield from $economyProvider->awaitMoneyRemoval($sender, $price);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("clear.chargedMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]));
@@ -97,5 +97,6 @@ class ClearSubcommand extends Subcommand {
             }
         );
         Server::getInstance()->getAsyncPool()->submitTask($task);
+        return null;
     }
 }

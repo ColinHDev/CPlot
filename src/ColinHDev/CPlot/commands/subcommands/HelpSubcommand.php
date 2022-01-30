@@ -8,7 +8,7 @@ use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\CommandSender;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class HelpSubcommand extends Subcommand {
 
@@ -66,5 +66,6 @@ class HelpSubcommand extends Subcommand {
                 ]
             )
         );
+        return null;
     }
 }

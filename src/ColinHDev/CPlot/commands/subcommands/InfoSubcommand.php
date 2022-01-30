@@ -11,25 +11,25 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class InfoSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("info.senderNotOnline"));
-            return;
+            return null;
         }
 
         if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("info.noPlotWorld"));
-            return;
+            return null;
         }
 
         $plot = yield from Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("info.noPlot"));
-            return;
+            return null;
         }
 
         $sender->sendMessage($this->getPrefix() . $this->translateString("info.plot", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
@@ -106,5 +106,6 @@ class InfoSubcommand extends Subcommand {
         } else {
             $sender->sendMessage($this->translateString("info.rates.none"));
         }
+        return null;
     }
 }

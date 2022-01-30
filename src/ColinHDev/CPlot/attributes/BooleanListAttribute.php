@@ -10,7 +10,7 @@ use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 class BooleanListAttribute extends ArrayAttribute {
 
     /**
-     * @param array<int, bool> | null $value
+     * @param bool[] | null $value
      * @throws \JsonException
      */
     public function toString(mixed $value = null) : string {
@@ -25,7 +25,7 @@ class BooleanListAttribute extends ArrayAttribute {
     }
 
     /**
-     * @return array<int, bool>
+     * @return bool[]
      * @throws AttributeParseException
      */
     public function parse(string $value) : array {

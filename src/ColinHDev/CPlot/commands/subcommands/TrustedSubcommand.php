@@ -11,24 +11,24 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class TrustedSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trusted.senderNotOnline"));
-            return;
+            return null;
         }
 
         if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trusted.noPlotWorld"));
-            return;
+            return null;
         }
         $plot = yield from Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trusted.noPlot"));
-            return;
+            return null;
         }
 
         $trustedPlayerData = [];
@@ -47,7 +47,7 @@ class TrustedSubcommand extends Subcommand {
         }
         if (count($trustedPlayerData) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trusted.noTrustedPlayers"));
-            return;
+            return null;
         }
 
         $sender->sendMessage(
@@ -59,5 +59,6 @@ class TrustedSubcommand extends Subcommand {
                 ]
             )
         );
+        return null;
     }
 }

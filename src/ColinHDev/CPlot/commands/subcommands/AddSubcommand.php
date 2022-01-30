@@ -16,19 +16,19 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class AddSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.senderNotOnline"));
-            return;
+            return null;
         }
 
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
-            return;
+            return null;
         }
 
         $player = null;
@@ -43,13 +43,13 @@ class AddSubcommand extends Subcommand {
                 $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if ($playerData === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("add.playerNotFound", [$playerName]));
-                    return;
+                    return null;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
             }
             if ($playerUUID === $sender->getUniqueId()->getBytes()) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("add.senderIsPlayer"));
-                return;
+                return null;
             }
         } else {
             $playerUUID = "*";
@@ -58,23 +58,23 @@ class AddSubcommand extends Subcommand {
 
         if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.noPlotWorld"));
-            return;
+            return null;
         }
 
         $plot = yield from Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.noPlot"));
-            return;
+            return null;
         }
 
         if (!$plot->hasPlotOwner()) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.noPlotOwner"));
-            return;
+            return null;
         }
         if (!$sender->hasPermission("cplot.admin.add")) {
             if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("add.notPlotOwner"));
-                return;
+                return null;
             }
         }
 
@@ -82,12 +82,12 @@ class AddSubcommand extends Subcommand {
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.serverPlotFlag", [$flag->getID()]));
-            return;
+            return null;
         }
 
         if ($plot->isPlotHelperExact($playerUUID)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("add.playerAlreadyHelper", [$playerName]));
-            return;
+            return null;
         }
 
         $plotPlayer = new PlotPlayer($playerUUID, PlotPlayer::STATE_HELPER);
@@ -98,7 +98,7 @@ class AddSubcommand extends Subcommand {
         if ($player instanceof Player) {
             $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
             if (!($playerData instanceof PlayerData)) {
-                return;
+                return null;
             }
             /** @var BooleanAttribute $setting */
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_ADD);
@@ -106,6 +106,7 @@ class AddSubcommand extends Subcommand {
                 $player->sendMessage($this->getPrefix() . $this->translateString("add.success.player", [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
             }
         }
+        return null;
     }
 
     /**

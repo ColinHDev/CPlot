@@ -17,36 +17,36 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class ClaimSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.senderNotOnline"));
-            return;
+            return null;
         }
 
         $worldSettings = yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlotWorld"));
-            return;
+            return null;
         }
 
         $plot = yield from Plot::awaitFromPosition($sender->getPosition(), false);
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlot"));
-            return;
+            return null;
         }
 
         $senderUUID = $sender->getUniqueId()->getBytes();
         if ($plot->hasPlotOwner()) {
             if ($plot->isPlotOwner($senderUUID)) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimedBySender"));
-                return;
+                return null;
             }
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimed"));
-            return;
+            return null;
         }
 
         $claimedPlotsCount = count(
@@ -55,7 +55,7 @@ class ClaimSubcommand extends Subcommand {
         $maxPlots = $this->getMaxPlotsOfPlayer($sender);
         if ($claimedPlotsCount > $maxPlots) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotLimitReached", [$claimedPlotsCount, $maxPlots]));
-            return;
+            return null;
         }
 
         $economyProvider = EconomyManager::getInstance()->getProvider();
@@ -65,11 +65,11 @@ class ClaimSubcommand extends Subcommand {
                 $money = yield from $economyProvider->awaitMoney($sender);
                 if (!is_float($money)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadMoneyError"));
-                    return;
+                    return null;
                 }
                 if ($money < $price) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("claim.notEnoughMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]));
-                    return;
+                    return null;
                 }
                 yield from $economyProvider->awaitMoneyRemoval($sender, $price);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("claim.chargedMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]));
@@ -101,6 +101,7 @@ class ClaimSubcommand extends Subcommand {
         Server::getInstance()->getAsyncPool()->submitTask($task);
 
         $sender->sendMessage($this->getPrefix() . $this->translateString("claim.success", [$plot->toString(), $plot->toSmallString()]));
+        return null;
     }
 
     /**

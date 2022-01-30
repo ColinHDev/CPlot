@@ -17,7 +17,7 @@ use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class SchematicSubcommand extends Subcommand {
 
@@ -26,7 +26,7 @@ class SchematicSubcommand extends Subcommand {
         0 && yield;
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
-            return;
+            return null;
         }
         switch ($args[0]) {
             case "list":
@@ -114,7 +114,7 @@ class SchematicSubcommand extends Subcommand {
                 $schematicType = strtolower($args[2]);
                 if ($schematicType !== "road" && $schematicType !== "plot") {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.save.invalidType", [$schematicName]));
-                    return;
+                    break;
                 }
                 $worldSettings = WorldSettings::fromConfig();
                 if ($schematicType === "road") {
@@ -194,5 +194,6 @@ class SchematicSubcommand extends Subcommand {
                 $sender->sendMessage($this->getPrefix() . $this->getUsage());
                 break;
         }
+        return null;
     }
 }

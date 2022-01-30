@@ -12,7 +12,7 @@ use pocketmine\block\Block;
 class BlockListAttribute extends ArrayAttribute {
 
     /**
-     * @param array<int, Block> | null $value
+     * @param Block[] | null $value
      * @throws \JsonException
      */
     public function toString(mixed $value = null) : string {
@@ -27,7 +27,7 @@ class BlockListAttribute extends ArrayAttribute {
     }
 
     /**
-     * @return array<int, Block>
+     * @return Block[]
      * @throws AttributeParseException
      */
     public function parse(string $value) : array {

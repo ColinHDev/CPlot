@@ -19,14 +19,14 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class MergeSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.senderNotOnline"));
-            return;
+            return null;
         }
 
         $location = $sender->getLocation();
@@ -34,7 +34,7 @@ class MergeSubcommand extends Subcommand {
         $worldSettings = yield from DataProvider::getInstance()->awaitWorld($worldName);
         if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.noPlotWorld"));
-            return;
+            return null;
         }
 
         $basePlot = BasePlot::fromVector3($worldName, $worldSettings, $location);
@@ -45,17 +45,17 @@ class MergeSubcommand extends Subcommand {
         }
         if ($basePlot === null || $plot === null) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.noPlot"));
-            return;
+            return null;
         }
 
         if (!$plot->hasPlotOwner()) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.noPlotOwner"));
-            return;
+            return null;
         }
         if (!$sender->hasPermission("cplot.admin.merge")) {
             if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notPlotOwner"));
-                return;
+                return null;
             }
         }
 
@@ -63,7 +63,7 @@ class MergeSubcommand extends Subcommand {
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.serverPlotFlag", [$flag->getID()]));
-            return;
+            return null;
         }
 
         $rotation = ($location->yaw - 180) % 360;
@@ -79,7 +79,7 @@ class MergeSubcommand extends Subcommand {
             $direction = Facing::WEST;
         } else {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.processDirectionError"));
-            return;
+            return null;
         }
 
         /** @var BasePlot $basePlotToMerge */
@@ -87,11 +87,11 @@ class MergeSubcommand extends Subcommand {
         $plotToMerge = yield from $basePlotToMerge->toAsyncPlot();
         if ($plotToMerge === null) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.invalidSecondPlot"));
-            return;
+            return null;
         }
         if ($plot->isSame($plotToMerge)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.alreadyMerged"));
-            return;
+            return null;
         }
 
         $hasSameOwner = false;
@@ -103,14 +103,14 @@ class MergeSubcommand extends Subcommand {
         }
         if (!$hasSameOwner) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notSamePlotOwner"));
-            return;
+            return null;
         }
 
         /** @var BooleanAttribute $flag */
         $flag = $plotToMerge->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.secondPlotServerPlotFlag", [$flag->getID()]));
-            return;
+            return null;
         }
 
         $economyProvider = EconomyManager::getInstance()->getProvider();
@@ -120,11 +120,11 @@ class MergeSubcommand extends Subcommand {
                 $money = yield from $economyProvider->awaitMoney($sender);
                 if (!is_float($money)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("merge.loadMoneyError"));
-                    return;
+                    return null;
                 }
                 if ($money < $price) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("merge.notEnoughMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]));
-                    return;
+                    return null;
                 }
                 yield from $economyProvider->awaitMoneyRemoval($sender, $price);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("merge.chargedMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]));
@@ -154,6 +154,7 @@ class MergeSubcommand extends Subcommand {
         yield from $plot->merge($plotToMerge);
         yield from DataProvider::getInstance()->deletePlot($plotToMerge);
         Server::getInstance()->getAsyncPool()->submitTask($task);
+        return null;
     }
 
     /**

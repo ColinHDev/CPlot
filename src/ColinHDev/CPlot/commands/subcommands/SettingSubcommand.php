@@ -13,14 +13,14 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class SettingSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
-            return;
+            return null;
         }
 
         switch ($args[0]) {
@@ -199,6 +199,7 @@ class SettingSubcommand extends Subcommand {
                 $sender->sendMessage($this->getPrefix() . $this->getUsage());
                 break;
         }
+        return null;
     }
 
     /**

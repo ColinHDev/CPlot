@@ -16,19 +16,19 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class TrustSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trust.senderNotOnline"));
-            return;
+            return null;
         }
 
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
-            return;
+            return null;
         }
 
         $player = null;
@@ -43,13 +43,13 @@ class TrustSubcommand extends Subcommand {
                 $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if ($playerData === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("trust.playerNotFound", [$playerName]));
-                    return;
+                    return null;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
             }
             if ($playerUUID === $sender->getUniqueId()->getBytes()) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("trust.senderIsPlayer"));
-                return;
+                return null;
             }
         } else {
             $playerUUID = "*";
@@ -58,23 +58,23 @@ class TrustSubcommand extends Subcommand {
 
         if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trust.noPlotWorld"));
-            return;
+            return null;
         }
 
         $plot = yield from Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trust.noPlot"));
-            return;
+            return null;
         }
 
         if (!$plot->hasPlotOwner()) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trust.noPlotOwner"));
-            return;
+            return null;
         }
         if (!$sender->hasPermission("cplot.admin.trust")) {
             if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("trust.notPlotOwner"));
-                return;
+                return null;
             }
         }
 
@@ -82,12 +82,12 @@ class TrustSubcommand extends Subcommand {
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trust.serverPlotFlag", [$flag->getID()]));
-            return;
+            return null;
         }
 
         if ($plot->isPlotTrustedExact($playerUUID)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trust.playerAlreadyTrusted", [$playerName]));
-            return;
+            return null;
         }
 
         $plotPlayer = new PlotPlayer($playerUUID, PlotPlayer::STATE_TRUSTED);
@@ -98,7 +98,7 @@ class TrustSubcommand extends Subcommand {
         if ($player instanceof Player) {
             $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
             if (!($playerData instanceof PlayerData)) {
-                return;
+                return null;
             }
             /** @var BooleanAttribute $setting */
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_TRUSTED_ADD);
@@ -106,6 +106,7 @@ class TrustSubcommand extends Subcommand {
                 $player->sendMessage($this->getPrefix() . $this->translateString("trust.success.player", [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]));
             }
         }
+        return null;
     }
 
     /**

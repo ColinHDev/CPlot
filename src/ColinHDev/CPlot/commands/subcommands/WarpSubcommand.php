@@ -11,14 +11,14 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<void>
+ * @phpstan-extends Subcommand<null>
  */
 class WarpSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.senderNotOnline"));
-            return;
+            return null;
         }
 
         switch (count($args)) {
@@ -34,7 +34,7 @@ class WarpSubcommand extends Subcommand {
                         break;
                     default:
                         $sender->sendMessage($this->getPrefix() . $this->getUsage());
-                        return;
+                        return null;
                 }
                 break;
             case 2:
@@ -46,40 +46,41 @@ class WarpSubcommand extends Subcommand {
                 break;
             default:
                 $sender->sendMessage($this->getPrefix() . $this->getUsage());
-                return;
+                return null;
         }
 
         $worldSettings = yield from DataProvider::getInstance()->awaitWorld($worldName);
         if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.invalidPlotWorld", [$worldName]));
-            return;
+            return null;
         }
         if (!is_numeric($x)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.invalidXCoordinate", [$x]));
-            return;
+            return null;
         }
         if (!is_numeric($z)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.invalidZCoordinate", [$z]));
-            return;
+            return null;
         }
 
         $plot = yield from (new BasePlot($worldName, $worldSettings, (int) $x, (int) $z))->toAsyncPlot();
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.loadPlotError"));
-            return;
+            return null;
         }
 
         if (!$sender->hasPermission("cplot.admin.warp")) {
             if (!$plot->hasPlotOwner()) {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("warp.noPlotOwner"));
-                return;
+                return null;
             }
         }
 
         if (!($plot->teleportTo($sender))) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
-            return;
+            return null;
         }
         $sender->sendMessage($this->getPrefix() . $this->translateString("warp.success", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
+        return null;
     }
 }
