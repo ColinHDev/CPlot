@@ -20,7 +20,7 @@ use pocketmine\entity\Location;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<void>
  */
 class FlagSubcommand extends Subcommand {
 

@@ -10,7 +10,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<void>
  */
 class AutoSubcommand extends Subcommand {
 

@@ -21,6 +21,7 @@ abstract class ChunkFetchingAsyncTask extends CPlotAsyncTask {
         parent::__construct();
         $this->minY = $world->getMinY();
         $this->maxY = $world->getMaxY();
+        $chunks = [];
         foreach ($chunkAreas as $chunkHash => $data) {
             World::getXZ($chunkHash, $chunkX, $chunkZ);
             $chunk = $world->loadChunk($chunkX, $chunkZ);
@@ -29,6 +30,7 @@ abstract class ChunkFetchingAsyncTask extends CPlotAsyncTask {
             }
             $chunks[$chunkHash] = FastChunkSerializer::serializeTerrain($chunk);
         }
+        $this->chunks = serialize($chunks);
         $this->chunkAreas = serialize($chunkAreas);
     }
 

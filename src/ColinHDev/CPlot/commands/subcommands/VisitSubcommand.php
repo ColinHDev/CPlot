@@ -11,7 +11,7 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<void>
  */
 class VisitSubcommand extends Subcommand {
 

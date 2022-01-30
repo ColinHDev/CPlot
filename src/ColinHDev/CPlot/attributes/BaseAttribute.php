@@ -59,9 +59,9 @@ abstract class BaseAttribute {
 
     /**
      * @param AttributeValue $value
-     * @return BaseAttribute
+     * @return static
      */
-    public function newInstance(mixed $value) : BaseAttribute {
+    public function newInstance(mixed $value) : static {
         return new static($this->ID, $this->permission, $this->default, $value);
     }
 
@@ -71,6 +71,9 @@ abstract class BaseAttribute {
      */
     abstract public function merge(mixed $value) : BaseAttribute;
 
+    /**
+     * @param AttributeValue $value
+     */
     abstract public function toString(mixed $value = null) : string;
 
     /**
