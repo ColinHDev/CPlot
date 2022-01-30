@@ -31,8 +31,13 @@ class LocationAttribute extends BaseAttribute {
      * @throws AttributeParseException
      */
     public function parse(string $value) : Location {
+        /** @phpstan-var string|null $x */
+        /** @phpstan-var string|null $y */
+        /** @phpstan-var string|null $z */
+        /** @phpstan-var string|null $yaw */
+        /** @phpstan-var string|null $pitch */
         [$x, $y, $z, $yaw, $pitch] = explode(";", $value);
-        if ($x !== null && $y !== null && $z !== null && $yaw !== null && $pitch !== null) {
+        if (isset($x, $y, $z, $yaw, $pitch)) {
             return new Location((float) $x, (float) $y, (float) $z, null, (float) $yaw, (float) $pitch);
         }
         throw new AttributeParseException($this, $value);

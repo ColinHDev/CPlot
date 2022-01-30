@@ -19,7 +19,7 @@ trait PlotBorderAreaCalculationTrait {
         /** @var Area[] $areas */
         $areas = [];
 
-        $plots = array_merge([$originPlot], $originPlot->getMergePlots() ?? []);
+        $plots = array_merge([$originPlot], $originPlot->getMergePlots());
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
             $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
@@ -133,7 +133,7 @@ trait PlotBorderAreaCalculationTrait {
         /** @var Area[] $areas */
         $areas = [];
 
-        $plots = array_merge([$originPlot], $originPlot->getMergePlots() ?? []);
+        $plots = array_merge([$originPlot], $originPlot->getMergePlots());
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
             $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
@@ -267,7 +267,7 @@ trait PlotBorderAreaCalculationTrait {
         /** @var Area[] $areas */
         $areas = [];
 
-        $plots = array_merge([$originPlot], $originPlot->getMergePlots() ?? []);
+        $plots = array_merge([$originPlot], $originPlot->getMergePlots());
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
             $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
@@ -332,7 +332,7 @@ trait PlotBorderAreaCalculationTrait {
         /** @var Area[] $areas */
         $areas = [];
 
-        $plots = array_merge([$originPlot], $originPlot->getMergePlots() ?? []);
+        $plots = array_merge([$originPlot], $originPlot->getMergePlots());
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
             $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());

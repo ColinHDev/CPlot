@@ -198,9 +198,6 @@ class FlagSubcommand extends Subcommand {
                     }
                     /** @var ArrayAttribute $setting */
                     $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_CHANGE_FLAG . $newFlag->getID());
-                    if ($setting === null) {
-                        continue;
-                    }
                     foreach ($setting->getValue() as $value) {
                         if ($value === $newFlag->getValue()) {
                             $player->sendMessage(
@@ -212,9 +209,6 @@ class FlagSubcommand extends Subcommand {
 
                     /** @var ArrayAttribute $setting */
                     $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_TELEPORT_CHANGE_FLAG . $newFlag->getID());
-                    if ($setting === null) {
-                        continue;
-                    }
                     foreach ($setting->getValue() as $value) {
                         if ($value === $newFlag->getValue()) {
                             $player->sendMessage(
