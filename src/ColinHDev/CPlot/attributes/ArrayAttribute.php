@@ -5,13 +5,13 @@ namespace ColinHDev\CPlot\attributes;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 
 /**
- * @extends BaseAttribute<array>
+ * @template AttributeValue of array
+ * @extends BaseAttribute<AttributeValue>
  */
 class ArrayAttribute extends BaseAttribute {
 
     /**
-     * @param array $value
-     * @return ArrayAttribute
+     * @phpstan-param AttributeValue $value
      */
     public function merge(mixed $value) : ArrayAttribute {
         $values = $this->value;
@@ -28,7 +28,7 @@ class ArrayAttribute extends BaseAttribute {
     }
 
     /**
-     * @param array | null $value
+     * @phpstan-param AttributeValue | null $value
      * @throws \JsonException
      */
     public function toString(mixed $value = null) : string {
@@ -40,6 +40,7 @@ class ArrayAttribute extends BaseAttribute {
 
     /**
      * @throws AttributeParseException
+     * @phpstan-return AttributeValue
      */
     public function parse(string $value) : array {
         try {
