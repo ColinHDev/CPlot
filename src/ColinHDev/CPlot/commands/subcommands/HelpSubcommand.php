@@ -20,7 +20,7 @@ class HelpSubcommand extends Subcommand {
     }
 
     public function execute(CommandSender $sender, array $args) : \Generator {
-        0 && yield;
+        yield from [];
         if (count($args) === 0) {
             $page = 1;
         } else if (is_numeric($args[0])) {
@@ -33,7 +33,7 @@ class HelpSubcommand extends Subcommand {
         }
 
         $subcommands = [];
-        $checkPermission = ResourceManager::getInstance()->getConfig()->get("help.checkPermission", true);
+        $checkPermission = (bool) ResourceManager::getInstance()->getConfig()->get("help.checkPermission", true);
         foreach ($this->command->getSubcommands() as $subcommand) {
             if ($checkPermission) {
                 if ($sender->hasPermission($subcommand->getPermission())) {
@@ -47,7 +47,8 @@ class HelpSubcommand extends Subcommand {
         ksort($subcommands, SORT_NATURAL | SORT_FLAG_CASE);
         /** @var Subcommand[][] $subcommands */
         $subcommands = array_chunk($subcommands, $sender->getScreenLineHeight());
-        $page = (int) min(count($subcommands), $page);
+        /** @var int $page */
+        $page = min(count($subcommands), $page);
 
         $subcommandsOnPage = [];
         foreach ($subcommands[$page - 1] as $subcommand) {

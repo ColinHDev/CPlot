@@ -22,7 +22,7 @@ use pocketmine\world\WorldCreationOptions;
 class SchematicSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
-        0 && yield;
+        yield from [];
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
             return;
