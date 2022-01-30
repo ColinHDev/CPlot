@@ -155,7 +155,7 @@ class FlagSubcommand extends Subcommand {
                     /** @var LocationAttribute $flag */
                     $arg = $flag->toString(
                         Location::fromObject(
-                            $location->subtractVector(yield from $plot->getPosition()),
+                            $location->subtractVector(yield from $plot->getVector3()),
                             $location->getWorld(),
                             $location->getYaw(),
                             $location->getPitch()
@@ -220,7 +220,7 @@ class FlagSubcommand extends Subcommand {
                             $player->sendMessage(
                                 $this->getPrefix() . $this->translateString("flag.set.setting.teleport_change_flag", [$newFlag->getID(), $newFlag->toString()])
                             );
-                            yield from $plot->teleportTo($player, false, false);
+                            $plot->teleportTo($player, false, false);
                             break;
                         }
                     }

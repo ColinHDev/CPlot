@@ -22,7 +22,7 @@ trait PlotBorderAreaCalculationTrait {
         $plots = array_merge([$originPlot], $originPlot->getMergePlots() ?? []);
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
-            $plotPosition = $plot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
 
             /** @var BasePlot $plotInNorth */
             $plotInNorth = $plot->getSide(Facing::NORTH);
@@ -136,7 +136,7 @@ trait PlotBorderAreaCalculationTrait {
         $plots = array_merge([$originPlot], $originPlot->getMergePlots() ?? []);
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
-            $plotPosition = $plot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
 
             /** @var BasePlot $plotInNorth */
             $plotInNorth = $plot->getSide(Facing::NORTH);
@@ -270,7 +270,7 @@ trait PlotBorderAreaCalculationTrait {
         $plots = array_merge([$originPlot], $originPlot->getMergePlots() ?? []);
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
-            $plotPosition = $plot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
 
             // Border in North
             $area = new Area(
@@ -335,7 +335,7 @@ trait PlotBorderAreaCalculationTrait {
         $plots = array_merge([$originPlot], $originPlot->getMergePlots() ?? []);
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
-            $plotPosition = $plot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
 
             // Border in Northwest
             $area = new Area(

@@ -356,22 +356,24 @@ final class DataProvider {
                 "z" => $z
             ]
         );
+        $worldSettings = yield from $this->awaitWorld($worldName);
         $plotData = $rows[array_key_first($rows)] ?? null;
         if ($plotData === null) {
-            $plot = new Plot($worldName, $x, $z);
+            $plot = new Plot($worldName, $worldSettings, $x, $z);
             $this->getPlotCache()->cacheObject($plot->toString(), $plot);
             return $plot;
         }
         $plot = new Plot(
             $worldName,
+            $worldSettings,
             $x,
             $z,
             $plotData["biomeID"],
             $plotData["alias"],
-            yield $this->awaitMergePlots($worldName, $x, $z),
-            yield $this->awaitPlotPlayers($worldName, $x, $z),
-            yield $this->awaitPlotFlags($worldName, $x, $z),
-            yield $this->awaitPlotRates($worldName, $x, $z)
+            (yield from $this->awaitMergePlots($worldName, $x, $z)),
+            (yield from $this->awaitPlotPlayers($worldName, $x, $z)),
+            (yield from $this->awaitPlotFlags($worldName, $x, $z)),
+            (yield from $this->awaitPlotRates($worldName, $x, $z))
         );
         $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return $plot;
@@ -391,9 +393,10 @@ final class DataProvider {
                 "originZ" => $z
             ]
         );
+        $worldSettings = yield from $this->awaitWorld($worldName);
         $mergePlots = [];
         foreach ($rows as $row) {
-            $mergePlot = new MergePlot($worldName, $row["mergeX"], $row["mergeZ"], $x, $z);
+            $mergePlot = new MergePlot($worldName, $worldSettings, $row["mergeX"], $row["mergeZ"], $x, $z);
             $mergePlotKey = $mergePlot->toString();
             $this->getPlotCache()->cacheObject($mergePlotKey, $mergePlot);
             $mergePlots[$mergePlotKey] = $mergePlot;
@@ -501,14 +504,15 @@ final class DataProvider {
         $z = $plotData["z"];
         $plot = new Plot(
             $worldName,
+            (yield from $this->awaitWorld($worldName)),
             $x,
             $z,
             $plotData["biomeID"],
             $alias,
-            yield $this->awaitMergePlots($worldName, $x, $z),
-            yield $this->awaitPlotPlayers($worldName, $x, $z),
-            yield $this->awaitPlotFlags($worldName, $x, $z),
-            yield $this->awaitPlotRates($worldName, $x, $z)
+            (yield from $this->awaitMergePlots($worldName, $x, $z)),
+            (yield from $this->awaitPlotPlayers($worldName, $x, $z)),
+            (yield from $this->awaitPlotFlags($worldName, $x, $z)),
+            (yield from $this->awaitPlotRates($worldName, $x, $z))
         );
         $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return $plot;
@@ -607,7 +611,7 @@ final class DataProvider {
      * @param int $limitXZ Limits the radius in which plots are fetched.
      * @phpstan-return \Generator<null, \Generator, array[], Plot|null>
      */
-    public function awaitNextFreePlot(string $worldName, int $limitXZ = 0) : \Generator {
+    public function awaitNextFreePlot(string $worldName, WorldSettings $worldSettings, int $limitXZ = 0) : \Generator {
         for ($i = 0; $limitXZ <= 0 || $i < $limitXZ; $i++) {
             $plots = [];
             $rows = yield $this->database->asyncSelect(
@@ -625,21 +629,21 @@ final class DataProvider {
             }
             if (($ret = $this->findEmptyPlotSquared(0, $i, $plots)) !== null) {
                 [$x, $z] = $ret;
-                $plot = new Plot($worldName, $x, $z);
+                $plot = new Plot($worldName, $worldSettings, $x, $z);
                 $this->getPlotCache()->cacheObject($plot->toString(), $plot);
                 return $plot;
             }
             for ($a = 1; $a < $i; $a++) {
                 if (($ret = $this->findEmptyPlotSquared($a, $i, $plots)) !== null) {
                     [$x, $z] = $ret;
-                    $plot = new Plot($worldName, $x, $z);
+                    $plot = new Plot($worldName, $worldSettings, $x, $z);
                     $this->getPlotCache()->cacheObject($plot->toString(), $plot);
                     return $plot;
                 }
             }
             if (($ret = $this->findEmptyPlotSquared($i, $i, $plots)) !== null) {
                 [$x, $z] = $ret;
-                $plot = new Plot($worldName, $x, $z);
+                $plot = new Plot($worldName, $worldSettings, $x, $z);
                 $this->getPlotCache()->cacheObject($plot->toString(), $plot);
                 return $plot;
             }

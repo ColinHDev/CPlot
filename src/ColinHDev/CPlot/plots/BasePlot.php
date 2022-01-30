@@ -18,17 +18,23 @@ use pocketmine\world\World;
 class BasePlot implements Cacheable {
 
     protected string $worldName;
+    protected WorldSettings $worldSettings;
     protected int $x;
     protected int $z;
 
-    public function __construct(string $worldName, int $x, int $z) {
+    public function __construct(string $worldName, WorldSettings $worldSettings, int $x, int $z) {
         $this->worldName = $worldName;
+        $this->worldSettings = $worldSettings;
         $this->x = $x;
         $this->z = $z;
     }
 
     public function getWorldName() : string {
         return $this->worldName;
+    }
+
+    public function getWorldSettings() : WorldSettings {
+        return $this->worldSettings;
     }
 
     public function getX() : int {
@@ -53,12 +59,7 @@ class BasePlot implements Cacheable {
     /**
      * @throws \RuntimeException when called outside of main thread.
      */
-    public function teleportTo(Player $player, bool $toPlotCenter = false) : \Generator {
-        $worldSettings = yield DataProvider::getInstance()->awaitWorld($this->worldName);
-        if (!$worldSettings instanceof WorldSettings) {
-            return false;
-        }
-
+    public function teleportTo(Player $player, bool $toPlotCenter = false) : bool {
         $flag = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SPAWN);
         $relativeSpawn = $flag?->getValue();
         if ($relativeSpawn instanceof Location) {
@@ -69,10 +70,10 @@ class BasePlot implements Cacheable {
             return $player->teleport(
                 Location::fromObject(
                     $relativeSpawn->addVector(
-                        $this->getPositionNonNull(
-                            $worldSettings->getRoadSize(),
-                            $worldSettings->getPlotSize(),
-                            $worldSettings->getGroundSize()
+                        $this->getVector3NonNull(
+                            $this->worldSettings->getRoadSize(),
+                            $this->worldSettings->getPlotSize(),
+                            $this->worldSettings->getGroundSize()
                         )
                     ),
                     $world,
@@ -86,11 +87,11 @@ class BasePlot implements Cacheable {
 
     public function getSide(int $side, int $step = 1) : ?self {
         return match ($side) {
-            Facing::NORTH => new self($this->worldName, $this->x, $this->z - $step),
-            Facing::SOUTH => new self($this->worldName, $this->x, $this->z + $step),
-            Facing::WEST => new self($this->worldName, $this->x - $step, $this->z),
-            Facing::EAST => new self($this->worldName, $this->x + $step, $this->z),
-            default => null,
+            Facing::NORTH => new self($this->worldName, $this->worldSettings, $this->x, $this->z - $step),
+            Facing::SOUTH => new self($this->worldName, $this->worldSettings, $this->x, $this->z + $step),
+            Facing::WEST => new self($this->worldName, $this->worldSettings, $this->x - $step, $this->z),
+            Facing::EAST => new self($this->worldName, $this->worldSettings, $this->x + $step, $this->z),
+            default => null
         };
     }
 
@@ -98,18 +99,23 @@ class BasePlot implements Cacheable {
         return $this->worldName === $plot->getWorldName() && $this->x === $plot->getX() && $this->z === $plot->getZ();
     }
 
-    public function isOnPlot(Position $position) : \Generator {
-        if ($position->getWorld()->getFolderName() !== $this->worldName) return false;
-
-        $worldSettings = yield DataProvider::getInstance()->awaitWorld($this->worldName);
-        if (!$worldSettings instanceof WorldSettings) return false;
-
-        $totalSize = $worldSettings->getRoadSize() + $worldSettings->getPlotSize();
-        if ($position->getX() < $this->x * $totalSize + $worldSettings->getRoadSize()) return false;
-        if ($position->getZ() < $this->z * $totalSize + $worldSettings->getRoadSize()) return false;
-        if ($position->getX() > $this->x * $totalSize + ($totalSize - 1)) return false;
-        if ($position->getZ() > $this->z * $totalSize + ($totalSize - 1)) return false;
-
+    public function isOnPlot(Position $position) : bool {
+        if ($position->world->getFolderName() !== $this->worldName) {
+            return false;
+        }
+        $totalSize = $this->worldSettings->getRoadSize() + $this->worldSettings->getPlotSize();
+        if ($position->getX() < $this->x * $totalSize + $this->worldSettings->getRoadSize()) {
+            return false;
+        }
+        if ($position->getZ() < $this->z * $totalSize + $this->worldSettings->getRoadSize()) {
+            return false;
+        }
+        if ($position->getX() > $this->x * $totalSize + ($totalSize - 1)) {
+            return false;
+        }
+        if ($position->getZ() > $this->z * $totalSize + ($totalSize - 1)) {
+            return false;
+        }
         return true;
     }
 
@@ -129,13 +135,15 @@ class BasePlot implements Cacheable {
         return yield DataProvider::getInstance()->awaitMergeOrigin($this);
     }
 
-    public function getPosition() : \Generator {
-        $worldSettings = yield DataProvider::getInstance()->awaitWorld($this->worldName);
-        if (!$worldSettings instanceof WorldSettings) return null;
-        return $this->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+    public function getVector3() : Vector3 {
+        return $this->getVector3NonNull(
+            $this->worldSettings->getRoadSize(),
+            $this->worldSettings->getPlotSize(),
+            $this->worldSettings->getGroundSize()
+        );
     }
 
-    public function getPositionNonNull(int $sizeRoad, int $sizePlot, int $sizeGround) : Vector3 {
+    public function getVector3NonNull(int $sizeRoad, int $sizePlot, int $sizeGround) : Vector3 {
         return new Vector3(
             $sizeRoad + ($sizeRoad + $sizePlot) * $this->x,
             $sizeGround,
@@ -185,12 +193,13 @@ class BasePlot implements Cacheable {
         if (($difX > $worldSettings->getPlotSize() - 1) || ($difZ > $worldSettings->getPlotSize() - 1)) {
             return null;
         }
-        return new self($worldName, $X, $Z);
+        return new self($worldName, $worldSettings, $X, $Z);
     }
 
     public function __serialize() : array {
         return [
             "worldName" => $this->worldName,
+            "worldSettings" => serialize($this->worldSettings),
             "x" => $this->x,
             "z" => $this->z
         ];
@@ -198,6 +207,7 @@ class BasePlot implements Cacheable {
 
     public function __unserialize(array $data) : void {
         $this->worldName = $data["worldName"];
+        $this->worldSettings = unserialize($data["worldSettings"], ["allowed_classes" => WorldSettings::class]);
         $this->x = $data["x"];
         $this->z = $data["z"];
     }

@@ -21,7 +21,7 @@ trait PlotAreaCalculationTrait {
         $plots = array_merge([$originPlot], $originPlot->getMergePlots() ?? []);
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
-            $plotPosition = $plot->getPositionNonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
             $area = new Area(
                 $plotPosition->getFloorX(),
                 $plotPosition->getFloorZ(),

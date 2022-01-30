@@ -26,49 +26,31 @@ class WarpSubcommand extends Subcommand {
                 $plotKeys = explode(";", $args[0]);
                 switch (count($plotKeys)) {
                     case 2:
-                        if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-                            $sender->sendMessage($this->getPrefix() . $this->translateString("warp.noPlotWorld"));
-                            return;
-                        }
                         $worldName = $sender->getWorld()->getFolderName();
-                        $x = $plotKeys[0];
-                        $z = $plotKeys[1];
+                        [$x, $z] = $plotKeys;
                         break;
-
                     case 3:
-                        $worldName = $plotKeys[0];
-                        $x = $plotKeys[1];
-                        $z = $plotKeys[2];
+                        [$worldName, $x, $z] = $plotKeys;
                         break;
-
                     default:
                         $sender->sendMessage($this->getPrefix() . $this->getUsage());
                         return;
                 }
                 break;
-
             case 2:
-                if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("warp.noPlotWorld"));
-                    return;
-                }
                 $worldName = $sender->getWorld()->getFolderName();
-                $x = $args[0];
-                $z = $args[1];
+                [$x, $z] = $args;
                 break;
-
             case 3:
-                $worldName = $args[0];
-                $x = $args[1];
-                $z = $args[2];
+                [$worldName, $x, $z] = $args;
                 break;
-
             default:
                 $sender->sendMessage($this->getPrefix() . $this->getUsage());
                 return;
         }
 
-        if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
+        $worldSettings = yield from DataProvider::getInstance()->awaitWorld($worldName);
+        if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.invalidPlotWorld", [$worldName]));
             return;
         }
@@ -81,12 +63,11 @@ class WarpSubcommand extends Subcommand {
             return;
         }
 
-        $plot = yield from (new BasePlot($worldName, (int) $x, (int) $z))->toAsyncPlot();
+        $plot = yield from (new BasePlot($worldName, $worldSettings, (int) $x, (int) $z))->toAsyncPlot();
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.loadPlotError"));
             return;
         }
-
 
         if (!$sender->hasPermission("cplot.admin.warp")) {
             if (!$plot->hasPlotOwner()) {
@@ -95,7 +76,7 @@ class WarpSubcommand extends Subcommand {
             }
         }
 
-        if (!(yield from $plot->teleportTo($sender))) {
+        if (!($plot->teleportTo($sender))) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.teleportError", [$plot->getWorldName(), $plot->getX(), $plot->getZ()]));
             return;
         }

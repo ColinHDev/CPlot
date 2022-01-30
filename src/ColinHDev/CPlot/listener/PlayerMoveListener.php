@@ -44,7 +44,7 @@ class PlayerMoveListener implements Listener {
                     // check if player is denied and hasn't bypass permission
                     if (!$player->hasPermission("cplot.bypass.deny")) {
                         if ($plotTo->isPlotDenied($playerUUID) && yield from $plotTo->isOnPlot($player->getPosition())) {
-                            yield from $plotTo->teleportTo($player, false, false);
+                            $plotTo->teleportTo($player, false, false);
                             return;
                         }
                     }

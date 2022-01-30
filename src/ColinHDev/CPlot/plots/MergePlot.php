@@ -3,14 +3,15 @@
 namespace ColinHDev\CPlot\plots;
 
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\worlds\WorldSettings;
 
 class MergePlot extends BasePlot {
 
     protected int $originX;
     protected int $originZ;
 
-    public function __construct(string $worldName, int $x, int $z, int $originX, int $originZ) {
-        parent::__construct($worldName, $x, $z);
+    public function __construct(string $worldName, WorldSettings $worldSettings, int $x, int $z, int $originX, int $originZ) {
+        parent::__construct($worldName, $worldSettings, $x, $z);
         $this->originX = $originX;
         $this->originZ = $originZ;
     }
@@ -24,7 +25,7 @@ class MergePlot extends BasePlot {
     }
 
     public function toBasePlot() : BasePlot {
-        return new BasePlot($this->worldName, $this->x, $this->z);
+        return new BasePlot($this->worldName, $this->worldSettings, $this->x, $this->z);
     }
 
     public function toPlot() : \Generator {
@@ -33,7 +34,7 @@ class MergePlot extends BasePlot {
 
     public static function fromBasePlot(BasePlot $basePlot, int $originX, int $originZ) : self {
         return new self(
-            $basePlot->getWorldName(), $basePlot->getX(), $basePlot->getZ(),
+            $basePlot->getWorldName(), $basePlot->getWorldSettings(), $basePlot->getX(), $basePlot->getZ(),
             $originX, $originZ
         );
     }

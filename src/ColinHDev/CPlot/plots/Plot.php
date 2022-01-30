@@ -33,8 +33,8 @@ class Plot extends BasePlot {
      * @param array<string, BaseAttribute> $flags
      * @param array<string, PlotRate> $plotRates
      */
-    public function __construct(string $worldName, int $x, int $z, int $biomeID = BiomeIds::PLAINS, ?string $alias = null, array $mergePlots = [], array $plotPlayers = [], array $flags = [], array $plotRates = []) {
-        parent::__construct($worldName, $x, $z);
+    public function __construct(string $worldName, WorldSettings $worldSettings, int $x, int $z, int $biomeID = BiomeIds::PLAINS, ?string $alias = null, array $mergePlots = [], array $plotPlayers = [], array $flags = [], array $plotRates = []) {
+        parent::__construct($worldName, $worldSettings, $x, $z);
         $this->biomeID = $biomeID;
         $this->alias = $alias;
         $this->mergePlots = $mergePlots;
@@ -284,7 +284,7 @@ class Plot extends BasePlot {
     /**
      * @throws \RuntimeException when called outside of main thread.
      */
-    public function teleportTo(Player $player, bool $toPlotCenter = false, bool $checkSpawnFlag = true) : \Generator {
+    public function teleportTo(Player $player, bool $toPlotCenter = false, bool $checkSpawnFlag = true) : bool {
         if (!$toPlotCenter && $checkSpawnFlag) {
             $flag = $this->getFlagNonNullByID(FlagIDs::FLAG_SPAWN);
             $relativeSpawn = $flag?->getValue();
@@ -295,7 +295,7 @@ class Plot extends BasePlot {
                 }
                 return $player->teleport(
                     Location::fromObject(
-                        $relativeSpawn->addVector(yield $this->getPosition()),
+                        $relativeSpawn->addVector($this->getVector3()),
                         $world,
                         $relativeSpawn->getYaw(),
                         $relativeSpawn->getPitch()
@@ -312,10 +312,10 @@ class Plot extends BasePlot {
                     $northestPlot = $mergePlot;
                 }
             }
-            return yield $northestPlot->teleportTo($player, $toPlotCenter);
+            return $northestPlot->teleportTo($player, $toPlotCenter);
         }
 
-        return yield parent::teleportTo($player, $toPlotCenter);
+        return parent::teleportTo($player, $toPlotCenter);
     }
 
     public function isSame(BasePlot $plot, bool $checkMerge = true) : bool {
@@ -325,23 +325,47 @@ class Plot extends BasePlot {
         return parent::isSame($plot);
     }
 
-    public function isOnPlot(Position $position, bool $checkMerge = true) : \Generator {
+    public function isOnPlot(Position $position, bool $checkMerge = true) : bool {
+        if (parent::isOnPlot($position)) {
+            return true;
+        }
         if (!$checkMerge) {
-            return yield parent::isOnPlot($position);
+            return false;
         }
 
+        /** @var MergePlot $mergePlot */
         foreach ($this->getMergePlots() as $mergePlot) {
-            if ((yield $mergePlot->isOnPlot($position))) {
+            if (($mergePlot->isOnPlot($position))) {
                 return true;
             }
         }
 
-        $plot = yield self::awaitFromPosition($position);
-        return $plot !== null && $this->isSame($plot);
+        $vector3 = $position->asVector3();
+        $northernBasePlot = parent::fromVector3($this->worldName, $this->worldSettings, $vector3->getSide(Facing::NORTH, $this->worldSettings->getRoadSize()));
+        $southernBasePlot = parent::fromVector3($this->worldName, $this->worldSettings, $vector3->getSide(Facing::SOUTH, $this->worldSettings->getRoadSize()));
+        if ($northernBasePlot instanceof BasePlot && $southernBasePlot instanceof BasePlot) {
+            return $this->isMerged($northernBasePlot) && $this->isMerged($southernBasePlot);
+        }
+
+        $westernBasePlot = parent::fromVector3($this->worldName, $this->worldSettings, $vector3->getSide(Facing::WEST, $this->worldSettings->getRoadSize()));
+        $easternBasePlot = parent::fromVector3($this->worldName, $this->worldSettings, $vector3->getSide(Facing::EAST, $this->worldSettings->getRoadSize()));
+        if ($westernBasePlot instanceof BasePlot && $easternBasePlot instanceof BasePlot) {
+            return $this->isMerged($westernBasePlot) && $this->isMerged($easternBasePlot);
+        }
+
+        $northwesternBasePlot = parent::fromVector3($this->worldName, $this->worldSettings, $position->add(- $this->worldSettings->getRoadSize(), 0, - $this->worldSettings->getRoadSize()));
+        $northeasternBasePlot = parent::fromVector3($this->worldName, $this->worldSettings, $position->add($this->worldSettings->getRoadSize(), 0, - $this->worldSettings->getRoadSize()));
+        $southwesternBasePlot = parent::fromVector3($this->worldName, $this->worldSettings, $position->add(- $this->worldSettings->getRoadSize(), 0, $this->worldSettings->getRoadSize()));
+        $southeasternBasePlot = parent::fromVector3($this->worldName, $this->worldSettings, $position->add($this->worldSettings->getRoadSize(), 0, $this->worldSettings->getRoadSize()));
+        if ($northwesternBasePlot instanceof BasePlot && $northeasternBasePlot instanceof BasePlot && $southwesternBasePlot instanceof BasePlot && $southeasternBasePlot instanceof BasePlot) {
+            return $this->isMerged($northwesternBasePlot) && $this->isMerged($northeasternBasePlot) && $this->isMerged($southwesternBasePlot) && $this->isMerged($southeasternBasePlot);
+        }
+
+        return false;
     }
 
     public function toBasePlot() : BasePlot {
-        return new BasePlot($this->worldName, $this->x, $this->z);
+        return new BasePlot($this->worldName, $this->worldSettings, $this->x, $this->z);
     }
 
     /**
