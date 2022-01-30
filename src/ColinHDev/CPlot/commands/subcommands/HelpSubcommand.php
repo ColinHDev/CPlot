@@ -20,7 +20,8 @@ class HelpSubcommand extends Subcommand {
     }
 
     public function execute(CommandSender $sender, array $args) : \Generator {
-        yield from [];
+        /** @phpstan-ignore-next-line */
+        0 && yield;
         if (count($args) === 0) {
             $page = 1;
         } else if (is_numeric($args[0])) {
