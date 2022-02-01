@@ -13,6 +13,7 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlot\utils\ParseUtils;
+use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use dktapps\pmforms\FormIcon;
 use dktapps\pmforms\MenuForm;
@@ -37,6 +38,9 @@ class BorderSubcommand extends Subcommand {
     /** @var array<int, string> */
     private array $permissions = [];
 
+    /**
+     * @phpstan-param array{name: string, alias: array<string>, description: string, usage: string, permissionMessage: string} $commandData
+     */
     public function __construct(array $commandData, string $permission) {
         parent::__construct($commandData, $permission);
 
@@ -84,13 +88,16 @@ class BorderSubcommand extends Subcommand {
         return null;
     }
 
+    /**
+     * @phpstan-return \Generator<int, mixed, WorldSettings|NonWorldSettings|Plot|null, void>
+     */
     public function onFormSubmit(Player $player, int $selectedOption) : \Generator {
         if (!$player->hasPermission($this->permissions[$selectedOption])) {
             $player->sendMessage($this->getPrefix() . $this->translateString("border.blockPermissionMessage"));
             return;
         }
 
-        $worldSettings = yield from DataProvider::getInstance()->awaitWorld($player->getWorld()->getFolderName());
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($player->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
             $player->sendMessage($this->getPrefix() . $this->translateString("border.noPlotWorld"));
             return;

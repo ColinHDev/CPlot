@@ -18,11 +18,11 @@ class PlayerData implements Cacheable {
     private string $playerName;
     private int $lastPlayed;
 
-    /** @var array<string, BaseAttribute> */
+    /** @phpstan-var array<string, BaseAttribute<mixed>> */
     private array $settings;
 
     /**
-     * @param array<string, BaseAttribute> $settings
+     * @phpstan-param array<string, BaseAttribute<mixed>> $settings
      */
     public function __construct(string $playerUUID, string $playerName, int $lastPlayed, array $settings) {
         $this->playerUUID = $playerUUID;
@@ -80,10 +80,16 @@ class PlayerData implements Cacheable {
         return $lastPlayed;
     }
 
+    /**
+     * @phpstan-return array<string, BaseAttribute<mixed>>
+     */
     public function getSettings() : array {
         return $this->settings;
     }
 
+    /**
+     * @phpstan-return BaseAttribute<mixed>|null
+     */
     public function getSettingByID(string $settingID) : ?BaseAttribute {
         if (!isset($this->settings[$settingID])) {
             return null;
@@ -91,6 +97,9 @@ class PlayerData implements Cacheable {
         return $this->settings[$settingID];
     }
 
+    /**
+     * @phpstan-return BaseAttribute<mixed>|null
+     */
     public function getSettingNonNullByID(string $settingID) : ?BaseAttribute {
         $setting = $this->getSettingByID($settingID);
         if ($setting === null) {
@@ -99,6 +108,9 @@ class PlayerData implements Cacheable {
         return $setting;
     }
 
+    /**
+     * @phpstan-param BaseAttribute<mixed> $setting
+     */
     public function addSetting(BaseAttribute $setting) : void {
         $this->settings[$setting->getID()] = $setting;
     }

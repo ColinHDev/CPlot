@@ -8,6 +8,7 @@ use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\provider\cache\Cacheable;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
@@ -133,8 +134,11 @@ class BasePlot implements Cacheable {
         return DataProvider::getInstance()->loadMergeOriginIntoCache($this);
     }
 
+    /**
+     * @phpstan-return \Generator<int, mixed, Plot|null, Plot|null>
+     */
     public function toAsyncPlot() : \Generator {
-        return yield DataProvider::getInstance()->awaitMergeOrigin($this);
+        return yield from DataProvider::getInstance()->awaitMergeOrigin($this);
     }
 
     public function getVector3() : Vector3 {
@@ -162,6 +166,9 @@ class BasePlot implements Cacheable {
         return self::fromVector3($worldName, $worldSettings, $position->asVector3());
     }
 
+    /**
+     * @phpstan-return \Generator<int, mixed, WorldSettings|NonWorldSettings|Plot|null, BasePlot|null>
+     */
     public static function awaitFromPosition(Position $position) : \Generator {
         $worldName = $position->getWorld()->getFolderName();
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($worldName);
@@ -198,6 +205,9 @@ class BasePlot implements Cacheable {
         return new self($worldName, $worldSettings, $X, $Z);
     }
 
+    /**
+     * @phpstan-return array{worldName: string, worldSettings: string, x: int, z: int}
+     */
     public function __serialize() : array {
         return [
             "worldName" => $this->worldName,
@@ -207,6 +217,9 @@ class BasePlot implements Cacheable {
         ];
     }
 
+    /**
+     * @phpstan-param array{worldName: string, worldSettings: string, x: int, z: int, originX?: int, originZ?: int, biomeID?: int, alias?: string, mergePlots?: string, plotPlayers?: string, flags?: string, plotRates?: string} $data
+     */
     public function __unserialize(array $data) : void {
         $this->worldName = $data["worldName"];
         $this->worldSettings = unserialize($data["worldSettings"], ["allowed_classes" => [WorldSettings::class]]);

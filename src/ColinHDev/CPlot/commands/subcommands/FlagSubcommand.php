@@ -132,7 +132,7 @@ class FlagSubcommand extends Subcommand {
                     }
                 }
 
-                /** @var BaseAttribute | null $flag */
+                /** @var BaseAttribute<mixed> | null $flag */
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
                 if ($flag === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noFlag", [$args[1]]));
@@ -198,7 +198,7 @@ class FlagSubcommand extends Subcommand {
                     if (!($playerData instanceof PlayerData)) {
                         continue;
                     }
-                    /** @var ArrayAttribute $setting */
+                    /** @var ArrayAttribute<array<mixed, mixed>> $setting */
                     $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_CHANGE_FLAG . $newFlag->getID());
                     foreach ($setting->getValue() as $value) {
                         if ($value === $newFlag->getValue()) {
@@ -209,7 +209,7 @@ class FlagSubcommand extends Subcommand {
                         }
                     }
 
-                    /** @var ArrayAttribute $setting */
+                    /** @var ArrayAttribute<array<mixed, mixed>> $setting */
                     $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_TELEPORT_CHANGE_FLAG . $newFlag->getID());
                     foreach ($setting->getValue() as $value) {
                         if ($value === $newFlag->getValue()) {
@@ -254,7 +254,7 @@ class FlagSubcommand extends Subcommand {
                     }
                 }
 
-                /** @var BaseAttribute | null $flag */
+                /** @var BaseAttribute<mixed> | null $flag */
                 $flag = $plot->getFlagByID($args[1]);
                 if ($flag === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flagNotSet", [$args[1]]));

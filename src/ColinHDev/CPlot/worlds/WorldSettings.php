@@ -102,6 +102,9 @@ class WorldSettings implements Cacheable {
         return $this->plotBottomBlock;
     }
 
+    /**
+     * @phpstan-return array{worldType: string, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, borderBlockOnClaim: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string}
+     */
     public function toArray() : array {
         return [
             "worldType" => $this->worldType,
@@ -128,6 +131,9 @@ class WorldSettings implements Cacheable {
         return self::fromArray($settings);
     }
 
+    /**
+     * @phpstan-param array{worldType: string, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, borderBlockOnClaim: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string} $settings
+     */
     public static function fromArray(array $settings) : self {
         $worldType = ParseUtils::parseStringFromArray($settings, "worldType", self::TYPE_CPLOT_DEFAULT);
 

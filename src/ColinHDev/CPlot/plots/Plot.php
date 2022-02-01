@@ -8,6 +8,7 @@ use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
@@ -24,7 +25,7 @@ class Plot extends BasePlot {
     private array $mergePlots;
     /** @var array<string, PlotPlayer> */
     private array $plotPlayers;
-    /** @var array<string, BaseAttribute> */
+    /** @var array<string, BaseAttribute<mixed>> */
     private array $flags;
     /** @var array<string, PlotRate> */
     private array $plotRates;
@@ -32,7 +33,7 @@ class Plot extends BasePlot {
     /**
      * @param array<string, MergePlot> $mergePlots
      * @param array<string, PlotPlayer> $plotPlayers
-     * @param array<string, BaseAttribute> $flags
+     * @param array<string, BaseAttribute<mixed>> $flags
      * @param array<string, PlotRate> $plotRates
      */
     public function __construct(string $worldName, WorldSettings $worldSettings, int $x, int $z, int $biomeID = BiomeIds::PLAINS, ?string $alias = null, array $mergePlots = [], array $plotPlayers = [], array $flags = [], array $plotRates = []) {
@@ -71,6 +72,9 @@ class Plot extends BasePlot {
         $this->mergePlots[$mergedPlot->toString()] = $mergedPlot;
     }
 
+    /**
+     * @phpstan-return \Generator<int, mixed, void, void>
+     */
     public function merge(self $plot) : \Generator {
         foreach (array_merge([$plot], $plot->getMergePlots()) as $mergePlot) {
             $mergePlot = MergePlot::fromBasePlot($mergePlot->toBasePlot(), $this->x, $this->z);
@@ -243,12 +247,15 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @return array<string, BaseAttribute>
+     * @phpstan-return array<string, BaseAttribute<mixed>>
      */
     public function getFlags() : array {
         return $this->flags;
     }
 
+    /**
+     * @phpstan-return BaseAttribute<mixed>|null
+     */
     public function getFlagByID(string $flagID) : ?BaseAttribute {
         if (!isset($this->flags[$flagID])) {
             return null;
@@ -256,6 +263,9 @@ class Plot extends BasePlot {
         return $this->flags[$flagID];
     }
 
+    /**
+     * @phpstan-return BaseAttribute<mixed>|null
+     */
     public function getFlagNonNullByID(string $flagID) : ?BaseAttribute {
         $flag = $this->getFlagByID($flagID);
         if ($flag === null) {
@@ -264,6 +274,9 @@ class Plot extends BasePlot {
         return $flag;
     }
 
+    /**
+     * @phpstan-param BaseAttribute<mixed> $flag
+     */
     public function addFlag(BaseAttribute $flag) : void {
         $this->flags[$flag->getID()] = $flag;
     }
@@ -463,6 +476,9 @@ class Plot extends BasePlot {
         return null;
     }
 
+    /**
+     * @phpstan-return \Generator<int, mixed, WorldSettings|NonWorldSettings|Plot|null, Plot|null>
+     */
     public static function awaitFromPosition(Position $position, bool $checkMerge = true) : \Generator {
         $worldName = $position->getWorld()->getFolderName();
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($position->getWorld()->getFolderName());
@@ -530,6 +546,9 @@ class Plot extends BasePlot {
         return null;
     }
 
+    /**
+     * @phpstan-return array{worldName: string, worldSettings: string, x: int, z: int, biomeID: int, alias: string, mergePlots: string, plotPlayers: string, flags: string, plotRates: string}
+     */
     public function __serialize() : array {
         $data = parent::__serialize();
         $data["biomeID"] = $this->biomeID;
@@ -541,6 +560,9 @@ class Plot extends BasePlot {
         return $data;
     }
 
+    /**
+     * @phpstan-param array{worldName: string, worldSettings: string, x: int, z: int, biomeID: int, alias: string, mergePlots: string, plotPlayers: string, flags: string, plotRates: string} $data
+     */
     public function __unserialize(array $data) : void {
         parent::__unserialize($data);
         $this->biomeID = $data["biomeID"];

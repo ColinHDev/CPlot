@@ -30,6 +30,9 @@ class MergePlot extends BasePlot {
         return new BasePlot($this->worldName, $this->worldSettings, $this->x, $this->z);
     }
 
+    /**
+     * @phpstan-return \Generator<int, mixed, Plot|null, Plot|null>
+     */
     public function toPlot() : \Generator {
         return yield DataProvider::getInstance()->awaitPlot($this->worldName, $this->originX, $this->originZ);
     }
@@ -41,6 +44,9 @@ class MergePlot extends BasePlot {
         );
     }
 
+    /**
+     * @phpstan-return array{worldName: string, worldSettings: string, x: int, z: int, originX: int, originZ: int}
+     */
     public function __serialize() : array {
         $data = parent::__serialize();
         $data["originX"] = $this->originX;
@@ -48,6 +54,9 @@ class MergePlot extends BasePlot {
         return $data;
     }
 
+    /**
+     * @phpstan-param array{worldName: string, worldSettings: string, x: int, z: int, originX: int, originZ: int} $data
+     */
     public function __unserialize(array $data) : void {
         parent::__unserialize($data);
         $this->originX = $data["originX"];

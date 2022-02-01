@@ -38,7 +38,7 @@ use SOFe\AwaitGenerator\Await;
 
 class PlotCommand extends Command implements PluginOwned {
 
-    /** @var Subcommand[] */
+    /** @var array<string, Subcommand<mixed>> */
     private array $subcommands = [];
 
     /** @var array<string, string> */
@@ -84,12 +84,15 @@ class PlotCommand extends Command implements PluginOwned {
     }
 
     /**
-     * @return Subcommand[]
+     * @phpstan-return array<string, Subcommand<mixed>>
      */
     public function getSubcommands() : array {
         return $this->subcommands;
     }
 
+    /**
+     * @phpstan-param Subcommand<mixed> $subcommand
+     */
     public function registerSubcommand(Subcommand $subcommand) : void {
         $this->subcommands[$subcommand->getName()] = $subcommand;
         foreach ($subcommand->getAlias() as $alias) {

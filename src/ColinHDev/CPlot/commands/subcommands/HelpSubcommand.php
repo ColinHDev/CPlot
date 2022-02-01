@@ -16,6 +16,9 @@ class HelpSubcommand extends Subcommand {
 
     private PlotCommand $command;
 
+    /**
+     * @phpstan-param array{name: string, alias: array<string>, description: string, usage: string, permissionMessage: string} $commandData
+     */
     public function __construct(array $commandData, string $permission, PlotCommand $command) {
         parent::__construct($commandData, $permission);
         $this->command = $command;
@@ -48,7 +51,7 @@ class HelpSubcommand extends Subcommand {
         }
 
         ksort($subcommands, SORT_NATURAL | SORT_FLAG_CASE);
-        /** @var Subcommand[][] $subcommands */
+        /** @var array<int, array<string, Subcommand<mixed>>> $subcommands */
         $subcommands = array_chunk($subcommands, $sender->getScreenLineHeight());
         /** @var int $page */
         $page = min(count($subcommands), $page);

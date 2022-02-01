@@ -106,7 +106,7 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
 
-                /** @var BaseAttribute | null $setting */
+                /** @var BaseAttribute<mixed> | null $setting */
                 $setting = SettingManager::getInstance()->getSettingByID($args[1]);
                 if ($setting === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.noSetting", [$args[1]]));
@@ -154,7 +154,7 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
 
-                /** @var BaseAttribute | null $setting */
+                /** @var BaseAttribute<mixed> | null $setting */
                 $setting = $playerData->getSettingByID($args[1]);
                 if ($setting === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.remove.settingNotSet", [$args[1]]));

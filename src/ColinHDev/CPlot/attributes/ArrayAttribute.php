@@ -14,6 +14,7 @@ class ArrayAttribute extends BaseAttribute {
 
     /**
      * @phpstan-param AttributeValue $value
+     * @phpstan-return ArrayAttribute<AttributeValue>
      */
     public function merge(mixed $value) : ArrayAttribute {
         $values = $this->value;

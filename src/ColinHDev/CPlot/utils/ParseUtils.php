@@ -12,6 +12,9 @@ use pocketmine\item\StringToItemParser;
 
 class ParseUtils {
 
+    /**
+     * @phpstan-param array<string|int, string|int> $array
+     */
     public static function parseIntegerFromArray(array $array, string | int $key, ?int $default = null) : ?int {
         if (isset($array[$key]) && is_numeric($array[$key])) {
             return (int) $array[$key];
@@ -19,6 +22,9 @@ class ParseUtils {
         return $default;
     }
 
+    /**
+     * @phpstan-param array<string|int, string|int> $array
+     */
     public static function parseStringFromArray(array $array, string | int $key, ?string $default = null) : ?string {
         if (isset($array[$key])) {
             return (string) $array[$key];
@@ -30,6 +36,9 @@ class ParseUtils {
         return (LegacyBlockIdToStringIdMap::getInstance()->legacyToString($block->getId()) ?? "minecraft:info_update") . ";" . $block->getId() . ";" . $block->getMeta();
     }
 
+    /**
+     * @phpstan-param array<string|int, string|int> $array
+     */
     public static function parseBlockFromArray(array $array, string | int $key, ?Block $default = null) : ?Block {
         if (isset($array[$key]) && is_string($array[$key])) {
             $block = self::parseBlockFromString($array[$key], $default);

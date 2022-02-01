@@ -43,6 +43,9 @@ class ResourceManager {
         return $this->language->translateString($str, $params);
     }
 
+    /**
+     * @phpstan-return array{name: string, alias: array<string>, description: string, usage: string, permissionMessage: string}
+     */
     public function getCommandData(string $commandName) : array {
         return [
             "name" => $this->language->get($commandName . ".name"),

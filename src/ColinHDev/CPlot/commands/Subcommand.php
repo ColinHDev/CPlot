@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\commands;
 
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\CommandSender;
+use pocketmine\lang\Translatable;
 use poggit\libasynql\SqlError;
 
 /**
@@ -21,6 +22,9 @@ abstract class Subcommand {
     private string $permission;
     private string $permissionMessage;
 
+    /**
+     * @phpstan-param array{name: string, alias: array<string>, description: string, usage: string, permissionMessage: string} $commandData
+     */
     public function __construct(array $commandData, string $permission) {
         $this->name = $commandData["name"];
         $this->alias = $commandData["alias"];
@@ -61,6 +65,9 @@ abstract class Subcommand {
         return ResourceManager::getInstance()->getPrefix();
     }
 
+    /**
+     * @phpstan-param (float|int|string|Translatable)[] $params
+     */
     protected function translateString(string $str, array $params = []) : string {
         return ResourceManager::getInstance()->translateString($str, $params);
     }

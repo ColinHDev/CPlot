@@ -21,7 +21,7 @@ final class EconomyManager {
     private array $prices = [];
 
     public function __construct() {
-        /** @var array $settings */
+        /** @var array{provider?: string, claimPrice?: float|string, clearPrice?: float|string, mergePrice?: float|string, resetPrice?: float|string} $settings */
         $settings = ResourceManager::getInstance()->getConfig()->get("economy", []);
         $this->provider = match (strtolower($settings["provider"])) {
             default => null

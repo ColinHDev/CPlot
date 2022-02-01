@@ -69,7 +69,7 @@ abstract class BaseAttribute {
 
     /**
      * @param AttributeValue $value
-     * @return BaseAttribute
+     * @return BaseAttribute<AttributeValue>
      */
     abstract public function merge(mixed $value) : BaseAttribute;
 
@@ -84,6 +84,9 @@ abstract class BaseAttribute {
      */
     abstract public function parse(string $value) : mixed;
 
+    /**
+     * @phpstan-return array{ID: string, permission: string, default: string, value: string}
+     */
     public function __serialize() : array {
         return [
             "ID" => $this->ID,
@@ -94,6 +97,7 @@ abstract class BaseAttribute {
     }
 
     /**
+     * @phpstan-param array{ID: string, permission: string, default: string, value: string} $data
      * @throws AttributeParseException
      */
     public function __unserialize(array $data) : void {

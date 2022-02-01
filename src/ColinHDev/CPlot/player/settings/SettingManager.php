@@ -72,6 +72,9 @@ class SettingManager {
         return $this->settings;
     }
 
+    /**
+     * @phpstan-return BaseAttribute<mixed>
+     */
     public function getSettingByID(string $ID) : ?BaseAttribute {
         if (!isset($this->settings[$ID])) {
             return null;

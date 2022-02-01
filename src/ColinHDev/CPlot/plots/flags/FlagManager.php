@@ -65,6 +65,9 @@ class FlagManager {
         return $this->flags;
     }
 
+    /**
+     * @phpstan-return BaseAttribute<mixed>
+     */
     public function getFlagByID(string $ID) : ?BaseAttribute {
         if (!isset($this->flags[$ID])) {
             return null;
