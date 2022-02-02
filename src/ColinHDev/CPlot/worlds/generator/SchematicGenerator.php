@@ -59,21 +59,6 @@ class SchematicGenerator extends Generator {
         $this->plotFillBlockFullID = $plotFillBlock->getFullId();
         $plotBottomBlock = ParseUtils::parseBlockFromArray($generatorOptions, "plotBottomBlock") ?? VanillaBlocks::BEDROCK();
         $this->plotBottomBlockFullID = $plotBottomBlock->getFullId();
-
-        $this->preset = (string) json_encode([
-            "schematicName" => $this->schematicName,
-            "schematicType" => $this->schematicType,
-
-            "roadSize" => $this->roadSize,
-            "plotSize" => $this->plotSize,
-            "groundSize" => $this->groundSize,
-
-            "roadBlock" => ParseUtils::parseStringFromBlock($roadBlock),
-            "borderBlock" => ParseUtils::parseStringFromBlock($borderBlock),
-            "plotFloorBlock" => ParseUtils::parseStringFromBlock($plotFloorBlock),
-            "plotFillBlock" => ParseUtils::parseStringFromBlock($plotFillBlock),
-            "plotBottomBlock" => ParseUtils::parseStringFromBlock($plotBottomBlock)
-        ]);
     }
 
     public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
