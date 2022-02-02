@@ -10,10 +10,13 @@ While it was always the goal to provide with CPlot an alternative with a whole l
 
 ## TODO
 
-- [] Schematics <br/>
-  While Schematics are a great addition to CPlot and an advantage over other plot plugins, they are far from finished. The way they are stored is very limited. Although I like the idea of having a single file, which can be easily shared across folders and other servers, it currently is not be an optimised way of storing. <br/>
-  At the moment, each coordinate hash holds the numerical ID, meta value and string representation of the block, while air blocks are excluded. Although this is not bad, it is not good either. Eventually, when PM5 is released and schematics would need to be adopted to support NBT block states and the blocks from Minecraft: Bedrock Edition version 1.13+, the file size could drastically increase when storing every block state for each coordinate. <br/>
-  We could do it the same way PM5 will probably do it, by just storing a list of all used block states and giving those IDs, while the coordinate hashes would only store the ID of their block state. We might be able to use PMMP's [PalettedBlockArrays](https://github.com/pmmp/ext-chunkutils2) for that. But there weren't any tests done regarding that solution, so this is purely speculating and could be complete rubbish.
+### - [ ] Schematics
+While Schematics are a great addition to CPlot and an advantage over other plot plugins, they are far from finished. The way they are stored is very limited. Although I like the idea of having a single file, which can be easily shared across folders and other servers, it currently is not be an optimised way of storing.
+
+At the moment, each coordinate hash holds the numerical ID, meta value and string representation of the block, while air blocks are excluded. Although this is not bad, it is not good either. Eventually, when PM5 is released and schematics would need to be adopted to support NBT block states and the blocks from Minecraft: Bedrock Edition version 1.13+, the file size could drastically increase when storing every block state for each coordinate.
+
+We could do it the same way PM5 will probably do it, by just storing a list of all used block states and giving those IDs, while the coordinate hashes would only store the ID of their block state. We might be able to use PMMP's [PalettedBlockArrays](https://github.com/pmmp/ext-chunkutils2) for that. But there weren't any tests done regarding that solution, so this is purely speculating and could be complete rubbish.
+
 - improve async/sync mess in plot classes
 - chunk locking
 - make entities that are allowed to cross plot borders modifiable OR remake that complete Task
