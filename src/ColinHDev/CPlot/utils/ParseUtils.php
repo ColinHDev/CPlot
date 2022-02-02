@@ -32,7 +32,7 @@ class ParseUtils {
         return null;
     }
 
-    public static function parseStringFromBlock(Block $block) : ?string {
+    public static function parseStringFromBlock(Block $block) : string {
         return (LegacyBlockIdToStringIdMap::getInstance()->legacyToString($block->getId()) ?? "minecraft:info_update") . ";" . $block->getId() . ";" . $block->getMeta();
     }
 
