@@ -135,22 +135,22 @@ class WorldSettings implements Cacheable {
      * @phpstan-param array{worldType: string, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, borderBlockOnClaim: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string} $settings
      */
     public static function fromArray(array $settings) : self {
-        $worldType = ParseUtils::parseStringFromArray($settings, "worldType", self::TYPE_CPLOT_DEFAULT);
+        $worldType = ParseUtils::parseStringFromArray($settings, "worldType") ?? self::TYPE_CPLOT_DEFAULT;
 
-        $roadSchematic = ParseUtils::parseStringFromArray($settings, "roadSchematic", "default");
-        $mergeRoadSchematic = ParseUtils::parseStringFromArray($settings, "mergeRoadSchematic", "default");
-        $plotSchematic = ParseUtils::parseStringFromArray($settings, "plotSchematic", "default");
+        $roadSchematic = ParseUtils::parseStringFromArray($settings, "roadSchematic") ?? "default";
+        $mergeRoadSchematic = ParseUtils::parseStringFromArray($settings, "mergeRoadSchematic") ?? "default";
+        $plotSchematic = ParseUtils::parseStringFromArray($settings, "plotSchematic") ?? "default";
 
-        $roadSize = ParseUtils::parseIntegerFromArray($settings, "roadSize", 7);
-        $plotSize = ParseUtils::parseIntegerFromArray($settings, "plotSize", 32);
-        $groundSize = ParseUtils::parseIntegerFromArray($settings, "groundSize", 64);
+        $roadSize = ParseUtils::parseIntegerFromArray($settings, "roadSize") ?? 7;
+        $plotSize = ParseUtils::parseIntegerFromArray($settings, "plotSize") ?? 32;
+        $groundSize = ParseUtils::parseIntegerFromArray($settings, "groundSize") ?? 64;
 
-        $roadBlock = ParseUtils::parseBlockFromArray($settings, "roadBlock", VanillaBlocks::OAK_PLANKS());
-        $borderBlock = ParseUtils::parseBlockFromArray($settings, "borderBlock", VanillaBlocks::STONE_SLAB());
-        $borderBlockOnClaim = ParseUtils::parseBlockFromArray($settings, "borderBlockOnClaim", VanillaBlocks::COBBLESTONE_SLAB());
-        $plotFloorBlock = ParseUtils::parseBlockFromArray($settings, "plotFloorBlock", VanillaBlocks::GRASS());
-        $plotFillBlock = ParseUtils::parseBlockFromArray($settings, "plotFillBlock", VanillaBlocks::DIRT());
-        $plotBottomBlock = ParseUtils::parseBlockFromArray($settings, "plotBottomBlock", VanillaBlocks::BEDROCK());
+        $roadBlock = ParseUtils::parseBlockFromArray($settings, "roadBlock") ?? VanillaBlocks::OAK_PLANKS();
+        $borderBlock = ParseUtils::parseBlockFromArray($settings, "borderBlock") ?? VanillaBlocks::STONE_SLAB();
+        $borderBlockOnClaim = ParseUtils::parseBlockFromArray($settings, "borderBlockOnClaim") ?? VanillaBlocks::COBBLESTONE_SLAB();
+        $plotFloorBlock = ParseUtils::parseBlockFromArray($settings, "plotFloorBlock") ?? VanillaBlocks::GRASS();
+        $plotFillBlock = ParseUtils::parseBlockFromArray($settings, "plotFillBlock") ?? VanillaBlocks::DIRT();
+        $plotBottomBlock = ParseUtils::parseBlockFromArray($settings, "plotBottomBlock") ?? VanillaBlocks::BEDROCK();
 
         return new self(
             $worldType,

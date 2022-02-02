@@ -15,21 +15,21 @@ class ParseUtils {
     /**
      * @phpstan-param array<string|int, string|int> $array
      */
-    public static function parseIntegerFromArray(array $array, string | int $key, ?int $default = null) : ?int {
+    public static function parseIntegerFromArray(array $array, string | int $key) : ?int {
         if (isset($array[$key]) && is_numeric($array[$key])) {
             return (int) $array[$key];
         }
-        return $default;
+        return null;
     }
 
     /**
      * @phpstan-param array<string|int, string|int> $array
      */
-    public static function parseStringFromArray(array $array, string | int $key, ?string $default = null) : ?string {
+    public static function parseStringFromArray(array $array, string | int $key) : ?string {
         if (isset($array[$key])) {
             return (string) $array[$key];
         }
-        return $default;
+        return null;
     }
 
     public static function parseStringFromBlock(Block $block) : ?string {
@@ -39,17 +39,16 @@ class ParseUtils {
     /**
      * @phpstan-param array<string|int, string|int> $array
      */
-    public static function parseBlockFromArray(array $array, string | int $key, ?Block $default = null) : ?Block {
+    public static function parseBlockFromArray(array $array, string | int $key) : ?Block {
         if (isset($array[$key]) && is_string($array[$key])) {
-            $block = self::parseBlockFromString($array[$key], $default);
-        } else {
-            $block = $default;
+            return self::parseBlockFromString($array[$key]);
         }
-        return $block;
+        return null;
     }
 
-    public static function parseBlockFromString(string $blockIdentifier, ?Block $default = null) : ?Block {
+    public static function parseBlockFromString(string $blockIdentifier) : ?Block {
         $item = StringToItemParser::getInstance()->parse($blockIdentifier);
+        $block = null;
         if ($item !== null) {
             $block = $item->getBlock();
         } else {
@@ -60,13 +59,9 @@ class ParseUtils {
                 if ($blockID !== null && $blockMeta !== null) {
                     $block = BlockFactory::getInstance()->get($blockID, $blockMeta);
                     if ($block instanceof UnknownBlock) {
-                        $block = $default;
+                        $block = null;
                     }
-                } else {
-                    $block = $default;
                 }
-            } else {
-                $block = $default;
             }
         }
         return $block;
