@@ -40,7 +40,10 @@ class BlockListAttribute extends ArrayAttribute {
         $blocks = [];
         try {
             foreach (json_decode($value, true, 512, JSON_THROW_ON_ERROR) as $val) {
-                $blocks[] = ParseUtils::parseBlockFromString($val);
+                $val = ParseUtils::parseBlockFromString($val);
+                if ($val instanceof Block) {
+                    $blocks[] = $val;
+                }
             }
         } catch (\JsonException) {
             throw new AttributeParseException($this, $value);

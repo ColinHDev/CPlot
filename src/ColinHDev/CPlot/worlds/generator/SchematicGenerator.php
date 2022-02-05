@@ -11,6 +11,7 @@ use ColinHDev\CPlot\worlds\schematic\SchematicTypes;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\world\ChunkManager;
+use pocketmine\world\format\Chunk;
 use pocketmine\world\generator\Generator;
 
 class SchematicGenerator extends Generator {
@@ -71,6 +72,9 @@ class SchematicGenerator extends Generator {
         }
 
         $chunk = $world->getChunk($chunkX, $chunkZ);
+        if (!($chunk instanceof Chunk)) {
+            return;
+        }
 
         if ($this->schematicName === "default") {
             if ($this->schematicType === SchematicTypes::TYPE_ROAD) {

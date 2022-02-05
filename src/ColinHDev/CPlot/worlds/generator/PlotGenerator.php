@@ -10,6 +10,7 @@ use ColinHDev\CPlot\worlds\schematic\Schematic;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\world\ChunkManager;
+use pocketmine\world\format\Chunk;
 use pocketmine\world\generator\Generator;
 
 class PlotGenerator extends Generator {
@@ -77,6 +78,10 @@ class PlotGenerator extends Generator {
         }
 
         $chunk = $world->getChunk($chunkX, $chunkZ);
+        if (!($chunk instanceof Chunk)) {
+            return;
+        }
+
         for ($X = 0; $X < 16; $X++) {
             $x = CoordinateUtils::getRasterCoordinate($chunkX * 16 + $X, $this->roadSize + $this->plotSize);
             $xPlot = $x - $this->roadSize;

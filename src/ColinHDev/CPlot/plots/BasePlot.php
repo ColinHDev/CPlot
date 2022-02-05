@@ -103,7 +103,7 @@ class BasePlot implements Cacheable {
     }
 
     public function isOnPlot(Position $position) : bool {
-        if ($position->world->getFolderName() !== $this->worldName) {
+        if ($position->world?->getFolderName() !== $this->worldName) {
             return false;
         }
         $totalSize = $this->worldSettings->getRoadSize() + $this->worldSettings->getPlotSize();

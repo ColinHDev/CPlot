@@ -10,9 +10,10 @@ use ColinHDev\CPlot\tasks\utils\PlotBorderAreaCalculationTrait;
 use ColinHDev\CPlot\worlds\schematic\Schematic;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;
+use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\format\SubChunk;
 use pocketmine\world\utils\SubChunkExplorer;
-use pocketmine\world\utils\SubChunkExplorerStatus;
 use pocketmine\world\World;
 
 class PlotBorderChangeAsyncTask extends ChunkModifyingAsyncTask {
@@ -56,15 +57,14 @@ class PlotBorderChangeAsyncTask extends ChunkModifyingAsyncTask {
                     World::getXZ($blockHash, $xInChunk, $zInChunk);
                     $x = CoordinateUtils::getCoordinateFromChunk($chunkX, $xInChunk);
                     $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
-                    switch ($explorer->moveTo($x, $y, $z)) {
-                        case SubChunkExplorerStatus::OK:
-                        case SubChunkExplorerStatus::MOVED:
-                            $explorer->currentSubChunk->setFullBlock(
-                                $xInChunk,
-                                $yInChunk,
-                                $zInChunk,
-                                $this->blockFullID
-                            );
+                    $explorer->moveTo($x, $y, $z);
+                    if ($explorer->currentSubChunk instanceof SubChunk) {
+                        $explorer->currentSubChunk->setFullBlock(
+                            $xInChunk,
+                            $yInChunk,
+                            $zInChunk,
+                            $this->blockFullID
+                        );
                     }
                 }
             }
@@ -77,32 +77,32 @@ class PlotBorderChangeAsyncTask extends ChunkModifyingAsyncTask {
                     if ($schematicRoad !== null) {
                         $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
                         $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
-                        switch ($explorer->moveTo($x, $y, $z)) {
-                            case SubChunkExplorerStatus::OK:
-                            case SubChunkExplorerStatus::MOVED:
-                                $explorer->currentSubChunk->setFullBlock(
-                                    $xInChunk,
-                                    $yInChunk,
-                                    $zInChunk,
-                                    $schematicRoad->getFullBlock($xRaster, $y, $zRaster)
-                                );
+                        $explorer->moveTo($x, $y, $z);
+                        if ($explorer->currentSubChunk instanceof SubChunk) {
+                            $explorer->currentSubChunk->setFullBlock(
+                                $xInChunk,
+                                $yInChunk,
+                                $zInChunk,
+                                $schematicRoad->getFullBlock($xRaster, $y, $zRaster)
+                            );
                         }
                     } else {
-                        switch ($explorer->moveTo($x, $y, $z)) {
-                            case SubChunkExplorerStatus::OK:
-                            case SubChunkExplorerStatus::MOVED:
-                                $explorer->currentSubChunk->setFullBlock(
-                                    $xInChunk,
-                                    $yInChunk,
-                                    $zInChunk,
-                                    0
-                                );
+                        $explorer->moveTo($x, $y, $z);
+                        if ($explorer->currentSubChunk instanceof SubChunk) {
+                            $explorer->currentSubChunk->setFullBlock(
+                                $xInChunk,
+                                $yInChunk,
+                                $zInChunk,
+                                0
+                            );
                         }
                     }
                 }
             }
 
-            $finishedChunks[$chunkHash] = FastChunkSerializer::serializeTerrain($world->getChunk($chunkX, $chunkZ));
+            $chunk = $world->getChunk($chunkX, $chunkZ);
+            assert($chunk instanceof Chunk);
+            $finishedChunks[$chunkHash] = FastChunkSerializer::serializeTerrain($chunk);
         }
 
         $this->chunks = serialize($finishedChunks);

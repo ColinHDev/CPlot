@@ -12,9 +12,10 @@ use ColinHDev\CPlot\tasks\utils\PlotBorderAreaCalculationTrait;
 use ColinHDev\CPlot\tasks\utils\RoadAreaCalculationTrait;
 use ColinHDev\CPlot\worlds\schematic\Schematic;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\format\SubChunk;
 use pocketmine\world\utils\SubChunkExplorer;
-use pocketmine\world\utils\SubChunkExplorerStatus;
 use pocketmine\world\World;
 
 class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
@@ -76,15 +77,14 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                         $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
                         $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            switch ($explorer->moveTo($x, $y, $z)) {
-                                case SubChunkExplorerStatus::OK:
-                                case SubChunkExplorerStatus::MOVED:
-                                    $explorer->currentSubChunk->setFullBlock(
-                                        $xInChunk,
-                                        $y & 0x0f,
-                                        $zInChunk,
-                                        $schematicMergeRoad->getFullBlock($xRaster, $y, $zRaster)
-                                    );
+                            $explorer->moveTo($x, $y, $z);
+                            if ($explorer->currentSubChunk instanceof SubChunk) {
+                                $explorer->currentSubChunk->setFullBlock(
+                                    $xInChunk,
+                                    $y & 0x0f,
+                                    $zInChunk,
+                                    $schematicMergeRoad->getFullBlock($xRaster, $y, $zRaster)
+                                );
                             }
                         }
                     } else {
@@ -98,15 +98,14 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                             } else {
                                 $fullBlock = 0;
                             }
-                            switch ($explorer->moveTo($x, $y, $z)) {
-                                case SubChunkExplorerStatus::OK:
-                                case SubChunkExplorerStatus::MOVED:
-                                    $explorer->currentSubChunk->setFullBlock(
-                                        $xInChunk,
-                                        $y & 0x0f,
-                                        $zInChunk,
-                                        $fullBlock
-                                    );
+                            $explorer->moveTo($x, $y, $z);
+                            if ($explorer->currentSubChunk instanceof SubChunk) {
+                                $explorer->currentSubChunk->setFullBlock(
+                                    $xInChunk,
+                                    $y & 0x0f,
+                                    $zInChunk,
+                                    $fullBlock
+                                );
                             }
                         }
                     }
@@ -132,15 +131,14 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                         } else {
                             $fullBlock = 0;
                         }
-                        switch ($explorer->moveTo($x, $y, $z)) {
-                            case SubChunkExplorerStatus::OK:
-                            case SubChunkExplorerStatus::MOVED:
-                                $explorer->currentSubChunk->setFullBlock(
-                                    $xInChunk,
-                                    $y & 0x0f,
-                                    $zInChunk,
-                                    $fullBlock
-                                );
+                        $explorer->moveTo($x, $y, $z);
+                        if ($explorer->currentSubChunk instanceof SubChunk) {
+                            $explorer->currentSubChunk->setFullBlock(
+                                $xInChunk,
+                                $y & 0x0f,
+                                $zInChunk,
+                                $fullBlock
+                            );
                         }
                     }
                 }
@@ -155,15 +153,14 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                         $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
                         $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            switch ($explorer->moveTo($x, $y, $z)) {
-                                case SubChunkExplorerStatus::OK:
-                                case SubChunkExplorerStatus::MOVED:
-                                    $explorer->currentSubChunk->setFullBlock(
-                                        $xInChunk,
-                                        $y & 0x0f,
-                                        $zInChunk,
-                                        $schematicRoad->getFullBlock($xRaster, $y, $zRaster)
-                                    );
+                            $explorer->moveTo($x, $y, $z);
+                            if ($explorer->currentSubChunk instanceof SubChunk) {
+                                $explorer->currentSubChunk->setFullBlock(
+                                    $xInChunk,
+                                    $y & 0x0f,
+                                    $zInChunk,
+                                    $schematicRoad->getFullBlock($xRaster, $y, $zRaster)
+                                );
                             }
                         }
                     } else {
@@ -175,22 +172,23 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                             } else {
                                 $fullBlock = 0;
                             }
-                            switch ($explorer->moveTo($x, $y, $z)) {
-                                case SubChunkExplorerStatus::OK:
-                                case SubChunkExplorerStatus::MOVED:
-                                    $explorer->currentSubChunk->setFullBlock(
-                                        $xInChunk,
-                                        $y & 0x0f,
-                                        $zInChunk,
-                                        $fullBlock
-                                    );
+                            $explorer->moveTo($x, $y, $z);
+                            if ($explorer->currentSubChunk instanceof SubChunk) {
+                                $explorer->currentSubChunk->setFullBlock(
+                                    $xInChunk,
+                                    $y & 0x0f,
+                                    $zInChunk,
+                                    $fullBlock
+                                );
                             }
                         }
                     }
                 }
             }
 
-            $finishedChunks[$chunkHash] = FastChunkSerializer::serializeTerrain($world->getChunk($chunkX, $chunkZ));
+            $chunk = $world->getChunk($chunkX, $chunkZ);
+            assert($chunk instanceof Chunk);
+            $finishedChunks[$chunkHash] = FastChunkSerializer::serializeTerrain($chunk);
         }
 
         $this->chunks = serialize($finishedChunks);

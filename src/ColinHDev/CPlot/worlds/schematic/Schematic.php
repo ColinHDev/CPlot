@@ -11,6 +11,7 @@ use pocketmine\nbt\BigEndianNbtSerializer;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\TreeRoot;
 use pocketmine\world\ChunkManager;
+use pocketmine\world\format\SubChunk;
 use pocketmine\world\utils\SubChunkExplorer;
 use pocketmine\world\utils\SubChunkExplorerStatus;
 use pocketmine\world\World;
@@ -123,24 +124,24 @@ class Schematic implements SchematicTypes {
                     $xInChunk = $x & 0x0f;
                     for ($z = 0; $z < $totalSize; $z++) {
                         $zInChunk = $z & 0x0f;
-                        if ($x >= $this->roadSize && $z >= $this->roadSize) continue 2;
+                        if ($x >= $this->roadSize && $z >= $this->roadSize) {
+                            continue 2;
+                        }
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            switch ($explorer->moveTo($x, $y, $z)) {
-                                case SubChunkExplorerStatus::OK:
-                                case SubChunkExplorerStatus::MOVED:
-                                    $blockFullID = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & 0x0f, $zInChunk);
-                                    $blockID = $blockFullID >> Block::INTERNAL_METADATA_BITS;
-                                    if ($blockID === BlockLegacyIds::AIR) {
-                                        break;
-                                    }
-                                    $blockMeta = $blockFullID & Block::INTERNAL_METADATA_MASK;
-
-                                    $coordinateHash = World::blockHash($x, $y, $z);
-
-                                    $this->blockStringIDs[$coordinateHash] = $idMap->legacyToString($blockID) ?? "minecraft:info_update";
-                                    $this->blockIDs[$coordinateHash] = $blockID;
-                                    $this->blockMetas[$coordinateHash] = $blockMeta;
+                            $explorer->moveTo($x, $y, $z);
+                            if ($explorer->currentSubChunk instanceof SubChunk) {
+                                $blockFullID = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & 0x0f, $zInChunk);
+                                $blockID = $blockFullID >> Block::INTERNAL_METADATA_BITS;
+                                if ($blockID === BlockLegacyIds::AIR) {
                                     break;
+                                }
+                                $blockMeta = $blockFullID & Block::INTERNAL_METADATA_MASK;
+
+                                $coordinateHash = World::blockHash($x, $y, $z);
+
+                                $this->blockStringIDs[$coordinateHash] = $idMap->legacyToString($blockID) ?? "minecraft:info_update";
+                                $this->blockIDs[$coordinateHash] = $blockID;
+                                $this->blockMetas[$coordinateHash] = $blockMeta;
                             }
                         }
                     }
@@ -153,22 +154,20 @@ class Schematic implements SchematicTypes {
                     for ($z = 0; $z < $this->plotSize; $z++) {
                         $zInChunk = $z & 0x0f;
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            switch ($explorer->moveTo($x, $y, $z)) {
-                                case SubChunkExplorerStatus::OK:
-                                case SubChunkExplorerStatus::MOVED:
-                                    $blockFullID = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & 0x0f, $zInChunk);
-                                    $blockID = $blockFullID >> Block::INTERNAL_METADATA_BITS;
-                                    if ($blockID === BlockLegacyIds::AIR) {
-                                        break;
-                                    }
-                                    $blockMeta = $blockFullID & Block::INTERNAL_METADATA_MASK;
-
-                                    $coordinateHash = World::blockHash($x, $y, $z);
-
-                                    $this->blockStringIDs[$coordinateHash] = $idMap->legacyToString($blockID) ?? "minecraft:info_update";
-                                    $this->blockIDs[$coordinateHash] = $blockID;
-                                    $this->blockMetas[$coordinateHash] = $blockMeta;
+                            $explorer->moveTo($x, $y, $z);
+                            if ($explorer->currentSubChunk instanceof SubChunk) {
+                                $blockFullID = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & 0x0f, $zInChunk);
+                                $blockID = $blockFullID >> Block::INTERNAL_METADATA_BITS;
+                                if ($blockID === BlockLegacyIds::AIR) {
                                     break;
+                                }
+                                $blockMeta = $blockFullID & Block::INTERNAL_METADATA_MASK;
+
+                                $coordinateHash = World::blockHash($x, $y, $z);
+
+                                $this->blockStringIDs[$coordinateHash] = $idMap->legacyToString($blockID) ?? "minecraft:info_update";
+                                $this->blockIDs[$coordinateHash] = $blockID;
+                                $this->blockMetas[$coordinateHash] = $blockMeta;
                             }
                         }
                     }

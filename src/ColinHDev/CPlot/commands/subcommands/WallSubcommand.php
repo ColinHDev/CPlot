@@ -47,6 +47,7 @@ class WallSubcommand extends Subcommand {
         $options = [];
         $permissionManager = PermissionManager::getInstance();
         $operatorRoot = $permissionManager->getPermission(DefaultPermissions::ROOT_OPERATOR);
+        assert($operatorRoot instanceof Permission);
 
         foreach (ResourceManager::getInstance()->getWallsConfig()->getAll() as $wallData) {
             $block = ParseUtils::parseBlockFromArray($wallData, "block");

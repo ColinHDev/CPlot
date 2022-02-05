@@ -47,6 +47,7 @@ class BorderSubcommand extends Subcommand {
         $options = [];
         $permissionManager = PermissionManager::getInstance();
         $operatorRoot = $permissionManager->getPermission(DefaultPermissions::ROOT_OPERATOR);
+        assert($operatorRoot instanceof Permission);
 
         foreach (ResourceManager::getInstance()->getBordersConfig()->getAll() as $borderData) {
             $block = ParseUtils::parseBlockFromArray($borderData, "block");

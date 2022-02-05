@@ -19,6 +19,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\math\Facing;
 use pocketmine\player\Player;
 use pocketmine\Server;
+use pocketmine\world\World;
 
 /**
  * @phpstan-extends Subcommand<null>
@@ -32,6 +33,7 @@ class MergeSubcommand extends Subcommand {
         }
 
         $location = $sender->getLocation();
+        assert($location->world instanceof World);
         $worldName = $location->world->getFolderName();
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($worldName);
         if (!($worldSettings instanceof WorldSettings)) {
