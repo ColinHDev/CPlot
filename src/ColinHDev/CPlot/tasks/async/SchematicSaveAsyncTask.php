@@ -35,7 +35,6 @@ class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
             }
         }
 
-        /** @phpstan-ignore-next-line */
         parent::__construct($world, $chunks);
     }
 
@@ -47,6 +46,7 @@ class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
         $blocksCount = $schematic->getBlockCount();
 
         $bytes = $fileSize = filesize($this->file);
+        assert($bytes !== false);
         $megabytes = floor($bytes / 1048576); // 1.048.576 = 1024 * 1024
         $bytes -= $megabytes * 1048576;
         $kilobytes = floor($bytes / 1024);

@@ -8,6 +8,9 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\SimpleChunkManager;
 use pocketmine\world\World;
 
+/**
+ * @phpstan-type ChunkHash int
+ */
 abstract class ChunkFetchingAsyncTask extends CPlotAsyncTask {
 
     private int $minY;
@@ -17,7 +20,7 @@ abstract class ChunkFetchingAsyncTask extends CPlotAsyncTask {
     protected string $chunkAreas;
 
     /**
-     * @phpstan-param array<int, array<string, int[]>> $chunkAreas
+     * @phpstan-param array<ChunkHash, mixed> $chunkAreas
      */
     public function __construct(World $world, array $chunkAreas) {
         parent::__construct();

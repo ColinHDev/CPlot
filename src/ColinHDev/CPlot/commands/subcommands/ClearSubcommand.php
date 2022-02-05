@@ -30,13 +30,13 @@ class ClearSubcommand extends Subcommand {
             return null;
         }
 
-        $worldSettings = yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlotWorld"));
             return null;
         }
 
-        $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+        $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlot"));
             return null;

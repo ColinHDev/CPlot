@@ -218,7 +218,7 @@ class BasePlot implements Cacheable {
     }
 
     /**
-     * @phpstan-param array{worldName: string, worldSettings: string, x: int, z: int, originX?: int, originZ?: int, biomeID?: int, alias?: string, mergePlots?: string, plotPlayers?: string, flags?: string, plotRates?: string} $data
+     * @phpstan-param array{worldName: string, worldSettings: string, x: int, z: int, originX?: int, originZ?: int, biomeID?: int, alias?: string|null, mergePlots?: string, plotPlayers?: string, flags?: string, plotRates?: string} $data
      */
     public function __unserialize(array $data) : void {
         $this->worldName = $data["worldName"];

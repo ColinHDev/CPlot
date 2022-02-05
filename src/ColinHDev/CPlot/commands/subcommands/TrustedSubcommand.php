@@ -23,11 +23,11 @@ class TrustedSubcommand extends Subcommand {
             return null;
         }
 
-        if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
+        if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trusted.noPlotWorld"));
             return null;
         }
-        $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+        $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("trusted.noPlot"));
             return null;
@@ -35,7 +35,7 @@ class TrustedSubcommand extends Subcommand {
 
         $trustedPlayerData = [];
         foreach ($plot->getPlotTrusted() as $plotPlayer) {
-            $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($plotPlayer->getPlayerUUID());
+            $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($plotPlayer->getPlayerUUID());
             if ($playerData instanceof PlayerData) {
                 $playerName = $playerData->getPlayerName();
             } else {

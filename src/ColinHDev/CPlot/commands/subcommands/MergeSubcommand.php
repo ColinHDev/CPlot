@@ -33,7 +33,7 @@ class MergeSubcommand extends Subcommand {
 
         $location = $sender->getLocation();
         $worldName = $location->world->getFolderName();
-        $worldSettings = yield from DataProvider::getInstance()->awaitWorld($worldName);
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($worldName);
         if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.noPlotWorld"));
             return null;
@@ -43,7 +43,7 @@ class MergeSubcommand extends Subcommand {
         $plot = null;
         if ($basePlot instanceof BasePlot) {
             /** @var Plot|null $plot */
-            $plot = yield from $basePlot->toAsyncPlot();
+            $plot = yield $basePlot->toAsyncPlot();
         }
         if ($basePlot === null || $plot === null) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.noPlot"));
@@ -86,7 +86,7 @@ class MergeSubcommand extends Subcommand {
 
         /** @var BasePlot $basePlotToMerge */
         $basePlotToMerge = $basePlot->getSide($direction);
-        $plotToMerge = yield from $basePlotToMerge->toAsyncPlot();
+        $plotToMerge = yield $basePlotToMerge->toAsyncPlot();
         if ($plotToMerge === null) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("merge.invalidSecondPlot"));
             return null;
@@ -153,8 +153,8 @@ class MergeSubcommand extends Subcommand {
                 }
             }
         );
-        yield from $plot->merge($plotToMerge);
-        yield from DataProvider::getInstance()->deletePlot($plotToMerge);
+        yield $plot->merge($plotToMerge);
+        yield DataProvider::getInstance()->deletePlot($plotToMerge);
         Server::getInstance()->getAsyncPool()->submitTask($task);
         return null;
     }

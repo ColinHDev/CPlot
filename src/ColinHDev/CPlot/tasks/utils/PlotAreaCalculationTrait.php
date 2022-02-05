@@ -24,11 +24,13 @@ trait PlotAreaCalculationTrait {
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
             $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPositionX = $plotPosition->getFloorX();
+            $plotPositionZ = $plotPosition->getFloorZ();
             $area = new Area(
-                $plotPosition->getFloorX(),
-                $plotPosition->getFloorZ(),
-                ($plotPosition->getFloorX() + $worldSettings->getPlotSize() - 1),
-                ($plotPosition->getFloorZ() + $worldSettings->getPlotSize() - 1),
+                $plotPositionX,
+                $plotPositionZ,
+                ($plotPositionX + $worldSettings->getPlotSize() - 1),
+                ($plotPositionZ + $worldSettings->getPlotSize() - 1),
             );
             $areas[$area->toString()] = $area;
         }

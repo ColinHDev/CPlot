@@ -157,10 +157,11 @@ final class DataProvider {
         if ($playerData === null) {
             return null;
         }
+        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerUUID,
             $playerData["playerName"],
-            \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"])->getTimestamp(),
+            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerUUID))
         );
         $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
@@ -183,10 +184,11 @@ final class DataProvider {
             return null;
         }
         $playerUUID = $playerData["playerUUID"];
+        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerUUID,
             $playerName,
-            \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"])->getTimestamp(),
+            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerUUID))
         );
         $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
@@ -294,6 +296,7 @@ final class DataProvider {
             self::GET_WORLD,
             ["worldName" => $worldName]
         );
+        /** @phpstan-var null|array{worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, borderBlockOnClaim?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $worldData */
         $worldData = $rows[array_key_first($rows)] ?? null;
         if ($worldData === null) {
             $worldSettings = new NonWorldSettings();
@@ -363,6 +366,7 @@ final class DataProvider {
             }
             return null;
         }
+        /** @phpstan-var array<array<string, mixed>> $rows */
         $rows = yield $this->database->asyncSelect(
             self::GET_PLOT,
             [
@@ -371,24 +375,28 @@ final class DataProvider {
                 "z" => $z
             ]
         );
-        $worldSettings = yield from $this->awaitWorld($worldName);
+        /** @phpstan-var WorldSettings|NonWorldSettings $worldSettings */
+        $worldSettings = yield $this->awaitWorld($worldName);
+        assert($worldSettings instanceof WorldSettings);
+        /** @phpstan-var null|array{biomeID: int, alias: string} $plotData */
         $plotData = $rows[array_key_first($rows)] ?? null;
         if ($plotData === null) {
             $plot = new Plot($worldName, $worldSettings, $x, $z);
             $this->getPlotCache()->cacheObject($plot->toString(), $plot);
             return $plot;
         }
+        /** @phpstan-var array<string, MergePlot> $mergePlots */
+        $mergePlots = yield $this->awaitMergePlots($worldName, $worldSettings, $x, $z);
+        /** @phpstan-var array<string, PlotPlayer> $plotPlayers */
+        $plotPlayers = yield $this->awaitPlotPlayers($worldName, $x, $z);
+        /** @phpstan-var array<string, BaseAttribute<mixed>> $plotFlags */
+        $plotFlags = yield $this->awaitPlotFlags($worldName, $x, $z);
+        /** @phpstan-var array<string, PlotRate> $plotRates */
+        $plotRates = yield $this->awaitPlotRates($worldName, $x, $z);
         $plot = new Plot(
-            $worldName,
-            $worldSettings,
-            $x,
-            $z,
-            $plotData["biomeID"],
-            $plotData["alias"],
-            (yield from $this->awaitMergePlots($worldName, $x, $z)),
-            (yield from $this->awaitPlotPlayers($worldName, $x, $z)),
-            (yield from $this->awaitPlotFlags($worldName, $x, $z)),
-            (yield from $this->awaitPlotRates($worldName, $x, $z))
+            $worldName, $worldSettings, $x, $z,
+            $plotData["biomeID"], $plotData["alias"],
+            $mergePlots, $plotPlayers, $plotFlags, $plotRates
         );
         $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return $plot;
@@ -399,7 +407,7 @@ final class DataProvider {
      * merge plots can be get by using {@see Await}.
      * @phpstan-return \Generator<int, mixed, array<array<string, mixed>>, array<string, MergePlot>>
      */
-    private function awaitMergePlots(string $worldName, int $x, int $z) : \Generator {
+    private function awaitMergePlots(string $worldName, WorldSettings $worldSettings, int $x, int $z) : \Generator {
         $rows = yield $this->database->asyncSelect(
             self::GET_MERGEPLOTS,
             [
@@ -408,7 +416,6 @@ final class DataProvider {
                 "originZ" => $z
             ]
         );
-        $worldSettings = yield from $this->awaitWorld($worldName);
         $mergePlots = [];
         foreach ($rows as $row) {
             $mergePlot = new MergePlot($worldName, $worldSettings, $row["mergeX"], $row["mergeZ"], $x, $z);
@@ -435,12 +442,13 @@ final class DataProvider {
         );
         $plotPlayers = [];
         foreach ($rows as $row) {
-            $playerUUID = $row["playerUUID"];
-            $plotPlayers[$playerUUID] = new PlotPlayer(
-                $playerUUID,
+            $addTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["addTime"]);
+            $plotPlayer = new PlotPlayer(
+                $row["playerUUID"],
                 $row["state"],
-                \DateTime::createFromFormat("d.m.Y H:i:s", $row["addTime"])->getTimestamp()
+                $addTime instanceof \DateTime ? $addTime->getTimestamp() : time()
             );
+            $plotPlayers[$plotPlayer->toString()] = $plotPlayer;
         }
         return $plotPlayers;
     }
@@ -489,10 +497,11 @@ final class DataProvider {
         );
         $plotRates = [];
         foreach ($rows as $row) {
+            $rateTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["rateTime"]);
             $plotRate = new PlotRate(
                 $row["rate"],
                 $row["playerUUID"],
-                \DateTime::createFromFormat("d.m.Y H:i:s", $row["rateTime"])->getTimestamp(),
+                $rateTime instanceof \DateTime ? $rateTime->getTimestamp() : time(),
                 $row["comment"] ?? null
             );
             $plotRates[$plotRate->toString()] = $plotRate;
@@ -506,10 +515,12 @@ final class DataProvider {
      * @phpstan-return \Generator<int, mixed, array<array<string, mixed>>|WorldSettings|array<string, MergePlot>|array<string, PlotPlayer>|array<string, BaseAttribute<mixed>>|array<string, PlotRate>, Plot|null>
      */
     public function awaitPlotByAlias(string $alias) : \Generator {
+        /** @phpstan-var array<array<string, mixed>> $rows */
         $rows = yield $this->database->asyncSelect(
             self::GET_PLOT_BY_ALIAS,
             ["alias" => $alias]
         );
+        /** @phpstan-var null|array{worldName: string, x: int, z: int, biomeID: int} $plotData */
         $plotData = $rows[array_key_first($rows)] ?? null;
         if ($plotData === null) {
             return null;
@@ -517,17 +528,20 @@ final class DataProvider {
         $worldName = $plotData["worldName"];
         $x = $plotData["x"];
         $z = $plotData["z"];
+        $worldSettings = yield $this->awaitWorld($worldName);
+        assert($worldSettings instanceof WorldSettings);
+        /** @phpstan-var array<string, MergePlot> $mergePlots */
+        $mergePlots = yield $this->awaitMergePlots($worldName, $worldSettings, $x, $z);
+        /** @phpstan-var array<string, PlotPlayer> $plotPlayers */
+        $plotPlayers = yield $this->awaitPlotPlayers($worldName, $x, $z);
+        /** @phpstan-var array<string, BaseAttribute<mixed>> $plotFlags */
+        $plotFlags = yield $this->awaitPlotFlags($worldName, $x, $z);
+        /** @phpstan-var array<string, PlotRate> $plotRates */
+        $plotRates = yield $this->awaitPlotRates($worldName, $x, $z);
         $plot = new Plot(
-            $worldName,
-            (yield from $this->awaitWorld($worldName)),
-            $x,
-            $z,
-            $plotData["biomeID"],
-            $alias,
-            (yield from $this->awaitMergePlots($worldName, $x, $z)),
-            (yield from $this->awaitPlotPlayers($worldName, $x, $z)),
-            (yield from $this->awaitPlotFlags($worldName, $x, $z)),
-            (yield from $this->awaitPlotRates($worldName, $x, $z))
+            $worldName, $worldSettings, $x, $z,
+            $plotData["biomeID"], $alias,
+            $mergePlots, $plotPlayers, $plotFlags, $plotRates
         );
         $this->getPlotCache()->cacheObject($plot->toString(), $plot);
         return $plot;
@@ -601,15 +615,20 @@ final class DataProvider {
             return $plot;
         }
         if ($plot instanceof MergePlot) {
-            return yield $this->awaitPlot($plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ());
+            /** @phpstan-var Plot|null $origin */
+            $origin = yield $this->awaitPlot($plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ());
+            return $origin;
         }
         $plotInCache = $this->getPlotCache()->getObjectFromCache($plot->toString());
         if ($plotInCache instanceof Plot) {
             return $plotInCache;
         }
         if ($plotInCache instanceof MergePlot) {
-            return yield $this->awaitPlot($plotInCache->getWorldName(), $plotInCache->getOriginX(), $plotInCache->getOriginZ());
+            /** @phpstan-var Plot|null $origin */
+            $origin = yield $this->awaitPlot($plotInCache->getWorldName(), $plotInCache->getOriginX(), $plotInCache->getOriginZ());
+            return $origin;
         }
+        /** @phpstan-var array<array<string, mixed>> $rows */
         $rows = yield $this->database->asyncSelect(
             self::GET_ORIGINPLOT,
             [
@@ -620,9 +639,13 @@ final class DataProvider {
         );
         $plotData = $rows[array_key_first($rows)] ?? null;
         if ($plotData === null) {
-            return yield $this->awaitPlot($plot->getWorldName(), $plot->getX(), $plot->getZ());
+            /** @phpstan-var Plot|null $plot */
+            $plot = yield $this->awaitPlot($plot->getWorldName(), $plot->getX(), $plot->getZ());
+            return $plot;
         }
-        return yield $this->awaitPlot($plot->getWorldName(), $plotData["originX"], $plotData["originZ"]);
+        /** @phpstan-var Plot|null $plot */
+        $plot = yield $this->awaitPlot($plot->getWorldName(), $plotData["originX"], $plotData["originZ"]);
+        return $plot;
     }
 
     /**
@@ -643,6 +666,7 @@ final class DataProvider {
                 ]
             );
             foreach ($rows as $row) {
+                /** @phpstan-var array<int, non-empty-array<int, true>> $plots */
                 $plots[$row["x"]][$row["z"]] = true;
             }
             if (count($plots) === max(1, 8 * $i)) {
@@ -697,6 +721,7 @@ final class DataProvider {
      * @phpstan-return \Generator<int, mixed, array<array<string, mixed>>|Plot|null, array<string, Plot>>
      */
     public function awaitPlotsByPlotPlayer(string $playerUUID, string $state) : \Generator {
+        /** @phpstan-var array<array<string, mixed>> $rows */
         $rows = yield $this->database->asyncSelect(
             self::GET_PLOTS_BY_PLOTPLAYER,
             [
@@ -706,6 +731,7 @@ final class DataProvider {
         );
         $plots = [];
         foreach ($rows as $row) {
+            /** @phpstan-var Plot|null $plot */
             $plot = yield $this->awaitPlot($row["worldName"], $row["x"], $row["z"]);
             if ($plot instanceof Plot) {
                 $plots[$plot->toString()] = $plot;
@@ -806,7 +832,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-param array<int, array<int, true>> $plots
+     * @phpstan-param array<int, non-empty-array<int, true>> $plots
      * @return int[] | null
      * code from @see https://github.com/jasonwynn10/MyPlot
      */

@@ -66,6 +66,7 @@ class Schematic implements SchematicTypes {
 
             $blockTreeRoots[] = new TreeRoot($blockNBT, (string) $coordinateHash);
         }
+        /** @phpstan-ignore-next-line */
         $nbt->setByteArray("Blocks", zlib_encode((new BigEndianNbtSerializer())->writeMultiple($blockTreeRoots), ZLIB_ENCODING_GZIP));
 
         file_put_contents($this->file, zlib_encode((new BigEndianNbtSerializer())->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));

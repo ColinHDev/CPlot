@@ -33,6 +33,10 @@ class PlotPlayer {
         return $this->addTime;
     }
 
+    public function toString() : string {
+        return $this->playerUUID;
+    }
+
     /**
      * @phpstan-return array{playerUUID: string, state: string, addTime: int}
      */

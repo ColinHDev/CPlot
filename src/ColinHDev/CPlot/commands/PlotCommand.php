@@ -53,7 +53,7 @@ class PlotCommand extends Command implements PluginOwned {
         parent::__construct($commandData["name"]);
         $this->setAliases($commandData["alias"]);
         $this->setDescription($commandData["description"]);
-        $this->setUsage($commandData["usage"]);
+        $this->setUsage(ResourceManager::getInstance()->getPrefix() . $commandData["usage"]);
         $this->setPermission("cplot.command.plot");
         $this->setPermissionMessage($resourceManager->getPrefix() . $commandData["permissionMessage"]);
 
@@ -106,7 +106,7 @@ class PlotCommand extends Command implements PluginOwned {
         }
 
         if (count($args) === 0) {
-            $sender->sendMessage(ResourceManager::getInstance()->getPrefix() . $this->getUsage());
+            $sender->sendMessage($this->getUsage());
             return;
         }
 

@@ -26,7 +26,7 @@ class VisitSubcommand extends Subcommand {
         switch (count($args)) {
             case 0:
                 /** @var Plot[] $plots */
-                $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->getBytes(), PlotPlayer::STATE_OWNER);
+                $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->getBytes(), PlotPlayer::STATE_OWNER);
                 if (count($plots) === 0) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.noArguments.noPlots"));
                     return null;
@@ -43,7 +43,7 @@ class VisitSubcommand extends Subcommand {
             case 1:
                 if (is_numeric($args[0])) {
                     /** @var Plot[] $plots */
-                    $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->getBytes(), PlotPlayer::STATE_OWNER);
+                    $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->getBytes(), PlotPlayer::STATE_OWNER);
                     if (count($plots) === 0) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.sender.noPlots"));
                         return null;
@@ -69,13 +69,13 @@ class VisitSubcommand extends Subcommand {
                     $playerName = $player->getName();
                 } else {
                     $playerName = $args[0];
-                    $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByName($playerName);
+                    $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                     $playerUUID = $playerData?->getPlayerUUID();
                 }
 
                 if ($playerUUID !== null) {
                     /** @var Plot[] $plots */
-                    $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerUUID, PlotPlayer::STATE_OWNER);
+                    $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerUUID, PlotPlayer::STATE_OWNER);
                     if (count($plots) === 0) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.player.noPlots", [$playerName]));
                         return null;
@@ -92,7 +92,7 @@ class VisitSubcommand extends Subcommand {
 
                 $alias = strtolower($args[0]);
                 /** @var Plot|null $plot */
-                $plot = yield from DataProvider::getInstance()->awaitPlotByAlias($alias);
+                $plot = yield DataProvider::getInstance()->awaitPlotByAlias($alias);
                 if (!($plot instanceof Plot)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.oneArgument.alias.noPlot", [$alias]));
                     return null;
@@ -111,7 +111,7 @@ class VisitSubcommand extends Subcommand {
                     $playerName = $player->getName();
                 } else {
                     $playerName = $args[0];
-                    $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByName($playerName);
+                    $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                     if ($playerData === null) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.playerNotFound", [$playerName]));
                         return null;
@@ -120,7 +120,7 @@ class VisitSubcommand extends Subcommand {
                 }
 
                 /** @var Plot[] $plots */
-                $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerUUID, PlotPlayer::STATE_OWNER);
+                $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerUUID, PlotPlayer::STATE_OWNER);
                 if (count($plots) === 0) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.noPlots", [$playerName]));
                     return null;

@@ -51,7 +51,7 @@ class WarpSubcommand extends Subcommand {
                 return null;
         }
 
-        $worldSettings = yield from DataProvider::getInstance()->awaitWorld($worldName);
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($worldName);
         if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.invalidPlotWorld", [$worldName]));
             return null;
@@ -65,7 +65,7 @@ class WarpSubcommand extends Subcommand {
             return null;
         }
 
-        $plot = yield from (new BasePlot($worldName, $worldSettings, (int) $x, (int) $z))->toAsyncPlot();
+        $plot = yield (new BasePlot($worldName, $worldSettings, (int) $x, (int) $z))->toAsyncPlot();
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("warp.loadPlotError"));
             return null;

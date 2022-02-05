@@ -41,7 +41,7 @@ class UntrustSubcommand extends Subcommand {
             } else {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.playerNotOnline", [$args[0]]));
                 $playerName = $args[0];
-                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByName($playerName);
+                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if ($playerData === null) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.playerNotFound", [$playerName]));
                     return null;
@@ -53,12 +53,12 @@ class UntrustSubcommand extends Subcommand {
             $playerName = "*";
         }
 
-        if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
+        if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.noPlotWorld"));
             return null;
         }
 
-        $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+        $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.noPlot"));
             return null;
@@ -88,11 +88,11 @@ class UntrustSubcommand extends Subcommand {
         }
 
         $plot->removePlotPlayer($playerUUID);
-        yield from DataProvider::getInstance()->deletePlotPlayer($plot, $playerUUID);
+        yield DataProvider::getInstance()->deletePlotPlayer($plot, $playerUUID);
         $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.success", [$playerName]));
 
         if ($player instanceof Player) {
-            $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
+            $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
             if (!($playerData instanceof PlayerData)) {
                 return null;
             }

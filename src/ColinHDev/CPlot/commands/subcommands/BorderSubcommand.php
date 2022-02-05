@@ -103,7 +103,7 @@ class BorderSubcommand extends Subcommand {
             return;
         }
 
-        $plot = yield from Plot::awaitFromPosition($player->getPosition());
+        $plot = yield Plot::awaitFromPosition($player->getPosition());
         if (!($plot instanceof Plot)) {
             $player->sendMessage($this->getPrefix() . $this->translateString("border.noPlot"));
             return;

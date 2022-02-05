@@ -72,11 +72,11 @@ class FlagSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.here.senderNotOnline"));
                     break;
                 }
-                if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
+                if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.here.noPlotWorld"));
                     break;
                 }
-                $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+                $plot = yield Plot::awaitFromPosition($sender->getPosition());
                 if (!($plot instanceof Plot)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.here.noPlot"));
                     break;
@@ -111,11 +111,11 @@ class FlagSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.senderNotOnline"));
                     break;
                 }
-                if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
+                if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noPlotWorld"));
                     break;
                 }
-                $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+                $plot = yield Plot::awaitFromPosition($sender->getPosition());
                 if (!($plot instanceof Plot)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.noPlot"));
                     break;
@@ -183,18 +183,18 @@ class FlagSubcommand extends Subcommand {
                     $flag
                 );
 
-                yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
+                yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.set.success", [$flag->getID(), $flag->toString($parsedValue)]));
                 foreach ($sender->getWorld()->getPlayers() as $player) {
                     $playerUUID = $player->getUniqueId()->getBytes();
                     if ($sender->getUniqueId()->getBytes() === $playerUUID) {
                         continue;
                     }
-                    $plotOfPlayer = yield from Plot::awaitFromPosition($player->getPosition());
+                    $plotOfPlayer = yield Plot::awaitFromPosition($player->getPosition());
                     if (!($plotOfPlayer instanceof Plot) || !$plotOfPlayer->isSame($plot)) {
                         continue;
                     }
-                    $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
+                    $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
                     if (!($playerData instanceof PlayerData)) {
                         continue;
                     }
@@ -233,11 +233,11 @@ class FlagSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.senderNotOnline"));
                     break;
                 }
-                if (!((yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
+                if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.noPlotWorld"));
                     break;
                 }
-                $plot = yield from Plot::awaitFromPosition($sender->getPosition());
+                $plot = yield Plot::awaitFromPosition($sender->getPosition());
                 if (!($plot instanceof Plot)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.noPlot"));
                     break;
@@ -299,14 +299,14 @@ class FlagSubcommand extends Subcommand {
                     if (count($values) > 0) {
                         $flag = $flag->newInstance($values);
                         $plot->addFlag($flag);
-                        yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
+                        yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
                         $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.value.success", [$flag->getID(), $flag->toString($removedValues)]));
                         break;
                     }
                 }
 
                 $plot->removeFlag($flag->getID());
-                yield from DataProvider::getInstance()->deletePlotFlag($plot, $flag->getID());
+                yield DataProvider::getInstance()->deletePlotFlag($plot, $flag->getID());
                 $sender->sendMessage($this->getPrefix() . $this->translateString("flag.remove.flag.success", [$flag->getID()]));
                 break;
 

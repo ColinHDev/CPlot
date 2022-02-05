@@ -482,13 +482,15 @@ class Plot extends BasePlot {
     public static function awaitFromPosition(Position $position, bool $checkMerge = true) : \Generator {
         $worldName = $position->getWorld()->getFolderName();
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($position->getWorld()->getFolderName());
-        if (!$worldSettings instanceof WorldSettings) {
+        if (!($worldSettings instanceof WorldSettings)) {
             return null;
         }
         // check for: position = plot
         $basePlot = parent::fromVector3($worldName, $worldSettings, $position);
         if ($basePlot !== null) {
-            return yield $basePlot->toAsyncPlot();
+            /** @var Plot|null $plot */
+            $plot = yield $basePlot->toAsyncPlot();
+            return $plot;
         }
 
         if (!$checkMerge) {
@@ -499,6 +501,7 @@ class Plot extends BasePlot {
         $basePlotInNorth = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::NORTH, $worldSettings->getRoadSize()));
         $basePlotInSouth = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::SOUTH, $worldSettings->getRoadSize()));
         if ($basePlotInNorth !== null && $basePlotInSouth !== null) {
+            /** @var Plot|null $plotInNorth */
             $plotInNorth = yield $basePlotInNorth->toAsyncPlot();
             if ($plotInNorth === null) {
                 return null;
@@ -513,6 +516,7 @@ class Plot extends BasePlot {
         $basePlotInWest = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::WEST, $worldSettings->getRoadSize()));
         $basePlotInEast = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::EAST, $worldSettings->getRoadSize()));
         if ($basePlotInWest !== null && $basePlotInEast !== null) {
+            /** @var Plot|null $plotInWest */
             $plotInWest = yield $basePlotInWest->toAsyncPlot();
             if ($plotInWest === null) {
                 return null;
@@ -529,6 +533,7 @@ class Plot extends BasePlot {
         $basePlotInSouthWest = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
         $basePlotInSouthEast = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add($worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
         if ($basePlotInNorthWest !== null && $basePlotInNorthEast !== null && $basePlotInSouthWest !== null && $basePlotInSouthEast !== null) {
+            /** @var Plot|null $plotInNorthWest */
             $plotInNorthWest = yield $basePlotInNorthWest->toAsyncPlot();
             if ($plotInNorthWest === null) {
                 return null;
@@ -547,7 +552,7 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-return array{worldName: string, worldSettings: string, x: int, z: int, biomeID: int, alias: string, mergePlots: string, plotPlayers: string, flags: string, plotRates: string}
+     * @phpstan-return array{worldName: string, worldSettings: string, x: int, z: int, biomeID: int, alias: string|null, mergePlots: string, plotPlayers: string, flags: string, plotRates: string}
      */
     public function __serialize() : array {
         $data = parent::__serialize();
@@ -561,7 +566,7 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-param array{worldName: string, worldSettings: string, x: int, z: int, biomeID: int, alias: string, mergePlots: string, plotPlayers: string, flags: string, plotRates: string} $data
+     * @phpstan-param array{worldName: string, worldSettings: string, x: int, z: int, biomeID: int, alias: string|null, mergePlots: string, plotPlayers: string, flags: string, plotRates: string} $data
      */
     public function __unserialize(array $data) : void {
         parent::__unserialize($data);

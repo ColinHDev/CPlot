@@ -29,13 +29,13 @@ class ClaimSubcommand extends Subcommand {
             return null;
         }
 
-        $worldSettings = yield from DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlotWorld"));
             return null;
         }
 
-        $plot = yield from Plot::awaitFromPosition($sender->getPosition(), false);
+        $plot = yield Plot::awaitFromPosition($sender->getPosition(), false);
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlot"));
             return null;
@@ -52,7 +52,7 @@ class ClaimSubcommand extends Subcommand {
         }
 
         $claimedPlotsCount = count(
-            yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($senderUUID, PlotPlayer::STATE_OWNER)
+            yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($senderUUID, PlotPlayer::STATE_OWNER)
         );
         $maxPlots = $this->getMaxPlotsOfPlayer($sender);
         if ($claimedPlotsCount > $maxPlots) {
@@ -80,8 +80,8 @@ class ClaimSubcommand extends Subcommand {
 
         $senderData = new PlotPlayer($senderUUID, PlotPlayer::STATE_OWNER);
         $plot->addPlotPlayer($senderData);
-        yield from DataProvider::getInstance()->savePlot($plot);
-        yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+        yield DataProvider::getInstance()->savePlot($plot);
+        yield DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
 
         $world = $sender->getWorld();
         $blockBorderOnClaim = $worldSettings->getBorderBlockOnClaim();

@@ -19,6 +19,9 @@ use pocketmine\world\WorldCreationOptions;
  */
 class GenerateSubcommand extends Subcommand {
 
+    /**
+     * @throws \JsonException
+     */
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
             $sender->sendMessage($this->getPrefix() . $this->getUsage());
@@ -33,13 +36,13 @@ class GenerateSubcommand extends Subcommand {
         $options = new WorldCreationOptions();
         $options->setGeneratorClass(PlotGenerator::class);
         $worldSettings = WorldSettings::fromConfig();
-        $options->setGeneratorOptions(json_encode($worldSettings->toArray()));
+        $options->setGeneratorOptions(json_encode($worldSettings->toArray(), JSON_THROW_ON_ERROR));
         $options->setSpawnPosition(new Vector3(0, $worldSettings->getGroundSize() + 1, 0));
         if (!Server::getInstance()->getWorldManager()->generateWorld($worldName, $options)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("generate.generateError"));
             return null;
         }
-        yield from DataProvider::getInstance()->addWorld($worldName, $worldSettings);
+        yield DataProvider::getInstance()->addWorld($worldName, $worldSettings);
         return $worldName;
     }
 

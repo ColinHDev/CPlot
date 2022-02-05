@@ -23,14 +23,14 @@ class AutoSubcommand extends Subcommand {
         }
 
         $worldName = $sender->getWorld()->getFolderName();
-        $worldSettings = yield from DataProvider::getInstance()->awaitWorld($worldName);
+        $worldSettings = yield DataProvider::getInstance()->awaitWorld($worldName);
         if (!($worldSettings instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("auto.noPlotWorld"));
             return null;
         }
 
         /** @var Plot|null $plot */
-        $plot = yield from DataProvider::getInstance()->awaitNextFreePlot($worldName, $worldSettings);
+        $plot = yield DataProvider::getInstance()->awaitNextFreePlot($worldName, $worldSettings);
         if ($plot === null) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("auto.noPlotFound"));
             return null;

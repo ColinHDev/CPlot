@@ -23,6 +23,9 @@ use pocketmine\world\WorldCreationOptions;
  */
 class SchematicSubcommand extends Subcommand {
 
+    /**
+     * @throws \JsonException
+     */
     public function execute(CommandSender $sender, array $args) : \Generator {
         /** @phpstan-ignore-next-line */
         0 && yield;
@@ -37,12 +40,15 @@ class SchematicSubcommand extends Subcommand {
                     break;
                 }
                 $files = [];
-                foreach (scandir(CPlot::getInstance()->getDataFolder() . "schematics") as $file) {
-                    $fileData = pathinfo($file);
-                    if (!isset($fileData["extension"]) || $fileData["extension"] !== Schematic::FILE_EXTENSION) {
-                        continue;
+                $dir = scandir(CPlot::getInstance()->getDataFolder() . "schematics");
+                if ($dir !== false) {
+                    foreach ($dir as $file) {
+                        $fileData = pathinfo($file);
+                        if (!isset($fileData["extension"]) || $fileData["extension"] !== Schematic::FILE_EXTENSION) {
+                            continue;
+                        }
+                        $files[] = $fileData["filename"];
                     }
-                    $files[] = $fileData["filename"];
                 }
                 if (count($files) === 0) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.list.noSchematics"));
@@ -183,7 +189,7 @@ class SchematicSubcommand extends Subcommand {
                 }
                 $options = new WorldCreationOptions();
                 $options->setGeneratorClass(SchematicGenerator::class);
-                $options->setGeneratorOptions(json_encode($worldSettings));
+                $options->setGeneratorOptions(json_encode($worldSettings, JSON_THROW_ON_ERROR));
                 $options->setSpawnPosition(new Vector3(0, $worldSettings["groundSize"] + 1, 0));
                 if (!Server::getInstance()->getWorldManager()->generateWorld($args[1], $options)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("schematic.generate.generateError"));

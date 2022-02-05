@@ -65,7 +65,7 @@ class SettingSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.my.senderNotOnline"));
                     break;
                 }
-                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
+                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
                 if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.my.loadPlayerDataError"));
                     break;
@@ -100,7 +100,7 @@ class SettingSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.senderNotOnline"));
                     break;
                 }
-                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
+                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
                 if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.loadPlayerDataError"));
                     break;
@@ -134,7 +134,7 @@ class SettingSubcommand extends Subcommand {
                 $playerData->addSetting(
                     $setting
                 );
-                yield from DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
+                yield DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.success", [$setting->getID(), $setting->toString($parsedValue)]));
                 break;
 
@@ -148,7 +148,7 @@ class SettingSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.senderNotOnline"));
                     break;
                 }
-                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
+                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
                 if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("setting.set.loadPlayerDataError"));
                     break;
@@ -187,13 +187,13 @@ class SettingSubcommand extends Subcommand {
                     if (count($values) > 0) {
                         $setting = $setting->newInstance($values);
                         $playerData->addSetting($setting);
-                        yield from DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
+                        yield DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
                         $sender->sendMessage($this->getPrefix() . $this->translateString("setting.remove.value.success", [$setting->getID(), $setting->toString()]));
                         break;
                     }
                 }
                 $playerData->removeSetting($setting->getID());
-                yield from DataProvider::getInstance()->deletePlayerSetting($playerData, $setting->getID());
+                yield DataProvider::getInstance()->deletePlayerSetting($playerData, $setting->getID());
                 $sender->sendMessage($this->getPrefix() . $this->translateString("setting.remove.setting.success", [$setting->getID()]));
                 break;
 
