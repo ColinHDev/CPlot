@@ -585,6 +585,9 @@ final class DataProvider {
             ]
         );
         $this->getPlotCache()->removeObjectFromCache($plot->toString());
+        foreach ($plot->getMergePlots() as $key => $mergePlot) {
+            $this->getPlotCache()->removeObjectFromCache($key);
+        }
     }
 
     /**
