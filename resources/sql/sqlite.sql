@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS playerData (
 );
 -- #    }
 -- #    { asteriskPlayer
--- #      :playerUUID string
+-- #      :lastJoin string
 INSERT OR IGNORE INTO playerData (playerUUID, playerName, lastJoin)
 VALUES ("*", "*", :lastJoin);
 -- #    }
