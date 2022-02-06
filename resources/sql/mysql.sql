@@ -3,6 +3,9 @@
 -- #{ cplot
 
 -- #  { init
+-- #    { foreignKeys
+SET FOREIGN_KEY_CHECKS = 1;
+-- #    }
 -- #    { playerDataTable
 CREATE TABLE IF NOT EXISTS playerData(
     playerUUID      VARCHAR(256)    NOT NULL,
@@ -10,6 +13,11 @@ CREATE TABLE IF NOT EXISTS playerData(
     lastJoin        TEXT            NOT NULL,
     PRIMARY KEY (playerUUID)
 );
+-- #    }
+-- #    { asteriskPlayer
+-- #      :playerUUID string
+INSERT IGNORE INTO playerData (playerUUID, playerName, lastJoin)
+VALUES ("*", "*", :lastJoin);
 -- #    }
 -- #    { playerSettingsTable
 CREATE TABLE IF NOT EXISTS playerSettings(

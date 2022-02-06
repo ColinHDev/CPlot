@@ -25,7 +25,6 @@ use pocketmine\utils\SingletonTrait;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
-use poggit\libasynql\SqlThread;
 use SOFe\AwaitGenerator\Await;
 
 /**
@@ -35,7 +34,9 @@ use SOFe\AwaitGenerator\Await;
 final class DataProvider {
     use SingletonTrait;
 
+    private const INIT_FOREIGN_KEYS = "cplot.init.foreignKeys";
     private const INIT_PLAYERDATA_TABLE = "cplot.init.playerDataTable";
+    private const INIT_ASTERISK_PLAYER = "cplot.init.asteriskPlayer";
     private const INIT_PLAYERSETTINGS_TABLE = "cplot.init.playerSettingsTable";
     private const INIT_WORLDS_TABLE = "cplot.init.worldsTable";
     private const INIT_PLOTS_TABLE = "cplot.init.plotsTable";
@@ -86,28 +87,31 @@ final class DataProvider {
             "mysql" => "sql" . DIRECTORY_SEPARATOR . "mysql.sql"
         ]);
 
-        $this->database->executeGeneric(self::INIT_PLAYERDATA_TABLE);
-        $this->database->executeImplRaw(
-            ["INSERT OR IGNORE INTO playerData (playerUUID, playerName, lastJoin) VALUES (\"*\", \"*\", \"01.01.1970 00:00:00\");"],
-            [[]],
-            [SqlThread::MODE_INSERT],
-            static function ($results) : void {
-            },
-            null
+        Await::g2c(
+            $this->initializeDatabase()
         );
-        $this->database->executeGeneric(self::INIT_PLAYERSETTINGS_TABLE);
-        $this->database->executeGeneric(self::INIT_WORLDS_TABLE);
-        $this->database->executeGeneric(self::INIT_PLOTS_TABLE);
-        $this->database->executeGeneric(self::INIT_MERGEPLOTS_TABLE);
-        $this->database->executeGeneric(self::INIT_PLOTPLAYERS_TABLE);
-        $this->database->executeGeneric(self::INIT_PLOTFLAGS_TABLE);
-        $this->database->executeGeneric(self::INIT_PLOTRATES_TABLE);
 
         $this->caches = [
             CacheIDs::CACHE_PLAYER => new Cache(64),
             CacheIDs::CACHE_WORLDSETTING => new Cache(16),
             CacheIDs::CACHE_PLOT => new Cache(128),
         ];
+    }
+
+    /**
+     * @phpstan-return \Generator<int, mixed, null, void>
+     */
+    private function initializeDatabase() : \Generator {
+        yield $this->database->asyncGeneric(self::INIT_FOREIGN_KEYS);
+        yield $this->database->asyncGeneric(self::INIT_PLAYERDATA_TABLE);
+        yield $this->database->asyncGeneric(self::INIT_ASTERISK_PLAYER, ["lastJoin" => date("d.m.Y H:i:s")]);
+        yield $this->database->asyncGeneric(self::INIT_PLAYERSETTINGS_TABLE);
+        yield $this->database->asyncGeneric(self::INIT_WORLDS_TABLE);
+        yield $this->database->asyncGeneric(self::INIT_PLOTS_TABLE);
+        yield $this->database->asyncGeneric(self::INIT_MERGEPLOTS_TABLE);
+        yield $this->database->asyncGeneric(self::INIT_PLOTPLAYERS_TABLE);
+        yield $this->database->asyncGeneric(self::INIT_PLOTFLAGS_TABLE);
+        yield $this->database->asyncGeneric(self::INIT_PLOTRATES_TABLE);
     }
 
     public function getPlayerCache() : Cache {

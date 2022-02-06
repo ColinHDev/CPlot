@@ -45,3 +45,8 @@ parameters:
 			count: 1
 			path: src/ColinHDev/CPlot/provider/DataProvider.php
 
+		-
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, null, void\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/provider/DataProvider.php
+
