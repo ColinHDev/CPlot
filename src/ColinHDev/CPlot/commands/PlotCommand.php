@@ -91,7 +91,8 @@ class PlotCommand extends Command implements PluginOwned {
     }
 
     /**
-     * @phpstan-param Subcommand<mixed> $subcommand
+     * @phpstan-template TSubcommand of Subcommand<mixed>
+     * @phpstan-param TSubcommand $subcommand
      */
     public function registerSubcommand(Subcommand $subcommand) : void {
         $this->subcommands[$subcommand->getName()] = $subcommand;

@@ -49,8 +49,9 @@ class BorderSubcommand extends Subcommand {
         $operatorRoot = $permissionManager->getPermission(DefaultPermissions::ROOT_OPERATOR);
         assert($operatorRoot instanceof Permission);
 
+        /** @phpstan-var array{block: string, permission: string, form: array<string, string>} $borderData */
         foreach (ResourceManager::getInstance()->getBordersConfig()->getAll() as $borderData) {
-            $block = ParseUtils::parseBlockFromArray($borderData, "block");
+            $block = ParseUtils::parseBlockFromString($borderData["block"]);
             if ($block !== null) {
                 $this->blocks[] = $block;
 

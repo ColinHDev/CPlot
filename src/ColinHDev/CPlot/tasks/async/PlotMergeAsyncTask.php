@@ -43,7 +43,9 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
     }
 
     public function onRun() : void {
-        $worldSettings = WorldSettings::fromArray(unserialize($this->worldSettings, ["allowed_classes" => false]));
+        /** @phpstan-var array{worldType: string, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, borderBlockOnClaim: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string} $worldSettingsArray */
+        $worldSettingsArray = unserialize($this->worldSettings, ["allowed_classes" => false]);
+        $worldSettings = WorldSettings::fromArray($worldSettingsArray);
         /** @var bool $hasPlotOwner */
         $hasPlotOwner = unserialize($this->hasPlotOwner, ["allowed_classes" => false]);
 
@@ -65,7 +67,9 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
         $world = $this->getChunkManager();
         $explorer = new SubChunkExplorer($world);
         $finishedChunks = [];
-        foreach (unserialize($this->chunkAreas, ["allowed_classes" => false]) as $chunkHash => $blockHashs) {
+        /** @phpstan-var array<int, array<string, int[]>> $chunkAreas */
+        $chunkAreas = unserialize($this->chunkAreas, ["allowed_classes" => false]);
+        foreach ($chunkAreas as $chunkHash => $blockHashs) {
             World::getXZ($chunkHash, $chunkX, $chunkZ);
 
             if (isset($blockHashs["road"])) {

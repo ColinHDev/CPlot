@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\attributes\BooleanAttribute;
+use ColinHDev\CPlot\attributes\BooleanListAttribute;
 use ColinHDev\CPlot\attributes\StringAttribute;
 use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
@@ -58,7 +59,7 @@ class PlayerMoveListener implements Listener {
                         if ($playerData !== null) {
                             foreach ($plotTo->getFlags() as $flag) {
                                 $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_FLAG . $flag->getID());
-                                if ($setting === null) {
+                                if (!($setting instanceof BooleanListAttribute)) {
                                     continue;
                                 }
                                 foreach ($setting->getValue() as $value) {

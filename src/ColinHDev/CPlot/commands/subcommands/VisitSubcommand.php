@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -69,6 +70,7 @@ class VisitSubcommand extends Subcommand {
                     $playerName = $player->getName();
                 } else {
                     $playerName = $args[0];
+                    /** @phpstan-var PlayerData|null $playerData */
                     $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                     $playerUUID = $playerData?->getPlayerUUID();
                 }
@@ -112,7 +114,7 @@ class VisitSubcommand extends Subcommand {
                 } else {
                     $playerName = $args[0];
                     $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
-                    if ($playerData === null) {
+                    if (!($playerData instanceof PlayerData)) {
                         $sender->sendMessage($this->getPrefix() . $this->translateString("visit.twoArguments.playerNotFound", [$playerName]));
                         return null;
                     }

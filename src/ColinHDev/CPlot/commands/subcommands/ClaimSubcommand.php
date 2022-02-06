@@ -51,9 +51,9 @@ class ClaimSubcommand extends Subcommand {
             return null;
         }
 
-        $claimedPlotsCount = count(
-            yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($senderUUID, PlotPlayer::STATE_OWNER)
-        );
+        /** @phpstan-var array<string, Plot> $claimedPlots */
+        $claimedPlots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($senderUUID, PlotPlayer::STATE_OWNER);
+        $claimedPlotsCount = count($claimedPlots);
         $maxPlots = $this->getMaxPlotsOfPlayer($sender);
         if ($claimedPlotsCount > $maxPlots) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotLimitReached", [$claimedPlotsCount, $maxPlots]));
@@ -64,7 +64,7 @@ class ClaimSubcommand extends Subcommand {
         if ($economyProvider instanceof EconomyProvider) {
             $price = EconomyManager::getInstance()->getClaimPrice();
             if ($price > 0.0) {
-                $money = yield from $economyProvider->awaitMoney($sender);
+                $money = yield $economyProvider->awaitMoney($sender);
                 if (!is_float($money)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadMoneyError"));
                     return null;
@@ -73,7 +73,7 @@ class ClaimSubcommand extends Subcommand {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("claim.notEnoughMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]));
                     return null;
                 }
-                yield from $economyProvider->awaitMoneyRemoval($sender, $price);
+                yield $economyProvider->awaitMoneyRemoval($sender, $price);
                 $sender->sendMessage($this->getPrefix() . $this->translateString("claim.chargedMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]));
             }
         }

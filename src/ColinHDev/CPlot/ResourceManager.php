@@ -45,11 +45,15 @@ class ResourceManager {
 
     /**
      * @phpstan-return array{name: string, alias: array<string>, description: string, usage: string, permissionMessage: string}
+     * @throws \JsonException
      */
     public function getCommandData(string $commandName) : array {
+        $alias = json_decode($this->language->get($commandName . ".alias"), true, 512, JSON_THROW_ON_ERROR);
+        assert(is_array($alias));
+        /** @phpstan-var array<string> $alias */
         return [
             "name" => $this->language->get($commandName . ".name"),
-            "alias" => json_decode($this->language->get($commandName . ".alias"), true),
+            "alias" => $alias,
             "description" => $this->language->get($commandName . ".description"),
             "usage" => $this->language->get($commandName . ".usage"),
             "permissionMessage" => $this->language->get($commandName . ".permissionMessage")

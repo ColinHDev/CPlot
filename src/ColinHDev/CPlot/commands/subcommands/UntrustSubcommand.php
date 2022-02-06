@@ -42,7 +42,7 @@ class UntrustSubcommand extends Subcommand {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.playerNotOnline", [$args[0]]));
                 $playerName = $args[0];
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
-                if ($playerData === null) {
+                if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("untrust.playerNotFound", [$playerName]));
                     return null;
                 }

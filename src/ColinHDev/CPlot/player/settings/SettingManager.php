@@ -53,8 +53,9 @@ class SettingManager {
     }
 
     /**
-     * @param string $ID
-     * @param class-string<BaseAttribute<mixed>> $className
+     * @phpstan-template TAttributeClass of BaseAttribute<mixed>
+     * @phpstan-param class-string<TAttributeClass> $className
+     * @throws \InvalidArgumentException
      */
     private function register(string $ID, string $className) : void {
         Utils::testValidInstance($className, BaseAttribute::class);

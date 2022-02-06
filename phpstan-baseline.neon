@@ -1,0 +1,47 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, mixed, mixed\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/commands/PlotCommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|ColinHDev\\\\CPlot\\\\worlds\\\\NonWorldSettings\\|ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\|null, void\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/commands/subcommands/BorderSubcommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|ColinHDev\\\\CPlot\\\\worlds\\\\NonWorldSettings\\|ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\|null, void\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/commands/subcommands/WallSubcommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, void, void\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/listener/PlayerLoginListener.php
+
+		-
+			message: "#^Parameter \\#1 \\$closure of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:f2c\\(\\) expects callable\\(\\)\\: Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Closure\\(\\)\\: Generator\\<int, mixed, mixed, void\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/listener/PlayerMoveListener.php
+
+		-
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, array\\<array\\<string, mixed\\>\\>, ColinHDev\\\\CPlot\\\\player\\\\PlayerData\\|null\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/provider/DataProvider.php
+
+		-
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, array\\<array\\<string, mixed\\>\\>, ColinHDev\\\\CPlot\\\\worlds\\\\NonWorldSettings\\|ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/provider/DataProvider.php
+
+		-
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, array\\<array\\<string, mixed\\>\\>\\|ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|null, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|null\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/provider/DataProvider.php
+
+		-
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, array\\<array\\<string, mixed\\>\\|ColinHDev\\\\CPlot\\\\attributes\\\\BaseAttribute\\<mixed\\>\\|ColinHDev\\\\CPlot\\\\plots\\\\MergePlot\\|ColinHDev\\\\CPlot\\\\plots\\\\PlotPlayer\\|ColinHDev\\\\CPlot\\\\plots\\\\PlotRate\\>, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|null\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/provider/DataProvider.php
+

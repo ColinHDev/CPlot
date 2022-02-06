@@ -43,7 +43,7 @@ class TrustSubcommand extends Subcommand {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("trust.playerNotOnline", [$args[0]]));
                 $playerName = $args[0];
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
-                if ($playerData === null) {
+                if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("trust.playerNotFound", [$playerName]));
                     return null;
                 }

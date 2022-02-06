@@ -40,7 +40,10 @@ class BooleanListAttribute extends ArrayAttribute {
         }
         $values = [];
         try {
-            foreach (json_decode($value, true, 512, JSON_THROW_ON_ERROR) as $boolean) {
+            $array = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+            assert(is_array($array));
+            /** @phpstan-var array<string|bool> $array */
+            foreach ($array as $boolean) {
                 if (in_array($boolean, BooleanAttribute::TRUE_VALUES, true)) {
                     $values[] = true;
                 } else if (in_array($boolean, BooleanAttribute::FALSE_VALUES, true)) {

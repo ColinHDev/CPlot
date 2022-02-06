@@ -42,7 +42,7 @@ class UndenySubcommand extends Subcommand {
                 $sender->sendMessage($this->getPrefix() . $this->translateString("undeny.playerNotOnline", [$args[0]]));
                 $playerName = $args[0];
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
-                if ($playerData === null) {
+                if (!($playerData instanceof PlayerData)) {
                     $sender->sendMessage($this->getPrefix() . $this->translateString("undeny.playerNotFound", [$playerName]));
                     return null;
                 }

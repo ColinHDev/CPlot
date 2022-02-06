@@ -127,6 +127,7 @@ class WorldSettings implements Cacheable {
     }
 
     public static function fromConfig() : self {
+        /** @phpstan-var array{worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, borderBlockOnClaim?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings */
         $settings = ResourceManager::getInstance()->getConfig()->get("worldSettings", []);
         return self::fromArray($settings);
     }

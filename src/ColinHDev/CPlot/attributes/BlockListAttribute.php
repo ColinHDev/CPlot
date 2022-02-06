@@ -39,7 +39,10 @@ class BlockListAttribute extends ArrayAttribute {
         }
         $blocks = [];
         try {
-            foreach (json_decode($value, true, 512, JSON_THROW_ON_ERROR) as $val) {
+            $array = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+            assert(is_array($array));
+            /** @phpstan-var array<string> $array */
+            foreach ($array as $val) {
                 $val = ParseUtils::parseBlockFromString($val);
                 if ($val instanceof Block) {
                     $blocks[] = $val;

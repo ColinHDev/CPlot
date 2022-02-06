@@ -153,6 +153,7 @@ final class DataProvider {
             self::GET_PLAYERDATA_BY_UUID,
             ["playerUUID" => $playerUUID]
         );
+        /** @phpstan-var array{playerName: string, lastJoin: string}|null $playerData */
         $playerData = $rows[array_key_first($rows)] ?? null;
         if ($playerData === null) {
             return null;
@@ -179,6 +180,7 @@ final class DataProvider {
             self::GET_PLAYERDATA_BY_NAME,
             ["playerName" => $playerName]
         );
+        /** @phpstan-var array{playerUUID: string, lastJoin: string}|null $playerData */
         $playerData = $rows[array_key_first($rows)] ?? null;
         if ($playerData === null) {
             return null;
@@ -206,6 +208,7 @@ final class DataProvider {
             ["playerUUID" => $playerUUID]
         );
         $settings = [];
+        /** @phpstan-var array{ID: string, value: string} $row */
         foreach ($rows as $row) {
             $setting = SettingManager::getInstance()->getSettingByID($row["ID"]);
             if ($setting === null) {
@@ -234,7 +237,8 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-param BaseAttribute<mixed> $setting
+     * @phpstan-template TAttributeValue
+     * @phpstan-param BaseAttribute<TAttributeValue> $setting
      * @phpstan-return \Generator<int, mixed, void, void>
      */
     public function savePlayerSetting(PlayerData $playerData, BaseAttribute $setting) : \Generator {
@@ -417,6 +421,7 @@ final class DataProvider {
             ]
         );
         $mergePlots = [];
+        /** @phpstan-var array{mergeX: int, mergeZ: int} $row */
         foreach ($rows as $row) {
             $mergePlot = new MergePlot($worldName, $worldSettings, $row["mergeX"], $row["mergeZ"], $x, $z);
             $mergePlotKey = $mergePlot->toString();
@@ -441,6 +446,7 @@ final class DataProvider {
             ]
         );
         $plotPlayers = [];
+        /** @phpstan-var array{playerUUID: string, state: string, addTime: string} $row */
         foreach ($rows as $row) {
             $addTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["addTime"]);
             $plotPlayer = new PlotPlayer(
@@ -468,6 +474,7 @@ final class DataProvider {
             ]
         );
         $plotFlags = [];
+        /** @phpstan-var array{ID: string, value: string} $row */
         foreach ($rows as $row) {
             $plotFlag = FlagManager::getInstance()->getFlagByID($row["ID"]);
             if ($plotFlag === null) {
@@ -496,6 +503,7 @@ final class DataProvider {
             ]
         );
         $plotRates = [];
+        /** @phpstan-var array{rate: string, playerUUID: string, rateTime: string, comment: string|null} $row */
         foreach ($rows as $row) {
             $rateTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["rateTime"]);
             $plotRate = new PlotRate(
@@ -637,6 +645,7 @@ final class DataProvider {
                 "mergeZ" => $plot->getZ()
             ]
         );
+        /** @phpstan-var array{originX: int, originZ: int}|null $plotData */
         $plotData = $rows[array_key_first($rows)] ?? null;
         if ($plotData === null) {
             /** @phpstan-var Plot|null $plot */
@@ -730,6 +739,7 @@ final class DataProvider {
             ]
         );
         $plots = [];
+        /** @phpstan-var array{worldName: string, x: int, z: int} $row */
         foreach ($rows as $row) {
             /** @phpstan-var Plot|null $plot */
             $plot = yield $this->awaitPlot($row["worldName"], $row["x"], $row["z"]);
@@ -775,7 +785,8 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-param BaseAttribute<mixed> $flag
+     * @phpstan-template TAttributeValue
+     * @phpstan-param BaseAttribute<TAttributeValue> $flag
      * @phpstan-return \Generator<int, mixed, void, void>
      */
     public function savePlotFlag(Plot $plot, BaseAttribute $flag) : \Generator {

@@ -41,9 +41,11 @@ abstract class ChunkFetchingAsyncTask extends CPlotAsyncTask {
 
     protected function getChunkManager() : SimpleChunkManager {
         $manager = new SimpleChunkManager($this->minY, $this->maxY);
-        foreach (unserialize($this->chunks, ["allowed_classes" => false]) as $hash => $serializedChunk) {
+        /** @phpstan-var array<int, string> $chunks */
+        $chunks = unserialize($this->chunks, ["allowed_classes" => false]);
+        foreach ($chunks as $hash => $chunk) {
             World::getXZ($hash, $chunkX, $chunkZ);
-            $manager->setChunk($chunkX, $chunkZ, FastChunkSerializer::deserializeTerrain($serializedChunk));
+            $manager->setChunk($chunkX, $chunkZ, FastChunkSerializer::deserializeTerrain($chunk));
         }
         return $manager;
     }

@@ -25,11 +25,17 @@ abstract class EconomyProvider {
     /**
      * @internal method to get fetch a player's money from the economy plugin while also using a
      * {@see \Generator} function which we can handle with {@see Await}.
-     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, mixed, float|null>
+     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, \Closure(mixed=): void|\Closure(\Throwable): void|(float|null), float|null>
      */
     final public function awaitMoney(Player $player) : \Generator {
-        $this->getMoney($player, yield Await::RESOLVE, yield Await::REJECT);
-        return yield Await::ONCE;
+        /** @phpstan-var \Closure(mixed=): void $onSuccess */
+        $onSuccess = yield Await::RESOLVE;
+        /** @phpstan-var \Closure(\Throwable): void $onError */
+        $onError = yield Await::REJECT;
+        $this->getMoney($player, $onSuccess, $onError);
+        /** @phpstan-var float|null $money */
+        $money = yield Await::ONCE;
+        return $money;
     }
 
     /**
@@ -45,11 +51,17 @@ abstract class EconomyProvider {
     /**
      * @internal method to remove money from a player through the economy plugin while also using a
      * {@see \Generator} function which we can handle with {@see Await}.
-     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, mixed, null>
+     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, \Closure(mixed=): void|\Closure(\Throwable): void|null, null>
      */
     final public function awaitMoneyRemoval(Player $player, float $money) : \Generator {
-        $this->removeMoney($player, $money, yield Await::RESOLVE, yield Await::REJECT);
-        return yield Await::ONCE;
+        /** @phpstan-var \Closure(mixed=): void $onSuccess */
+        $onSuccess = yield Await::RESOLVE;
+        /** @phpstan-var \Closure(\Throwable): void $onError */
+        $onError = yield Await::REJECT;
+        $this->removeMoney($player, $money, $onSuccess, $onError);
+        /** @phpstan-var null $return */
+        $return = yield Await::ONCE;
+        return $return;
     }
 
     /**

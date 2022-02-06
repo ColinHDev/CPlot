@@ -109,7 +109,8 @@ class PlayerData implements Cacheable {
     }
 
     /**
-     * @phpstan-param BaseAttribute<mixed> $setting
+     * @phpstan-template TAttributeValue
+     * @phpstan-param BaseAttribute<TAttributeValue> $setting
      */
     public function addSetting(BaseAttribute $setting) : void {
         $this->settings[$setting->getID()] = $setting;

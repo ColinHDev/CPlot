@@ -1,5 +1,5 @@
 parameters:
-	level: 8
+	level: 9
 	paths:
 		- src
 	scanDirectories:
@@ -11,3 +11,6 @@ parameters:
 		-
 			message: '#Call to an undefined method [a-zA-Z0-9\\_]+::asyncSelect\(\)#'
 			path: src/ColinHDev/CPlot/provider/DataProvider.php
+
+includes:
+	- phpstan-baseline.neon

@@ -34,15 +34,15 @@ class PlotGenerator extends Generator {
 
     public function __construct(int $seed, string $preset) {
         parent::__construct($seed, $preset);
+        $generatorOptions = [];
         if ($preset !== "") {
             $generatorOptions = json_decode($preset, true);
             if ($generatorOptions === false || is_null($generatorOptions)) {
                 $generatorOptions = [];
             }
-        } else {
-            $generatorOptions = [];
         }
 
+        /** @phpstan-var array{roadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $generatorOptions */
         $this->schematicRoadName = ParseUtils::parseStringFromArray($generatorOptions, "roadSchematic") ?? "default";
         $this->schematicPlotName = ParseUtils::parseStringFromArray($generatorOptions, "plotSchematic") ?? "default";
 

@@ -275,7 +275,8 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-param BaseAttribute<mixed> $flag
+     * @phpstan-template TAttributeValue
+     * @phpstan-param BaseAttribute<TAttributeValue> $flag
      */
     public function addFlag(BaseAttribute $flag) : void {
         $this->flags[$flag->getID()] = $flag;
@@ -572,9 +573,17 @@ class Plot extends BasePlot {
         parent::__unserialize($data);
         $this->biomeID = $data["biomeID"];
         $this->alias = $data["alias"];
-        $this->mergePlots = unserialize($data["mergePlots"], ["allowed_classes" => false]);
-        $this->plotPlayers = unserialize($data["plotPlayers"], ["allowed_classes" => false]);
-        $this->flags = unserialize($data["flags"], ["allowed_classes" => false]);
-        $this->plotRates = unserialize($data["plotRates"], ["allowed_classes" => false]);
+        /** @phpstan-var array<string, MergePlot> $mergePlots */
+        $mergePlots = unserialize($data["mergePlots"], ["allowed_classes" => false]);
+        $this->mergePlots = $mergePlots;
+        /** @phpstan-var array<string, PlotPlayer> $plotPlayers */
+        $plotPlayers = unserialize($data["plotPlayers"], ["allowed_classes" => false]);
+        $this->plotPlayers = $plotPlayers;
+        /** @phpstan-var array<string, BaseAttribute<mixed>> $flags */
+        $flags = unserialize($data["flags"], ["allowed_classes" => false]);
+        $this->flags = $flags;
+        /** @phpstan-var array<string, PlotRate> $plotRates */
+        $plotRates = unserialize($data["plotRates"], ["allowed_classes" => false]);
+        $this->plotRates = $plotRates;
     }
 }

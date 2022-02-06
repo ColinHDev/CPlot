@@ -222,7 +222,9 @@ class BasePlot implements Cacheable {
      */
     public function __unserialize(array $data) : void {
         $this->worldName = $data["worldName"];
-        $this->worldSettings = unserialize($data["worldSettings"], ["allowed_classes" => [WorldSettings::class]]);
+        $worldSettings = unserialize($data["worldSettings"], ["allowed_classes" => [WorldSettings::class]]);
+        assert($worldSettings instanceof WorldSettings);
+        $this->worldSettings = $worldSettings;
         $this->x = $data["x"];
         $this->z = $data["z"];
     }
