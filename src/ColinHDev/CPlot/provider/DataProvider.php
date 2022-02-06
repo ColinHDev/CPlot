@@ -68,9 +68,9 @@ final class DataProvider {
     private const SET_PLOTRATE = "cplot.set.plotRate";
 
     private const DELETE_PLAYERSETTING = "cplot.delete.playerSetting";
-    private const DELETE_PLOT = "cplot.delete.playerSetting";
-    private const DELETE_PLOTPLAYER = "cplot.delete.playerSetting";
-    private const DELETE_PLOTFLAG = "cplot.delete.playerSetting";
+    private const DELETE_PLOT = "cplot.delete.plot";
+    private const DELETE_PLOTPLAYER = "cplot.delete.plotPlayer";
+    private const DELETE_PLOTFLAG = "cplot.delete.plotFlag";
 
     private DataConnector $database;
 
