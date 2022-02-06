@@ -258,7 +258,7 @@ INSERT OR REPLACE INTO worlds (
 -- #      :x int
 -- #      :z int
 -- #      :biomeID int
--- #      :alias string
+-- #      :alias ?string
 INSERT INTO plots (worldName, x, z, biomeID, alias)
 VALUES (:worldName, :x, :z, :biomeID, :alias) AS new
 ON DUPLICATE KEY UPDATE biomeID = new.biomeID, alias = new.alias;
@@ -299,7 +299,7 @@ VALUES (:worldName, :x, :z, :ID, :value);
 -- #      :rate string
 -- #      :playerUUID string
 -- #      :rateTime string
--- #      :comment string
+-- #      :comment ?string
 INSERT INTO plotRates (worldName, x, z, rate, playerUUID, rateTime, comment)
 VALUES (:worldName, :x, :z, :rate, :playerUUID, :rateTime, :comment) AS new
 ON DUPLICATE KEY UPDATE rate = new.rate, comment = new.comment;

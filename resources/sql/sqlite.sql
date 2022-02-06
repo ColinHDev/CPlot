@@ -258,7 +258,7 @@ INSERT OR REPLACE INTO worlds (
 -- #      :x int
 -- #      :z int
 -- #      :biomeID int
--- #      :alias string
+-- #      :alias ?string
 INSERT INTO plots (worldName, x, z, biomeID, alias)
 VALUES (:worldName, :x, :z, :biomeID, :alias)
 ON CONFLICT DO UPDATE SET biomeID = excluded.biomeID, alias = excluded.alias;
@@ -299,7 +299,7 @@ VALUES (:worldName, :x, :z, :ID, :value);
 -- #      :rate string
 -- #      :playerUUID string
 -- #      :rateTime string
--- #      :comment string
+-- #      :comment ?string
 INSERT INTO plotRates (worldName, x, z, rate, playerUUID, rateTime, comment)
 VALUES (:worldName, :x, :z, :rate, :playerUUID, :rateTime, :comment)
 ON CONFLICT DO UPDATE SET rate = excluded.rate, comment = excluded.comment;
