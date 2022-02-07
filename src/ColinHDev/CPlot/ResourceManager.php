@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot;
 
+use ColinHDev\CPlot\worlds\schematic\Schematic;
 use pocketmine\lang\Language;
 use pocketmine\lang\Translatable;
 use pocketmine\utils\Config;
@@ -27,8 +28,17 @@ class ResourceManager {
 
         CPlot::getInstance()->saveResource("borders.yml");
         CPlot::getInstance()->saveResource("config.yml");
-        CPlot::getInstance()->saveResource("language.ini");
         CPlot::getInstance()->saveResource("walls.yml");
+
+        foreach (CPlot::getInstance()->getResources() as $path => $fileInfo) {
+            if (strtolower($fileInfo->getExtension()) !== "ini") {
+                continue;
+            }
+            $subdirectory = str_replace(DIRECTORY_SEPARATOR . $fileInfo->getFilename(), "", $path);
+            if (strtolower($subdirectory) === "language") {
+                CPlot::getInstance()->saveResource($path);
+            }
+        }
 
         $this->bordersConfig = new Config(CPlot::getInstance()->getDataFolder() . "borders.yml", Config::YAML);
         $this->config = new Config(CPlot::getInstance()->getDataFolder() . "config.yml", Config::YAML);
