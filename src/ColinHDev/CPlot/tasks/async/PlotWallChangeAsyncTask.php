@@ -34,7 +34,7 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
     }
 
     public function onRun() : void {
-        /** @phpstan-var array{worldType: string, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, borderBlockOnClaim: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string} $worldSettingsArray */
+        /** @phpstan-var array{worldName: string, worldType: string, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, borderBlockOnClaim: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string} $worldSettingsArray */
         $worldSettingsArray = unserialize($this->worldSettings, ["allowed_classes" => false]);
         $worldSettings = WorldSettings::fromArray($worldSettingsArray);
 
