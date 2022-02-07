@@ -78,8 +78,8 @@ class Plot extends BasePlot {
     public function merge(self $plot) : \Generator {
         foreach (array_merge([$plot], $plot->getMergePlots()) as $mergePlot) {
             $mergePlot = MergePlot::fromBasePlot($mergePlot->toBasePlot(), $this->x, $this->z);
-            yield DataProvider::getInstance()->addMergePlot($this, $mergePlot);
             $this->addMergePlot($mergePlot);
+            yield DataProvider::getInstance()->addMergePlot($this, $mergePlot);
         }
 
         foreach ($plot->getPlotPlayers() as $mergePlotPlayer) {
@@ -504,10 +504,11 @@ class Plot extends BasePlot {
         if ($basePlotInNorth !== null && $basePlotInSouth !== null) {
             /** @var Plot|null $plotInNorth */
             $plotInNorth = yield $basePlotInNorth->toAsyncPlot();
+            $plotInSouth = yield $basePlotInSouth->toAsyncPlot();
             if ($plotInNorth === null) {
                 return null;
             }
-            if (!$plotInNorth->isSame($basePlotInSouth)) {
+            if (!$plotInNorth->isSame($plotInSouth)) {
                 return null;
             }
             return $plotInNorth;
@@ -519,10 +520,11 @@ class Plot extends BasePlot {
         if ($basePlotInWest !== null && $basePlotInEast !== null) {
             /** @var Plot|null $plotInWest */
             $plotInWest = yield $basePlotInWest->toAsyncPlot();
+            $plotInEast = yield $basePlotInEast->toAsyncPlot();
             if ($plotInWest === null) {
                 return null;
             }
-            if (!$plotInWest->isSame($basePlotInEast)) {
+            if (!$plotInWest->isSame($plotInEast)) {
                 return null;
             }
             return $plotInWest;
@@ -536,13 +538,16 @@ class Plot extends BasePlot {
         if ($basePlotInNorthWest !== null && $basePlotInNorthEast !== null && $basePlotInSouthWest !== null && $basePlotInSouthEast !== null) {
             /** @var Plot|null $plotInNorthWest */
             $plotInNorthWest = yield $basePlotInNorthWest->toAsyncPlot();
+            $plotInNorthEast = yield $basePlotInNorthEast->toAsyncPlot();
+            $plotInSouthWest = yield $basePlotInSouthWest->toAsyncPlot();
+            $plotInSouthEast = yield $basePlotInSouthEast->toAsyncPlot();
             if ($plotInNorthWest === null) {
                 return null;
             }
             if (
-                !$plotInNorthWest->isSame($basePlotInNorthEast) ||
-                !$plotInNorthWest->isSame($basePlotInSouthWest) ||
-                !$plotInNorthWest->isSame($basePlotInSouthEast)
+                !$plotInNorthWest->isSame($plotInNorthEast) ||
+                !$plotInNorthWest->isSame($plotInSouthWest) ||
+                !$plotInNorthWest->isSame($plotInSouthEast)
             ) {
                 return null;
             }
