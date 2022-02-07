@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot;
 
-use ColinHDev\CPlot\worlds\schematic\Schematic;
 use pocketmine\lang\Language;
-use pocketmine\lang\Translatable;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 
