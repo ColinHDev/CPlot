@@ -18,7 +18,12 @@ class ResourceManager {
     private Config $wallsConfig;
 
     public function __construct() {
-        if (!is_dir(CPlot::getInstance()->getDataFolder() . "schematics")) mkdir(CPlot::getInstance()->getDataFolder() . "schematics");
+        if (!is_dir(CPlot::getInstance()->getDataFolder() . "language")) {
+            mkdir(CPlot::getInstance()->getDataFolder() . "language");
+        }
+        if (!is_dir(CPlot::getInstance()->getDataFolder() . "schematics")) {
+            mkdir(CPlot::getInstance()->getDataFolder() . "schematics");
+        }
 
         CPlot::getInstance()->saveResource("borders.yml");
         CPlot::getInstance()->saveResource("config.yml");
