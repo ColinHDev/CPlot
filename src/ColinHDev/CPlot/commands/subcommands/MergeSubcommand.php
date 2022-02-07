@@ -155,8 +155,8 @@ class MergeSubcommand extends Subcommand {
                 }
             }
         );
-        yield $plot->merge($plotToMerge);
         yield DataProvider::getInstance()->deletePlot($plotToMerge);
+        yield $plot->merge($plotToMerge);
         Server::getInstance()->getAsyncPool()->submitTask($task);
         return null;
     }
