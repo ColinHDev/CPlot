@@ -147,7 +147,7 @@ class WorldSettings implements Cacheable {
      * @phpstan-param array{worldName?: string, worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, borderBlockOnClaim?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings
      */
     public static function fromArray(array $settings) : self {
-        $worldName = ParseUtils::parseStringFromArray($settings, "worldName");
+        $worldName = ParseUtils::parseStringFromArray($settings, "worldName") ?? "";
 
         $worldType = ParseUtils::parseStringFromArray($settings, "worldType") ?? self::TYPE_CPLOT_DEFAULT;
 

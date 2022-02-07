@@ -502,10 +502,11 @@ class Plot extends BasePlot {
         $basePlotInNorth = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::NORTH, $worldSettings->getRoadSize()));
         $basePlotInSouth = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::SOUTH, $worldSettings->getRoadSize()));
         if ($basePlotInNorth !== null && $basePlotInSouth !== null) {
-            /** @var Plot|null $plotInNorth */
+            /** @phpstan-var Plot|null $plotInNorth */
             $plotInNorth = yield $basePlotInNorth->toAsyncPlot();
+            /** @phpstan-var Plot|null $plotInSouth */
             $plotInSouth = yield $basePlotInSouth->toAsyncPlot();
-            if ($plotInNorth === null) {
+            if ($plotInNorth === null || $plotInSouth === null) {
                 return null;
             }
             if (!$plotInNorth->isSame($plotInSouth)) {
@@ -518,10 +519,11 @@ class Plot extends BasePlot {
         $basePlotInWest = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::WEST, $worldSettings->getRoadSize()));
         $basePlotInEast = parent::fromVector3($worldName, $worldSettings, $position->getSide(Facing::EAST, $worldSettings->getRoadSize()));
         if ($basePlotInWest !== null && $basePlotInEast !== null) {
-            /** @var Plot|null $plotInWest */
+            /** @phpstan-var Plot|null $plotInWest */
             $plotInWest = yield $basePlotInWest->toAsyncPlot();
+            /** @phpstan-var Plot|null $plotInEast */
             $plotInEast = yield $basePlotInEast->toAsyncPlot();
-            if ($plotInWest === null) {
+            if ($plotInWest === null || $plotInEast === null) {
                 return null;
             }
             if (!$plotInWest->isSame($plotInEast)) {
@@ -536,12 +538,15 @@ class Plot extends BasePlot {
         $basePlotInSouthWest = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add(- $worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
         $basePlotInSouthEast = parent::fromVector3($worldName, $worldSettings, Position::fromObject($position->add($worldSettings->getRoadSize(), 0, $worldSettings->getRoadSize()), $position->getWorld()));
         if ($basePlotInNorthWest !== null && $basePlotInNorthEast !== null && $basePlotInSouthWest !== null && $basePlotInSouthEast !== null) {
-            /** @var Plot|null $plotInNorthWest */
+            /** @phpstan-var Plot|null $plotInNorthWest */
             $plotInNorthWest = yield $basePlotInNorthWest->toAsyncPlot();
+            /** @phpstan-var Plot|null $plotInNorthEast */
             $plotInNorthEast = yield $basePlotInNorthEast->toAsyncPlot();
+            /** @phpstan-var Plot|null $plotInSouthWest */
             $plotInSouthWest = yield $basePlotInSouthWest->toAsyncPlot();
+            /** @phpstan-var Plot|null $plotInSouthEast */
             $plotInSouthEast = yield $basePlotInSouthEast->toAsyncPlot();
-            if ($plotInNorthWest === null) {
+            if ($plotInNorthWest === null || $plotInNorthEast === null || $plotInSouthWest === null || $plotInSouthEast === null) {
                 return null;
             }
             if (
