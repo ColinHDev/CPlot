@@ -30,7 +30,7 @@ class EntityMovementTask extends Task {
             $worldName = $world->getFolderName();
             $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($worldName);
             if (!$worldSettings instanceof WorldSettings) {
-                return;
+                continue;
             }
 
             foreach ($world->updateEntities as $entity) {
@@ -64,7 +64,7 @@ class EntityMovementTask extends Task {
                     $position->getFloorY() === $lastPosition->getFloorY() &&
                     $position->getFloorZ() === $lastPosition->getFloorZ()
                 ) {
-                    return;
+                    continue;
                 }
 
                 $lastBasePlot = BasePlot::fromVector3($worldName, $worldSettings, $lastPosition);
