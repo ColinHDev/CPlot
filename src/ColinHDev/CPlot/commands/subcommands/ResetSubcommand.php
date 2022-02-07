@@ -36,7 +36,7 @@ class ResetSubcommand extends Subcommand {
             return null;
         }
 
-        $plot = yield Plot::awaitFromPosition($sender->getPosition(), false);
+        $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("reset.noPlot"));
             return null;
