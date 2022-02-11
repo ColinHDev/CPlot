@@ -5,18 +5,15 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
-use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\Permission;
 use pocketmine\player\Player;
-use pocketmine\Server;
 
 /**
  * @phpstan-extends Subcommand<null>
@@ -29,8 +26,7 @@ class ClaimSubcommand extends Subcommand {
             return null;
         }
 
-        $worldSettings = yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
-        if (!($worldSettings instanceof WorldSettings)) {
+        if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlotWorld"));
             return null;
         }
@@ -82,25 +78,6 @@ class ClaimSubcommand extends Subcommand {
         $plot->addPlotPlayer($senderData);
         yield DataProvider::getInstance()->savePlot($plot);
         yield DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
-
-        $world = $sender->getWorld();
-        $blockBorderOnClaim = $worldSettings->getBorderBlockOnClaim();
-        $task = new PlotBorderChangeAsyncTask($world, $worldSettings, $plot, $blockBorderOnClaim);
-        $task->setCallback(
-            static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $sender, $blockBorderOnClaim) {
-                $plotCount = count($plot->getMergePlots()) + 1;
-                $plots = array_map(
-                    static function (BasePlot $plot) : string {
-                        return $plot->toSmallString();
-                    },
-                    array_merge([$plot], $plot->getMergePlots())
-                );
-                Server::getInstance()->getLogger()->debug(
-                    "Changing plot border due to plot claim to " . $blockBorderOnClaim->getName() . " (ID:Meta: " . $blockBorderOnClaim->getId() . ":" . $blockBorderOnClaim->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
-                );
-            }
-        );
-        Server::getInstance()->getAsyncPool()->submitTask($task);
 
         $sender->sendMessage($this->getPrefix() . $this->translateString("claim.success", [$plot->toString(), $plot->toSmallString()]));
         return null;

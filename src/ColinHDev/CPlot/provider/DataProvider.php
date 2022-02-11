@@ -312,7 +312,7 @@ final class DataProvider {
             self::GET_WORLD,
             ["worldName" => $worldName]
         );
-        /** @phpstan-var null|array{worldName?: string, worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, borderBlockOnClaim?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $worldData */
+        /** @phpstan-var null|array{worldName?: string, worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $worldData */
         $worldData = $rows[array_key_first($rows)] ?? null;
         if ($worldData === null) {
             $worldSettings = new NonWorldSettings();
@@ -340,7 +340,6 @@ final class DataProvider {
                 "groundSize" => $worldSettings->getGroundSize(),
                 "roadBlock" => ParseUtils::parseStringFromBlock($worldSettings->getRoadBlock()),
                 "borderBlock" => ParseUtils::parseStringFromBlock($worldSettings->getBorderBlock()),
-                "borderBlockOnClaim" => ParseUtils::parseStringFromBlock($worldSettings->getBorderBlockOnClaim()),
                 "plotFloorBlock" => ParseUtils::parseStringFromBlock($worldSettings->getPlotFloorBlock()),
                 "plotFillBlock" => ParseUtils::parseStringFromBlock($worldSettings->getPlotFillBlock()),
                 "plotBottomBlock" => ParseUtils::parseStringFromBlock($worldSettings->getPlotBottomBlock())

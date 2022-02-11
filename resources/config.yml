@@ -41,9 +41,6 @@ worldSettings:
     # the block that makes up the border of the plot
     # default value: "Smooth Stone Slab"
     borderBlock: "Smooth Stone Slab"
-    # the block that makes up the border of the plot when it is claimed
-    # default value: "Cobblestone Slab"
-    borderBlockOnClaim: "Cobblestone Slab"
 
     # the block that makes up the floor of the plot
     # default value: "Grass"

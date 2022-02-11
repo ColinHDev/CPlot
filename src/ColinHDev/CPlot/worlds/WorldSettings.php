@@ -28,12 +28,11 @@ class WorldSettings implements Cacheable {
 
     private Block $roadBlock;
     private Block $borderBlock;
-    private Block $borderBlockOnClaim;
     private Block $plotFloorBlock;
     private Block $plotFillBlock;
     private Block $plotBottomBlock;
 
-    public function __construct(string $worldName, string $worldType, string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, Block $roadBlock, Block $borderBlock, Block $borderBlockOnClaim, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
+    public function __construct(string $worldName, string $worldType, string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, Block $roadBlock, Block $borderBlock, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
         $this->worldName = $worldName;
 
         $this->worldType = $worldType;
@@ -48,7 +47,6 @@ class WorldSettings implements Cacheable {
 
         $this->roadBlock = $roadBlock;
         $this->borderBlock = $borderBlock;
-        $this->borderBlockOnClaim = $borderBlockOnClaim;
         $this->plotFloorBlock = $plotFloorBlock;
         $this->plotFillBlock = $plotFillBlock;
         $this->plotBottomBlock = $plotBottomBlock;
@@ -94,10 +92,6 @@ class WorldSettings implements Cacheable {
         return $this->borderBlock;
     }
 
-    public function getBorderBlockOnClaim() : Block {
-        return $this->borderBlockOnClaim;
-    }
-
     public function getPlotFloorBlock() : Block {
         return $this->plotFloorBlock;
     }
@@ -111,7 +105,7 @@ class WorldSettings implements Cacheable {
     }
 
     /**
-     * @phpstan-return array{worldName: string, worldType: string, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, borderBlockOnClaim: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string}
+     * @phpstan-return array{worldName: string, worldType: string, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string}
      */
     public function toArray() : array {
         return [
@@ -129,7 +123,6 @@ class WorldSettings implements Cacheable {
 
             "roadBlock" => ParseUtils::parseStringFromBlock($this->roadBlock),
             "borderBlock" => ParseUtils::parseStringFromBlock($this->borderBlock),
-            "borderBlockOnClaim" => ParseUtils::parseStringFromBlock($this->borderBlockOnClaim),
             "plotFloorBlock" => ParseUtils::parseStringFromBlock($this->plotFloorBlock),
             "plotFillBlock" => ParseUtils::parseStringFromBlock($this->plotFillBlock),
             "plotBottomBlock" => ParseUtils::parseStringFromBlock($this->plotBottomBlock)
@@ -137,14 +130,14 @@ class WorldSettings implements Cacheable {
     }
 
     public static function fromConfig(string $worldName) : self {
-        /** @phpstan-var array{worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, borderBlockOnClaim?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings */
+        /** @phpstan-var array{worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings */
         $settings = ResourceManager::getInstance()->getConfig()->get("worldSettings", []);
         $settings["worldName"] = $worldName;
         return self::fromArray($settings);
     }
 
     /**
-     * @phpstan-param array{worldName?: string, worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, borderBlockOnClaim?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings
+     * @phpstan-param array{worldName?: string, worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings
      */
     public static function fromArray(array $settings) : self {
         $worldName = ParseUtils::parseStringFromArray($settings, "worldName") ?? "";
@@ -161,7 +154,6 @@ class WorldSettings implements Cacheable {
 
         $roadBlock = ParseUtils::parseBlockFromArray($settings, "roadBlock") ?? VanillaBlocks::OAK_PLANKS();
         $borderBlock = ParseUtils::parseBlockFromArray($settings, "borderBlock") ?? VanillaBlocks::STONE_SLAB();
-        $borderBlockOnClaim = ParseUtils::parseBlockFromArray($settings, "borderBlockOnClaim") ?? VanillaBlocks::COBBLESTONE_SLAB();
         $plotFloorBlock = ParseUtils::parseBlockFromArray($settings, "plotFloorBlock") ?? VanillaBlocks::GRASS();
         $plotFillBlock = ParseUtils::parseBlockFromArray($settings, "plotFillBlock") ?? VanillaBlocks::DIRT();
         $plotBottomBlock = ParseUtils::parseBlockFromArray($settings, "plotBottomBlock") ?? VanillaBlocks::BEDROCK();
@@ -171,7 +163,7 @@ class WorldSettings implements Cacheable {
             $worldType,
             $roadSchematic, $mergeRoadSchematic, $plotSchematic,
             $roadSize, $plotSize, $groundSize,
-            $roadBlock, $borderBlock, $borderBlockOnClaim, $plotFloorBlock, $plotFillBlock, $plotBottomBlock
+            $roadBlock, $borderBlock, $plotFloorBlock, $plotFillBlock, $plotBottomBlock
         );
     }
 }
