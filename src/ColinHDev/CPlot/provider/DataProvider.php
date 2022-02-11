@@ -129,15 +129,23 @@ final class DataProvider {
     /**
      * Fetches and returns the {@see PlayerData} of a player by its UUID synchronously from the {@see DataProvider::getPlayerCache()}.
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
-     * is synchronously available the next time this method is called.
+     * is synchronously available the next time this method is called. By providing a callback, the player data can be
+     * worked with once it was successfully loaded from the database.
+     * @phpstan-param null|\Closure(PlayerData|null): void $onSuccess
+     * @phpstan-param null|\Closure(\Throwable): void $onError
      */
-    public function loadPlayerDataByUUIDIntoCache(string $playerUUID) : ?PlayerData {
+    public function getPlayerDataByUUID(string $playerUUID, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?PlayerData {
         $playerData = $this->getPlayerCache()->getObjectFromCache($playerUUID);
         if ($playerData instanceof PlayerData) {
+            if ($onSuccess !== null) {
+                $onSuccess($playerData);
+            }
             return $playerData;
         }
         Await::g2c(
             $this->awaitPlayerDataByUUID($playerUUID),
+            $onSuccess,
+            $onError
         );
         return null;
     }
