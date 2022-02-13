@@ -36,7 +36,7 @@ abstract class LanguageProvider {
     }
 
     /**
-     * This method is used to translate a message using the fallback language.
+     * This method is used to translate a message for the given {@see CommandSender}.
      * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
      * @phpstan-param null|\Closure(string): void $onSuccess
      * @phpstan-param null|\Closure(\Throwable): void $onError
