@@ -24,7 +24,7 @@ abstract class LanguageProvider {
      * @internal method to translate a message for the given {@see CommandSender} while also using a {@see \Generator}
      * function which we can handle with {@see Await}.
      * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
-     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, \Closure(mixed=): void|\Closure(\Throwable): void|null, null>
+     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, (\Closure(mixed=): void)|(\Closure(\Throwable): void)|string, string>
      */
     final public function awaitTranslationForCommandSender(CommandSender $sender, array|string $keys) : \Generator {
         /** @phpstan-var \Closure(mixed=): void $onSuccess */
@@ -47,7 +47,7 @@ abstract class LanguageProvider {
      * @internal method to send a message to the given {@see CommandSender} while also using a {@see \Generator}
      * function which we can handle with {@see Await}.
      * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
-     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, \Closure(mixed=): void|\Closure(\Throwable): void|null, null>
+     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, (\Closure(mixed=): void)|(\Closure(\Throwable): void)|null, null>
      */
     final public function awaitMessageSendage(CommandSender $sender, array|string $keys) : \Generator {
         /** @phpstan-var \Closure(mixed=): void $onSuccess */
@@ -70,7 +70,7 @@ abstract class LanguageProvider {
      * @internal method to send a tip to the given {@see Player} while also using a {@see \Generator}
      * function which we can handle with {@see Await}.
      * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
-     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, \Closure(mixed=): void|\Closure(\Throwable): void|null, null>
+     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, (\Closure(mixed=): void)|(\Closure(\Throwable): void)|null, null>
      */
     final public function awaitTipSendage(Player $player, array|string $keys) : \Generator {
         /** @phpstan-var \Closure(mixed=): void $onSuccess */
