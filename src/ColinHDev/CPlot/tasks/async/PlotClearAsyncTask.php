@@ -39,7 +39,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
     }
 
     public function onRun() : void {
-        /** @phpstan-var array{worldName: string, worldType: string, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, borderBlockOnClaim: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string} $worldSettingsArray */
+        /** @phpstan-var array{worldName: string, worldType: string, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string} $worldSettingsArray */
         $worldSettingsArray = unserialize($this->worldSettings, ["allowed_classes" => false]);
         $worldSettings = WorldSettings::fromArray($worldSettingsArray);
         /** @var bool $hasPlotOwner */
@@ -193,11 +193,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
                         if ($y === $world->getMinY()) {
                             $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
                         } else if ($y === $worldSettings->getGroundSize() + 1) {
-                            if (!$hasPlotOwner) {
-                                $fullBlock = $worldSettings->getBorderBlock()->getFullId();
-                            } else {
-                                $fullBlock = $worldSettings->getBorderBlockOnClaim()->getFullId();
-                            }
+                            $fullBlock = $worldSettings->getBorderBlock()->getFullId();
                         } else if ($y <= $worldSettings->getGroundSize()) {
                             $fullBlock = $worldSettings->getRoadBlock()->getFullId();
                         } else {
