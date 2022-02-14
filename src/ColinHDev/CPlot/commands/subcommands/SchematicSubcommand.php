@@ -91,7 +91,7 @@ class SchematicSubcommand extends Subcommand {
                 /** @phpstan-var string $creationTime */
                 $creationTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $sender,
-                    ["schematic.info.success.timeformat" => explode(".", date("d.m.Y.H.i.s", (int) (round($schematic->getCreationTime() / 1000))))]
+                    ["schematic.info.success.timeformat" => explode(".", date("d.m.Y.H.i.s", $schematic->getCreationTime()))]
                 );
                 /** @phpstan-var string $type */
                 $type = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $typeString);

@@ -45,7 +45,7 @@ class TrustedSubcommand extends Subcommand {
             /** @phpstan-var string $addTime */
             $addTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
-                ["trusted.success.list.addTime.format" => explode(".", date("d.m.Y.H.i.s", (int) (round($plotPlayer->getAddTime() / 1000))))]
+                ["trusted.success.list.addTime.format" => explode(".", date("d.m.Y.H.i.s", $plotPlayer->getAddTime()))]
             );
             $trustedPlayerData[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,

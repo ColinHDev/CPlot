@@ -45,7 +45,7 @@ class HelpersSubcommand extends Subcommand {
             /** @phpstan-var string $addTime */
             $addTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
-                ["helpers.success.list.addTime.format" => explode(".", date("d.m.Y.H.i.s", (int) (round($plotPlayer->getAddTime() / 1000))))]
+                ["helpers.success.list.addTime.format" => explode(".", date("d.m.Y.H.i.s", $plotPlayer->getAddTime()))]
             );
             $helperData[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,

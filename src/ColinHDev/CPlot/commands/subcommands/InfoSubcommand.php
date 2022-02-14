@@ -48,7 +48,7 @@ class InfoSubcommand extends Subcommand {
             /** @phpstan-var string $addTime */
             $addTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
-                ["info.owners.time.format" => explode(".", date("d.m.Y.H.i.s", (int) (round($plotOwner->getAddTime() / 1000))))]
+                ["info.owners.time.format" => explode(".", date("d.m.Y.H.i.s", $plotOwner->getAddTime()))]
             );
             $plotOwnerData[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
