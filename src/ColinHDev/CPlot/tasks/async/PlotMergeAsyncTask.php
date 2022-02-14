@@ -23,7 +23,6 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
     use RoadAreaCalculationTrait;
 
     private string $worldSettings;
-    private string $hasPlotOwner;
 
     public function __construct(World $world, WorldSettings $worldSettings, Plot $plot, Plot $plotToMerge) {
         $this->worldSettings = serialize($worldSettings->toArray());
