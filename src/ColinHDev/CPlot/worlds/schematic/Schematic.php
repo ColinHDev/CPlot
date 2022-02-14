@@ -13,7 +13,6 @@ use pocketmine\nbt\TreeRoot;
 use pocketmine\world\ChunkManager;
 use pocketmine\world\format\SubChunk;
 use pocketmine\world\utils\SubChunkExplorer;
-use pocketmine\world\utils\SubChunkExplorerStatus;
 use pocketmine\world\World;
 
 class Schematic implements SchematicTypes {
@@ -108,7 +107,7 @@ class Schematic implements SchematicTypes {
 
     public function loadFromWorld(ChunkManager $world, string $type, int $roadSize, int $plotSize) : bool {
         $this->version = self::SCHEMATIC_VERSION;
-        $this->creationTime = (int) (round(microtime(true) * 1000));
+        $this->creationTime = time();
         $this->type = $type;
         $this->roadSize = $roadSize;
         $this->plotSize = $plotSize;
