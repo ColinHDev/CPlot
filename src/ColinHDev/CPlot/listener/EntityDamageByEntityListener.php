@@ -8,7 +8,7 @@ use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
-use ColinHDev\CPlot\ResourceManager;
+use ColinHDev\CPlot\provider\LanguageManager;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;
@@ -28,7 +28,7 @@ class EntityDamageByEntityListener implements Listener {
 
         $plot = Plot::loadFromPositionIntoCache($damaged->getPosition());
         if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            $damager->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("player.interact.plotNotLoaded"));
+            LanguageManager::getInstance()->getProvider()->sendMessage($damager, ["prefix", "player.interact.plotNotLoaded"]);
             $event->cancel();
             return;
         }

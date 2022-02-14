@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\generator\PlotGenerator;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
@@ -24,12 +25,12 @@ class GenerateSubcommand extends Subcommand {
      */
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
-            $sender->sendMessage($this->getPrefix() . $this->getUsage());
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.usage"]);
             return null;
         }
         $worldName = $args[0];
         if ($sender->getServer()->getWorldManager()->isWorldGenerated($worldName)) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("generate.worldExists", [$worldName]));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.worldExists" => $worldName]);
             return null;
         }
 
@@ -39,7 +40,7 @@ class GenerateSubcommand extends Subcommand {
         $options->setGeneratorOptions(json_encode($worldSettings->toArray(), JSON_THROW_ON_ERROR));
         $options->setSpawnPosition(new Vector3(0, $worldSettings->getGroundSize() + 1, 0));
         if (!Server::getInstance()->getWorldManager()->generateWorld($worldName, $options)) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("generate.generateError"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.generateError"]);
             return null;
         }
         yield DataProvider::getInstance()->addWorld($worldName, $worldSettings);
@@ -47,22 +48,19 @@ class GenerateSubcommand extends Subcommand {
     }
 
     /**
-     * @param string $worldName
+     * @phpstan-param string $return
      */
-    public function onSuccess(CommandSender $sender, mixed $worldName) : void {
+    public function onSuccess(CommandSender $sender, mixed $return) : void {
         if ($sender instanceof Player && !$sender->isConnected()) {
             return;
         }
-        $sender->sendMessage($this->getPrefix() . $this->translateString("generate.success", [$worldName]));
+        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "generate.success" => $return]);
     }
 
-    /**
-     * @param \Throwable $error
-     */
     public function onError(CommandSender $sender, \Throwable $error) : void {
         if ($sender instanceof Player && !$sender->isConnected()) {
             return;
         }
-        $sender->sendMessage($this->getPrefix() . $this->translateString("generate.saveError", [$error->getMessage()]));
+        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "generate.saveError" => $error->getMessage()]);
     }
 }

@@ -9,7 +9,7 @@ use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\ResourceManager;
+use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
@@ -26,7 +26,7 @@ class PlayerDropItemListener implements Listener {
         $position = $player->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
         if ($worldSettings === null) {
-            $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("player.interact.worldNotLoaded"));
+            LanguageManager::getInstance()->getProvider()->sendMessage($player, ["prefix", "player.interact.worldNotLoaded"]);
             $event->cancel();
             return;
         }
@@ -36,7 +36,7 @@ class PlayerDropItemListener implements Listener {
 
         $plot = Plot::loadFromPositionIntoCache($position);
         if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("player.interact.plotNotLoaded"));
+            LanguageManager::getInstance()->getProvider()->sendMessage($player, ["prefix", "player.interact.plotNotLoaded"]);
             $event->cancel();
             return;
         }

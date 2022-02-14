@@ -232,3 +232,6 @@ economy:
     mergePrice: 0.0
     # Define the price it costs to reset a plot.
     resetPrice: 0.0
+
+# Set the default language that will be used when translating a message for a player, whose language is not supported.
+fallback.language: "de_DE"

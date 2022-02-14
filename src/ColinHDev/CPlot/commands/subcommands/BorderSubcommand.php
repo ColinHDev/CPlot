@@ -10,6 +10,7 @@ use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlot\utils\ParseUtils;
@@ -38,11 +39,8 @@ class BorderSubcommand extends Subcommand {
     /** @var array<int, string> */
     private array $permissions = [];
 
-    /**
-     * @phpstan-param array{name: string, alias: array<string>, description: string, usage: string, permissionMessage: string} $commandData
-     */
-    public function __construct(array $commandData, string $permission) {
-        parent::__construct($commandData, $permission);
+    public function __construct(string $key) {
+        parent::__construct($key);
 
         $options = [];
         $permissionManager = PermissionManager::getInstance();
@@ -68,9 +66,10 @@ class BorderSubcommand extends Subcommand {
                 $options[] = new MenuOption($borderData["form"]["button.text"], $icon);
             }
         }
+        $languageProvider = LanguageManager::getInstance()->getProvider();
         $this->form = new MenuForm(
-            $this->translateString("border.form.title"),
-            $this->translateString("border.form.text"),
+            $languageProvider->translateString("border.form.title"),
+            $languageProvider->translateString("border.form.text"),
             $options,
             function (Player $player, int $selectedOption) : void {
                 Await::g2c($this->onFormSubmit($player, $selectedOption));
@@ -79,10 +78,8 @@ class BorderSubcommand extends Subcommand {
     }
 
     public function execute(CommandSender $sender, array $args) : \Generator {
-        /** @phpstan-ignore-next-line */
-        0 && yield;
         if (!$sender instanceof Player) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("border.senderNotOnline"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "border.senderNotOnline"]);
             return null;
         }
 
@@ -95,28 +92,28 @@ class BorderSubcommand extends Subcommand {
      */
     public function onFormSubmit(Player $player, int $selectedOption) : \Generator {
         if (!$player->hasPermission($this->permissions[$selectedOption])) {
-            $player->sendMessage($this->getPrefix() . $this->translateString("border.blockPermissionMessage"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.blockPermissionMessage"]);
             return;
         }
 
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($player->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
-            $player->sendMessage($this->getPrefix() . $this->translateString("border.noPlotWorld"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.noPlotWorld"]);
             return;
         }
 
         $plot = yield Plot::awaitFromPosition($player->getPosition());
         if (!($plot instanceof Plot)) {
-            $player->sendMessage($this->getPrefix() . $this->translateString("border.noPlot"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.noPlot"]);
             return;
         }
         if (!$player->hasPermission("cplot.admin.border")) {
             if (!$plot->hasPlotOwner()) {
-                $player->sendMessage($this->getPrefix() . $this->translateString("border.noPlotOwner"));
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.noPlotOwner"]);
                 return;
             }
             if (!$plot->isPlotOwner($player->getUniqueId()->getBytes())) {
-                $player->sendMessage($this->getPrefix() . $this->translateString("border.notPlotOwner"));
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.notPlotOwner"]);
                 return;
             }
         }
@@ -124,16 +121,16 @@ class BorderSubcommand extends Subcommand {
         /** @var BooleanAttribute $flag */
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            $player->sendMessage($this->getPrefix() . $this->translateString("border.serverPlotFlag", [$flag->getID()]));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.serverPlotFlag" => $flag->getID()]);
             return;
         }
 
-        $player->sendMessage($this->getPrefix() . $this->translateString("border.start"));
+        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.start"]);
         $world = $player->getWorld();
         $block = $this->blocks[$selectedOption];
         $task = new PlotBorderChangeAsyncTask($world, $worldSettings, $plot, $block);
         $task->setCallback(
-            static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $player, $block) {
+            static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $player, $block) : void {
                 $plotCount = count($plot->getMergePlots()) + 1;
                 $plots = array_map(
                     static function (BasePlot $plot) : string {
@@ -144,9 +141,7 @@ class BorderSubcommand extends Subcommand {
                 Server::getInstance()->getLogger()->debug(
                     "Changing plot border to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $player->getUniqueId()->getBytes() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
-                if ($player->isConnected()) {
-                    $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("border.finish", [$elapsedTimeString, $block->getName()]));
-                }
+                LanguageManager::getInstance()->getProvider()->sendMessage($player, ["prefix", "border.finish" => [$elapsedTimeString, $block->getName()]]);
             }
         );
         Server::getInstance()->getAsyncPool()->submitTask($task);

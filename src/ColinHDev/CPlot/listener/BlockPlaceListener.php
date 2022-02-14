@@ -9,7 +9,7 @@ use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\ResourceManager;
+use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -26,7 +26,7 @@ class BlockPlaceListener implements Listener {
         $position = $event->getBlock()->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
         if ($worldSettings === null) {
-            $event->getPlayer()->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("player.place.worldNotLoaded"));
+            LanguageManager::getInstance()->getProvider()->sendMessage($event->getPlayer(), ["prefix", "player.place.worldNotLoaded"]);
             $event->cancel();
             return;
         }
@@ -36,7 +36,7 @@ class BlockPlaceListener implements Listener {
 
         $plot = Plot::loadFromPositionIntoCache($position);
         if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            $event->getPlayer()->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("player.place.plotNotLoaded"));
+            LanguageManager::getInstance()->getProvider()->sendMessage($event->getPlayer(), ["prefix", "player.place.plotNotLoaded"]);
             $event->cancel();
             return;
         }

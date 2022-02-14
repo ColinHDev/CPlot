@@ -11,10 +11,12 @@ use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\player\Player;
 use Ramsey\Uuid\Uuid;
 use SOFe\AwaitGenerator\Await;
 
@@ -64,12 +66,9 @@ class PlayerMoveListener implements Listener {
                                 }
                                 foreach ($setting->getValue() as $value) {
                                     if ($value === $flag->getValue()) {
-                                        $player->sendMessage(
-                                            ResourceManager::getInstance()->getPrefix() .
-                                            ResourceManager::getInstance()->translateString(
-                                                "player.move.setting.warn_flag",
-                                                [$flag->getID(), $flag->toString()]
-                                            )
+                                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                                            $player,
+                                            ["prefix", "player.move.setting.warn_flag" => [$flag->getID(), $flag->toString()]]
                                         );
                                         continue 2;
                                     }
@@ -82,9 +81,9 @@ class PlayerMoveListener implements Listener {
                         /** @var BooleanAttribute $flag */
                         $flag = $plotTo->getFlagNonNullByID(FlagIDs::FLAG_TITLE);
                         if ($flag->getValue() === true) {
-                            $title .= ResourceManager::getInstance()->translateString(
-                                "player.move.plotEnter.title.coordinates",
-                                [$plotTo->getWorldName(), $plotTo->getX(), $plotTo->getZ()]
+                            $title .= yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                                $player,
+                                ["player.move.plotEnter.title.coordinates" => [$plotTo->getWorldName(), $plotTo->getX(), $plotTo->getZ()]]
                             );
                             if ($plotTo->hasPlotOwner()) {
                                 $plotOwners = [];
@@ -92,20 +91,23 @@ class PlayerMoveListener implements Listener {
                                     $plotOwnerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($plotOwner->getPlayerUUID());
                                     $plotOwners[] = $plotOwnerData?->getPlayerName() ?? "ERROR:" . $plotOwner->getPlayerUUID();
                                 }
-                                $title .= ResourceManager::getInstance()->translateString(
-                                    "player.move.plotEnter.title.owner",
-                                    [
-                                        implode(ResourceManager::getInstance()->translateString("player.move.plotEnter.title.owner.separator"), $plotOwners)
-                                    ]
+                                $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                                    $player,
+                                    "player.move.plotEnter.title.owner.separator"
+                                );
+                                $list = implode($separator, $plotOwners);
+                                $title .= yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                                    $player,
+                                    ["player.move.plotEnter.title.owner" => $list]
                                 );
                             }
                         }
                         /** @var StringAttribute $flag */
                         $flag = $plotTo->getFlagNonNullByID(FlagIDs::FLAG_MESSAGE);
                         if ($flag->getValue() !== "") {
-                            $title .= ResourceManager::getInstance()->translateString(
-                                "player.move.plotEnter.title.flag.message",
-                                [$flag->getValue()]
+                            $title .= yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                                $player,
+                                ["player.move.plotEnter.title.flag.message" => $flag->getValue()]
                             );
                         }
                         $player->sendTip($title);
@@ -116,13 +118,12 @@ class PlayerMoveListener implements Listener {
                         if ($flag->getValue() === true) {
                             foreach ($plotTo->getPlotOwners() as $plotOwner) {
                                 $owner = $player->getServer()->getPlayerByUUID(Uuid::fromBytes($plotOwner->getPlayerUUID()));
-                                $owner?->sendMessage(
-                                    ResourceManager::getInstance()->getPrefix() .
-                                    ResourceManager::getInstance()->translateString(
-                                        "player.move.plotEnter.flag.plot_enter",
-                                        [$player->getName(), $plotTo->getWorldName(), $plotTo->getX(), $plotTo->getZ()]
-                                    )
-                                );
+                                if ($owner instanceof Player) {
+                                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                                        $owner,
+                                        ["player.move.plotEnter.flag.plot_enter" => [$player->getName(), $plotTo->getWorldName(), $plotTo->getX(), $plotTo->getZ()]]
+                                    );
+                                }
                             }
                         }
 
@@ -138,13 +139,12 @@ class PlayerMoveListener implements Listener {
                     if ($flag->getValue() === true) {
                         foreach ($plotFrom->getPlotOwners() as $plotOwner) {
                             $owner = $player->getServer()->getPlayerByUUID(Uuid::fromBytes($plotOwner->getPlayerUUID()));
-                            $owner?->sendMessage(
-                                ResourceManager::getInstance()->getPrefix() .
-                                ResourceManager::getInstance()->translateString(
-                                    "player.move.plotLeave.flag.plot_leave",
-                                    [$player->getName(), $plotFrom->getWorldName(), $plotFrom->getX(), $plotFrom->getZ()]
-                                )
-                            );
+                            if ($owner instanceof Player) {
+                                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                                    $owner,
+                                    ["player.move.plotEnter.flag.plot_leave" => [$player->getName(), $plotFrom->getWorldName(), $plotFrom->getX(), $plotFrom->getZ()]]
+                                );
+                            }
                         }
                     }
                 }

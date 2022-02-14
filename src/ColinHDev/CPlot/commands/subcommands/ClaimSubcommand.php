@@ -10,6 +10,7 @@ use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
+use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\Permission;
@@ -22,28 +23,28 @@ class ClaimSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.senderNotOnline"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.senderNotOnline"]);
             return null;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlotWorld"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.noPlotWorld"]);
             return null;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition(), false);
         if (!($plot instanceof Plot)) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.noPlot"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.noPlot"]);
             return null;
         }
 
         $senderUUID = $sender->getUniqueId()->getBytes();
         if ($plot->hasPlotOwner()) {
             if ($plot->isPlotOwner($senderUUID)) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimedBySender"));
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotAlreadyClaimedBySender"]);
                 return null;
             }
-            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotAlreadyClaimed"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotAlreadyClaimed"]);
             return null;
         }
 
@@ -52,7 +53,7 @@ class ClaimSubcommand extends Subcommand {
         $claimedPlotsCount = count($claimedPlots);
         $maxPlots = $this->getMaxPlotsOfPlayer($sender);
         if ($claimedPlotsCount > $maxPlots) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("claim.plotLimitReached", [$claimedPlotsCount, $maxPlots]));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotLimitReached" => [$claimedPlotsCount, $maxPlots]]);
             return null;
         }
 
@@ -62,15 +63,15 @@ class ClaimSubcommand extends Subcommand {
             if ($price > 0.0) {
                 $money = yield $economyProvider->awaitMoney($sender);
                 if (!is_float($money)) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("claim.loadMoneyError"));
+                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.loadMoneyError"]);
                     return null;
                 }
                 if ($money < $price) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("claim.notEnoughMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]));
+                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.senderNotOnline" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]]);
                     return null;
                 }
                 yield $economyProvider->awaitMoneyRemoval($sender, $price);
-                $sender->sendMessage($this->getPrefix() . $this->translateString("claim.chargedMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]));
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.chargedMoney" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]]);
             }
         }
 
@@ -79,7 +80,7 @@ class ClaimSubcommand extends Subcommand {
         yield DataProvider::getInstance()->savePlot($plot);
         yield DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
 
-        $sender->sendMessage($this->getPrefix() . $this->translateString("claim.success", [$plot->toString(), $plot->toSmallString()]));
+        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.success" => [$plot->toString(), $plot->toSmallString()]]);
         return null;
     }
 
@@ -90,7 +91,7 @@ class ClaimSubcommand extends Subcommand {
         if ($sender instanceof Player && !$sender->isConnected()) {
             return;
         }
-        $sender->sendMessage($this->getPrefix() . $this->translateString("claim.saveError", [$error->getMessage()]));
+        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "claim.saveError" => $error->getMessage()]);
     }
 
     private function getMaxPlotsOfPlayer(Player $player) : int {

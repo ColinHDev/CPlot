@@ -10,6 +10,7 @@ use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
 use ColinHDev\CPlot\utils\ParseUtils;
@@ -38,11 +39,8 @@ class WallSubcommand extends Subcommand {
     /** @var array<int, string> */
     private array $permissions = [];
 
-    /**
-     * @phpstan-param array{name: string, alias: array<string>, description: string, usage: string, permissionMessage: string} $commandData
-     */
-    public function __construct(array $commandData, string $permission) {
-        parent::__construct($commandData, $permission);
+    public function __construct(string $key) {
+        parent::__construct($key);
 
         $options = [];
         $permissionManager = PermissionManager::getInstance();
@@ -68,9 +66,10 @@ class WallSubcommand extends Subcommand {
                 $options[] = new MenuOption($wallData["form"]["button.text"], $icon);
             }
         }
+        $languageProvider = LanguageManager::getInstance()->getProvider();
         $this->form = new MenuForm(
-            $this->translateString("wall.form.title"),
-            $this->translateString("wall.form.text"),
+            $languageProvider->translateString("wall.form.title"),
+            $languageProvider->translateString("wall.form.text"),
             $options,
             function (Player $player, int $selectedOption) : void {
                 Await::g2c($this->onFormSubmit($player, $selectedOption));
@@ -79,10 +78,8 @@ class WallSubcommand extends Subcommand {
     }
 
     public function execute(CommandSender $sender, array $args) : \Generator {
-        /** @phpstan-ignore-next-line */
-        0 && yield;
         if (!$sender instanceof Player) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("wall.senderNotOnline"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "wall.senderNotOnline"]);
             return null;
         }
 
@@ -95,28 +92,28 @@ class WallSubcommand extends Subcommand {
      */
     public function onFormSubmit(Player $player, int $selectedOption) : \Generator {
         if (!$player->hasPermission($this->permissions[$selectedOption])) {
-            $player->sendMessage($this->getPrefix() . $this->translateString("wall.blockPermissionMessage"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.blockPermissionMessage"]);
             return;
         }
 
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($player->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
-            $player->sendMessage($this->getPrefix() . $this->translateString("wall.noPlotWorld"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlotWorld"]);
             return;
         }
 
         $plot = yield Plot::awaitFromPosition($player->getPosition());
         if (!($plot instanceof Plot)) {
-            $player->sendMessage($this->getPrefix() . $this->translateString("wall.noPlot"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlot"]);
             return;
         }
         if (!$player->hasPermission("cplot.admin.wall")) {
             if (!$plot->hasPlotOwner()) {
-                $player->sendMessage($this->getPrefix() . $this->translateString("wall.noPlotOwner"));
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlotOwner"]);
                 return;
             }
             if (!$plot->isPlotOwner($player->getUniqueId()->getBytes())) {
-                $player->sendMessage($this->getPrefix() . $this->translateString("wall.notPlotOwner"));
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.notPlotOwner"]);
                 return;
             }
         }
@@ -124,11 +121,11 @@ class WallSubcommand extends Subcommand {
         /** @var BooleanAttribute $flag */
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            $player->sendMessage($this->getPrefix() . $this->translateString("wall.serverPlotFlag", [$flag->getID()]));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.serverPlotFlag" => $flag->getID()]);
             return;
         }
 
-        $player->sendMessage($this->getPrefix() . $this->translateString("wall.start"));
+        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.start"]);
         $world = $player->getWorld();
         $block = $this->blocks[$selectedOption];
         $task = new PlotWallChangeAsyncTask($world, $worldSettings, $plot, $block);
@@ -144,9 +141,7 @@ class WallSubcommand extends Subcommand {
                 Server::getInstance()->getLogger()->debug(
                     "Changing plot wall to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $player->getUniqueId()->getBytes() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
-                if ($player->isConnected()) {
-                    $player->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("wall.finish", [$elapsedTimeString, $block->getName()]));
-                }
+                LanguageManager::getInstance()->getProvider()->sendMessage($player, ["prefix", "wall.finish" => [$elapsedTimeString, $block->getName()]]);
             }
         );
         Server::getInstance()->getAsyncPool()->submitTask($task);

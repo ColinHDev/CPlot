@@ -12,6 +12,7 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
+use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -26,29 +27,29 @@ class ClearSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("clear.senderNotOnline"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.senderNotOnline"]);
             return null;
         }
 
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlotWorld"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlotWorld"]);
             return null;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlot"));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlot"]);
             return null;
         }
 
         if (!$sender->hasPermission("cplot.admin.clear")) {
             if (!$plot->hasPlotOwner()) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("clear.noPlotOwner"));
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlotOwner"]);
                 return null;
             }
             if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
-                $sender->sendMessage($this->getPrefix() . $this->translateString("clear.notPlotOwner"));
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.notPlotOwner"]);
                 return null;
             }
         }
@@ -56,7 +57,7 @@ class ClearSubcommand extends Subcommand {
         /** @var BooleanAttribute $flag */
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            $sender->sendMessage($this->getPrefix() . $this->translateString("clear.serverPlotFlag", [$flag->getID()]));
+            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.serverPlotFlag" => $flag->getID()]);
             return null;
         }
 
@@ -66,23 +67,24 @@ class ClearSubcommand extends Subcommand {
             if ($price > 0.0) {
                 $money = yield $economyProvider->awaitMoney($sender);
                 if (!is_float($money)) {
+                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.loadMoneyError"]);
                     $sender->sendMessage($this->getPrefix() . $this->translateString("clear.loadMoneyError"));
                     return null;
                 }
                 if ($money < $price) {
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("clear.notEnoughMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]));
+                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.notEnoughMoney" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]]);
                     return null;
                 }
                 yield $economyProvider->awaitMoneyRemoval($sender, $price);
-                $sender->sendMessage($this->getPrefix() . $this->translateString("clear.chargedMoney", [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]));
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.chargedMoney" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]]);
             }
         }
 
-        $sender->sendMessage($this->getPrefix() . $this->translateString("clear.start"));
+        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.start"]);
         $world = $sender->getWorld();
         $task = new PlotClearAsyncTask($world, $worldSettings, $plot);
         $task->setCallback(
-            static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $sender) {
+            static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $sender) : void {
                 $plotCount = count($plot->getMergePlots()) + 1;
                 $plots = array_map(
                     static function (BasePlot $plot) : string {
@@ -93,9 +95,7 @@ class ClearSubcommand extends Subcommand {
                 Server::getInstance()->getLogger()->debug(
                     "Clearing plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
                 );
-                if ($sender->isConnected()) {
-                    $sender->sendMessage(ResourceManager::getInstance()->getPrefix() . ResourceManager::getInstance()->translateString("clear.finish", [$elapsedTimeString]));
-                }
+                LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "clear.finish" => $elapsedTimeString]);
             }
         );
         Server::getInstance()->getAsyncPool()->submitTask($task);
