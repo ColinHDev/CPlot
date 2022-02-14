@@ -145,7 +145,7 @@ final class DataProvider {
         Await::g2c(
             $this->awaitPlayerDataByUUID($playerUUID),
             $onSuccess,
-            $onError
+            $onError ?? []
         );
         return null;
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\provider;
 
 use pocketmine\command\CommandSender;
+use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
 use SOFe\AwaitGenerator\Await;
 
@@ -32,13 +33,15 @@ abstract class LanguageProvider {
         /** @phpstan-var \Closure(\Throwable): void $onError */
         $onError = yield Await::REJECT;
         $this->translateForCommandSender($sender, $keys, $onSuccess, $onError);
-        return yield Await::ONCE;
+        /** @phpstan-var string $message */
+        $message = yield Await::ONCE;
+        return $message;
     }
 
     /**
      * This method is used to translate a message for the given {@see CommandSender}.
      * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
-     * @phpstan-param null|\Closure(string): void $onSuccess
+     * @phpstan-param \Closure(string): void $onSuccess
      * @phpstan-param null|\Closure(\Throwable): void $onError
      */
     abstract public function translateForCommandSender(CommandSender $sender, array|string $keys, \Closure $onSuccess, ?\Closure $onError = null) : void;
@@ -55,7 +58,9 @@ abstract class LanguageProvider {
         /** @phpstan-var \Closure(\Throwable): void $onError */
         $onError = yield Await::REJECT;
         $this->sendMessage($sender, $keys, $onSuccess, $onError);
-        return yield Await::ONCE;
+        /** @phpstan-var null $return */
+        $return = yield Await::ONCE;
+        return $return;
     }
 
     /**
@@ -78,7 +83,9 @@ abstract class LanguageProvider {
         /** @phpstan-var \Closure(\Throwable): void $onError */
         $onError = yield Await::REJECT;
         $this->sendTip($player, $keys, $onSuccess, $onError);
-        return yield Await::ONCE;
+        /** @phpstan-var null $return */
+        $return = yield Await::ONCE;
+        return $return;
     }
 
     /**

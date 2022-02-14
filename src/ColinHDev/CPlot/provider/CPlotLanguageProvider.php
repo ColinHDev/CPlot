@@ -23,10 +23,13 @@ class CPlotLanguageProvider extends LanguageProvider {
     private array $languages;
 
     public function __construct() {
-        $this->fallbackLanguage = ResourceManager::getInstance()->getConfig()->get("fallback.language", "de_DE");
+        /** @phpstan-var string $fallbackLanguage */
+        $fallbackLanguage = ResourceManager::getInstance()->getConfig()->get("fallback.language", "de_DE");
+        $this->fallbackLanguage = $fallbackLanguage;
         $dir = scandir(CPlot::getInstance()->getDataFolder() . "language");
         if ($dir !== false) {
             foreach ($dir as $file) {
+                /** @phpstan-var array{dirname: string, basename: string, extension?: string, filename: string} $fileData */
                 $fileData = pathinfo($file);
                 if (!isset($fileData["extension"]) || $fileData["extension"] !== "ini") {
                     continue;
@@ -63,7 +66,9 @@ class CPlotLanguageProvider extends LanguageProvider {
             $message = $this->buildMessage($this->languages[$sender->getLocale()] ?? $this->languages[$this->fallbackLanguage], $keys);
         }
         $sender->sendMessage($message);
-        $onSuccess(null);
+        if ($onSuccess !== null) {
+            $onSuccess(null);
+        }
     }
 
     public function sendTip(Player $player, array|string $keys, ?\Closure $onSuccess = null, ?\Closure $onError = null) : void {
@@ -73,7 +78,9 @@ class CPlotLanguageProvider extends LanguageProvider {
         $player->sendTip(
             $this->buildMessage($this->languages[$player->getLocale()] ?? $this->languages[$this->fallbackLanguage], $keys)
         );
-        $onSuccess(null);
+        if ($onSuccess !== null) {
+            $onSuccess(null);
+        }
     }
 
     /**
@@ -91,7 +98,8 @@ class CPlotLanguageProvider extends LanguageProvider {
                 }
                 $message .= $language->translateString($key, $value);
             } else {
-                $message .= $language->get((string) $value);
+                /** @phpstan-var string $value */
+                $message .= $language->get($value);
             }
         }
         return $message;

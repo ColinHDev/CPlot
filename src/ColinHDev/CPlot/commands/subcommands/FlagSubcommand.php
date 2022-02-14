@@ -69,10 +69,13 @@ class FlagSubcommand extends Subcommand {
                 }
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.info.flag" => $flag->getID()]);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.ID" => $flag->getID()]);
+                /** @phpstan-var string $category */
                 $category = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.category." . $flag->getID());
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.category" => $category]);
+                /** @phpstan-var string $description */
                 $description = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.description." . $flag->getID());
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.description" => $description]);
+                /** @phpstan-var string $type */
                 $type = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.type." . $flag->getID());
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.type" => $type]);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.default" => $flag->getDefault()]);
@@ -99,11 +102,12 @@ class FlagSubcommand extends Subcommand {
                 }
                 $flagStrings = [];
                 foreach ($flags as $ID => $flag) {
-                    $list[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $flagStrings[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         ["flag.here.success.format" => [$ID, $flag->toString()]]
                     );
                 }
+                /** @phpstan-var string $separator */
                 $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.here.success.separator");
                 $list = implode($separator, $flagStrings);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(

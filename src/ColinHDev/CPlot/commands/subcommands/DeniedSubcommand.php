@@ -42,6 +42,7 @@ class DeniedSubcommand extends Subcommand {
             } else {
                 $playerName = "ERROR";
             }
+            /** @phpstan-var string $addTime */
             $addTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["denied.success.list.addTime.format" => explode(".", date("d.m.Y.H.i.s", (int) (round($plotPlayer->getAddTime() / 1000))))]
@@ -59,6 +60,7 @@ class DeniedSubcommand extends Subcommand {
             return null;
         }
 
+        /** @phpstan-var string $separator */
         $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "denied.success.list.separator");
         $list = implode($separator, $deniedPlayerData);
         yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(

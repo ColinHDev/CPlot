@@ -41,6 +41,7 @@ class SchematicSubcommand extends Subcommand {
                 $dir = scandir(CPlot::getInstance()->getDataFolder() . "schematics");
                 if ($dir !== false) {
                     foreach ($dir as $file) {
+                        /** @phpstan-var array{dirname: string, basename: string, extension?: string, filename: string} $fileData */
                         $fileData = pathinfo($file);
                         if (!isset($fileData["extension"]) || $fileData["extension"] !== Schematic::FILE_EXTENSION) {
                             continue;
@@ -52,6 +53,7 @@ class SchematicSubcommand extends Subcommand {
                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "schematic.list.noSchematics"]);
                     break;
                 }
+                /** @phpstan-var string $separator */
                 $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "schematic.list.successSeparator");
                 $list = implode($separator, $files);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "schematic.list.success" => $list]);
@@ -86,10 +88,12 @@ class SchematicSubcommand extends Subcommand {
                 } else {
                     $typeString = "schematic.info.success.typeUnknown";
                 }
+                /** @phpstan-var string $creationTime */
                 $creationTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $sender,
                     ["schematic.info.success.timeformat" => explode(".", date("d.m.Y.H.i.s", (int) (round($schematic->getCreationTime() / 1000))))]
                 );
+                /** @phpstan-var string $type */
                 $type = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $typeString);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                     $sender,

@@ -20,7 +20,6 @@ abstract class Subcommand {
     private string $permission;
 
     /**
-     * @phpstan-param array<string> $alias
      * @throws \JsonException
      */
     public function __construct(string $key) {
@@ -29,6 +28,7 @@ abstract class Subcommand {
         $this->name = $languageProvider->translateString($key . ".name");
         $alias = json_decode($languageProvider->translateString($key . ".alias"), true, 512, JSON_THROW_ON_ERROR);
         assert(is_array($alias));
+        /** @phpstan-var array<string> $alias */
         $this->alias = $alias;
         $this->permission = "cplot.subcommand." . $key;
     }

@@ -45,6 +45,7 @@ class InfoSubcommand extends Subcommand {
             } else {
                 $playerName = "ERROR";
             }
+            /** @phpstan-var string $addTime */
             $addTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["info.owners.time.format" => explode(".", date("d.m.Y.H.i.s", (int) (round($plotOwner->getAddTime() / 1000))))]
@@ -60,6 +61,7 @@ class InfoSubcommand extends Subcommand {
         if (count($plotOwnerData) === 0) {
             yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["info.owners.none"]);
         } else {
+            /** @phpstan-var string $separator */
             $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "info.owners.list.separator");
             $list = implode($separator, $plotOwnerData);
             yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(

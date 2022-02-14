@@ -68,7 +68,6 @@ class ClearSubcommand extends Subcommand {
                 $money = yield $economyProvider->awaitMoney($sender);
                 if (!is_float($money)) {
                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.loadMoneyError"]);
-                    $sender->sendMessage($this->getPrefix() . $this->translateString("clear.loadMoneyError"));
                     return null;
                 }
                 if ($money < $price) {

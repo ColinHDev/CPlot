@@ -62,10 +62,13 @@ class SettingSubcommand extends Subcommand {
                 }
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.info.setting" => $setting->getID()]);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.ID" => $setting->getID()]);
+                /** @phpstan-var string $category */
                 $category = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.category." . $setting->getID());
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.category" => $category]);
+                /** @phpstan-var string $description */
                 $description = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.description." . $setting->getID());
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.description" => $description]);
+                /** @phpstan-var string $type */
                 $type = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.type." . $setting->getID());
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.type" => $type]);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.default" => $setting->getDefault()]);
@@ -88,11 +91,12 @@ class SettingSubcommand extends Subcommand {
                 }
                 $settingStrings = [];
                 foreach ($settings as $ID => $setting) {
-                    $list[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $settingStrings[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         ["setting.my.success.format" => [$ID, $setting->toString()]]
                     );
                 }
+                /** @phpstan-var string $separator */
                 $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.my.success.separator");
                 $list = implode($separator, $settingStrings);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
