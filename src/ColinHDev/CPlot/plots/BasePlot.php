@@ -6,7 +6,6 @@ namespace ColinHDev\CPlot\plots;
 
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
-use ColinHDev\CPlot\provider\cache\Cacheable;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -18,7 +17,7 @@ use pocketmine\Server;
 use pocketmine\world\Position;
 use pocketmine\world\World;
 
-class BasePlot implements Cacheable {
+class BasePlot {
 
     protected string $worldName;
     protected WorldSettings $worldSettings;

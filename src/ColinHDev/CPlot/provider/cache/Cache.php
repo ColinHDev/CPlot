@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\provider\cache;
 
+/**
+ * @phpstan-template TIdentifier of string|int
+ * @phpstan-template TCacheable
+ */
 class Cache {
 
     private int $size;
-    /** @var Cacheable[] */
+    /** @phpstan-var array<TIdentifier, TCacheable> */
     private array $cache = [];
 
     /**
@@ -19,13 +23,19 @@ class Cache {
         $this->size = $size;
     }
 
-    public function cacheObject(string $key, Cacheable $object) : void {
+    /**
+     * @phpstan-param TIdentifier $identifier
+     * @phpstan-param TCacheable $cacheable
+     */
+    public function cacheObject(mixed $identifier, mixed $cacheable) : void {
         // if the cache is disabled, we don't need to save anything
-        if ($this->size <= 0) return;
+        if ($this->size <= 0) {
+            return;
+        }
 
         // if the object is already cached, we remove its old version from the cache
-        if (isset($this->cache[$key])) {
-            unset($this->cache[$key]);
+        if (isset($this->cache[$identifier])) {
+            unset($this->cache[$identifier]);
 
         // if the cache has grown to big, we remove the oldest element from the cache
         // oldest element = first element of the array Cache::$cache
@@ -34,23 +44,30 @@ class Cache {
         }
 
         // adding the object to the end of the cache
-        $this->cache[$key] = clone $object;
+        $this->cache[$identifier] = clone $cacheable;
     }
 
-    public function getObjectFromCache(string $key) : ?Cacheable {
+    /**
+     * @phpstan-param TIdentifier $identifier
+     * @phpstan-return TCacheable|null
+     */
+    public function getObjectFromCache(mixed $identifier) : mixed {
         // if the cache is disabled, we don't need to check if anything is set in Cache::$cache
-        if ($this->size <= 0) return null;
-
+        if ($this->size <= 0) {
+            return null;
+        }
         // if no object is saved under $key, return null
-        if (!isset($this->cache[$key])) return null;
-
-        // return the cached object
-        return $this->cache[$key];
+        return $this->cache[$identifier] ?? null;
     }
 
-    public function removeObjectFromCache(string $key) : void {
+    /**
+     * @phpstan-param TIdentifier $identifier
+     */
+    public function removeObjectFromCache(mixed $identifier) : void {
         // if the cache is disabled, we don't need to try to remove an object from Cache::$cache
-        if ($this->size <= 0) return;
-        unset($this->cache[$key]);
+        if ($this->size <= 0) {
+            return;
+        }
+        unset($this->cache[$identifier]);
     }
 }

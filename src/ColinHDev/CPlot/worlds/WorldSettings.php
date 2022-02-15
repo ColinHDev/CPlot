@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\worlds;
 
-use ColinHDev\CPlot\provider\cache\Cacheable;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\utils\ParseUtils;
 use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 
-class WorldSettings implements Cacheable {
+class WorldSettings {
 
     public const TYPE_CPLOT_DEFAULT = "cplot_default";
 

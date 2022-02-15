@@ -6,13 +6,12 @@ namespace ColinHDev\CPlot\player;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\player\settings\SettingManager;
-use ColinHDev\CPlot\provider\cache\Cacheable;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\player\OfflinePlayer;
 use pocketmine\Server;
 use Ramsey\Uuid\Uuid;
 
-class PlayerData implements Cacheable {
+class PlayerData {
 
     private int $playerIdentifier;
     private ?string $playerUUID;
