@@ -14,9 +14,11 @@ use Ramsey\Uuid\Uuid;
 
 class PlayerData implements Cacheable {
 
-    private string $playerUUID;
-    private string $playerName;
-    private int $lastPlayed;
+    private int $playerIdentifier;
+    private ?string $playerUUID;
+    private ?string $playerXUID;
+    private ?string $playerName;
+    private ?int $lastPlayed;
 
     /** @phpstan-var array<string, BaseAttribute<mixed>> */
     private array $settings;
@@ -24,18 +26,28 @@ class PlayerData implements Cacheable {
     /**
      * @phpstan-param array<string, BaseAttribute<mixed>> $settings
      */
-    public function __construct(string $playerUUID, string $playerName, int $lastPlayed, array $settings) {
+    public function __construct(int $playerIdentifier, ?string $playerUUID, ?string $playerXUID, ?string $playerName, ?int $lastPlayed, array $settings) {
+        $this->playerIdentifier = $playerIdentifier;
         $this->playerUUID = $playerUUID;
+        $this->playerXUID = $playerXUID;
         $this->playerName = $playerName;
         $this->lastPlayed = $lastPlayed;
         $this->settings = $settings;
     }
 
-    public function getPlayerUUID() : string {
+    public function getPlayerIdentifier() : int {
+        return $this->playerIdentifier;
+    }
+
+    public function getPlayerUUID() : ?string {
         return $this->playerUUID;
     }
 
-    public function getPlayerName() : string {
+    public function getPlayerXUID() : ?string {
+        return $this->playerXUID;
+    }
+
+    public function getPlayerName() : ?string {
         return $this->playerName;
     }
 

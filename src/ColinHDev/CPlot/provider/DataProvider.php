@@ -21,6 +21,7 @@ use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\utils\ParseUtils;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
@@ -46,6 +47,7 @@ final class DataProvider {
     private const INIT_PLOTRATES_TABLE = "cplot.init.plotRatesTable";
 
     private const GET_PLAYERDATA_BY_UUID = "cplot.get.playerDataByUUID";
+    private const GET_PLAYERDATA_BY_XUID = "cplot.get.playerDataByXUID";
     private const GET_PLAYERDATA_BY_NAME = "cplot.get.playerDataByName";
     private const GET_PLAYERSETTINGS = "cplot.get.playerSettings";
     private const GET_WORLD = "cplot.get.world";
@@ -78,6 +80,8 @@ final class DataProvider {
     /** @var array<string, Cache> */
     private array $caches;
 
+    private string $playerIdentifierType;
+
     /**
      * @throws SqlError
      */
@@ -96,6 +100,15 @@ final class DataProvider {
             CacheIDs::CACHE_WORLDSETTING => new Cache(16),
             CacheIDs::CACHE_PLOT => new Cache(128),
         ];
+
+        /** @phpstan-var string $playerIdentifierType */
+        $playerIdentifierType = ResourceManager::getInstance()->getConfig()->get("player.identifier.type", "uuid");
+        $this->playerIdentifierType = match (strtolower($playerIdentifierType)) {
+            "uuid" => "uuid",
+            "xuid" => "xuid",
+            "name" => "name",
+            default => "uuid"
+        };
     }
 
     /**
@@ -124,6 +137,33 @@ final class DataProvider {
 
     public function getPlotCache() : Cache {
         return $this->caches[CacheIDs::CACHE_PLOT];
+    }
+
+    /**
+     * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
+     * {@see DataProvider::getPlayerCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * using {@see Await}.
+     * @phpstan-return \Generator<int, mixed, PlayerData|null, PlayerData|null>
+     */
+    public function awaitPlayerDataByPlayer(Player $player) : \Generator {
+        return yield $this->awaitPlayerDataByData($player->getUniqueId()->getBytes(), $player->getXuid(), $player->getName());
+    }
+
+    /**
+     * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
+     * {@see DataProvider::getPlayerCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * using {@see Await}.
+     * @phpstan-return \Generator<int, mixed, PlayerData|null, PlayerData|null>
+     */
+    public function awaitPlayerDataByData(string $playerUUID, string $playerXUID, string $playerName) : \Generator {
+        /** @phpstan-var PlayerData|null $playerData */
+        $playerData = match ($this->playerIdentifierType) {
+            "uuid" => yield $this->awaitPlayerDataByUUID($playerUUID),
+            "xuid" => yield $this->awaitPlayerDataByXUID($playerXUID),
+            "name" => yield $this->awaitPlayerDataByName($playerName),
+            default => null
+        };
+        return $playerData;
     }
 
     /**
@@ -165,14 +205,46 @@ final class DataProvider {
             self::GET_PLAYERDATA_BY_UUID,
             ["playerUUID" => $playerUUID]
         );
-        /** @phpstan-var array{playerName: string, lastJoin: string}|null $playerData */
+        /** @phpstan-var array{playerIdentifier: int, playerXUID: string, playerName: string, lastJoin: string}|null $playerData */
         $playerData = $rows[array_key_first($rows)] ?? null;
         if ($playerData === null) {
             return null;
         }
         $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
+            $playerData["playerIdentifier"],
             $playerUUID,
+            $playerData["playerXUID"],
+            $playerData["playerName"],
+            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            (yield from $this->awaitPlayerSettings($playerUUID))
+        );
+        $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
+        return $playerData;
+    }
+
+    /**
+     * Fetches the {@see PlayerData} of a player by its XUID asynchronously from the database (or synchronously from the
+     * {@see DataProvider::getPlayerCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * using {@see Await}.
+     * @phpstan-return \Generator<int, mixed, array<array<string, mixed>>, PlayerData|null>
+     */
+    public function awaitPlayerDataByXUID(string $playerXUID) : \Generator {
+        $rows = yield $this->database->asyncSelect(
+            self::GET_PLAYERDATA_BY_XUID,
+            ["playerXUID" => $playerXUID]
+        );
+        /** @phpstan-var array{playerIdentifier: int, playerUUID: string, playerName: string, lastJoin: string}|null $playerData */
+        $playerData = $rows[array_key_first($rows)] ?? null;
+        if ($playerData === null) {
+            return null;
+        }
+        $playerUUID = $playerData["playerUUID"];
+        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $playerData = new PlayerData(
+            $playerData["playerIdentifier"],
+            $playerUUID,
+            $playerXUID,
             $playerData["playerName"],
             $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerUUID))
@@ -192,7 +264,7 @@ final class DataProvider {
             self::GET_PLAYERDATA_BY_NAME,
             ["playerName" => $playerName]
         );
-        /** @phpstan-var array{playerUUID: string, lastJoin: string}|null $playerData */
+        /** @phpstan-var array{playerIdentifier: int, playerUUID: string, playerXUID: string, lastJoin: string}|null $playerData */
         $playerData = $rows[array_key_first($rows)] ?? null;
         if ($playerData === null) {
             return null;
@@ -200,7 +272,9 @@ final class DataProvider {
         $playerUUID = $playerData["playerUUID"];
         $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
+            $playerData["playerIdentifier"],
             $playerUUID,
+            $playerData["playerXUID"],
             $playerName,
             $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerUUID))

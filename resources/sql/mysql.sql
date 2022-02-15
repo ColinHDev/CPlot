@@ -7,25 +7,27 @@
 SET FOREIGN_KEY_CHECKS = 1;
 -- #    }
 -- #    { playerDataTable
-CREATE TABLE IF NOT EXISTS playerData(
-    playerUUID      VARCHAR(256)    NOT NULL,
-    playerName      VARCHAR(256)    NOT NULL,
-    lastJoin        TEXT            NOT NULL,
-    PRIMARY KEY (playerUUID)
+CREATE TABLE IF NOT EXISTS playerData (
+    playerIdentifier    BIGINT          NOT NULL    AUTO_INCREMENT,
+    playerUUID          VARCHAR(256),
+    playerXUID          VARCHAR(256),
+    playerName          VARCHAR(256),
+    lastJoin            TEXT,
+    PRIMARY KEY (playerIdentifier)
 );
 -- #    }
 -- #    { asteriskPlayer
 -- #      :lastJoin string
-INSERT IGNORE INTO playerData (playerUUID, playerName, lastJoin)
-VALUES ("*", "*", :lastJoin);
+INSERT IGNORE INTO playerData (playerUUID, playerXUID, playerName, lastJoin)
+VALUES ("*", "*", "*", :lastJoin);
 -- #    }
 -- #    { playerSettingsTable
-CREATE TABLE IF NOT EXISTS playerSettings(
-    playerUUID      VARCHAR(256)    NOT NULL,
-    ID              TEXT            NOT NULL,
-    value           TEXT            NOT NULL,
-    PRIMARY KEY (playerUUID, ID),
-    FOREIGN KEY (playerUUID) REFERENCES playerData (playerUUID) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS playerSettings (
+    playerIdentifier    BIGINT          NOT NULL,
+    ID                  TEXT            NOT NULL,
+    value               TEXT            NOT NULL,
+    PRIMARY KEY (playerIdentifier, ID),
+    FOREIGN KEY (playerIdentifier) REFERENCES playerData (playerIdentifier) ON DELETE CASCADE
 );
 -- #    }
 -- #    { worldsTable
@@ -70,15 +72,15 @@ CREATE TABLE IF NOT EXISTS mergePlots(
 -- #    }
 -- #    { plotPlayersTable
 CREATE TABLE IF NOT EXISTS plotPlayers (
-    worldName   VARCHAR(256)    NOT NULL,
-    x           BIGINT          NOT NULL,
-    z           BIGINT          NOT NULL,
-    playerUUID  VARCHAR(256)    NOT NULL,
-    state       TEXT            NOT NULL,
-    addTime     TEXT            NOT NULL,
+    worldName           VARCHAR(256)    NOT NULL,
+    x                   BIGINT          NOT NULL,
+    z                   BIGINT          NOT NULL,
+    playerIdentifier    BIGINT          NOT NULL,
+    state               TEXT            NOT NULL,
+    addTime             TEXT            NOT NULL,
     PRIMARY KEY (worldName, x, z, playerUUID),
     FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE,
-    FOREIGN KEY (playerUUID) REFERENCES playerData (playerUUID) ON DELETE CASCADE
+    FOREIGN KEY (playerIdentifier) REFERENCES playerData (playerIdentifier) ON DELETE CASCADE
 );
 -- #    }
 -- #    { plotFlagsTable
@@ -94,16 +96,16 @@ CREATE TABLE IF NOT EXISTS plotFlags (
 -- #    }
 -- #    { plotRatesTable
 CREATE TABLE IF NOT EXISTS plotRates (
-    worldName   VARCHAR(256)    NOT NULL,
-    x           BIGINT          NOT NULL,
-    z           BIGINT          NOT NULL,
-    rate        TEXT            NOT NULL,
-    playerUUID  VARCHAR(256)    NOT NULL,
-    rateTime    TEXT            NOT NULL,
-    comment     TEXT,
-    PRIMARY KEY (worldName, x, z, playerUUID, rateTime),
+    worldName           VARCHAR(256)    NOT NULL,
+    x                   BIGINT          NOT NULL,
+    z                   BIGINT          NOT NULL,
+    rate                TEXT            NOT NULL,
+    playerIdentifier    BIGINT          NOT NULL,
+    rateTime            TEXT            NOT NULL,
+    comment             TEXT,
+    PRIMARY KEY (worldName, x, z, playerIdentifier, rateTime),
     FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE,
-    FOREIGN KEY (playerUUID) REFERENCES playerData (playerUUID) ON DELETE CASCADE
+    FOREIGN KEY (playerIdentifier) REFERENCES playerData (playerIdentifier) ON DELETE CASCADE
 );
 -- #    }
 -- #  }
@@ -111,13 +113,19 @@ CREATE TABLE IF NOT EXISTS plotRates (
 -- #  { get
 -- #    { playerDataByUUID
 -- #      :playerUUID string
-SELECT playerName, lastJoin
+SELECT playerIdentifier, playerXUID, playerName, lastJoin
 FROM playerData
 WHERE playerUUID = :playerUUID;
 -- #    }
+-- #    { playerDataByXUID
+-- #      :playerXUID string
+SELECT playerIdentifier, playerUUID, playerName, lastJoin
+FROM playerData
+WHERE playerXUID = :playerXUID;
+-- #    }
 -- #    { playerDataByName
 -- #      :playerName string
-SELECT playerUUID, lastJoin
+SELECT playerIdentifier, playerUUID, playerXUID, lastJoin
 FROM playerData
 WHERE playerName = :playerName;
 -- #    }
