@@ -127,21 +127,9 @@ final class DataProvider {
         yield $this->database->asyncGeneric(self::INIT_PLOTRATES_TABLE);
     }
 
-    public function getPlayerCache() : Cache {
-        return $this->caches[CacheIDs::CACHE_PLAYER];
-    }
-
-    public function getWorldSettingCache() : Cache {
-        return $this->caches[CacheIDs::CACHE_WORLDSETTING];
-    }
-
-    public function getPlotCache() : Cache {
-        return $this->caches[CacheIDs::CACHE_PLOT];
-    }
-
     /**
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
-     * {@see DataProvider::getPlayerCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return \Generator<int, mixed, PlayerData|null, PlayerData|null>
      */
@@ -151,7 +139,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
-     * {@see DataProvider::getPlayerCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return \Generator<int, mixed, PlayerData|null, PlayerData|null>
      */
@@ -167,7 +155,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches and returns the {@see PlayerData} of a player by its UUID synchronously from the {@see DataProvider::getPlayerCache()}.
+     * Fetches and returns the {@see PlayerData} of a player by its UUID synchronously from the cache.
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the player data can be
      * worked with once it was successfully loaded from the database.
@@ -175,7 +163,7 @@ final class DataProvider {
      * @phpstan-param null|\Closure(\Throwable): void $onError
      */
     public function getPlayerDataByUUID(string $playerUUID, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?PlayerData {
-        $playerData = $this->getPlayerCache()->getObjectFromCache($playerUUID);
+        $playerData = $this->caches[CacheIDs::CACHE_PLAYER]->getObjectFromCache($playerUUID);
         if ($playerData instanceof PlayerData) {
             if ($onSuccess !== null) {
                 $onSuccess($playerData);
@@ -192,12 +180,12 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
-     * {@see DataProvider::getPlayerCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return \Generator<int, mixed, array<array<string, mixed>>, PlayerData|null>
      */
     public function awaitPlayerDataByUUID(string $playerUUID) : \Generator {
-        $playerData = $this->getPlayerCache()->getObjectFromCache($playerUUID);
+        $playerData = $this->caches[CacheIDs::CACHE_PLAYER]->getObjectFromCache($playerUUID);
         if ($playerData instanceof PlayerData) {
             return $playerData;
         }
@@ -219,13 +207,13 @@ final class DataProvider {
             $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerUUID))
         );
-        $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
+        $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerUUID, $playerData);
         return $playerData;
     }
 
     /**
      * Fetches the {@see PlayerData} of a player by its XUID asynchronously from the database (or synchronously from the
-     * {@see DataProvider::getPlayerCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return \Generator<int, mixed, array<array<string, mixed>>, PlayerData|null>
      */
@@ -249,13 +237,13 @@ final class DataProvider {
             $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerUUID))
         );
-        $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
+        $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerUUID, $playerData);
         return $playerData;
     }
 
     /**
      * Fetches the {@see PlayerData} of a player by its name asynchronously from the database (or synchronously from the
-     * {@see DataProvider::getPlayerCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return \Generator<int, mixed, array<array<string, mixed>>, PlayerData|null>
      */
@@ -279,7 +267,7 @@ final class DataProvider {
             $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerUUID))
         );
-        $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
+        $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerUUID, $playerData);
         return $playerData;
     }
 
@@ -337,7 +325,7 @@ final class DataProvider {
                 "value" => $setting->toString()
             ]
         );
-        $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
+        $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerUUID, $playerData);
     }
 
     /**
@@ -352,16 +340,16 @@ final class DataProvider {
                 "ID" => $settingID
             ]
         );
-        $this->getPlayerCache()->cacheObject($playerUUID, $playerData);
+        $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerUUID, $playerData);
     }
 
     /**
-     * Fetches and returns the {@see WorldSettings} of a world synchronously from the {@see DataProvider::getWorldSettingCache()}.
+     * Fetches and returns the {@see WorldSettings} of a world synchronously from the cache.
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called.
      */
     public function loadWorldIntoCache(string $worldName) : WorldSettings|NonWorldSettings|null {
-        $worldSettings = $this->getWorldSettingCache()->getObjectFromCache($worldName);
+        $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
         if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
             return $worldSettings;
         }
@@ -373,12 +361,12 @@ final class DataProvider {
 
     /**
      * Fetches the {@see WorldSettings} of a world asynchronously from the database (or synchronously from the
-     * {@see DataProvider::getWorldSettingCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return \Generator<int, mixed, array<array<string, mixed>>, WorldSettings|NonWorldSettings>
      */
     public function awaitWorld(string $worldName) : \Generator {
-        $worldSettings = $this->getWorldSettingCache()->getObjectFromCache($worldName);
+        $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
         if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
             return $worldSettings;
         }
@@ -393,7 +381,7 @@ final class DataProvider {
         } else {
             $worldSettings = WorldSettings::fromArray($worldData);
         }
-        $this->getWorldSettingCache()->cacheObject($worldName, $worldSettings);
+        $this->caches[CacheIDs::CACHE_WORLDSETTING]->cacheObject($worldName, $worldSettings);
         return $worldSettings;
     }
 
@@ -419,16 +407,16 @@ final class DataProvider {
                 "plotBottomBlock" => ParseUtils::parseStringFromBlock($worldSettings->getPlotBottomBlock())
             ]
         );
-        $this->getWorldSettingCache()->cacheObject($worldName, $worldSettings);
+        $this->caches[CacheIDs::CACHE_WORLDSETTING]->cacheObject($worldName, $worldSettings);
     }
 
     /**
-     * Fetches and returns a {@see Plot} synchronously from the {@see DataProvider::getPlotCache()}.
+     * Fetches and returns a {@see Plot} synchronously from the cache.
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called.
      */
     public function loadPlotIntoCache(string $worldName, int $x, int $z) : ?Plot {
-        $plot = $this->getPlotCache()->getObjectFromCache($worldName . ";" . $x . ";" . $z);
+        $plot = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($worldName . ";" . $x . ";" . $z);
         if ($plot instanceof BasePlot) {
             if ($plot instanceof Plot) {
                 return $plot;
@@ -443,12 +431,12 @@ final class DataProvider {
 
     /**
      * Fetches a {@see Plot} asynchronously from the database (or synchronously from the
-     * {@see DataProvider::getPlotCache()} if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return \Generator<int, mixed, array<array<string, mixed>>|array<string, MergePlot>|array<string, PlotPlayer>|array<string, BaseAttribute<mixed>>|array<string, PlotRate>, Plot|null>
      */
     public function awaitPlot(string $worldName, int $x, int $z) : \Generator {
-        $plot = $this->getPlotCache()->getObjectFromCache($worldName . ";" . $x . ";" . $z);
+        $plot = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($worldName . ";" . $x . ";" . $z);
         if ($plot instanceof BasePlot) {
             if ($plot instanceof Plot) {
                 return $plot;
@@ -471,7 +459,7 @@ final class DataProvider {
         $plotData = $rows[array_key_first($rows)] ?? null;
         if ($plotData === null) {
             $plot = new Plot($worldName, $worldSettings, $x, $z);
-            $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+            $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
             return $plot;
         }
         /** @phpstan-var array<string, MergePlot> $mergePlots */
@@ -487,7 +475,7 @@ final class DataProvider {
             $plotData["biomeID"], $plotData["alias"],
             $mergePlots, $plotPlayers, $plotFlags, $plotRates
         );
-        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
         return $plot;
     }
 
@@ -510,7 +498,7 @@ final class DataProvider {
         foreach ($rows as $row) {
             $mergePlot = new MergePlot($worldName, $worldSettings, $row["mergeX"], $row["mergeZ"], $x, $z);
             $mergePlotKey = $mergePlot->toString();
-            $this->getPlotCache()->cacheObject($mergePlotKey, $mergePlot);
+            $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($mergePlotKey, $mergePlot);
             $mergePlots[$mergePlotKey] = $mergePlot;
         }
         return $mergePlots;
@@ -638,7 +626,7 @@ final class DataProvider {
             $plotData["biomeID"], $alias,
             $mergePlots, $plotPlayers, $plotFlags, $plotRates
         );
-        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
         return $plot;
     }
 
@@ -656,7 +644,7 @@ final class DataProvider {
                 "alias" => $plot->getAlias()
             ]
         );
-        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
     }
 
     /**
@@ -671,14 +659,14 @@ final class DataProvider {
                 "z" => $plot->getZ()
             ]
         );
-        $this->getPlotCache()->removeObjectFromCache($plot->toString());
+        $this->caches[CacheIDs::CACHE_PLOT]->removeObjectFromCache($plot->toString());
         foreach ($plot->getMergePlots() as $key => $mergePlot) {
-            $this->getPlotCache()->removeObjectFromCache($key);
+            $this->caches[CacheIDs::CACHE_PLOT]->removeObjectFromCache($key);
         }
     }
 
     /**
-     * Fetches and returns the origin plot ({@see Plot}) of another plot synchronously from the {@see DataProvider::getPlotCache()}.
+     * Fetches and returns the origin plot ({@see Plot}) of another plot synchronously from the cache.
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called.
      */
@@ -689,7 +677,7 @@ final class DataProvider {
         if ($plot instanceof MergePlot) {
             return $this->loadPlotIntoCache($plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ());
         }
-        $plotInCache = $this->getPlotCache()->getObjectFromCache($plot->toString());
+        $plotInCache = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($plot->toString());
         if ($plotInCache instanceof Plot) {
             return $plotInCache;
         }
@@ -704,7 +692,7 @@ final class DataProvider {
 
     /**
      * Fetches the origin plot ({@see Plot}) of another plot asynchronously from the database (or synchronously from the
-     * {@see DataProvider::getPlotCache()} if contained) and returns a {@see \Generator}. It can be get
+     * cache if contained) and returns a {@see \Generator}. It can be get
      * by using {@see Await}.
      * @phpstan-return \Generator<int, mixed, array<array<string, mixed>>|Plot|null, Plot|null>
      */
@@ -717,7 +705,7 @@ final class DataProvider {
             $origin = yield $this->awaitPlot($plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ());
             return $origin;
         }
-        $plotInCache = $this->getPlotCache()->getObjectFromCache($plot->toString());
+        $plotInCache = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($plot->toString());
         if ($plotInCache instanceof Plot) {
             return $plotInCache;
         }
@@ -774,21 +762,21 @@ final class DataProvider {
             if (($ret = $this->findEmptyPlotSquared(0, $i, $plots)) !== null) {
                 [$x, $z] = $ret;
                 $plot = new Plot($worldName, $worldSettings, $x, $z);
-                $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+                $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
                 return $plot;
             }
             for ($a = 1; $a < $i; $a++) {
                 if (($ret = $this->findEmptyPlotSquared($a, $i, $plots)) !== null) {
                     [$x, $z] = $ret;
                     $plot = new Plot($worldName, $worldSettings, $x, $z);
-                    $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+                    $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
                     return $plot;
                 }
             }
             if (($ret = $this->findEmptyPlotSquared($i, $i, $plots)) !== null) {
                 [$x, $z] = $ret;
                 $plot = new Plot($worldName, $worldSettings, $x, $z);
-                $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+                $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
                 return $plot;
             }
         }
@@ -809,9 +797,9 @@ final class DataProvider {
                 "mergeZ" => $plot->getZ()
             ]
         );
-        $this->getPlotCache()->cacheObject($origin->toString(), $origin);
+        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($origin->toString(), $origin);
         $mergePlot = MergePlot::fromBasePlot($plot, $origin->getX(), $origin->getZ());
-        $this->getPlotCache()->cacheObject($mergePlot->toString(), $mergePlot);
+        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($mergePlot->toString(), $mergePlot);
     }
 
     /**
@@ -855,7 +843,7 @@ final class DataProvider {
                 "addTime" => date("d.m.Y H:i:s", $plotPlayer->getAddTime())
             ]
         );
-        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
     }
 
     /**
@@ -871,7 +859,7 @@ final class DataProvider {
                 "playerUUID" => $playerUUID
             ]
         );
-        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
     }
 
     /**
@@ -890,7 +878,7 @@ final class DataProvider {
                 "value" => $flag->toString()
             ]
         );
-        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
     }
 
     /**
@@ -906,7 +894,7 @@ final class DataProvider {
                 "ID" => $flagID
             ]
         );
-        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
     }
 
     /**
@@ -925,7 +913,7 @@ final class DataProvider {
                 "comment" => $plotRate->getComment()
             ]
         );
-        $this->getPlotCache()->cacheObject($plot->toString(), $plot);
+        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
     }
 
     public function close() : void {
