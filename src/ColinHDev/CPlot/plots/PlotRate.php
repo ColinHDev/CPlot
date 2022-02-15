@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\plots;
 
+use ColinHDev\CPlot\player\PlayerData;
+
 class PlotRate {
 
     private string $rate;
-    private string $playerUUID;
+    private PlayerData $playerData;
     private int $rateTime;
     private ?string $comment;
 
-    public function __construct(string $rate, string $playerUUID, int $rateTime, ?string $comment = null) {
+    public function __construct(string $rate, PlayerData $playerData, int $rateTime, ?string $comment = null) {
         $this->rate = $rate;
-        $this->playerUUID = $playerUUID;
+        $this->playerData = $playerData;
         $this->rateTime = $rateTime;
         $this->comment = $comment;
     }
@@ -22,8 +24,8 @@ class PlotRate {
         return $this->rate;
     }
 
-    public function getPlayerUUID() : string {
-        return $this->playerUUID;
+    public function getPlayerData() : PlayerData {
+        return $this->playerData;
     }
 
     public function getRateTime() : int {
@@ -35,27 +37,27 @@ class PlotRate {
     }
 
     public function toString() : string {
-        return $this->playerUUID . ";" . $this->rateTime;
+        return $this->playerData->getPlayerUUID() . ";" . $this->rateTime;
     }
 
     /**
-     * @phpstan-return array{rate: string, playerUUID: string, rateTime: int, comment: string|null}
+     * @phpstan-return array{rate: string, playerData: string, rateTime: int, comment: string|null}
      */
     public function __serialize() : array {
         return [
             "rate" => $this->rate,
-            "playerUUID" => $this->playerUUID,
+            "playerData" => serialize($this->playerData),
             "rateTime" => $this->rateTime,
             "comment" => $this->comment
         ];
     }
 
     /**
-     * @phpstan-param array{rate: string, playerUUID: string, rateTime: int, comment: string|null} $data
+     * @phpstan-param array{rate: string, playerData: string, rateTime: int, comment: string|null} $data
      */
     public function __unserialize(array $data) : void {
         $this->rate = $data["rate"];
-        $this->playerUUID = $data["playerUUID"];
+        $this->playerData = unserialize($data["playerData"], ["allowed_classes" => [PlayerData::class]]);
         $this->rateTime = $data["rateTime"];
         $this->comment = $data["comment"];
     }

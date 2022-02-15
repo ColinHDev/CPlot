@@ -517,10 +517,11 @@ final class DataProvider {
         $plotRates = [];
         /** @phpstan-var array{rate: string, playerUUID: string, rateTime: string, comment: string|null} $row */
         foreach ($rows as $row) {
+            $playerData = yield $this->awaitPlayerDataByUUID($row["playerUUID"]);
             $rateTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["rateTime"]);
             $plotRate = new PlotRate(
                 $row["rate"],
-                $row["playerUUID"],
+                $playerData,
                 $rateTime instanceof \DateTime ? $rateTime->getTimestamp() : time(),
                 $row["comment"] ?? null
             );
