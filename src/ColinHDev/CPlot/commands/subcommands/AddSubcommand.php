@@ -93,16 +93,16 @@ class AddSubcommand extends Subcommand {
             return null;
         }
 
-        $plotPlayer = new PlotPlayer($playerUUID, PlotPlayer::STATE_HELPER);
+        $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
+        if (!($playerData instanceof PlayerData)) {
+            return;
+        }
+        $plotPlayer = new PlotPlayer($playerData, PlotPlayer::STATE_HELPER);
         $plot->addPlotPlayer($plotPlayer);
         yield DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
         yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.success" => $playerName]);
 
         if ($player instanceof Player) {
-            $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
-            if (!($playerData instanceof PlayerData)) {
-                return null;
-            }
             /** @var BooleanAttribute $setting */
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_ADD);
             if ($setting->getValue() === true) {

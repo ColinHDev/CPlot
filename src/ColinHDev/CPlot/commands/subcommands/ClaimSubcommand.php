@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -75,7 +76,11 @@ class ClaimSubcommand extends Subcommand {
             }
         }
 
-        $senderData = new PlotPlayer($senderUUID, PlotPlayer::STATE_OWNER);
+        $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($senderUUID);
+        if (!($playerData instanceof PlayerData)) {
+            return;
+        }
+        $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
         $plot->addPlotPlayer($senderData);
         yield DataProvider::getInstance()->savePlot($plot);
         yield DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
@@ -84,9 +89,6 @@ class ClaimSubcommand extends Subcommand {
         return null;
     }
 
-    /**
-     * @param \Throwable $error
-     */
     public function onError(CommandSender $sender, \Throwable $error) : void {
         if ($sender instanceof Player && !$sender->isConnected()) {
             return;

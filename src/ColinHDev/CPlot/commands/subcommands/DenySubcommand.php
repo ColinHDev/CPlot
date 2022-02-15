@@ -93,16 +93,16 @@ class DenySubcommand extends Subcommand {
             return null;
         }
 
-        $plotPlayer = new PlotPlayer($playerUUID, PlotPlayer::STATE_DENIED);
+        $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
+        if (!($playerData instanceof PlayerData)) {
+            return;
+        }
+        $plotPlayer = new PlotPlayer($playerData, PlotPlayer::STATE_DENIED);
         $plot->addPlotPlayer($plotPlayer);
         yield DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
         yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.success" => $playerName]);
 
         if ($player instanceof Player) {
-            $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
-            if (!($playerData instanceof PlayerData)) {
-                return null;
-            }
             /** @var BooleanAttribute $setting */
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_DENIED_ADD);
             if ($setting->getValue() === true) {

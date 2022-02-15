@@ -459,9 +459,10 @@ final class DataProvider {
         $plotPlayers = [];
         /** @phpstan-var array{playerUUID: string, state: string, addTime: string} $row */
         foreach ($rows as $row) {
+            $playerData = yield $this->awaitPlayerDataByUUID($row["playerUUID"]);
             $addTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["addTime"]);
             $plotPlayer = new PlotPlayer(
-                $row["playerUUID"],
+                $playerData,
                 $row["state"],
                 $addTime instanceof \DateTime ? $addTime->getTimestamp() : time()
             );

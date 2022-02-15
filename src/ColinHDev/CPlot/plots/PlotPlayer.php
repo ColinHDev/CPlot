@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\plots;
 
+use ColinHDev\CPlot\player\PlayerData;
+
 class PlotPlayer {
 
     public const STATE_OWNER = "state_owner";
@@ -11,18 +13,18 @@ class PlotPlayer {
     public const STATE_HELPER = "state_helper";
     public const STATE_DENIED = "state_denied";
 
-    private string $playerUUID;
+    private PlayerData $playerData;
     private string $state;
     private int $addTime;
 
-    public function __construct(string $playerUUID, string $state, ?int $addTime = null) {
-        $this->playerUUID = $playerUUID;
+    public function __construct(PlayerData $playerData, string $state, ?int $addTime = null) {
+        $this->playerData = $playerData;
         $this->state = $state;
         $this->addTime = $addTime ?? time();
     }
 
-    public function getPlayerUUID() : string {
-        return $this->playerUUID;
+    public function getPlayerData() : PlayerData {
+        return $this->playerData;
     }
 
     public function getState() : string {
@@ -34,25 +36,25 @@ class PlotPlayer {
     }
 
     public function toString() : string {
-        return $this->playerUUID;
+        return $this->playerData->getPlayerUUID();
     }
 
     /**
-     * @phpstan-return array{playerUUID: string, state: string, addTime: int}
+     * @phpstan-return array{playerData: string, state: string, addTime: int}
      */
     public function __serialize() : array {
         return [
-            "playerUUID" => $this->playerUUID,
+            "playerData" => serialize($this->playerData),
             "state" => $this->state,
             "addTime" => $this->addTime
         ];
     }
 
     /**
-     * @phpstan-param array{playerUUID: string, state: string, addTime: int} $data
+     * @phpstan-param array{playerData: string, state: string, addTime: int} $data
      */
     public function __unserialize(array $data) : void {
-        $this->playerUUID = $data["playerUUID"];
+        $this->playerData = unserialize($data["playerData"], ["allowed_classes" => [PlayerData::class]]);
         $this->state = $data["state"];
         $this->addTime = $data["addTime"];
     }
