@@ -130,4 +130,33 @@ class PlayerData {
     public function removeSetting(string $settingID) : void {
         unset($this->settings[$settingID]);
     }
+
+    /**
+     * @phpstan-return array{playerIdentifier: int, playerUUID: string|null, playerXUID: string|null, playerName: string|null, lastJoin: int, settings: string}
+     */
+    public function __serialize() : array {
+        return [
+            "playerIdentifier" => $this->playerIdentifier,
+            "playerUUID" => $this->playerUUID,
+            "playerXUID" => $this->playerXUID,
+            "playerName" => $this->playerName,
+            "lastJoin" => $this->lastJoin,
+            "settings" => serialize($this->settings)
+        ];
+    }
+
+    /**
+     * @phpstan-param array{playerIdentifier: int, playerUUID: string|null, playerXUID: string|null, playerName: string|null, lastJoin: int, settings: string} $data
+     */
+    public function __unserialize(array $data) : void {
+        $this->playerIdentifier = $data["playerIdentifier"];
+        $this->playerUUID = $data["playerUUID"];
+        $this->playerXUID = $data["playerXUID"];
+        $this->playerName = $data["playerName"];
+        $this->lastJoin = $data["lastJoin"];
+        $settings = unserialize($data["settings"], ["allowed_classes" => false]);
+        assert(is_array($settings));
+        /** @phpstan-var array<string, BaseAttribute<mixed>> $settings */
+        $this->settings = $settings;
+    }
 }
