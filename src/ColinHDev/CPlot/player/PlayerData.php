@@ -17,7 +17,7 @@ class PlayerData {
     private ?string $playerUUID;
     private ?string $playerXUID;
     private ?string $playerName;
-    private ?int $lastPlayed;
+    private ?int $lastJoin;
 
     /** @phpstan-var array<string, BaseAttribute<mixed>> */
     private array $settings;
@@ -25,12 +25,12 @@ class PlayerData {
     /**
      * @phpstan-param array<string, BaseAttribute<mixed>> $settings
      */
-    public function __construct(int $playerIdentifier, ?string $playerUUID, ?string $playerXUID, ?string $playerName, ?int $lastPlayed, array $settings) {
+    public function __construct(int $playerIdentifier, ?string $playerUUID, ?string $playerXUID, ?string $playerName, ?int $lastJoin, array $settings) {
         $this->playerIdentifier = $playerIdentifier;
         $this->playerUUID = $playerUUID;
         $this->playerXUID = $playerXUID;
         $this->playerName = $playerName;
-        $this->lastPlayed = $lastPlayed;
+        $this->lastJoin = $lastJoin;
         $this->settings = $settings;
     }
 
@@ -54,7 +54,7 @@ class PlayerData {
      * Returns the last time a player joined in seconds.
      * @throws \RuntimeException when called outside of main thread.
      */
-    public function getLastPlayed() : int {
+    public function getLastJoin() : int {
         // player is online and therefore not inactive
         $player = Server::getInstance()->getPlayerByUUID(Uuid::fromBytes($this->playerUUID));
         if ($player !== null) {
@@ -85,7 +85,7 @@ class PlayerData {
             case "database":
                 // Since CPlot stores the last time a player joined in seconds, we do not need to divide anything here.
                 /** @noinspection SuspiciousAssignmentsInspection */
-                $lastPlayed = $this->lastPlayed;
+                $lastPlayed = $this->lastJoin;
                 break;
         }
         return $lastPlayed;
