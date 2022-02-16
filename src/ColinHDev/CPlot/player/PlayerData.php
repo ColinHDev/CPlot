@@ -19,7 +19,7 @@ class PlayerData {
     private ?string $playerUUID;
     private ?string $playerXUID;
     private ?string $playerName;
-    private ?int $lastJoin;
+    private int $lastJoin;
 
     /** @phpstan-var array<string, BaseAttribute<mixed>> */
     private array $settings;
@@ -27,7 +27,7 @@ class PlayerData {
     /**
      * @phpstan-param array<string, BaseAttribute<mixed>> $settings
      */
-    public function __construct(int $playerIdentifier, ?string $playerUUID, ?string $playerXUID, ?string $playerName, ?int $lastJoin, array $settings) {
+    public function __construct(int $playerIdentifier, ?string $playerUUID, ?string $playerXUID, ?string $playerName, int $lastJoin, array $settings) {
         $this->playerIdentifier = $playerIdentifier;
         $this->playerUUID = $playerUUID;
         $this->playerXUID = $playerXUID;
