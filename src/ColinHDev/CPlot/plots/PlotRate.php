@@ -57,7 +57,9 @@ class PlotRate {
      */
     public function __unserialize(array $data) : void {
         $this->rate = $data["rate"];
-        $this->playerData = unserialize($data["playerData"], ["allowed_classes" => [PlayerData::class]]);
+        $playerData = unserialize($data["playerData"], ["allowed_classes" => [PlayerData::class]]);
+        assert($playerData instanceof PlayerData);
+        $this->playerData = $playerData;
         $this->rateTime = $data["rateTime"];
         $this->comment = $data["comment"];
     }
