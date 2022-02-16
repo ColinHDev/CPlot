@@ -6,8 +6,10 @@ namespace ColinHDev\CPlot\player;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\player\settings\SettingManager;
+use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\player\OfflinePlayer;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use Ramsey\Uuid\Uuid;
 
@@ -51,12 +53,34 @@ class PlayerData {
     }
 
     /**
+     * Returns the {@see Player} instance of the player this data is referring to or null if not online.
+     * @throws \RuntimeException when called outside of main thread.
+     */
+    public function getPlayer() : ?Player {
+        if ($this->playerUUID !== null) {
+            return Server::getInstance()->getPlayerByRawUUID($this->playerUUID);
+        }
+        if ($this->playerXUID !== null) {
+            foreach (Server::getInstance()->getOnlinePlayers() as $onlinePlayer) {
+                if ($onlinePlayer->getXuid() === $this->playerXUID) {
+                    return $onlinePlayer;
+                }
+            }
+            return null;
+        }
+        if ($this->playerName !== null) {
+            return Server::getInstance()->getPlayerExact($this->playerName);
+        }
+        return null;
+    }
+
+    /**
      * Returns the last time a player joined in seconds.
      * @throws \RuntimeException when called outside of main thread.
      */
     public function getLastJoin() : int {
         // player is online and therefore not inactive
-        $player = Server::getInstance()->getPlayerByUUID(Uuid::fromBytes($this->playerUUID));
+        $player = $this->getPlayer();
         if ($player !== null) {
             return time();
         }
