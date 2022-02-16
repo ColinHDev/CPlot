@@ -6,12 +6,10 @@ namespace ColinHDev\CPlot\player;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\player\settings\SettingManager;
-use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\player\OfflinePlayer;
 use pocketmine\player\Player;
 use pocketmine\Server;
-use Ramsey\Uuid\Uuid;
 
 class PlayerData {
 
