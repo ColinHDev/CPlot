@@ -54,7 +54,9 @@ class PlotPlayer {
      * @phpstan-param array{playerData: string, state: string, addTime: int} $data
      */
     public function __unserialize(array $data) : void {
-        $this->playerData = unserialize($data["playerData"], ["allowed_classes" => [PlayerData::class]]);
+        $playerData = unserialize($data["playerData"], ["allowed_classes" => [PlayerData::class]]);
+        assert($playerData instanceof PlayerData);
+        $this->playerData = $playerData;
         $this->state = $data["state"];
         $this->addTime = $data["addTime"];
     }
