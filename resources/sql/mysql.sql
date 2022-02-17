@@ -53,7 +53,6 @@ CREATE TABLE IF NOT EXISTS plots(
     worldName       VARCHAR(256)    NOT NULL,
     x               BIGINT          NOT NULL,
     z               BIGINT          NOT NULL,
-    biomeID         BIGINT          NOT NULL,
     alias           TEXT,
     PRIMARY KEY (worldName, x, z),
     FOREIGN KEY (worldName) REFERENCES worlds (worldName) ON DELETE CASCADE
@@ -151,13 +150,13 @@ WHERE worldName = :worldName;
 -- #      :worldName string
 -- #      :x int
 -- #      :z int
-SELECT biomeID, alias
+SELECT alias
 FROM plots
 WHERE worldName = :worldName AND x = :x AND z = :z;
 -- #    }
 -- #    { plotByAlias
 -- #      :alias string
-SELECT worldName, x, z, biomeID
+SELECT worldName, x, z
 FROM plots
 WHERE alias = :alias;
 -- #    }
@@ -287,11 +286,10 @@ INSERT OR REPLACE INTO worlds (
 -- #      :worldName string
 -- #      :x int
 -- #      :z int
--- #      :biomeID int
 -- #      :alias ?string
-INSERT INTO plots (worldName, x, z, biomeID, alias)
-VALUES (:worldName, :x, :z, :biomeID, :alias) AS new
-ON DUPLICATE KEY UPDATE biomeID = new.biomeID, alias = new.alias;
+INSERT INTO plots (worldName, x, z, alias)
+VALUES (:worldName, :x, :z, :alias) AS new
+ON DUPLICATE KEY UPDATE alias = new.alias;
 -- #    }
 -- #    { mergePlot
 -- #      :worldName string

@@ -11,7 +11,6 @@ use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
-use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
 use pocketmine\player\Player;
@@ -19,7 +18,6 @@ use pocketmine\world\Position;
 
 class Plot extends BasePlot {
 
-    private int $biomeID;
     private ?string $alias;
 
     /** @var array<string, MergePlot> */
@@ -37,18 +35,13 @@ class Plot extends BasePlot {
      * @param array<string, BaseAttribute<mixed>> $flags
      * @param array<string, PlotRate> $plotRates
      */
-    public function __construct(string $worldName, WorldSettings $worldSettings, int $x, int $z, int $biomeID = BiomeIds::PLAINS, ?string $alias = null, array $mergePlots = [], array $plotPlayers = [], array $flags = [], array $plotRates = []) {
+    public function __construct(string $worldName, WorldSettings $worldSettings, int $x, int $z, ?string $alias = null, array $mergePlots = [], array $plotPlayers = [], array $flags = [], array $plotRates = []) {
         parent::__construct($worldName, $worldSettings, $x, $z);
-        $this->biomeID = $biomeID;
         $this->alias = $alias;
         $this->mergePlots = $mergePlots;
         $this->plotPlayers = $plotPlayers;
         $this->flags = $flags;
         $this->plotRates = $plotRates;
-    }
-
-    public function getBiomeID() : int {
-        return $this->biomeID;
     }
 
     public function getAlias() : ?string {
@@ -571,11 +564,10 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-return array{worldName: string, worldSettings: string, x: int, z: int, biomeID: int, alias: string|null, mergePlots: string, plotPlayers: string, flags: string, plotRates: string}
+     * @phpstan-return array{worldName: string, worldSettings: string, x: int, z: int, alias: string|null, mergePlots: string, plotPlayers: string, flags: string, plotRates: string}
      */
     public function __serialize() : array {
         $data = parent::__serialize();
-        $data["biomeID"] = $this->biomeID;
         $data["alias"] = $this->alias;
         $data["mergePlots"] = serialize($this->mergePlots);
         $data["plotPlayers"] = serialize($this->plotPlayers);
@@ -585,11 +577,10 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-param array{worldName: string, worldSettings: string, x: int, z: int, biomeID: int, alias: string|null, mergePlots: string, plotPlayers: string, flags: string, plotRates: string} $data
+     * @phpstan-param array{worldName: string, worldSettings: string, x: int, z: int, alias: string|null, mergePlots: string, plotPlayers: string, flags: string, plotRates: string} $data
      */
     public function __unserialize(array $data) : void {
         parent::__unserialize($data);
-        $this->biomeID = $data["biomeID"];
         $this->alias = $data["alias"];
         /** @phpstan-var array<string, MergePlot> $mergePlots */
         $mergePlots = unserialize($data["mergePlots"], ["allowed_classes" => false]);

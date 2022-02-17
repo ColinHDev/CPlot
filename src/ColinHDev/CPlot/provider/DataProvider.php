@@ -579,7 +579,7 @@ final class DataProvider {
         /** @phpstan-var WorldSettings|NonWorldSettings $worldSettings */
         $worldSettings = yield $this->awaitWorld($worldName);
         assert($worldSettings instanceof WorldSettings);
-        /** @phpstan-var null|array{biomeID: int, alias: string} $plotData */
+        /** @phpstan-var null|array{alias: string} $plotData */
         $plotData = $rows[array_key_first($rows)] ?? null;
         if ($plotData === null) {
             $plot = new Plot($worldName, $worldSettings, $x, $z);
@@ -596,7 +596,7 @@ final class DataProvider {
         $plotRates = yield $this->awaitPlotRates($worldName, $x, $z);
         $plot = new Plot(
             $worldName, $worldSettings, $x, $z,
-            $plotData["biomeID"], $plotData["alias"],
+            $plotData["alias"],
             $mergePlots, $plotPlayers, $plotFlags, $plotRates
         );
         $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
@@ -729,7 +729,7 @@ final class DataProvider {
             self::GET_PLOT_BY_ALIAS,
             ["alias" => $alias]
         );
-        /** @phpstan-var null|array{worldName: string, x: int, z: int, biomeID: int} $plotData */
+        /** @phpstan-var null|array{worldName: string, x: int, z: int} $plotData */
         $plotData = $rows[array_key_first($rows)] ?? null;
         if ($plotData === null) {
             return null;
@@ -749,7 +749,7 @@ final class DataProvider {
         $plotRates = yield $this->awaitPlotRates($worldName, $x, $z);
         $plot = new Plot(
             $worldName, $worldSettings, $x, $z,
-            $plotData["biomeID"], $alias,
+            $alias,
             $mergePlots, $plotPlayers, $plotFlags, $plotRates
         );
         $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
@@ -766,7 +766,6 @@ final class DataProvider {
                 "worldName" => $plot->getWorldName(),
                 "x" => $plot->getX(),
                 "z" => $plot->getZ(),
-                "biomeID" => $plot->getBiomeID(),
                 "alias" => $plot->getAlias()
             ]
         );
