@@ -44,7 +44,10 @@ class Cache {
         }
 
         // adding the object to the end of the cache
-        $this->cache[$identifier] = clone $cacheable;
+        if (is_object($cacheable)) {
+            $cacheable = clone $cacheable;
+        }
+        $this->cache[$identifier] = $cacheable;
     }
 
     /**
