@@ -21,11 +21,20 @@ class CPlotLanguageProvider extends LanguageProvider {
     private string $fallbackLanguage;
     /** @phpstan-var array<LanguageIdentifier, Language> */
     private array $languages;
+    /** @phpstan-var array<LanguageIdentifier, LanguageIdentifier> */
+    private array $languageAliases;
 
     public function __construct() {
-        /** @phpstan-var string $fallbackLanguage */
-        $fallbackLanguage = ResourceManager::getInstance()->getConfig()->get("fallback.language", "de_DE");
-        $this->fallbackLanguage = $fallbackLanguage;
+        /** @phpstan-var array{fallback: LanguageIdentifier, aliases: array<LanguageIdentifier, LanguageIdentifier>} $languageSettings */
+        $languageSettings = ResourceManager::getInstance()->getConfig()->get("language", []);
+        $this->fallbackLanguage = strtolower($languageSettings["fallback"]);
+
+        $aliases = [];
+        foreach ($languageSettings["aliases"] as $key => $value) {
+            $aliases[strtolower($key)] = strtolower($value);
+        }
+        $this->languageAliases = $aliases;
+
         $dir = scandir(CPlot::getInstance()->getDataFolder() . "language");
         if ($dir !== false) {
             foreach ($dir as $file) {
@@ -34,10 +43,10 @@ class CPlotLanguageProvider extends LanguageProvider {
                 if (!isset($fileData["extension"]) || $fileData["extension"] !== "ini") {
                     continue;
                 }
-                $this->languages[$fileData["filename"]] = new Language(
+                $this->languages[strtolower($fileData["filename"])] = new Language(
                     $fileData["filename"],
                     CPlot::getInstance()->getDataFolder() . "language",
-                    $this->fallbackLanguage
+                    $languageSettings["fallback"]
                 );
             }
         }
@@ -48,12 +57,7 @@ class CPlotLanguageProvider extends LanguageProvider {
     }
 
     public function translateForCommandSender(CommandSender $sender, array|string $keys, \Closure $onSuccess, ?\Closure $onError = null) : void {
-        if (!($sender instanceof Player)) {
-            $language = $this->languages[$this->fallbackLanguage];
-        } else {
-            $language = $this->languages[$sender->getLocale()] ?? $this->languages[$this->fallbackLanguage];
-        }
-        $onSuccess($this->buildMessage($language, $keys));
+        $onSuccess($this->buildMessage($this->getLanguage($sender), $keys));
     }
 
     public function sendMessage(CommandSender $sender, array|string $keys, ?\Closure $onSuccess = null, ?\Closure $onError = null) : void {
@@ -63,7 +67,7 @@ class CPlotLanguageProvider extends LanguageProvider {
             if (!$sender->isOnline()) {
                 return;
             }
-            $message = $this->buildMessage($this->languages[$sender->getLocale()] ?? $this->languages[$this->fallbackLanguage], $keys);
+            $message = $this->buildMessage($this->getLanguage($sender), $keys);
         }
         $sender->sendMessage($message);
         if ($onSuccess !== null) {
@@ -76,11 +80,26 @@ class CPlotLanguageProvider extends LanguageProvider {
             return;
         }
         $player->sendTip(
-            $this->buildMessage($this->languages[$player->getLocale()] ?? $this->languages[$this->fallbackLanguage], $keys)
+            $this->buildMessage($this->getLanguage($player), $keys)
         );
         if ($onSuccess !== null) {
             $onSuccess(null);
         }
+    }
+
+    private function getLanguage(CommandSender $sender) : Language {
+        if (!($sender instanceof Player)) {
+            $language = $this->languages[$this->fallbackLanguage];
+        } else {
+            if (isset($this->languages[$sender->getLocale()])) {
+                $language = $this->languages[$sender->getLocale()];
+            } else if (isset($this->languageAliases[$sender->getLocale()])) {
+                $language = $this->languages[$this->languageAliases[$sender->getLocale()]];
+            } else {
+                $language = $this->languages[$this->fallbackLanguage];
+            }
+        }
+        return $language;
     }
 
     /**
