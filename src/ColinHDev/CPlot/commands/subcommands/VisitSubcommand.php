@@ -27,8 +27,12 @@ class VisitSubcommand extends Subcommand {
 
         switch (count($args)) {
             case 0:
+                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($sender);
+                if (!($playerData instanceof PlayerData)) {
+                    return null;
+                }
                 /** @var Plot[] $plots */
-                $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->getBytes(), PlotPlayer::STATE_OWNER);
+                $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
                 if (count($plots) === 0) {
                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.noArguments.noPlots"]);
                     return null;
@@ -44,8 +48,12 @@ class VisitSubcommand extends Subcommand {
 
             case 1:
                 if (is_numeric($args[0])) {
+                    $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($sender);
+                    if (!($playerData instanceof PlayerData)) {
+                        return null;
+                    }
                     /** @var Plot[] $plots */
-                    $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($sender->getUniqueId()->getBytes(), PlotPlayer::STATE_OWNER);
+                    $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
                     if (count($plots) === 0) {
                         yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.sender.noPlots"]);
                         return null;
@@ -67,18 +75,19 @@ class VisitSubcommand extends Subcommand {
 
                 $player = Server::getInstance()->getPlayerByPrefix($args[0]);
                 if ($player instanceof Player) {
-                    $playerUUID = $player->getUniqueId()->getBytes();
+                    /** @phpstan-var PlayerData|null $playerData */
+                    $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
                     $playerName = $player->getName();
                 } else {
                     $playerName = $args[0];
                     /** @phpstan-var PlayerData|null $playerData */
                     $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
-                    $playerUUID = $playerData?->getPlayerUUID();
+
                 }
 
-                if ($playerUUID !== null) {
+                if ($playerData instanceof PlayerData) {
                     /** @var Plot[] $plots */
-                    $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerUUID, PlotPlayer::STATE_OWNER);
+                    $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
                     if (count($plots) === 0) {
                         yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.player.noPlots" => $playerName]);
                         return null;
@@ -110,20 +119,21 @@ class VisitSubcommand extends Subcommand {
             default:
                 $player = Server::getInstance()->getPlayerByPrefix($args[0]);
                 if ($player instanceof Player) {
-                    $playerUUID = $player->getUniqueId()->getBytes();
+                    /** @phpstan-var PlayerData|null $playerData */
+                    $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
                     $playerName = $player->getName();
                 } else {
                     $playerName = $args[0];
+                    /** @phpstan-var PlayerData|null $playerData */
                     $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
-                    if (!($playerData instanceof PlayerData)) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.playerNotFound" => $playerName]);
-                        return null;
-                    }
-                    $playerUUID = $playerData->getPlayerUUID();
+                }
+                if (!($playerData instanceof PlayerData)) {
+                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.playerNotFound" => $playerName]);
+                    return null;
                 }
 
                 /** @var Plot[] $plots */
-                $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerUUID, PlotPlayer::STATE_OWNER);
+                $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
                 if (count($plots) === 0) {
                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.noPlots" => $playerName]);
                     return null;

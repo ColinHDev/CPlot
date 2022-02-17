@@ -26,6 +26,9 @@ class EntityMovementTask extends Task {
     }
 
     public function onRun() : void {
+        if (!DataProvider::getInstance()->isInitialized()) {
+            return;
+        }
         foreach ($this->worldManager->getWorlds() as $world) {
             $worldName = $world->getFolderName();
             $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($worldName);

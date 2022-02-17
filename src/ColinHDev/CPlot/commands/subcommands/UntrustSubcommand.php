@@ -10,6 +10,7 @@ use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -38,6 +39,7 @@ class UntrustSubcommand extends Subcommand {
             $player = Server::getInstance()->getPlayerByPrefix($args[0]);
             if ($player instanceof Player) {
                 $playerUUID = $player->getUniqueId()->getBytes();
+                $playerXUID = $player->getXuid();
                 $playerName = $player->getName();
             } else {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.playerNotOnline" => $args[0]]);
@@ -48,9 +50,11 @@ class UntrustSubcommand extends Subcommand {
                     return null;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
+                $playerXUID = $playerData->getPlayerXUID();
             }
         } else {
             $playerUUID = "*";
+            $playerXUID = "*";
             $playerName = "*";
         }
 
@@ -83,20 +87,19 @@ class UntrustSubcommand extends Subcommand {
             return null;
         }
 
-        if (!$plot->isPlotTrustedExact($playerUUID)) {
+        $playerIdentifier = PlayerData::getIdentifierFromData($playerUUID, $playerXUID, $playerName);
+        $plotPlayer = $plot->getPlotPlayerExact($playerIdentifier);
+        if (!($plotPlayer instanceof PlotPlayer) || $plotPlayer->getState() !== PlotPlayer::STATE_TRUSTED) {
             yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.playerNotTrusted" => $playerName]);
             return null;
         }
+        $playerData = $plotPlayer->getPlayerData();
 
-        $plot->removePlotPlayer($playerUUID);
-        yield DataProvider::getInstance()->deletePlotPlayer($plot, $playerUUID);
+        $plot->removePlotPlayer($playerIdentifier);
+        yield DataProvider::getInstance()->deletePlotPlayer($plot, $playerData->getPlayerID());
         yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.success" => $playerName]);
 
         if ($player instanceof Player) {
-            $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
-            if (!($playerData instanceof PlayerData)) {
-                return null;
-            }
             /** @var BooleanAttribute $setting */
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_TRUSTED_REMOVE);
             if ($setting->getValue() === true) {

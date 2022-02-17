@@ -36,12 +36,7 @@ class HelpersSubcommand extends Subcommand {
 
         $helperData = [];
         foreach ($plot->getPlotHelpers() as $plotPlayer) {
-            $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($plotPlayer->getPlayerUUID());
-            if ($playerData instanceof PlayerData) {
-                $playerName = $playerData->getPlayerName();
-            } else {
-                $playerName = "ERROR";
-            }
+            $plotPlayerData = $plotPlayer->getPlayerData();
             /** @phpstan-var string $addTime */
             $addTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
@@ -50,7 +45,7 @@ class HelpersSubcommand extends Subcommand {
             $helperData[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["helpers.success.list" => [
-                    $playerName,
+                    $plotPlayerData->getPlayerName() ?? "Error: " . ($plotPlayerData->getPlayerXUID() ?? $plotPlayerData->getPlayerUUID() ?? $plotPlayerData->getPlayerID()),
                     $addTime
                 ]]
             );

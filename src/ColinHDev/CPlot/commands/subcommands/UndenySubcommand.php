@@ -10,6 +10,7 @@ use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -38,6 +39,7 @@ class UndenySubcommand extends Subcommand {
             $player = Server::getInstance()->getPlayerByPrefix($args[0]);
             if ($player instanceof Player) {
                 $playerUUID = $player->getUniqueId()->getBytes();
+                $playerXUID = $player->getXuid();
                 $playerName = $player->getName();
             } else {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.playerNotOnline" => $args[0]]);
@@ -48,9 +50,11 @@ class UndenySubcommand extends Subcommand {
                     return null;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
+                $playerXUID = $playerData->getPlayerXUID();
             }
         } else {
             $playerUUID = "*";
+            $playerXUID = "*";
             $playerName = "*";
         }
 
@@ -83,20 +87,19 @@ class UndenySubcommand extends Subcommand {
             return null;
         }
 
-        if (!$plot->isPlotDeniedExact($playerUUID)) {
+        $playerIdentifier = PlayerData::getIdentifierFromData($playerUUID, $playerXUID, $playerName);
+        $plotPlayer = $plot->getPlotPlayerExact($playerIdentifier);
+        if (!($plotPlayer instanceof PlotPlayer) || $plotPlayer->getState() !== PlotPlayer::STATE_DENIED) {
             yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.playerNotDenied" => $playerName]);
             return null;
         }
+        $playerData = $plotPlayer->getPlayerData();
 
-        $plot->removePlotPlayer($playerUUID);
-        yield DataProvider::getInstance()->deletePlotPlayer($plot, $playerUUID);
+        $plot->removePlotPlayer($playerIdentifier);
+        yield DataProvider::getInstance()->deletePlotPlayer($plot, $playerData->getPlayerID());
         yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.success" => $playerName]);
 
         if ($player instanceof Player) {
-            $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
-            if (!($playerData instanceof PlayerData)) {
-                return null;
-            }
             /** @var BooleanAttribute $setting */
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_DENIED_REMOVE);
             if ($setting->getValue() === true) {

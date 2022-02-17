@@ -37,7 +37,7 @@ class PlotRate {
     }
 
     public function toString() : string {
-        return $this->playerData->getPlayerUUID() . ";" . $this->rateTime;
+        return PlayerData::getIdentifierFromData($this->playerData->getPlayerUUID(), $this->playerData->getPlayerXUID(), $this->playerData->getPlayerName()) . ";" . $this->rateTime;
     }
 
     /**

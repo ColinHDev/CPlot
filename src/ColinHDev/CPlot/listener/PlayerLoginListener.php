@@ -21,6 +21,7 @@ class PlayerLoginListener implements Listener {
         Await::g2c(
             DataProvider::getInstance()->updatePlayerData(
                 $player->getUniqueId()->getBytes(),
+                $player->getXuid(),
                 $player->getName()
             ),
             null,

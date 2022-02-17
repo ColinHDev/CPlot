@@ -35,10 +35,12 @@ class AddSubcommand extends Subcommand {
         }
 
         $player = null;
+        $playerData = null;
         if ($args[0] !== "*") {
             $player = Server::getInstance()->getPlayerByPrefix($args[0]);
             if ($player instanceof Player) {
                 $playerUUID = $player->getUniqueId()->getBytes();
+                $playerXUID = $player->getXuid();
                 $playerName = $player->getName();
             } else {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerNotOnline" => $args[0]]);
@@ -49,6 +51,7 @@ class AddSubcommand extends Subcommand {
                     return null;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
+                $playerXUID = $playerData->getPlayerXUID();
             }
             if ($playerUUID === $sender->getUniqueId()->getBytes()) {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.senderIsPlayer"]);
@@ -56,6 +59,7 @@ class AddSubcommand extends Subcommand {
             }
         } else {
             $playerUUID = "*";
+            $playerXUID = "*";
             $playerName = "*";
         }
 
@@ -88,15 +92,18 @@ class AddSubcommand extends Subcommand {
             return null;
         }
 
-        if ($plot->isPlotHelperExact($playerUUID)) {
+        if (!($playerData instanceof PlayerData)) {
+            $playerData = yield DataProvider::getInstance()->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
+            if (!($playerData instanceof PlayerData)) {
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerNotFound" => $playerName]);
+                return null;
+            }
+        }
+        if ($plot->isPlotHelperExact($playerData)) {
             yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerAlreadyHelper" => $playerName]);
             return null;
         }
 
-        $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
-        if (!($playerData instanceof PlayerData)) {
-            return;
-        }
         $plotPlayer = new PlotPlayer($playerData, PlotPlayer::STATE_HELPER);
         $plot->addPlotPlayer($plotPlayer);
         yield DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);

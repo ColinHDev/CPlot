@@ -39,12 +39,7 @@ class InfoSubcommand extends Subcommand {
 
         $plotOwnerData = [];
         foreach ($plot->getPlotOwners() as $plotOwner) {
-            $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($plotOwner->getPlayerUUID());
-            if ($playerData instanceof PlayerData) {
-                $playerName = $playerData->getPlayerName();
-            } else {
-                $playerName = "ERROR";
-            }
+            $playerData = $plotOwner->getPlayerData();
             /** @phpstan-var string $addTime */
             $addTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
@@ -53,7 +48,7 @@ class InfoSubcommand extends Subcommand {
             $plotOwnerData[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["info.owners.list" => [
-                    $playerName,
+                    $playerData->getPlayerName() ?? "Error: " . ($playerData->getPlayerXUID() ?? $playerData->getPlayerUUID() ?? $playerData->getPlayerID()),
                     $addTime
                 ]]
             );

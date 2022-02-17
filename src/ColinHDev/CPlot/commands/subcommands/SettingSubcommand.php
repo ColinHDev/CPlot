@@ -79,7 +79,7 @@ class SettingSubcommand extends Subcommand {
                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.my.senderNotOnline"]);
                     break;
                 }
-                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
+                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($sender);
                 if (!($playerData instanceof PlayerData)) {
                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.my.loadPlayerDataError"]);
                     break;
@@ -115,7 +115,7 @@ class SettingSubcommand extends Subcommand {
                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.senderNotOnline"]);
                     break;
                 }
-                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
+                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($sender);
                 if (!($playerData instanceof PlayerData)) {
                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.loadPlayerDataError"]);
                     break;
@@ -163,7 +163,7 @@ class SettingSubcommand extends Subcommand {
                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.senderNotOnline"]);
                     break;
                 }
-                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($sender->getUniqueId()->getBytes());
+                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($sender);
                 if (!($playerData instanceof PlayerData)) {
                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.loadPlayerDataError"]);
                     break;

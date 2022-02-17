@@ -36,12 +36,7 @@ class TrustedSubcommand extends Subcommand {
 
         $trustedPlayerData = [];
         foreach ($plot->getPlotTrusted() as $plotPlayer) {
-            $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($plotPlayer->getPlayerUUID());
-            if ($playerData instanceof PlayerData) {
-                $playerName = $playerData->getPlayerName();
-            } else {
-                $playerName = "ERROR";
-            }
+            $plotPlayerData = $plotPlayer->getPlayerData();
             /** @phpstan-var string $addTime */
             $addTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
@@ -50,7 +45,7 @@ class TrustedSubcommand extends Subcommand {
             $trustedPlayerData[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["trusted.success.list" => [
-                    $playerName,
+                    $plotPlayerData->getPlayerName() ?? "Error: " . ($plotPlayerData->getPlayerXUID() ?? $plotPlayerData->getPlayerUUID() ?? $plotPlayerData->getPlayerID()),
                     $addTime
                 ]]
             );

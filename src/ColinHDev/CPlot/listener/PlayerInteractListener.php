@@ -50,16 +50,15 @@ class PlayerInteractListener implements Listener {
                 return;
             }
 
-            $playerUUID = $player->getUniqueId()->getBytes();
-            if ($plot->isPlotOwner($playerUUID)) {
+            if ($plot->isPlotOwner($player)) {
                 return;
             }
-            if ($plot->isPlotTrusted($playerUUID)) {
+            if ($plot->isPlotTrusted($player)) {
                 return;
             }
-            if ($plot->isPlotHelper($playerUUID)) {
+            if ($plot->isPlotHelper($player)) {
                 foreach ($plot->getPlotOwners() as $plotOwner) {
-                    $owner = $player->getServer()->getPlayerByUUID(Uuid::fromBytes($plotOwner->getPlayerUUID()));
+                    $owner = $plotOwner->getPlayerData()->getPlayer();
                     if ($owner !== null) {
                         return;
                     }

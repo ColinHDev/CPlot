@@ -12,12 +12,10 @@ use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
-use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\player\Player;
-use Ramsey\Uuid\Uuid;
 use SOFe\AwaitGenerator\Await;
 
 class PlayerMoveListener implements Listener {
@@ -43,12 +41,11 @@ class PlayerMoveListener implements Listener {
                 if (!$player->isConnected()) {
                     return;
                 }
-                $playerUUID = $player->getUniqueId()->getBytes();
 
                 if ($plotTo instanceof Plot) {
                     // check if player is denied and hasn't bypass permission
                     if (!$player->hasPermission("cplot.bypass.deny")) {
-                        if ($plotTo->isPlotDenied($playerUUID) && $plotTo->isOnPlot($player->getPosition())) {
+                        if ($plotTo->isPlotDenied($player) && $plotTo->isOnPlot($player->getPosition())) {
                             $plotTo->teleportTo($player, false, false);
                             return;
                         }
@@ -57,7 +54,7 @@ class PlayerMoveListener implements Listener {
                     // flags on plot enter
                     if ($plotFrom === null) {
                         // settings on plot enter
-                        $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
+                        $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
                         if ($playerData !== null) {
                             foreach ($plotTo->getFlags() as $flag) {
                                 $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_FLAG . $flag->getID());
@@ -88,8 +85,8 @@ class PlayerMoveListener implements Listener {
                             if ($plotTo->hasPlotOwner()) {
                                 $plotOwners = [];
                                 foreach ($plotTo->getPlotOwners() as $plotOwner) {
-                                    $plotOwnerData = yield from DataProvider::getInstance()->awaitPlayerDataByUUID($plotOwner->getPlayerUUID());
-                                    $plotOwners[] = $plotOwnerData?->getPlayerName() ?? "ERROR:" . $plotOwner->getPlayerUUID();
+                                    $plotOwnerData = $plotOwner->getPlayerData();
+                                    $plotOwners[] = $plotOwnerData->getPlayerName() ?? "Error: " . ($plotOwnerData->getPlayerXUID() ?? $plotOwnerData->getPlayerUUID() ?? $plotOwnerData->getPlayerID());
                                 }
                                 $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                                     $player,
@@ -117,7 +114,7 @@ class PlayerMoveListener implements Listener {
                         $flag = $plotTo->getFlagNonNullByID(FlagIDs::FLAG_PLOT_ENTER);
                         if ($flag->getValue() === true) {
                             foreach ($plotTo->getPlotOwners() as $plotOwner) {
-                                $owner = $player->getServer()->getPlayerByUUID(Uuid::fromBytes($plotOwner->getPlayerUUID()));
+                                $owner = $plotOwner->getPlayerData()->getPlayer();
                                 if ($owner instanceof Player) {
                                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                                         $owner,
@@ -138,7 +135,7 @@ class PlayerMoveListener implements Listener {
                     $flag = $plotFrom->getFlagNonNullByID(FlagIDs::FLAG_PLOT_LEAVE);
                     if ($flag->getValue() === true) {
                         foreach ($plotFrom->getPlotOwners() as $plotOwner) {
-                            $owner = $player->getServer()->getPlayerByUUID(Uuid::fromBytes($plotOwner->getPlayerUUID()));
+                            $owner = $plotOwner->getPlayerData()->getPlayer();
                             if ($owner instanceof Player) {
                                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                                     $owner,

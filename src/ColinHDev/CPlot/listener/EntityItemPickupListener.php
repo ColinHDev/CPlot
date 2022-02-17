@@ -50,16 +50,15 @@ class EntityItemPickupListener implements Listener {
                 return;
             }
 
-            $playerUUID = $entity->getUniqueId()->getBytes();
-            if ($plot->isPlotOwner($playerUUID)) {
+            if ($plot->isPlotOwner($entity)) {
                 return;
             }
-            if ($plot->isPlotTrusted($playerUUID)) {
+            if ($plot->isPlotTrusted($entity)) {
                 return;
             }
-            if ($plot->isPlotHelper($playerUUID)) {
+            if ($plot->isPlotHelper($entity)) {
                 foreach ($plot->getPlotOwners() as $plotOwner) {
-                    $owner = $entity->getServer()->getPlayerByUUID(Uuid::fromBytes($plotOwner->getPlayerUUID()));
+                    $owner = $plotOwner->getPlayerData()->getPlayer();
                     if ($owner !== null) {
                         return;
                     }

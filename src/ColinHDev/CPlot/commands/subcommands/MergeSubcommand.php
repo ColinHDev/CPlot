@@ -58,7 +58,7 @@ class MergeSubcommand extends Subcommand {
             return null;
         }
         if (!$sender->hasPermission("cplot.admin.merge")) {
-            if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
+            if (!$plot->isPlotOwner($sender)) {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.notPlotOwner"]);
                 return null;
             }
@@ -101,7 +101,7 @@ class MergeSubcommand extends Subcommand {
 
         $hasSameOwner = false;
         foreach ($plotToMerge->getPlotOwners() as $plotOwner) {
-            if ($plot->isPlotOwner($plotOwner->getPlayerUUID())) {
+            if ($plot->isPlotOwner($plotOwner->getPlayerData())) {
                 $hasSameOwner = true;
                 break;
             }

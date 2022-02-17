@@ -201,15 +201,14 @@ class FlagSubcommand extends Subcommand {
                 yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.success" => [$flag->getID(), $flag->toString($parsedValue)]]);
                 foreach ($sender->getWorld()->getPlayers() as $player) {
-                    $playerUUID = $player->getUniqueId()->getBytes();
-                    if ($sender->getUniqueId()->getBytes() === $playerUUID) {
+                    if ($sender === $player) {
                         continue;
                     }
                     $plotOfPlayer = yield Plot::awaitFromPosition($player->getPosition());
                     if (!($plotOfPlayer instanceof Plot) || !$plotOfPlayer->isSame($plot)) {
                         continue;
                     }
-                    $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($playerUUID);
+                    $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
                     if (!($playerData instanceof PlayerData)) {
                         continue;
                     }

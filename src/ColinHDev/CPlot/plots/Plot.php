@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\plots;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
+use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -118,7 +119,7 @@ class Plot extends BasePlot {
         $plotPlayers = [];
         foreach ($this->getPlotPlayers() as $plotPlayer) {
             if ($plotPlayer->getState() === $state) {
-                $plotPlayers[$plotPlayer->getPlayerUUID()] = $plotPlayer;
+                $plotPlayers[$plotPlayer->toString()] = $plotPlayer;
             }
         }
         return $plotPlayers;
@@ -156,15 +157,22 @@ class Plot extends BasePlot {
         return $this->getPlotPlayersByState(PlotPlayer::STATE_DENIED);
     }
 
-    public function getPlotPlayerExact(string $playerUUID) : ?PlotPlayer {
-        if (isset($this->plotPlayers[$playerUUID])) {
-            return $this->plotPlayers[$playerUUID];
+    public function getPlotPlayerExact(Player|PlayerData|string $player) : ?PlotPlayer {
+        if ($player instanceof Player) {
+            $identifier = PlayerData::getIdentifierFromPlayer($player);
+        } else if ($player instanceof PlayerData) {
+            $identifier = PlayerData::getIdentifierFromPlayerData($player);
+        } else {
+            $identifier = $player;
+        }
+        if (isset($this->plotPlayers[$identifier])) {
+            return $this->plotPlayers[$identifier];
         }
         return null;
     }
 
-    public function getPlotPlayer(string $playerUUID) : ?PlotPlayer {
-        $plotPlayer = $this->getPlotPlayerExact($playerUUID);
+    public function getPlotPlayer(Player|PlayerData|string $player) : ?PlotPlayer {
+        $plotPlayer = $this->getPlotPlayerExact($player);
         if ($plotPlayer !== null) {
             return $plotPlayer;
         }
@@ -174,64 +182,64 @@ class Plot extends BasePlot {
         return null;
     }
 
-    public function isPlotOwnerExact(string $playerUUID) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($playerUUID);
+    public function isPlotOwnerExact(Player|PlayerData|string $player) : bool {
+        $plotPlayer = $this->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_OWNER;
     }
 
-    public function isPlotOwner(string $playerUUID) : bool {
-        $plotPlayer = $this->getPlotPlayer($playerUUID);
+    public function isPlotOwner(Player|PlayerData|string $player) : bool {
+        $plotPlayer = $this->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_OWNER;
     }
 
-    public function isPlotTrustedExact(string $playerUUID) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($playerUUID);
+    public function isPlotTrustedExact(Player|PlayerData|string $player) : bool {
+        $plotPlayer = $this->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_TRUSTED;
     }
 
-    public function isPlotTrusted(string $playerUUID) : bool {
-        $plotPlayer = $this->getPlotPlayer($playerUUID);
+    public function isPlotTrusted(Player|PlayerData|string $player) : bool {
+        $plotPlayer = $this->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_TRUSTED;
     }
 
-    public function isPlotHelperExact(string $playerUUID) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($playerUUID);
+    public function isPlotHelperExact(Player|PlayerData|string $player) : bool {
+        $plotPlayer = $this->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_HELPER;
     }
 
-    public function isPlotHelper(string $playerUUID) : bool {
-        $plotPlayer = $this->getPlotPlayer($playerUUID);
+    public function isPlotHelper(Player|PlayerData|string $player) : bool {
+        $plotPlayer = $this->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_HELPER;
     }
 
-    public function isPlotDeniedExact(string $playerUUID) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($playerUUID);
+    public function isPlotDeniedExact(Player|PlayerData|string $player) : bool {
+        $plotPlayer = $this->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_DENIED;
     }
 
-    public function isPlotDenied(string $playerUUID) : bool {
-        $plotPlayer = $this->getPlotPlayer($playerUUID);
+    public function isPlotDenied(Player|PlayerData|string $player) : bool {
+        $plotPlayer = $this->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
@@ -239,11 +247,11 @@ class Plot extends BasePlot {
     }
 
     public function addPlotPlayer(PlotPlayer $plotPlayer) : void {
-        $this->plotPlayers[$plotPlayer->getPlayerUUID()] = $plotPlayer;
+        $this->plotPlayers[$plotPlayer->getPlayerData()->getPlayerID()] = $plotPlayer;
     }
 
-    public function removePlotPlayer(string $playerUUID) : void {
-        unset($this->plotPlayers[$playerUUID]);
+    public function removePlotPlayer(string $playerIdentifier) : void {
+        unset($this->plotPlayers[$playerIdentifier]);
     }
 
     /**

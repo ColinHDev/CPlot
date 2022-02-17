@@ -39,9 +39,8 @@ class ClaimSubcommand extends Subcommand {
             return null;
         }
 
-        $senderUUID = $sender->getUniqueId()->getBytes();
         if ($plot->hasPlotOwner()) {
-            if ($plot->isPlotOwner($senderUUID)) {
+            if ($plot->isPlotOwner($sender)) {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotAlreadyClaimedBySender"]);
                 return null;
             }
@@ -49,8 +48,12 @@ class ClaimSubcommand extends Subcommand {
             return null;
         }
 
+        $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($sender);
+        if (!($playerData instanceof PlayerData)) {
+            return null;
+        }
         /** @phpstan-var array<string, Plot> $claimedPlots */
-        $claimedPlots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($senderUUID, PlotPlayer::STATE_OWNER);
+        $claimedPlots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
         $claimedPlotsCount = count($claimedPlots);
         $maxPlots = $this->getMaxPlotsOfPlayer($sender);
         if ($claimedPlotsCount > $maxPlots) {
@@ -76,10 +79,6 @@ class ClaimSubcommand extends Subcommand {
             }
         }
 
-        $playerData = yield DataProvider::getInstance()->awaitPlayerDataByUUID($senderUUID);
-        if (!($playerData instanceof PlayerData)) {
-            return;
-        }
         $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
         $plot->addPlotPlayer($senderData);
         yield DataProvider::getInstance()->savePlot($plot);
