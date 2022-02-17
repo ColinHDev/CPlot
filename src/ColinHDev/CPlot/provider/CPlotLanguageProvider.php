@@ -27,13 +27,8 @@ class CPlotLanguageProvider extends LanguageProvider {
     public function __construct() {
         /** @phpstan-var array{fallback: LanguageIdentifier, aliases: array<LanguageIdentifier, LanguageIdentifier>} $languageSettings */
         $languageSettings = ResourceManager::getInstance()->getConfig()->get("language", []);
-        $this->fallbackLanguage = strtolower($languageSettings["fallback"]);
-
-        $aliases = [];
-        foreach ($languageSettings["aliases"] as $key => $value) {
-            $aliases[strtolower($key)] = strtolower($value);
-        }
-        $this->languageAliases = $aliases;
+        $this->fallbackLanguage = $languageSettings["fallback"];
+        $this->languageAliases = $languageSettings["aliases"];
 
         $dir = scandir(CPlot::getInstance()->getDataFolder() . "language");
         if ($dir !== false) {
@@ -43,10 +38,10 @@ class CPlotLanguageProvider extends LanguageProvider {
                 if (!isset($fileData["extension"]) || $fileData["extension"] !== "ini") {
                     continue;
                 }
-                $this->languages[strtolower($fileData["filename"])] = new Language(
+                $this->languages[$fileData["filename"]] = new Language(
                     $fileData["filename"],
                     CPlot::getInstance()->getDataFolder() . "language",
-                    $languageSettings["fallback"]
+                    $this->fallbackLanguage
                 );
             }
         }
