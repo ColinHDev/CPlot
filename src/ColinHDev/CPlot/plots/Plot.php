@@ -247,7 +247,7 @@ class Plot extends BasePlot {
     }
 
     public function addPlotPlayer(PlotPlayer $plotPlayer) : void {
-        $this->plotPlayers[$plotPlayer->getPlayerData()->getPlayerID()] = $plotPlayer;
+        $this->plotPlayers[$plotPlayer->toString()] = $plotPlayer;
     }
 
     public function removePlotPlayer(string $playerIdentifier) : void {
