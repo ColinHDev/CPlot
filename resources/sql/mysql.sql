@@ -172,24 +172,28 @@ SELECT mergeX, mergeZ
 FROM mergePlots
 WHERE worldName = :worldName AND originX = :originX AND originZ = :originZ;
 -- #    }
--- #    { existingPlotXZ
+-- #    { ownedPlots
 -- #      :worldName string
 -- #      :number int
 SELECT x, z
-FROM plots
+FROM plotPlayers
 WHERE (
     worldName = :worldName AND (
         (abs(x) = :number AND abs(z) <= :number) OR
         (abs(z) = :number AND abs(x) <= :number)
-    )
+    ) AND state = 'state_owner'
 )
 UNION
-SELECT mergeX, mergeZ
+SELECT mergeX AS x, mergeZ AS z
 FROM mergePlots
 WHERE (
     worldName = :worldName AND (
         (abs(mergeX) = :number AND abs(mergeZ) <= :number) OR
         (abs(mergeZ) = :number AND abs(mergeX) <= :number)
+    ) AND EXISTS (
+        SELECT x, z
+        FROM plotPlayers
+        WHERE worldName = :worldName AND x = originX AND z = originZ AND state = 'state_owner'
     )
 );
 -- #    }

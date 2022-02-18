@@ -60,7 +60,7 @@ final class DataProvider {
     private const GET_PLOT_BY_ALIAS = "cplot.get.plotByAlias";
     private const GET_ORIGINPLOT = "cplot.get.originPlot";
     private const GET_MERGEPLOTS = "cplot.get.mergePlots";
-    private const GET_EXISTING_PLOTXZ = "cplot.get.existingPlotXZ";
+    private const GET_OWNED_PLOTS = "cplot.get.ownedPlots";
     private const GET_PLOTPLAYERS = "cplot.get.plotPlayers";
     private const GET_PLOTS_BY_PLOTPLAYER = "cplot.get.plotsByPlotPlayer";
     private const GET_PLOTFLAGS = "cplot.get.plotFlags";
@@ -917,7 +917,7 @@ final class DataProvider {
         for ($i = 0; $limitXZ <= 0 || $i < $limitXZ; $i++) {
             $plots = [];
             $rows = yield $this->database->asyncSelect(
-                self::GET_EXISTING_PLOTXZ,
+                self::GET_OWNED_PLOTS,
                 [
                     "worldName" => $worldName,
                     "number" => $i
@@ -932,22 +932,22 @@ final class DataProvider {
             }
             if (($ret = $this->findEmptyPlotSquared(0, $i, $plots)) !== null) {
                 [$x, $z] = $ret;
-                $plot = new Plot($worldName, $worldSettings, $x, $z);
-                $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
+                /** @phpstan-var Plot|null $plot */
+                $plot = yield $this->awaitMergeOrigin(new BasePlot($worldName, $worldSettings, $x, $z));
                 return $plot;
             }
             for ($a = 1; $a < $i; $a++) {
                 if (($ret = $this->findEmptyPlotSquared($a, $i, $plots)) !== null) {
                     [$x, $z] = $ret;
-                    $plot = new Plot($worldName, $worldSettings, $x, $z);
-                    $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
+                    /** @phpstan-var Plot|null $plot */
+                    $plot = yield $this->awaitMergeOrigin(new BasePlot($worldName, $worldSettings, $x, $z));
                     return $plot;
                 }
             }
             if (($ret = $this->findEmptyPlotSquared($i, $i, $plots)) !== null) {
                 [$x, $z] = $ret;
-                $plot = new Plot($worldName, $worldSettings, $x, $z);
-                $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
+                /** @phpstan-var Plot|null $plot */
+                $plot = yield $this->awaitMergeOrigin(new BasePlot($worldName, $worldSettings, $x, $z));
                 return $plot;
             }
         }
