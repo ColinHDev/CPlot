@@ -141,7 +141,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
                 if (!$sender->hasPermission("cplot.admin.flag")) {
-                    if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
+                    if (!$plot->isPlotOwner($sender)) {
                         yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.notPlotOwner"]);
                         break;
                     }
@@ -264,7 +264,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
                 if (!$sender->hasPermission("cplot.admin.flag")) {
-                    if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
+                    if (!$plot->isPlotOwner($sender)) {
                         yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.notPlotOwner"]);
                         break;
                     }

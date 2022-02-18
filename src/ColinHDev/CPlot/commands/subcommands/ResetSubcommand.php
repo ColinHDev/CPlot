@@ -48,7 +48,7 @@ class ResetSubcommand extends Subcommand {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.noPlotOwner"]);
                 return null;
             }
-            if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
+            if (!$plot->isPlotOwner($sender)) {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.notPlotOwner"]);
                 return null;
             }

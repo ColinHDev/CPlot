@@ -112,7 +112,7 @@ class WallSubcommand extends Subcommand {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlotOwner"]);
                 return;
             }
-            if (!$plot->isPlotOwner($player->getUniqueId()->getBytes())) {
+            if (!$plot->isPlotOwner($player)) {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.notPlotOwner"]);
                 return;
             }

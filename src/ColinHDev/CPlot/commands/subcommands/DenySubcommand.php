@@ -79,7 +79,7 @@ class DenySubcommand extends Subcommand {
             return null;
         }
         if (!$sender->hasPermission("cplot.admin.deny")) {
-            if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
+            if (!$plot->isPlotOwner($sender)) {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.notPlotOwner"]);
                 return null;
             }

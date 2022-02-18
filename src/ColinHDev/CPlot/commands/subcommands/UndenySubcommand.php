@@ -74,7 +74,7 @@ class UndenySubcommand extends Subcommand {
             return null;
         }
         if (!$sender->hasPermission("cplot.admin.undeny")) {
-            if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
+            if (!$plot->isPlotOwner($sender)) {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.notPlotOwner"]);
                 return null;
             }

@@ -112,7 +112,7 @@ class BorderSubcommand extends Subcommand {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.noPlotOwner"]);
                 return;
             }
-            if (!$plot->isPlotOwner($player->getUniqueId()->getBytes())) {
+            if (!$plot->isPlotOwner($player)) {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.notPlotOwner"]);
                 return;
             }

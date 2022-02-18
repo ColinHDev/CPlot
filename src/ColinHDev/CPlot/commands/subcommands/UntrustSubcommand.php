@@ -74,7 +74,7 @@ class UntrustSubcommand extends Subcommand {
             return null;
         }
         if (!$sender->hasPermission("cplot.admin.untrust")) {
-            if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
+            if (!$plot->isPlotOwner($sender)) {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.notPlotOwner"]);
                 return null;
             }

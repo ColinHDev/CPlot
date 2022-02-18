@@ -79,7 +79,7 @@ class TrustSubcommand extends Subcommand {
             return null;
         }
         if (!$sender->hasPermission("cplot.admin.trust")) {
-            if (!$plot->isPlotOwner($sender->getUniqueId()->getBytes())) {
+            if (!$plot->isPlotOwner($sender)) {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.notPlotOwner"]);
                 return null;
             }
