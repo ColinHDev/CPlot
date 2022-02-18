@@ -81,7 +81,6 @@ class ClaimSubcommand extends Subcommand {
 
         $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
         $plot->addPlotPlayer($senderData);
-        yield DataProvider::getInstance()->savePlot($plot);
         yield DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
 
         yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.success" => [$plot->toString(), $plot->toSmallString()]]);

@@ -48,13 +48,13 @@ CREATE TABLE IF NOT EXISTS worlds(
     PRIMARY KEY (worldName)
 );
 -- #    }
--- #    { plotsTable
-CREATE TABLE IF NOT EXISTS plots(
+-- #    { plotAliasesTable
+CREATE TABLE IF NOT EXISTS plotAliases (
     worldName       VARCHAR(256)    NOT NULL,
     x               BIGINT          NOT NULL,
     z               BIGINT          NOT NULL,
-    alias           TEXT,
-    PRIMARY KEY (worldName, x, z),
+    alias           TEXT            NOT NULL,
+    PRIMARY KEY (worldName, x, z, alias),
     FOREIGN KEY (worldName) REFERENCES worlds (worldName) ON DELETE CASCADE
 );
 -- #    }
@@ -65,8 +65,7 @@ CREATE TABLE IF NOT EXISTS mergePlots(
     originZ     BIGINT          NOT NULL,
     mergeX      BIGINT          NOT NULL,
     mergeZ      BIGINT          NOT NULL,
-    PRIMARY KEY (worldName, originX, originZ, mergeX, mergeZ),
-    FOREIGN KEY (worldName, originX, originZ) REFERENCES plots (worldName, x, z) ON DELETE CASCADE
+    PRIMARY KEY (worldName, originX, originZ, mergeX, mergeZ)
 );
 -- #    }
 -- #    { plotPlayersTable
@@ -77,8 +76,7 @@ CREATE TABLE IF NOT EXISTS plotPlayers (
     playerID    BIGINT          NOT NULL,
     state       TEXT            NOT NULL,
     addTime     TEXT            NOT NULL,
-    PRIMARY KEY (worldName, x, z, playerID),
-    FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE,
+    PRIMARY KEY (worldName, x, z, playerID)
     FOREIGN KEY (playerID) REFERENCES playerData (playerID) ON DELETE CASCADE
 );
 -- #    }
@@ -89,8 +87,7 @@ CREATE TABLE IF NOT EXISTS plotFlags (
     z           BIGINT          NOT NULL,
     ID          TEXT            NOT NULL,
     value       TEXT            NOT NULL,
-    PRIMARY KEY (worldName, x, z, ID),
-    FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE
+    PRIMARY KEY (worldName, x, z, ID)
 );
 -- #    }
 -- #    { plotRatesTable
@@ -103,7 +100,6 @@ CREATE TABLE IF NOT EXISTS plotRates (
     rateTime    TEXT            NOT NULL,
     comment     TEXT,
     PRIMARY KEY (worldName, x, z, playerID, rateTime),
-    FOREIGN KEY (worldName, x, z) REFERENCES plots (worldName, x, z) ON DELETE CASCADE,
     FOREIGN KEY (playerID) REFERENCES playerData (playerID) ON DELETE CASCADE
 );
 -- #    }
@@ -146,18 +142,18 @@ SELECT *
 FROM worlds
 WHERE worldName = :worldName;
 -- #    }
--- #    { plot
+-- #    { plotAliases
 -- #      :worldName string
 -- #      :x int
 -- #      :z int
 SELECT alias
-FROM plots
+FROM plotAliases
 WHERE worldName = :worldName AND x = :x AND z = :z;
 -- #    }
 -- #    { plotByAlias
 -- #      :alias string
 SELECT worldName, x, z
-FROM plots
+FROM plotAliases
 WHERE alias = :alias;
 -- #    }
 -- #    { originPlot
@@ -282,14 +278,13 @@ INSERT OR REPLACE INTO worlds (
     :roadBlock, :borderBlock, :plotFloorBlock, :plotFillBlock, :plotBottomBlock
 );
 -- #    }
--- #    { plot
+-- #    { plotAlias
 -- #      :worldName string
 -- #      :x int
 -- #      :z int
--- #      :alias ?string
-INSERT INTO plots (worldName, x, z, alias)
-VALUES (:worldName, :x, :z, :alias) AS new
-ON DUPLICATE KEY UPDATE alias = new.alias;
+-- #      :alias string
+REPLACE INTO plotAliases (worldName, x, z, alias)
+VALUES (:worldName, :x, :z, :alias);
 -- #    }
 -- #    { mergePlot
 -- #      :worldName string
@@ -341,11 +336,25 @@ ON DUPLICATE KEY UPDATE rate = new.rate, comment = new.comment;
 DELETE FROM playerSettings
 WHERE playerID = :playerID AND ID = :ID;
 -- #    }
--- #    { plot
+-- #    { plotAliases
 -- #      :worldName string
 -- #      :x int
 -- #      :z int
-DELETE FROM plots
+DELETE FROM plotAliases
+WHERE worldName = :worldName AND x = :x AND z = :z;
+-- #    }
+-- #    { mergePlots
+-- #      :worldName string
+-- #      :originX int
+-- #      :originZ int
+DELETE FROM mergePlots
+WHERE worldName = :worldName AND originX = :originX AND originZ = :originZ;
+-- #    }
+-- #    { plotPlayers
+-- #      :worldName string
+-- #      :x int
+-- #      :z int
+DELETE FROM plotPlayers
 WHERE worldName = :worldName AND x = :x AND z = :z;
 -- #    }
 -- #    { plotPlayer
@@ -356,6 +365,13 @@ WHERE worldName = :worldName AND x = :x AND z = :z;
 DELETE FROM plotPlayers
 WHERE worldName = :worldName AND x = :x AND z = :z AND playerID = :playerID;
 -- #    }
+-- #    { plotFlags
+-- #      :worldName string
+-- #      :x int
+-- #      :z int
+DELETE FROM plotFlags
+WHERE worldName = :worldName AND x = :x AND z = :z;
+-- #    }
 -- #    { plotFlag
 -- #      :worldName string
 -- #      :x int
@@ -363,6 +379,13 @@ WHERE worldName = :worldName AND x = :x AND z = :z AND playerID = :playerID;
 -- #      :ID string
 DELETE FROM plotFlags
 WHERE worldName = :worldName AND x = :x AND z = :z AND ID = :ID;
+-- #    }
+-- #    { plotRates
+-- #      :worldName string
+-- #      :x int
+-- #      :z int
+DELETE FROM plotRates
+WHERE worldName = :worldName AND x = :x AND z = :z;
 -- #    }
 -- #  }
 -- #}

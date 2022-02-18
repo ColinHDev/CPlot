@@ -154,7 +154,7 @@ class MergeSubcommand extends Subcommand {
                 LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "merge.finish" => $elapsedTimeString]);
             }
         );
-        yield DataProvider::getInstance()->deletePlot($plotToMerge);
+        yield DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
         yield $plot->merge($plotToMerge);
         Server::getInstance()->getAsyncPool()->submitTask($task);
         return null;

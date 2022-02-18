@@ -44,7 +44,7 @@ final class DataProvider {
     private const INIT_ASTERISK_PLAYER = "cplot.init.asteriskPlayer";
     private const INIT_PLAYERSETTINGS_TABLE = "cplot.init.playerSettingsTable";
     private const INIT_WORLDS_TABLE = "cplot.init.worldsTable";
-    private const INIT_PLOTS_TABLE = "cplot.init.plotsTable";
+    private const INIT_PLOTALIASES_TABLE = "cplot.init.plotAliasesTable";
     private const INIT_MERGEPLOTS_TABLE = "cplot.init.mergePlotsTable";
     private const INIT_PLOTPLAYERS_TABLE = "cplot.init.plotPlayersTable";
     private const INIT_PLOTFLAGS_TABLE = "cplot.init.plotFlagsTable";
@@ -56,7 +56,7 @@ final class DataProvider {
     private const GET_PLAYERDATA_BY_NAME = "cplot.get.playerDataByName";
     private const GET_PLAYERSETTINGS = "cplot.get.playerSettings";
     private const GET_WORLD = "cplot.get.world";
-    private const GET_PLOT = "cplot.get.plot";
+    private const GET_PLOTALIASES = "cplot.get.plotAliases";
     private const GET_PLOT_BY_ALIAS = "cplot.get.plotByAlias";
     private const GET_ORIGINPLOT = "cplot.get.originPlot";
     private const GET_MERGEPLOTS = "cplot.get.mergePlots";
@@ -70,16 +70,20 @@ final class DataProvider {
     private const SET_PLAYERDATA = "cplot.set.playerData";
     private const SET_PLAYERSETTING = "cplot.set.playerSetting";
     private const SET_WORLD = "cplot.set.world";
-    private const SET_PLOT = "cplot.set.plot";
+    private const SET_PLOTALIAS = "cplot.set.plotAlias";
     private const SET_MERGEPLOT = "cplot.set.mergePlot";
     private const SET_PLOTPLAYER = "cplot.set.plotPlayer";
     private const SET_PLOTFLAG = "cplot.set.plotFlag";
     private const SET_PLOTRATE = "cplot.set.plotRate";
 
     private const DELETE_PLAYERSETTING = "cplot.delete.playerSetting";
-    private const DELETE_PLOT = "cplot.delete.plot";
+    private const DELETE_PLOTALIASES = "cplot.delete.plotAliases";
+    private const DELETE_MERGEPLOTS = "cplot.delete.mergePlots";
+    private const DELETE_PLOTPLAYERS = "cplot.delete.plotPlayers";
     private const DELETE_PLOTPLAYER = "cplot.delete.plotPlayer";
+    private const DELETE_PLOTFLAGS = "cplot.delete.plotFlags";
     private const DELETE_PLOTFLAG = "cplot.delete.plotFlag";
+    private const DELETE_PLOTRATES = "cplot.delete.plotRates";
 
     private DataConnector $database;
     private bool $isInitialized = false;
@@ -132,7 +136,7 @@ final class DataProvider {
         yield $this->database->asyncGeneric(self::INIT_ASTERISK_PLAYER, ["lastJoin" => date("d.m.Y H:i:s")]);
         yield $this->database->asyncGeneric(self::INIT_PLAYERSETTINGS_TABLE);
         yield $this->database->asyncGeneric(self::INIT_WORLDS_TABLE);
-        yield $this->database->asyncGeneric(self::INIT_PLOTS_TABLE);
+        yield $this->database->asyncGeneric(self::INIT_PLOTALIASES_TABLE);
         yield $this->database->asyncGeneric(self::INIT_MERGEPLOTS_TABLE);
         yield $this->database->asyncGeneric(self::INIT_PLOTPLAYERS_TABLE);
         yield $this->database->asyncGeneric(self::INIT_PLOTFLAGS_TABLE);
@@ -557,7 +561,7 @@ final class DataProvider {
      * Fetches a {@see Plot} asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
-     * @phpstan-return \Generator<int, mixed, array<array<string, mixed>>|array<string, MergePlot>|array<string, PlotPlayer>|array<string, BaseAttribute<mixed>>|array<string, PlotRate>, Plot|null>
+     * @phpstan-return \Generator<int, mixed, (WorldSettings|NonWorldSettings)|(string|null)|array<string, MergePlot>|array<string, PlotPlayer>|array<string, BaseAttribute<mixed>>|array<string, PlotRate>, Plot|null>
      */
     public function awaitPlot(string $worldName, int $x, int $z) : \Generator {
         $plot = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($worldName . ";" . $x . ";" . $z);
@@ -567,25 +571,11 @@ final class DataProvider {
             }
             return null;
         }
-        /** @phpstan-var array<array<string, mixed>> $rows */
-        $rows = yield $this->database->asyncSelect(
-            self::GET_PLOT,
-            [
-                "worldName" => $worldName,
-                "x" => $x,
-                "z" => $z
-            ]
-        );
         /** @phpstan-var WorldSettings|NonWorldSettings $worldSettings */
         $worldSettings = yield $this->awaitWorld($worldName);
         assert($worldSettings instanceof WorldSettings);
-        /** @phpstan-var null|array{alias: string} $plotData */
-        $plotData = $rows[array_key_first($rows)] ?? null;
-        if ($plotData === null) {
-            $plot = new Plot($worldName, $worldSettings, $x, $z);
-            $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
-            return $plot;
-        }
+        /** @phpstan-var string|null $plotAlias */
+        $plotAliases = yield $this->awaitPlotAliases($worldName, $x, $z);
         /** @phpstan-var array<string, MergePlot> $mergePlots */
         $mergePlots = yield $this->awaitMergePlots($worldName, $worldSettings, $x, $z);
         /** @phpstan-var array<string, PlotPlayer> $plotPlayers */
@@ -596,11 +586,33 @@ final class DataProvider {
         $plotRates = yield $this->awaitPlotRates($worldName, $x, $z);
         $plot = new Plot(
             $worldName, $worldSettings, $x, $z,
-            $plotData["alias"],
+            $plotAliases,
             $mergePlots, $plotPlayers, $plotFlags, $plotRates
         );
         $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
         return $plot;
+    }
+
+    /**
+     * Fetches the aliases of a plot asynchronously from the database and returns a {@see \Generator}. They can be get
+     * by using {@see Await}.
+     * @phpstan-return \Generator<int, mixed, array<array{alias: string}>, string|null>
+     */
+    private function awaitPlotAliases(string $worldName, int $x, int $z) : \Generator {
+        /** @phpstan-var array<array{alias: string}> $rows */
+        $rows = yield $this->database->asyncSelect(
+            self::GET_PLOTALIASES,
+            [
+                "worldName" => $worldName,
+                "x" => $x,
+                "z" => $z
+            ]
+        );
+        /** @phpstan-var array{alias: string} $row */
+        foreach ($rows as $row) {
+            return $row["alias"];
+        }
+        return null;
     }
 
     /**
@@ -734,60 +746,94 @@ final class DataProvider {
         if ($plotData === null) {
             return null;
         }
-        $worldName = $plotData["worldName"];
-        $x = $plotData["x"];
-        $z = $plotData["z"];
-        $worldSettings = yield $this->awaitWorld($worldName);
-        assert($worldSettings instanceof WorldSettings);
-        /** @phpstan-var array<string, MergePlot> $mergePlots */
-        $mergePlots = yield $this->awaitMergePlots($worldName, $worldSettings, $x, $z);
-        /** @phpstan-var array<string, PlotPlayer> $plotPlayers */
-        $plotPlayers = yield $this->awaitPlotPlayers($worldName, $x, $z);
-        /** @phpstan-var array<string, BaseAttribute<mixed>> $plotFlags */
-        $plotFlags = yield $this->awaitPlotFlags($worldName, $x, $z);
-        /** @phpstan-var array<string, PlotRate> $plotRates */
-        $plotRates = yield $this->awaitPlotRates($worldName, $x, $z);
-        $plot = new Plot(
-            $worldName, $worldSettings, $x, $z,
-            $alias,
-            $mergePlots, $plotPlayers, $plotFlags, $plotRates
-        );
-        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
+        /** @phpstan-var Plot|null $plot */
+        $plot = yield $this->awaitPlot($plotData["worldName"], $plotData["x"], $plotData["z"]);
         return $plot;
     }
 
     /**
      * @phpstan-return \Generator<int, mixed, void, void>
      */
-    public function savePlot(Plot $plot) : \Generator {
-        yield $this->database->asyncInsert(
-            self::SET_PLOT,
-            [
-                "worldName" => $plot->getWorldName(),
-                "x" => $plot->getX(),
-                "z" => $plot->getZ(),
-                "alias" => $plot->getAlias()
-            ]
-        );
-        $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
+    public function awaitPlotDeletion(Plot $plot) : \Generator {
+        yield $this->awaitPlotAliasesDeletion($plot);
+        yield $this->awaitMergePlotsDeletion($plot);
+        yield $this->awaitPlotPlayersDeletion($plot);
+        yield $this->awaitPlotFlagsDeletion($plot);
+        yield $this->awaitPlotRatesDeletion($plot);
+        $this->caches[CacheIDs::CACHE_PLOT]->removeObjectFromCache($plot->toString());
     }
 
     /**
      * @phpstan-return \Generator<int, mixed, void, void>
      */
-    public function deletePlot(Plot $plot) : \Generator {
+    private function awaitPlotAliasesDeletion(Plot $plot) : \Generator {
         yield $this->database->asyncInsert(
-            self::DELETE_PLOT,
+            self::DELETE_PLOTALIASES,
             [
                 "worldName" => $plot->getWorldName(),
                 "x" => $plot->getX(),
                 "z" => $plot->getZ()
             ]
         );
-        $this->caches[CacheIDs::CACHE_PLOT]->removeObjectFromCache($plot->toString());
+    }
+
+    /**
+     * @phpstan-return \Generator<int, mixed, void, void>
+     */
+    public function awaitMergePlotsDeletion(Plot $plot) : \Generator {
+        yield $this->database->asyncInsert(
+            self::DELETE_MERGEPLOTS,
+            [
+                "worldName" => $plot->getWorldName(),
+                "originX" => $plot->getX(),
+                "originZ" => $plot->getZ()
+            ]
+        );
         foreach ($plot->getMergePlots() as $key => $mergePlot) {
             $this->caches[CacheIDs::CACHE_PLOT]->removeObjectFromCache($key);
         }
+    }
+
+    /**
+     * @phpstan-return \Generator<int, mixed, void, void>
+     */
+    public function awaitPlotPlayersDeletion(Plot $plot) : \Generator {
+        yield $this->database->asyncInsert(
+            self::DELETE_PLOTPLAYERS,
+            [
+                "worldName" => $plot->getWorldName(),
+                "x" => $plot->getX(),
+                "z" => $plot->getZ()
+            ]
+        );
+    }
+
+    /**
+     * @phpstan-return \Generator<int, mixed, void, void>
+     */
+    public function awaitPlotFlagsDeletion(Plot $plot) : \Generator {
+        yield $this->database->asyncInsert(
+            self::DELETE_PLOTFLAGS,
+            [
+                "worldName" => $plot->getWorldName(),
+                "x" => $plot->getX(),
+                "z" => $plot->getZ()
+            ]
+        );
+    }
+
+    /**
+     * @phpstan-return \Generator<int, mixed, void, void>
+     */
+    public function awaitPlotRatesDeletion(Plot $plot) : \Generator {
+        yield $this->database->asyncInsert(
+            self::DELETE_PLOTRATES,
+            [
+                "worldName" => $plot->getWorldName(),
+                "x" => $plot->getX(),
+                "z" => $plot->getZ()
+            ]
+        );
     }
 
     /**
