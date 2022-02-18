@@ -930,25 +930,63 @@ final class DataProvider {
             if (count($plots) === max(1, 8 * $i)) {
                 continue;
             }
-            if (($ret = $this->findEmptyPlotSquared(0, $i, $plots)) !== null) {
-                [$x, $z] = $ret;
+            if (($coordinates = $this->findEmptyPlotSquared(0, $i, $plots)) !== null) {
+                [$x, $z] = $coordinates;
                 /** @phpstan-var Plot|null $plot */
                 $plot = yield $this->awaitMergeOrigin(new BasePlot($worldName, $worldSettings, $x, $z));
                 return $plot;
             }
             for ($a = 1; $a < $i; $a++) {
-                if (($ret = $this->findEmptyPlotSquared($a, $i, $plots)) !== null) {
-                    [$x, $z] = $ret;
+                if (($coordinates = $this->findEmptyPlotSquared($a, $i, $plots)) !== null) {
+                    [$x, $z] = $coordinates;
                     /** @phpstan-var Plot|null $plot */
                     $plot = yield $this->awaitMergeOrigin(new BasePlot($worldName, $worldSettings, $x, $z));
                     return $plot;
                 }
             }
-            if (($ret = $this->findEmptyPlotSquared($i, $i, $plots)) !== null) {
-                [$x, $z] = $ret;
+            if (($coordinates = $this->findEmptyPlotSquared($i, $i, $plots)) !== null) {
+                [$x, $z] = $coordinates;
                 /** @phpstan-var Plot|null $plot */
                 $plot = yield $this->awaitMergeOrigin(new BasePlot($worldName, $worldSettings, $x, $z));
                 return $plot;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @phpstan-param array<int, non-empty-array<int, true>> $plots
+     * @return int[] | null
+     */
+    private function findEmptyPlotSquared(int $a, int $b, array $plots) : ?array {
+        if (!isset($plots[$a][$b])) {
+            return [$a, $b];
+        }
+        if (!isset($plots[$b][$a])) {
+            return [$b, $a];
+        }
+        if ($a !== 0) {
+            if (!isset($plots[-$a][$b])) {
+                return [-$a, $b];
+            }
+            if (!isset($plots[$b][-$a])) {
+                return [$b, -$a];
+            }
+            if ($b !== 0) {
+                if (!isset($plots[-$a][-$b])) {
+                    return [-$a, -$b];
+                }
+                if (!isset($plots[-$b][-$a])) {
+                    return [-$b, -$a];
+                }
+            }
+        }
+        if ($b !== 0) {
+            if (!isset($plots[-$b][$a])) {
+                return [-$b, $a];
+            }
+            if (!isset($plots[$a][-$b])) {
+                return [$a, -$b];
             }
         }
         return null;
@@ -1089,36 +1127,5 @@ final class DataProvider {
 
     public function close() : void {
         $this->database->close();
-    }
-
-    /**
-     * @phpstan-param array<int, non-empty-array<int, true>> $plots
-     * @return int[] | null
-     * code from @see https://github.com/jasonwynn10/MyPlot
-     */
-    private function findEmptyPlotSquared(int $a, int $b, array $plots) : ?array {
-        if(!isset($plots[$a][$b]))
-            return [$a, $b];
-        if(!isset($plots[$b][$a]))
-            return [$b, $a];
-        if($a !== 0) {
-            if(!isset($plots[-$a][$b]))
-                return [-$a, $b];
-            if(!isset($plots[$b][-$a]))
-                return [$b, -$a];
-        }
-        if($b !== 0) {
-            if(!isset($plots[-$b][$a]))
-                return [-$b, $a];
-            if(!isset($plots[$a][-$b]))
-                return [$a, -$b];
-        }
-        if(($a | $b) === 0) {
-            if(!isset($plots[-$a][-$b]))
-                return [-$a, -$b];
-            if(!isset($plots[-$b][-$a]))
-                return [-$b, -$a];
-        }
-        return null;
     }
 }
