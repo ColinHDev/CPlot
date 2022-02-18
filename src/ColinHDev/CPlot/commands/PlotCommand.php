@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\commands;
 
 use ColinHDev\CPlot\commands\subcommands\AddSubcommand;
 use ColinHDev\CPlot\commands\subcommands\AutoSubcommand;
+use ColinHDev\CPlot\commands\subcommands\BiomeSubcommand;
 use ColinHDev\CPlot\commands\subcommands\BorderSubcommand;
 use ColinHDev\CPlot\commands\subcommands\ClaimSubcommand;
 use ColinHDev\CPlot\commands\subcommands\ClearSubcommand;
@@ -60,6 +61,7 @@ class PlotCommand extends Command implements PluginOwned {
 
         $this->registerSubcommand(new AddSubcommand("add"));
         $this->registerSubcommand(new AutoSubcommand("auto"));
+        $this->registerSubcommand(new BiomeSubcommand("biome"));
         $this->registerSubcommand(new BorderSubcommand("border"));
         $this->registerSubcommand(new ClaimSubcommand("claim"));
         $this->registerSubcommand(new ClearSubcommand("clear"));
