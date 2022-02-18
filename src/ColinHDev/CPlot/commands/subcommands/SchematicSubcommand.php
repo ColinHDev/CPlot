@@ -97,7 +97,7 @@ class SchematicSubcommand extends Subcommand {
                 $type = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $typeString);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                     $sender,
-                    ["schematic.usage" => [$creationTime, $type, $schematic->getRoadSize(), $schematic->getPlotSize()]]
+                    ["schematic.info.success.body" => [$creationTime, $type, $schematic->getRoadSize(), $schematic->getPlotSize()]]
                 );
                 break;
 
