@@ -152,7 +152,7 @@ WHERE worldName = :worldName AND x = :x AND z = :z;
 -- #    { plotByAlias
 -- #      :alias string
 SELECT worldName, x, z
-FROM plots
+FROM plotAliases
 WHERE alias = :alias;
 -- #    }
 -- #    { originPlot
