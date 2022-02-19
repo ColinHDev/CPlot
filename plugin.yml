@@ -106,9 +106,9 @@ permissions:
     cplot.flag.plot_leave:
         default: true
     cplot.flag.message:
-        default: op
+        default: true
     cplot.flag.spawn:
-        default: op
+        default: true
     cplot.flag.item_drop:
         default: true
     cplot.flag.item_pickup:
