@@ -90,14 +90,14 @@ class PlotGenerator extends Generator {
                 $z = CoordinateUtils::getRasterCoordinate($chunkZ * 16 + $Z, $this->roadSize + $this->plotSize);
                 $zPlot = $z - $this->roadSize;
 
-                $chunk->setBiomeId($X, $Z, $this->biomeID);
-
                 if ($x < $this->roadSize || $z < $this->roadSize) {
                     if ($this->roadSchematic !== null) {
+                        $chunk->setBiomeId($X, $Z, $this->roadSchematic->getBiomeID($x, $z));
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             $chunk->setFullBlock($X, $y, $Z, $this->roadSchematic->getFullBlock($x, $y, $z));
                         }
                     } else {
+                        $chunk->setBiomeId($X, $Z, $this->biomeID);
                         for ($y = $world->getMinY(); $y <= $this->groundSize + 1; $y++) {
                             if ($y === $world->getMinY()) {
                                 $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
@@ -112,10 +112,12 @@ class PlotGenerator extends Generator {
                     }
                 } else {
                     if ($this->plotSchematic !== null) {
+                        $chunk->setBiomeId($X, $Z, $this->plotSchematic->getBiomeID($xPlot, $zPlot));
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             $chunk->setFullBlock($X, $y, $Z, $this->plotSchematic->getFullBlock($xPlot, $y, $zPlot));
                         }
                     } else {
+                        $chunk->setBiomeId($X, $Z, $this->biomeID);
                         for ($y = $world->getMinY(); $y <= $this->groundSize; $y++) {
                             if ($y === $world->getMinY()) {
                                 $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
