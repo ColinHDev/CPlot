@@ -126,7 +126,7 @@ class SchematicSubcommand extends Subcommand {
                     yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "schematic.save.invalidType" => $schematicName]);
                     break;
                 }
-                $worldSettings = WorldSettings::fromConfig("");
+                $worldSettings = WorldSettings::fromConfig();
                 if ($schematicType === "road") {
                     $type = SchematicTypes::TYPE_ROAD;
                     $pos1 = new Vector3(0, 0, 0);
@@ -162,7 +162,7 @@ class SchematicSubcommand extends Subcommand {
                     break;
                 }
 
-                $worldSettings = WorldSettings::fromConfig($args[1])->toArray();
+                $worldSettings = WorldSettings::fromConfig()->toArray();
                 if ($args[2] !== "road" && $args[2] !== "plot") {
                     $dir = CPlot::getInstance()->getDataFolder() . "schematics";
                     if (!is_dir($dir)) {

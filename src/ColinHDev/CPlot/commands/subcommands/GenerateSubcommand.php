@@ -36,7 +36,7 @@ class GenerateSubcommand extends Subcommand {
 
         $options = new WorldCreationOptions();
         $options->setGeneratorClass(PlotGenerator::class);
-        $worldSettings = WorldSettings::fromConfig($worldName);
+        $worldSettings = WorldSettings::fromConfig();
         $options->setGeneratorOptions(json_encode($worldSettings->toArray(), JSON_THROW_ON_ERROR));
         $options->setSpawnPosition(new Vector3(0, $worldSettings->getGroundSize() + 1, 0));
         if (!Server::getInstance()->getWorldManager()->generateWorld($worldName, $options)) {
