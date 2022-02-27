@@ -70,7 +70,7 @@ final class DataProvider {
     private const SET_PLAYERDATA = "cplot.set.playerData";
     private const SET_PLAYERSETTING = "cplot.set.playerSetting";
     private const SET_WORLD = "cplot.set.world";
-    private const SET_PLOTALIAS = "cplot.set.plotAlias";
+    // private const SET_PLOTALIAS = "cplot.set.plotAlias";
     private const SET_MERGEPLOT = "cplot.set.mergePlot";
     private const SET_PLOTPLAYER = "cplot.set.plotPlayer";
     private const SET_PLOTFLAG = "cplot.set.plotFlag";
@@ -91,6 +91,7 @@ final class DataProvider {
     /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|NonWorldSettings>, "cache_plot": Cache<string, BasePlot>} */
     private array $caches;
 
+    /** @phpstan-var "uuid"|"xuid"|"name" */
     private string $playerIdentifierType;
 
     /**
@@ -148,6 +149,9 @@ final class DataProvider {
         return $this->isInitialized;
     }
 
+    /**
+     * @phpstan-return "uuid"|"xuid"|"name"
+     */
     public function getPlayerIdentifierType() : string {
         return $this->playerIdentifierType;
     }
@@ -169,12 +173,24 @@ final class DataProvider {
      * @phpstan-return \Generator<int, mixed, PlayerData|null, PlayerData|null>
      */
     public function awaitPlayerDataByData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : \Generator {
-        /** @phpstan-var PlayerData|null $playerData */
-        $playerData = match ($this->playerIdentifierType) {
-            "uuid" => yield $this->awaitPlayerDataByUUID($playerUUID),
-            "xuid" => yield $this->awaitPlayerDataByXUID($playerXUID),
-            "name" => yield $this->awaitPlayerDataByName($playerName)
-        };
+        $playerData = null;
+        switch ($this->playerIdentifierType) {
+            case "uuid":
+                assert(is_string($playerUUID));
+                /** @phpstan-var PlayerData|null $playerData */
+                $playerData = yield $this->awaitPlayerDataByUUID($playerUUID);
+                break;
+            case "xuid":
+                assert(is_string($playerXUID));
+                /** @phpstan-var PlayerData|null $playerData */
+                $playerData = yield $this->awaitPlayerDataByXUID($playerXUID);
+                break;
+            case "name":
+                assert(is_string($playerName));
+                /** @phpstan-var PlayerData|null $playerData */
+                $playerData = yield $this->awaitPlayerDataByName($playerName);
+                break;
+        }
         return $playerData;
     }
 
@@ -575,7 +591,7 @@ final class DataProvider {
         /** @phpstan-var WorldSettings|NonWorldSettings $worldSettings */
         $worldSettings = yield $this->awaitWorld($worldName);
         assert($worldSettings instanceof WorldSettings);
-        /** @phpstan-var string|null $plotAlias */
+        /** @phpstan-var string|null $plotAliases */
         $plotAliases = yield $this->awaitPlotAliases($worldName, $x, $z);
         /** @phpstan-var array<string, MergePlot> $mergePlots */
         $mergePlots = yield $this->awaitMergePlots($worldName, $worldSettings, $x, $z);

@@ -19,16 +19,18 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\World;
 
+/**
+ * @phpstan-extends Subcommand<null>
+ */
 class BiomeSubcommand extends Subcommand {
 
-    /** @phpstan-var array<string, int> */
+    /** @phpstan-var array<string, BiomeIds::*> */
     private array $biomes;
 
     public function __construct(string $key) {
         parent::__construct($key);
+        /** @phpstan-var array<string, BiomeIds::*> $biomes */
         $biomes = (new \ReflectionClass(BiomeIds::class))->getConstants();
-        assert(is_array($biomes));
-        /** @phpstan-var array<string, int> $biomes */
         $this->biomes = $biomes;
     }
 

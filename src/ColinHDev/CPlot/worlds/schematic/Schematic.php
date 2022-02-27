@@ -69,7 +69,9 @@ class Schematic implements SchematicTypes {
             $biomeNBT->setShort("Z", $z);
             $biomeTreeRoots[] = new TreeRoot($biomeNBT, (string) $coordinateHash);
         }
-        $nbt->setByteArray("Biomes", zlib_encode((new BigEndianNbtSerializer())->writeMultiple($biomeTreeRoots), ZLIB_ENCODING_GZIP));
+        $biomeTreeRootsEncoded = zlib_encode((new BigEndianNbtSerializer())->writeMultiple($biomeTreeRoots), ZLIB_ENCODING_GZIP);
+        assert(is_string($biomeTreeRootsEncoded));
+        $nbt->setByteArray("Biomes", $biomeTreeRootsEncoded);
 
         $blockTreeRoots = [];
         $blockMetas = $this->blockMetas;
@@ -101,13 +103,17 @@ class Schematic implements SchematicTypes {
 
             $blockTreeRoots[] = new TreeRoot($blockNBT, (string) $coordinateHash);
         }
-        $nbt->setByteArray("Blocks", zlib_encode((new BigEndianNbtSerializer())->writeMultiple($blockTreeRoots), ZLIB_ENCODING_GZIP));
+        $blockTreeRootsEncoded = zlib_encode((new BigEndianNbtSerializer())->writeMultiple($blockTreeRoots), ZLIB_ENCODING_GZIP);
+        assert(is_string($blockTreeRootsEncoded));
+        $nbt->setByteArray("Blocks", $blockTreeRootsEncoded);
 
         $tileTreeRoots = [];
         foreach ($this->tiles as $coordinateHash => $tileNBT) {
             $tileTreeRoots[] = new TreeRoot($tileNBT, (string) $coordinateHash);
         }
-        $nbt->setByteArray("Tiles", zlib_encode((new BigEndianNbtSerializer())->writeMultiple($tileTreeRoots), ZLIB_ENCODING_GZIP));
+        $tileTreeRootsEncoded = zlib_encode((new BigEndianNbtSerializer())->writeMultiple($tileTreeRoots), ZLIB_ENCODING_GZIP);
+        assert(is_string($tileTreeRootsEncoded));
+        $nbt->setByteArray("Tiles", $tileTreeRootsEncoded);
 
         file_put_contents($this->file, zlib_encode((new BigEndianNbtSerializer())->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));
         return true;
@@ -166,7 +172,9 @@ class Schematic implements SchematicTypes {
                     } catch (NbtDataException) {
                         continue;
                     }
-                    $this->biomeIDs[$coordinateHash] = $biomeNBT->getShort("ID");
+                    /** @phpstan-var BiomeIds::* $biomeID */
+                    $biomeID = $biomeNBT->getShort("ID");
+                    $this->biomeIDs[$coordinateHash] = $biomeID;
                 }
 
                 foreach ($this->readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
@@ -268,7 +276,9 @@ class Schematic implements SchematicTypes {
                             }
                         }
                         if ($explorer->currentChunk instanceof Chunk) {
-                            $this->biomeIDs[World::chunkHash($x, $z)] = $explorer->currentChunk->getBiomeId($xInChunk, $zInChunk);
+                            /** @phpstan-var BiomeIds::* $biomeID */
+                            $biomeID = $explorer->currentChunk->getBiomeId($xInChunk, $zInChunk);
+                            $this->biomeIDs[World::chunkHash($x, $z)] = $biomeID;
                         }
                     }
                 }
@@ -301,7 +311,9 @@ class Schematic implements SchematicTypes {
                             }
                         }
                         if ($explorer->currentChunk instanceof Chunk) {
-                            $this->biomeIDs[World::chunkHash($x, $z)] = $explorer->currentChunk->getBiomeId($xInChunk, $zInChunk);
+                            /** @phpstan-var BiomeIds::* $biomeID */
+                            $biomeID = $explorer->currentChunk->getBiomeId($xInChunk, $zInChunk);
+                            $this->biomeIDs[World::chunkHash($x, $z)] = $biomeID;
                         }
                     }
                 }

@@ -50,7 +50,9 @@ class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
                 }
             }
         }
-        $this->tiles = zlib_encode((new BigEndianNbtSerializer())->writeMultiple($tileTreeRoots), ZLIB_ENCODING_GZIP);
+        $tileTreeRootsEncoded = zlib_encode((new BigEndianNbtSerializer())->writeMultiple($tileTreeRoots), ZLIB_ENCODING_GZIP);
+        assert(is_string($tileTreeRootsEncoded));
+        $this->tiles = $tileTreeRootsEncoded;
 
         parent::__construct($world, $chunks);
     }

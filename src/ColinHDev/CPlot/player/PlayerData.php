@@ -163,11 +163,22 @@ class PlayerData {
     }
 
     public static function getIdentifierFromData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : string {
-        return match (DataProvider::getInstance()->getPlayerIdentifierType()) {
-            "uuid" => $playerUUID,
-            "xuid" => $playerXUID,
-            "name" => $playerName
-        };
+        $identifier = "";
+        switch (DataProvider::getInstance()->getPlayerIdentifierType()) {
+            case "uuid":
+                assert(is_string($playerUUID));
+                $identifier = $playerUUID;
+                break;
+            case "xuid":
+                assert(is_string($playerXUID));
+                $identifier = $playerXUID;
+                break;
+            case "name":
+                assert(is_string($playerName));
+                $identifier = $playerName;
+                break;
+        }
+        return $identifier;
     }
 
     /**
