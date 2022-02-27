@@ -382,7 +382,8 @@ class Schematic implements SchematicTypes {
     }
 
     public function getTileCompoundTag(int $x, int $y, int $z) : ?CompoundTag {
-        return $this->tiles[World::blockHash($x, $y, $z)] ?? null;
+        $coordinateHash = World::blockHash($x, $y, $z);
+        return isset($this->tiles[$coordinateHash]) ? clone $this->tiles[$coordinateHash] : null;
     }
 
     public function calculateBiomeCount() : int {
