@@ -20,7 +20,6 @@ class SchematicGenerator extends Generator {
 
     private int $biomeID;
 
-    private string $schematicName;
     private string $schematicType;
     private ?Schematic $schematic = null;
 
@@ -47,8 +46,14 @@ class SchematicGenerator extends Generator {
         /** @phpstan-var array{biomeID?: int, schematicName?: string, schematicType?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $generatorOptions */
         $this->biomeID = ParseUtils::parseIntegerFromArray($generatorOptions, "biomeID") ?? BiomeIds::PLAINS;
 
-        $this->schematicName = ParseUtils::parseStringFromArray($generatorOptions, "schematicName") ?? "default";
         $this->schematicType = ParseUtils::parseStringFromArray($generatorOptions, "schematicType") ?? SchematicTypes::TYPE_ROAD;
+        $schematicName = ParseUtils::parseStringFromArray($generatorOptions, "schematicName") ?? "default";
+        if ($schematicName !== "default" && $this->schematic === null) {
+            $schematic = new Schematic($schematicName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $schematicName . "." . Schematic::FILE_EXTENSION);
+            if ($schematic->loadFromFile()) {
+                $this->schematic = $schematic;
+            }
+        }
 
         $this->roadSize = ParseUtils::parseIntegerFromArray($generatorOptions, "roadSize") ?? 7;
         $this->plotSize = ParseUtils::parseIntegerFromArray($generatorOptions, "plotSize") ?? 32;
@@ -67,74 +72,64 @@ class SchematicGenerator extends Generator {
     }
 
     public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
-
-        if ($this->schematicName !== "default" && $this->schematic === null) {
-            $this->schematic = new Schematic($this->schematicName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $this->schematicName . "." . Schematic::FILE_EXTENSION);
-            if (!$this->schematic->loadFromFile()) {
-                $this->schematicName = "default";
-            }
-        }
-
         $chunk = $world->getChunk($chunkX, $chunkZ);
         if (!($chunk instanceof Chunk)) {
             return;
         }
 
-        if ($this->schematicName === "default") {
-            if ($this->schematicType === SchematicTypes::TYPE_ROAD) {
-                for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
-                    for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
-                        $chunk->setBiomeId($X, $Z, $this->biomeID);
-                        if ($x < 0 || $x >= $this->roadSize + $this->plotSize) {
-                            continue;
-                        }
-                        if ($z < 0 || $z >= $this->roadSize + $this->plotSize) {
-                            continue;
-                        }
-                        if ($x >= $this->roadSize && $z >= $this->roadSize) {
-                            continue;
-                        }
-                        for ($y = $world->getMinY(); $y <= $this->groundSize + 1; $y++) {
-                            if ($y === $world->getMinY()) {
-                                $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
-                            } else if ($y === ($this->groundSize + 1)) {
-                                if (CoordinateUtils::isRasterPositionOnBorder($x, $z, $this->roadSize)) {
-                                    $chunk->setFullBlock($X, $y, $Z, $this->borderBlockFullID);
-                                }
-                            } else {
-                                $chunk->setFullBlock($X, $y, $Z, $this->roadBlockFullID);
-                            }
-                        }
+        if ($this->schematic instanceof Schematic) {
+            for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
+                for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
+                    $chunk->setBiomeId($X, $Z, $this->schematic->getBiomeID($X, $Z));
+                    for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
+                        $chunk->setFullBlock($X, $y, $Z, $this->schematic->getFullBlock($x, $y, $z));
                     }
                 }
-
-            } else if ($this->schematicType === SchematicTypes::TYPE_PLOT) {
-                for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
-                    for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
-                        $chunk->setBiomeId($X, $Z, $this->biomeID);
-                        if ($x < 0 || $x >= $this->plotSize) {
-                            continue;
-                        }
-                        if ($z < 0 || $z >= $this->plotSize) {
-                            continue;
-                        }
-                        for ($y = $world->getMinY(); $y <= $this->groundSize; $y++) {
-                            if ($y === $world->getMinY()) {
-                                $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
-                            } else if ($y === $this->groundSize) {
-                                $chunk->setFullBlock($X, $y, $Z, $this->plotFloorBlockFullID);
-                            } else {
-                                $chunk->setFullBlock($X, $y, $Z, $this->plotFillBlockFullID);
+            }
+        } else if ($this->schematicType === SchematicTypes::TYPE_ROAD) {
+            for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
+                for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
+                    $chunk->setBiomeId($X, $Z, $this->biomeID);
+                    if ($x < 0 || $x >= $this->roadSize + $this->plotSize) {
+                        continue;
+                    }
+                    if ($z < 0 || $z >= $this->roadSize + $this->plotSize) {
+                        continue;
+                    }
+                    if ($x >= $this->roadSize && $z >= $this->roadSize) {
+                        continue;
+                    }
+                    for ($y = $world->getMinY(); $y <= $this->groundSize + 1; $y++) {
+                        if ($y === $world->getMinY()) {
+                            $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
+                        } else if ($y === ($this->groundSize + 1)) {
+                            if (CoordinateUtils::isRasterPositionOnBorder($x, $z, $this->roadSize)) {
+                                $chunk->setFullBlock($X, $y, $Z, $this->borderBlockFullID);
                             }
+                        } else {
+                            $chunk->setFullBlock($X, $y, $Z, $this->roadBlockFullID);
                         }
                     }
                 }
             }
-        } else if ($this->schematic !== null) {
+        } else if ($this->schematicType === SchematicTypes::TYPE_PLOT) {
             for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
                 for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
-                    for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                        $chunk->setFullBlock($X, $y, $Z, $this->schematic->getFullBlock($x, $y, $z));
+                    $chunk->setBiomeId($X, $Z, $this->biomeID);
+                    if ($x < 0 || $x >= $this->plotSize) {
+                        continue;
+                    }
+                    if ($z < 0 || $z >= $this->plotSize) {
+                        continue;
+                    }
+                    for ($y = $world->getMinY(); $y <= $this->groundSize; $y++) {
+                        if ($y === $world->getMinY()) {
+                            $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
+                        } else if ($y === $this->groundSize) {
+                            $chunk->setFullBlock($X, $y, $Z, $this->plotFloorBlockFullID);
+                        } else {
+                            $chunk->setFullBlock($X, $y, $Z, $this->plotFillBlockFullID);
+                        }
                     }
                 }
             }
