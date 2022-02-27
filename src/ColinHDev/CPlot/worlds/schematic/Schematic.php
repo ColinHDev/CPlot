@@ -113,7 +113,7 @@ class Schematic implements SchematicTypes {
         }
         $tileTreeRootsEncoded = zlib_encode((new BigEndianNbtSerializer())->writeMultiple($tileTreeRoots), ZLIB_ENCODING_GZIP);
         assert(is_string($tileTreeRootsEncoded));
-        $nbt->setByteArray("Tiles", $tileTreeRootsEncoded);
+        $nbt->setByteArray("TileEntities", $tileTreeRootsEncoded);
 
         file_put_contents($this->file, zlib_encode((new BigEndianNbtSerializer())->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));
         return true;
@@ -198,7 +198,7 @@ class Schematic implements SchematicTypes {
                     $this->blockMetas[$coordinateHash] = $meta;
                 }
 
-                foreach ($this->readTreeRoots($nbt, "Tiles") as $tileTreeRoot) {
+                foreach ($this->readTreeRoots($nbt, "TileEntities") as $tileTreeRoot) {
                     try {
                         $tileNBT = $tileTreeRoot->mustGetCompoundTag();
                         $coordinateHash = World::blockHash($tileNBT->getInt(Tile::TAG_X), $tileNBT->getInt(Tile::TAG_Y), $tileNBT->getInt(Tile::TAG_Z));
