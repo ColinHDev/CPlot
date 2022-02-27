@@ -18,6 +18,8 @@ class SchematicGenerator extends Generator {
 
     public const GENERATOR_NAME = "cplot_schematic";
 
+    private int $biomeID;
+
     private string $schematicName;
     private string $schematicType;
     private ?Schematic $schematic = null;
@@ -42,7 +44,9 @@ class SchematicGenerator extends Generator {
             }
         }
 
-        /** @phpstan-var array{schematicName?: string, schematicType?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $generatorOptions */
+        /** @phpstan-var array{biomeID?: int, schematicName?: string, schematicType?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $generatorOptions */
+        $this->biomeID = ParseUtils::parseIntegerFromArray($generatorOptions, "biomeID") ?? BiomeIds::PLAINS;
+
         $this->schematicName = ParseUtils::parseStringFromArray($generatorOptions, "schematicName") ?? "default";
         $this->schematicType = ParseUtils::parseStringFromArray($generatorOptions, "schematicType") ?? SchematicTypes::TYPE_ROAD;
 
@@ -80,7 +84,7 @@ class SchematicGenerator extends Generator {
             if ($this->schematicType === SchematicTypes::TYPE_ROAD) {
                 for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
                     for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
-                        $chunk->setBiomeId($X, $Z, BiomeIds::PLAINS);
+                        $chunk->setBiomeId($X, $Z, $this->biomeID);
                         if ($x < 0 || $x >= $this->roadSize + $this->plotSize) {
                             continue;
                         }
@@ -107,7 +111,7 @@ class SchematicGenerator extends Generator {
             } else if ($this->schematicType === SchematicTypes::TYPE_PLOT) {
                 for ($X = 0, $x = $chunkX * 16; $X < 16; $X++, $x++) {
                     for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
-                        $chunk->setBiomeId($X, $Z, BiomeIds::PLAINS);
+                        $chunk->setBiomeId($X, $Z, $this->biomeID);
                         if ($x < 0 || $x >= $this->plotSize) {
                             continue;
                         }

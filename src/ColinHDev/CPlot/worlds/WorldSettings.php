@@ -8,6 +8,7 @@ use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\utils\ParseUtils;
 use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\data\bedrock\BiomeIds;
 
 class WorldSettings {
 
@@ -16,6 +17,7 @@ class WorldSettings {
     private string $worldName;
 
     private string $worldType;
+    private int $biomeID;
 
     private string $roadSchematic;
     private string $mergeRoadSchematic;
@@ -31,10 +33,11 @@ class WorldSettings {
     private Block $plotFillBlock;
     private Block $plotBottomBlock;
 
-    public function __construct(string $worldName, string $worldType, string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, Block $roadBlock, Block $borderBlock, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
+    public function __construct(string $worldName, string $worldType, int $biomeID, string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, Block $roadBlock, Block $borderBlock, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
         $this->worldName = $worldName;
 
         $this->worldType = $worldType;
+        $this->biomeID = $biomeID;
 
         $this->roadSchematic = $roadSchematic;
         $this->mergeRoadSchematic = $mergeRoadSchematic;
@@ -57,6 +60,10 @@ class WorldSettings {
 
     public function getWorldType() : string {
         return $this->worldType;
+    }
+
+    public function getBiomeID() : int {
+        return $this->biomeID;
     }
 
     public function getRoadSchematic() : string {
@@ -104,13 +111,14 @@ class WorldSettings {
     }
 
     /**
-     * @phpstan-return array{worldName: string, worldType: string, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string}
+     * @phpstan-return array{worldName: string, worldType: string, biomeID: int, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string}
      */
     public function toArray() : array {
         return [
             "worldName" => $this->worldName,
 
             "worldType" => $this->worldType,
+            "biomeID" => $this->biomeID,
 
             "roadSchematic" => $this->roadSchematic,
             "mergeRoadSchematic" => $this->mergeRoadSchematic,
@@ -129,19 +137,27 @@ class WorldSettings {
     }
 
     public static function fromConfig(string $worldName) : self {
-        /** @phpstan-var array{worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings */
+        /** @phpstan-var array{worldType?: string, roadSchematic?: string, biome?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings */
         $settings = ResourceManager::getInstance()->getConfig()->get("worldSettings", []);
         $settings["worldName"] = $worldName;
+        $biomeName = strtoupper($settings["biome"] ?? "PLAINS");
+        unset($settings["biome"]);
+        if (defined(BiomeIds::class . "::" . $biomeName) && is_int(constant(BiomeIds::class . "::" . $biomeName))) {
+            $settings["biomeID"] = constant(BiomeIds::class . "::" . $biomeName);
+        } else {
+            $settings["biomeID"] = BiomeIds::PLAINS;
+        }
         return self::fromArray($settings);
     }
 
     /**
-     * @phpstan-param array{worldName?: string, worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings
+     * @phpstan-param array{worldName?: string, worldType?: string, biomeID?: int, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings
      */
     public static function fromArray(array $settings) : self {
         $worldName = ParseUtils::parseStringFromArray($settings, "worldName") ?? "";
 
         $worldType = ParseUtils::parseStringFromArray($settings, "worldType") ?? self::TYPE_CPLOT_DEFAULT;
+        $biomeID = ParseUtils::parseIntegerFromArray($settings, "biomeID") ?? BiomeIds::PLAINS;
 
         $roadSchematic = ParseUtils::parseStringFromArray($settings, "roadSchematic") ?? "default";
         $mergeRoadSchematic = ParseUtils::parseStringFromArray($settings, "mergeRoadSchematic") ?? "default";
@@ -159,7 +175,7 @@ class WorldSettings {
 
         return new self(
             $worldName,
-            $worldType,
+            $worldType, $biomeID,
             $roadSchematic, $mergeRoadSchematic, $plotSchematic,
             $roadSize, $plotSize, $groundSize,
             $roadBlock, $borderBlock, $plotFloorBlock, $plotFillBlock, $plotBottomBlock

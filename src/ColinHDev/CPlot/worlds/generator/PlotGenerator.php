@@ -17,6 +17,8 @@ class PlotGenerator extends Generator {
 
     public const GENERATOR_NAME = "cplot_plot";
 
+    private int $biomeID;
+
     private string $schematicRoadName;
     private ?Schematic $schematicRoad = null;
     private string $schematicPlotName;
@@ -42,7 +44,9 @@ class PlotGenerator extends Generator {
             }
         }
 
-        /** @phpstan-var array{roadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $generatorOptions */
+        /** @phpstan-var array{biomeID?: int, roadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $generatorOptions */
+        $this->biomeID = ParseUtils::parseIntegerFromArray($generatorOptions, "biomeID") ?? BiomeIds::PLAINS;
+
         $this->schematicRoadName = ParseUtils::parseStringFromArray($generatorOptions, "roadSchematic") ?? "default";
         $this->schematicPlotName = ParseUtils::parseStringFromArray($generatorOptions, "plotSchematic") ?? "default";
 
@@ -90,7 +94,7 @@ class PlotGenerator extends Generator {
                 $z = CoordinateUtils::getRasterCoordinate($chunkZ * 16 + $Z, $this->roadSize + $this->plotSize);
                 $zPlot = $z - $this->roadSize;
 
-                $chunk->setBiomeId($X, $Z, BiomeIds::PLAINS);
+                $chunk->setBiomeId($X, $Z, $this->biomeID);
 
                 if ($x < $this->roadSize || $z < $this->roadSize) {
                     if ($this->schematicRoadName !== "default" && $this->schematicRoad !== null) {

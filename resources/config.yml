@@ -10,6 +10,9 @@ lastPlayed.origin: "database"
 
 # settings that are used for a plot world when generating
 worldSettings:
+    # Define the default biome of the world which is applied to every part of the roads and plots.
+    # Default value: "plains"
+    biome: "plains"
 
     # schematic for the road of the plot world
     # default value: "default" (no schematic)

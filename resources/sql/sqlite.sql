@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS playerSettings (
 CREATE TABLE IF NOT EXISTS worlds (
     worldName           VARCHAR(256)    NOT NULL,
     worldType           TEXT            NOT NULL,
+    biomeID             BIGINT          NOT NULL,
     roadSchematic       TEXT            NOT NULL,
     mergeRoadSchematic  TEXT            NOT NULL,
     plotSchematic       TEXT            NOT NULL,
@@ -258,6 +259,7 @@ VALUES (:playerID, :ID, :value);
 -- #    { world
 -- #      :worldName string
 -- #      :worldType string
+-- #      :biomeID int
 -- #      :roadSchematic string
 -- #      :mergeRoadSchematic string
 -- #      :plotSchematic string
@@ -270,12 +272,14 @@ VALUES (:playerID, :ID, :value);
 -- #      :plotFillBlock string
 -- #      :plotBottomBlock string
 INSERT OR REPLACE INTO worlds (
-    worldName, worldType,
+    worldName,
+    worldType, biomeID,
     roadSchematic, mergeRoadSchematic, plotSchematic,
     roadSize, plotSize, groundSize,
     roadBlock, borderBlock, plotFloorBlock, plotFillBlock, plotBottomBlock
 ) VALUES (
-    :worldName, :worldType,
+    :worldName,
+    :worldType, :biomeID,
     :roadSchematic, :mergeRoadSchematic, :plotSchematic,
     :roadSize, :plotSize, :groundSize,
     :roadBlock, :borderBlock, :plotFloorBlock, :plotFillBlock, :plotBottomBlock
