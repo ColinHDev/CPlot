@@ -190,6 +190,7 @@ class SchematicSubcommand extends Subcommand {
                 }
                 $options = new WorldCreationOptions();
                 $options->setGeneratorClass(SchematicGenerator::class);
+                $worldSettings["worldName"] = $args[1];
                 $options->setGeneratorOptions(json_encode($worldSettings, JSON_THROW_ON_ERROR));
                 $options->setSpawnPosition(new Vector3(0, $worldSettings["groundSize"] + 1, 0));
                 if (!Server::getInstance()->getWorldManager()->generateWorld($args[1], $options)) {
