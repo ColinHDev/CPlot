@@ -2,8 +2,6 @@ parameters:
 	level: 9
 	paths:
 		- src
-	scanDirectories:
-		- ../../../../APIs\Virions\pmforms\src
 	ignoreErrors:
 		-
 			message: '#Call to an undefined method [a-zA-Z0-9\\_]+::asyncGeneric\(\)#'
