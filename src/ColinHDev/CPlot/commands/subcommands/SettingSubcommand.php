@@ -191,12 +191,14 @@ class SettingSubcommand extends Subcommand {
                     }
 
                     $values = $setting->getValue();
-                    foreach ($parsedValues as $parsedValue) {
-                        $key = array_search($parsedValue, $values, true);
-                        if ($key === false) {
-                            continue;
+                    foreach ($values as $key => $value) {
+                        $valueString = $setting->toString($value);
+                        foreach ($parsedValues as $parsedValue) {
+                            if ($valueString === $setting->toString($parsedValue)) {
+                                unset($values[$key]);
+                                continue 2;
+                            }
                         }
-                        unset($values[$key]);
                     }
 
                     if (count($values) > 0) {
