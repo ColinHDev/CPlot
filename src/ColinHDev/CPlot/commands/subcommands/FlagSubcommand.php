@@ -303,9 +303,9 @@ class FlagSubcommand extends Subcommand {
                     $values = $flag->getValue();
                     $removedValues = [];
                     foreach ($values as $key => $value) {
-                        $valueString = $flag->toString($value);
+                        $valueString = $flag->toString([$value]);
                         foreach ($parsedValues as $parsedValue) {
-                            if ($valueString === $flag->toString($parsedValue)) {
+                            if ($valueString === $flag->toString([$parsedValue])) {
                                 unset($values[$key]);
                                 continue 2;
                             }

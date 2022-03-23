@@ -192,9 +192,9 @@ class SettingSubcommand extends Subcommand {
 
                     $values = $setting->getValue();
                     foreach ($values as $key => $value) {
-                        $valueString = $setting->toString($value);
+                        $valueString = $setting->toString([$value]);
                         foreach ($parsedValues as $parsedValue) {
-                            if ($valueString === $setting->toString($parsedValue)) {
+                            if ($valueString === $setting->toString([$parsedValue])) {
                                 unset($values[$key]);
                                 continue 2;
                             }
