@@ -50,8 +50,10 @@ class HelpSubcommand extends Subcommand {
         }
 
         ksort($subcommands, SORT_NATURAL | SORT_FLAG_CASE);
+        $screenLineHeight = $sender->getScreenLineHeight();
+        assert($screenLineHeight >= 1);
         /** @var array<int, array<string, Subcommand<mixed>>> $subcommands */
-        $subcommands = array_chunk($subcommands, $sender->getScreenLineHeight());
+        $subcommands = array_chunk($subcommands, $screenLineHeight);
         /** @var int $page */
         $page = min(count($subcommands), $page);
 

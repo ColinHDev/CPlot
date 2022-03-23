@@ -16,6 +16,11 @@ parameters:
 			path: src/ColinHDev/CPlot/commands/subcommands/WallSubcommand.php
 
 		-
+			message: "#^Parameter \\#1 \\$closure of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:f2c\\(\\) expects callable\\(\\)\\: Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Closure\\(\\)\\: Generator\\<int, mixed, mixed, void\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/listener/ChunkPopulateListener.php
+
+		-
 			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, ColinHDev\\\\CPlot\\\\player\\\\PlayerData\\|null, void\\> given\\.$#"
 			count: 1
 			path: src/ColinHDev/CPlot/listener/PlayerLoginListener.php
@@ -47,6 +52,11 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, null, void\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/provider/DataProvider.php
+
+		-
+			message: "#^Parameter \\#2 \\$onComplete of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects \\(callable\\(mixed\\)\\: void\\)\\|null, \\(Closure\\(ColinHDev\\\\CPlot\\\\player\\\\PlayerData\\|null\\)\\: void\\)\\|null given\\.$#"
 			count: 1
 			path: src/ColinHDev/CPlot/provider/DataProvider.php
 

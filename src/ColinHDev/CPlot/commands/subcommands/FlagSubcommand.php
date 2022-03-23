@@ -301,6 +301,7 @@ class FlagSubcommand extends Subcommand {
                     }
 
                     $values = $flag->getValue();
+                    assert(is_array($values));
                     $removedValues = [];
                     foreach ($values as $key => $value) {
                         $valueString = $flag->toString([$value]);

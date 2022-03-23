@@ -22,6 +22,7 @@ class ArrayAttribute extends BaseAttribute {
             /** @phpstan-var AttributeValue $newValueArray */
             $newValueArray = [$newValue];
             $newValueString = $this->toString($newValueArray);
+            /** @phpstan-var AttributeValue $values */
             foreach ($values as $oldValue) {
                 /** @phpstan-var AttributeValue $oldValueArray */
                 $oldValueArray = [$oldValue];

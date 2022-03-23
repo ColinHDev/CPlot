@@ -191,6 +191,7 @@ class SettingSubcommand extends Subcommand {
                     }
 
                     $values = $setting->getValue();
+                    assert(is_array($values));
                     foreach ($values as $key => $value) {
                         $valueString = $setting->toString([$value]);
                         foreach ($parsedValues as $parsedValue) {
