@@ -2,12 +2,12 @@
   "name": "colinhdev/cplot",
   "require": {
     "pocketmine/pocketmine-mp": "4.0.0",
-    "sof3/await-generator": "^3.1",
+    "sof3/await-generator": "^3.4.1",
     "sof3/libasynql": "^4.0.1"
   },
   "require-dev": {
-    "phpstan/phpstan": "^1.3.3",
-    "phpstan/phpstan-strict-rules": "^1.0",
-    "phpstan/extension-installer": "^1.0"
+    "phpstan/phpstan": "^1.4.3",
+    "phpstan/phpstan-strict-rules": "^1.1",
+    "phpstan/extension-installer": "^1.1"
   }
 }
