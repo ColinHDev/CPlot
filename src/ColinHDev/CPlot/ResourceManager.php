@@ -27,13 +27,9 @@ class ResourceManager {
         CPlot::getInstance()->saveResource("walls.yml");
 
         foreach (CPlot::getInstance()->getResources() as $path => $fileInfo) {
-            if (strtolower($fileInfo->getExtension()) !== "ini") {
-                continue;
-            }
-            $subdirectory = str_replace(DIRECTORY_SEPARATOR . $fileInfo->getFilename(), "", $path);
-            if (strtolower($subdirectory) === "language") {
-                CPlot::getInstance()->saveResource($path);
-            }
+			if(str_contains($path, "language") and strtolower($fileInfo->getExtension()) === "ini") {
+				CPlot::getInstance()->saveResource($path);
+			}
         }
 
         $this->bordersConfig = new Config(CPlot::getInstance()->getDataFolder() . "borders.yml", Config::YAML);
