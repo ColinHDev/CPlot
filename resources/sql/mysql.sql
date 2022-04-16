@@ -272,7 +272,7 @@ VALUES (:playerID, :ID, :value);
 -- #      :plotFloorBlock string
 -- #      :plotFillBlock string
 -- #      :plotBottomBlock string
-INSERT OR REPLACE INTO worlds (
+REPLACE INTO worlds (
     worldName,
     worldType, biomeID,
     roadSchematic, mergeRoadSchematic, plotSchematic,
