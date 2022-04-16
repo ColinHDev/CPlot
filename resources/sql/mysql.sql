@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS plotPlayers (
     playerID    BIGINT          NOT NULL,
     state       TEXT            NOT NULL,
     addTime     TEXT            NOT NULL,
-    PRIMARY KEY (worldName, x, z, playerID)
+    PRIMARY KEY (worldName, x, z, playerID),
     FOREIGN KEY (playerID) REFERENCES playerData (playerID) ON DELETE CASCADE
 );
 -- #    }
