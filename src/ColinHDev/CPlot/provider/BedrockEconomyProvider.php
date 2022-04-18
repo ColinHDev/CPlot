@@ -7,14 +7,14 @@ namespace ColinHDev\CPlot\provider;
 use pocketmine\player\Player;
 use pocketmine\Server;
 
-class BedrockEconomyEconomyProvider extends EconomyProvider {
+class BedrockEconomyProvider extends EconomyProvider {
 
     /**
      * @throws \RuntimeException
      */
     public function __construct() {
         if (Server::getInstance()->getPluginManager()->getPlugin("BedrockEconomy") === null) {
-            throw new \RuntimeException("BedrockEconomyEconomyProvider requires the plugin \"BedrockEconomy\" to be installed.");
+            throw new \RuntimeException("BedrockEconomyProvider requires the plugin \"BedrockEconomy\" to be installed.");
         }
     }
 

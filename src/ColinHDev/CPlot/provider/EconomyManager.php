@@ -24,7 +24,7 @@ final class EconomyManager {
         /** @var array{provider: string, claimPrice?: float|string, clearPrice?: float|string, mergePrice?: float|string, resetPrice?: float|string} $settings */
         $settings = ResourceManager::getInstance()->getConfig()->get("economy", []);
         $this->provider = match (strtolower($settings["provider"])) {
-            "bedrockeconomy" => new BedrockEconomyEconomyProvider(),
+            "bedrockeconomy" => new BedrockEconomyProvider(),
             "capital" => new CapitalEconomyProvider(),
             default => null
         };
