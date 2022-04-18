@@ -3,6 +3,9 @@ main: ColinHDev\CPlot\CPlot
 version: "0.0.0"
 
 api: 4.0.0
+softdepend:
+- BedrockEconomy
+- Capital
 
 author: ColinHDev
 website: https://github.com/ColinHDev
