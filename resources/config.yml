@@ -228,7 +228,7 @@ player.identifier.type: "uuid"
 # Change the settings for CPlot's economy plugin integration.
 economy:
     # Define the economy plugin, that will be used.
-    # Supported plugins:
+    # Supported plugins: BedrockEconomy, Capital
     provider: ""
 
     # Define the price it costs to claim a plot.
