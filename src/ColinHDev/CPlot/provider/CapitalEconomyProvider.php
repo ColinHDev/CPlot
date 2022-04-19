@@ -27,25 +27,40 @@ class CapitalEconomyProvider extends EconomyProvider {
         }
         Capital::api(
             self::CAPITAL_API_VERSION,
-            function(Capital $api) {
+            function(Capital $api) : void {
                 $this->selector = $api->completeConfig($this->getConfig()->get("selector"));
             }
         );
     }
 
     public function getCurrency() : string {
+
     }
 
     public function parseMoneyToString(float $money) : string {
+        return (string) floor($money);
     }
 
     public function getMoney(Player $player, callable $onSuccess, callable $onError) : void {
+        Capital::api(
+            self::CAPITAL_API_VERSION,
+            function(Capital $api) use($player, $onSuccess, $onError) : \Generator {
+                try {
+                    $accounts = yield from $api->findAccountsComplete($player, $this->selector);
+                    $money = yield from $api->getBalance($account);
+                    $onSuccess($money);
+                } catch (CapitalException $e) {
+                    $onError($e);
+                }
+            }
+        );
     }
 
     /**
      * @throws \pocketmine\plugin\PluginException
      */
     public function removeMoney(Player $player, float $money, callable $onSuccess, callable $onError) : void {
+        $intMoney = (int) floor($money);
         Capital::api(
             self::CAPITAL_API_VERSION,
             function(Capital $api) use($player) : \Generator {
