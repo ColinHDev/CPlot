@@ -7,6 +7,8 @@ softdepend:
 - BedrockEconomy
 - Capital
 
+load: STARTUP
+
 author: ColinHDev
 website: https://github.com/ColinHDev
 
