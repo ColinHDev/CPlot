@@ -39,16 +39,16 @@ class CPlot extends PluginBase {
 
     public function onLoad() : void {
         self::$instance = $this;
+    }
 
+    public function onEnable() : void {
         ResourceManager::getInstance();
         DataProvider::getInstance();
         EconomyManager::getInstance();
 
         GeneratorManager::getInstance()->addGenerator(PlotGenerator::class, PlotGenerator::GENERATOR_NAME, fn() => null, true);
         GeneratorManager::getInstance()->addGenerator(SchematicGenerator::class, SchematicGenerator::GENERATOR_NAME, fn() => null, true);
-    }
 
-    public function onEnable() : void {
         $this->getScheduler()->scheduleRepeatingTask(new EntityMovementTask(), 1);
 
         $this->getServer()->getPluginManager()->registerEvents(new BlockBreakListener(), $this);
