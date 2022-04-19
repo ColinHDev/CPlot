@@ -1343,7 +1343,7 @@
             "version": "0.1.2",
             "source": {
                 "type": "git",
-                "url": "git@github.com:SOF3/Capital.git",
+                "url": "https://github.com/SOF3/Capital.git",
                 "reference": "8003da9e594f759d20c711a1aef4ceda514212ad"
             },
             "dist": {
@@ -1380,6 +1380,10 @@
                     "email": "sofe2038@gmail.com"
                 }
             ],
+            "support": {
+                "source": "https://github.com/SOF3/Capital/tree/0.1.2",
+                "issues": "https://github.com/SOF3/Capital/issues"
+            },
             "time": "2022-03-05T10:12:13+00:00"
         },
         {
@@ -1819,5 +1823,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.2.0"
 }
