@@ -27,18 +27,14 @@ use ColinHDev\CPlot\tasks\EntityMovementTask;
 use ColinHDev\CPlot\worlds\generator\PlotGenerator;
 use ColinHDev\CPlot\worlds\generator\SchematicGenerator;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\SingletonTrait;
 use pocketmine\world\generator\GeneratorManager;
 
 class CPlot extends PluginBase {
-
-    private static CPlot $instance;
-
-    public static function getInstance() : CPlot {
-        return self::$instance;
-    }
+    use SingletonTrait;
 
     public function onLoad() : void {
-        self::$instance = $this;
+        self::setInstance($this);
     }
 
     public function onEnable() : void {
