@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlot\ResourceManager;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use SOFe\Capital\Capital;
@@ -28,7 +29,7 @@ class CapitalEconomyProvider extends EconomyProvider {
         Capital::api(
             self::CAPITAL_API_VERSION,
             function(Capital $api) : void {
-                $this->selector = $api->completeConfig($this->getConfig()->get("selector"));
+                $this->selector = $api->completeConfig(ResourceManager::getInstance()->getConfig()->getNested("economy.capital.selector", []));
             }
         );
     }

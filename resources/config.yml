@@ -230,6 +230,9 @@ economy:
     # Define the economy plugin, that will be used.
     # Supported plugins: BedrockEconomy, Capital
     provider: ""
+    # Edit these settings only if you choose "Capital".
+    capital:
+        selector: []
 
     # Define the price it costs to claim a plot.
     claimPrice: 0.0
