@@ -243,7 +243,7 @@ economy:
 # Change the settings for CPlot's language integration.
 language:
     # Set the default language that will be used when translating a message for a player, whose language is not supported.
-    fallback: "de_de"
+    fallback: "en_us"
 
     # Set aliases for specific languages that may be used by players. (This can be useful if a certain language is
     # nearly the same as another one. This way you can just set one language as the alias of the other one, so you will
