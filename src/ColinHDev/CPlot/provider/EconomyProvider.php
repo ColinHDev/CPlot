@@ -28,20 +28,15 @@ abstract class EconomyProvider {
      * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, \Closure(mixed=): void|\Closure(\Throwable): void|(float|null), float|null>
      */
     final public function awaitMoney(Player $player) : \Generator {
-        /** @phpstan-var \Closure(mixed=): void $onSuccess */
-        $onSuccess = yield Await::RESOLVE;
-        /** @phpstan-var \Closure(\Throwable): void $onError */
-        $onError = yield Await::REJECT;
-        $this->getMoney($player, $onSuccess, $onError);
-        /** @phpstan-var float|null $money */
-        $money = yield Await::ONCE;
-        return $money;
+        return yield from Await::promise(
+            fn($onSuccess, $onError) => $this->getMoney($player, $onSuccess, $onError)
+        );
     }
 
     /**
      * This method is used to fetch a player's money from the economy plugin.
      * Since we want to support both economy plugins with asynchronous and synchronous database design, we provide
-     * callbacks that can be called either directly if the plugin uses a synchronous design, or later when e.g. the
+     * <<callbacks that can be called either directly if the plugin uses a synchronous design, or later when e.g. the
      * query for the money was finished if the plugin uses an asynchronous one.
      * @phpstan-param callable(float|null): void $onSuccess
      * @phpstan-param callable(\Throwable): void $onError
@@ -54,14 +49,9 @@ abstract class EconomyProvider {
      * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, \Closure(mixed=): void|\Closure(\Throwable): void|null, null>
      */
     final public function awaitMoneyRemoval(Player $player, float $money) : \Generator {
-        /** @phpstan-var \Closure(mixed=): void $onSuccess */
-        $onSuccess = yield Await::RESOLVE;
-        /** @phpstan-var \Closure(\Throwable): void $onError */
-        $onError = yield Await::REJECT;
-        $this->removeMoney($player, $money, $onSuccess, $onError);
-        /** @phpstan-var null $return */
-        $return = yield Await::ONCE;
-        return $return;
+        return yield from Await::promise(
+            fn($onSuccess, $onError) => $this->removeMoney($player, $money, $onSuccess, $onError)
+        );
     }
 
     /**
