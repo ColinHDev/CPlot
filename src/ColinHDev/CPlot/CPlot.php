@@ -42,28 +42,31 @@ class CPlot extends PluginBase {
         DataProvider::getInstance();
         EconomyManager::getInstance();
 
-        GeneratorManager::getInstance()->addGenerator(PlotGenerator::class, PlotGenerator::GENERATOR_NAME, fn() => null, true);
-        GeneratorManager::getInstance()->addGenerator(SchematicGenerator::class, SchematicGenerator::GENERATOR_NAME, fn() => null, true);
+        $generatorManager = GeneratorManager::getInstance();
+        $generatorManager->addGenerator(PlotGenerator::class, PlotGenerator::GENERATOR_NAME, fn() => null, true);
+        $generatorManager->addGenerator(SchematicGenerator::class, SchematicGenerator::GENERATOR_NAME, fn() => null, true);
 
         $this->getScheduler()->scheduleRepeatingTask(new EntityMovementTask(), 1);
 
-        $this->getServer()->getPluginManager()->registerEvents(new BlockBreakListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new BlockBurningListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new BlockGrowListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new BlockPlaceListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new BlockSpreadListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new BlockTeleportListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new ChunkPopulateListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new EntityDamageByEntityListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new EntityExplodeListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new EntityItemPickupListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new EntityTrampleFarmlandListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new PlayerDropItemListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new PlayerInteractListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new PlayerMoveListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new PlayerLoginListener(), $this);
-        $this->getServer()->getPluginManager()->registerEvents(new StructureGrowListener(), $this);
+        $server = $this->getServer();
+        $pluginManager = $server->getPluginManager();
+        $pluginManager->registerEvents(new BlockBreakListener(), $this);
+        $pluginManager->registerEvents(new BlockBurningListener(), $this);
+        $pluginManager->registerEvents(new BlockGrowListener(), $this);
+        $pluginManager->registerEvents(new BlockPlaceListener(), $this);
+        $pluginManager->registerEvents(new BlockSpreadListener(), $this);
+        $pluginManager->registerEvents(new BlockTeleportListener(), $this);
+        $pluginManager->registerEvents(new ChunkPopulateListener(), $this);
+        $pluginManager->registerEvents(new EntityDamageByEntityListener(), $this);
+        $pluginManager->registerEvents(new EntityExplodeListener(), $this);
+        $pluginManager->registerEvents(new EntityItemPickupListener(), $this);
+        $pluginManager->registerEvents(new EntityTrampleFarmlandListener(), $this);
+        $pluginManager->registerEvents(new PlayerDropItemListener(), $this);
+        $pluginManager->registerEvents(new PlayerInteractListener(), $this);
+        $pluginManager->registerEvents(new PlayerMoveListener(), $this);
+        $pluginManager->registerEvents(new PlayerLoginListener(), $this);
+        $pluginManager->registerEvents(new StructureGrowListener(), $this);
 
-        $this->getServer()->getCommandMap()->register("CPlot", new PlotCommand());
+        $server->getCommandMap()->register("CPlot", new PlotCommand());
     }
 }
