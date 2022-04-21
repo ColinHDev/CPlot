@@ -66,19 +66,18 @@ class CapitalEconomyProvider extends EconomyProvider {
         $intMoney = (int) floor($money);
         Capital::api(
             self::CAPITAL_API_VERSION,
-            function(Capital $api) use($player) : \Generator {
+            function(Capital $api) use($player, $intMoney, $onSuccess, $onError) : \Generator {
                 try {
                     yield from $api->takeMoney(
                         "CPlot",
                         $player,
                         $this->selector,
-                        5,
+                        $intMoney,
                         new LabelSet(["reason" => "chatting"]),
                     );
-
-                    $player->sendMessage("You lost $5 for chatting");
-                } catch(CapitalException $e) {
-                    $player->kick("You don't have money to chat");
+                    $onSuccess();
+                } catch(CapitalException $exception) {
+                    $onError($exception);
                 }
             }
         );
