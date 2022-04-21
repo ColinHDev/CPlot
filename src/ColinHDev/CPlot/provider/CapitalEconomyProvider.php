@@ -18,6 +18,7 @@ class CapitalEconomyProvider extends EconomyProvider {
     private const CAPITAL_API_VERSION = "0.1.0";
 
     private Complete $selector;
+    private string $currency;
 
     /**
      * @throws \RuntimeException
@@ -26,6 +27,7 @@ class CapitalEconomyProvider extends EconomyProvider {
         if (Server::getInstance()->getPluginManager()->getPlugin("Capital") === null) {
             throw new \RuntimeException("CapitalEconomyProvider requires the plugin \"Capital\" to be installed.");
         }
+        $this->currency = ResourceManager::getInstance()->getConfig()->getNested("economy.capital.currency", "$");
         Capital::api(
             self::CAPITAL_API_VERSION,
             function(Capital $api) : void {
@@ -35,7 +37,7 @@ class CapitalEconomyProvider extends EconomyProvider {
     }
 
     public function getCurrency() : string {
-
+        return $this->currency;
     }
 
     public function parseMoneyToString(float $money) : string {

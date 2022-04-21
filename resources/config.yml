@@ -233,6 +233,11 @@ economy:
     # Edit these settings only if you choose "Capital".
     capital:
         selector: []
+        # Since Capital does not support the configuration of currency symbols, you can use this setting to define the
+        # symbol of your currency that will be used in messages by this plugin or add your currency unit to all messages
+        # in the language files, as it would be intended by SOFe, the creator of Capital.
+        # Default value: "$"
+        currency: "$"
 
     # Define the price it costs to claim a plot.
     claimPrice: 0.0
