@@ -3,7 +3,8 @@
   "require": {
     "pocketmine/pocketmine-mp": "4.0.0",
     "sof3/await-generator": "^3.4.1",
-    "sof3/libasynql": "^4.0.1"
+    "sof3/libasynql": "^4.0.1",
+    "colinhdev/libasyncevent": "^1.0.0"
   },
   "require-dev": {
     "phpstan/phpstan": "^1.4.3",
