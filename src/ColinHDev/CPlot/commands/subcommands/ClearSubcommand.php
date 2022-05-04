@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\event\PlotClearEvent;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
@@ -19,6 +20,7 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
+use SOFe\AwaitGenerator\Await;
 
 /**
  * @phpstan-extends Subcommand<null>
@@ -78,6 +80,9 @@ class ClearSubcommand extends Subcommand {
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.chargedMoney" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]]);
             }
         }
+
+        /** @phpstan-var PlotClearEvent $event */
+        $event = yield from PlotClearEvent::create($plot, $sender);
 
         yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.start"]);
         $world = $sender->getWorld();
