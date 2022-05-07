@@ -7,9 +7,6 @@ namespace ColinHDev\CPlot\provider;
 use pocketmine\player\Player;
 use SOFe\AwaitGenerator\Await;
 
-/**
- * @phpstan-type AwaitGeneratorPromiseMethod Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator
- */
 abstract class EconomyProvider {
 
     /**
@@ -28,7 +25,7 @@ abstract class EconomyProvider {
     /**
      * @internal method to remove money from a player through the economy plugin while also using a
      * {@see \Generator} function which we can handle with {@see Await}.
-     * @phpstan-return \Generator<mixed, AwaitGeneratorPromiseMethod, null, void>
+     * @phpstan-return \Generator<mixed, Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator, null, void>
      */
     final public function awaitMoneyRemoval(Player $player, float $money) : \Generator {
         yield from Await::promise(
