@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlot\provider\utils\EconomyException;
 use cooldogedev\BedrockEconomy\api\BedrockEconomyAPI;
 use cooldogedev\BedrockEconomy\BedrockEconomy;
 use pocketmine\player\Player;
@@ -34,6 +35,13 @@ class BedrockEconomyProvider extends EconomyProvider {
             $player->getName(),
             $intMoney
         );
-        $promise->onCompletion($onSuccess, $onError);
+        $promise->onCompletion(
+            \Closure::fromCallable($onSuccess),
+            static function() use ($onError) {
+                $onError(
+                    new EconomyException()
+                );
+            }
+        );
     }
 }

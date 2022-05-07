@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\provider;
 
+use ColinHDev\CPlot\provider\utils\EconomyException;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\player\Player;
 use pocketmine\Server;
@@ -59,8 +60,18 @@ class CapitalEconomyProvider extends EconomyProvider {
                         new LabelSet(["reason" => "chatting"]),
                     );
                     $onSuccess();
-                } catch(CapitalException $exception) {
-                    $onError($exception);
+                } catch(CapitalException $capitalException) {
+                    $onError(
+                        new EconomyException(
+                            match ($capitalException->getCode()) {
+                                CapitalException::SOURCE_UNDERFLOW => EconomyException::SOURCE_UNDERFLOW,
+                                CapitalException::NO_SUCH_ACCOUNT => EconomyException::SOURCE_NON_EXISTENT,
+                                CapitalException::EVENT_CANCELLED => EconomyException::EVENT_CANCELLED,
+                                default => EconomyException::UNKNOWN
+                            },
+                            $capitalException
+                        )
+                    );
                 }
             }
         );
