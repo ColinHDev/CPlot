@@ -65,15 +65,6 @@ class ClaimSubcommand extends Subcommand {
         if ($economyProvider instanceof EconomyProvider) {
             $price = EconomyManager::getInstance()->getClaimPrice();
             if ($price > 0.0) {
-                $money = yield $economyProvider->awaitMoney($sender);
-                if (!is_float($money)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.loadMoneyError"]);
-                    return null;
-                }
-                if ($money < $price) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.senderNotOnline" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]]);
-                    return null;
-                }
                 yield $economyProvider->awaitMoneyRemoval($sender, $price);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.chargedMoney" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]]);
             }
