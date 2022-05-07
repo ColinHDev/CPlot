@@ -22,6 +22,7 @@ class CapitalEconomyProvider extends EconomyProvider {
 
     /**
      * @throws \RuntimeException
+     * @throws \pocketmine\plugin\PluginException
      */
     public function __construct() {
         if (Server::getInstance()->getPluginManager()->getPlugin("Capital") === null) {
@@ -44,9 +45,6 @@ class CapitalEconomyProvider extends EconomyProvider {
         return (string) floor($money);
     }
 
-    /**
-     * @throws \pocketmine\plugin\PluginException
-     */
     public function removeMoney(Player $player, float $money, callable $onSuccess, callable $onError) : void {
         $intMoney = (int) floor($money);
         Capital::api(
