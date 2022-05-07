@@ -26,29 +26,6 @@ abstract class EconomyProvider {
     abstract public function parseMoneyToString(float $money) : string;
 
     /**
-     * @internal method to get fetch a player's money from the economy plugin while also using a
-     * {@see \Generator} function which we can handle with {@see Await}.
-     * @phpstan-return \Generator<mixed, AwaitGeneratorPromiseMethod, float|null, float|null>
-     */
-    final public function awaitMoney(Player $player) : \Generator {
-        /** @phpstan-var float|null $return */
-        $return = yield from Await::promise(
-            fn($onSuccess, $onError) => $this->getMoney($player, $onSuccess, $onError)
-        );
-        return $return;
-    }
-
-    /**
-     * This method is used to fetch a player's money from the economy plugin.
-     * Since we want to support both economy plugins with asynchronous and synchronous database design, we provide
-     * <<callbacks that can be called either directly if the plugin uses a synchronous design, or later when e.g. the
-     * query for the money was finished if the plugin uses an asynchronous one.
-     * @phpstan-param callable(float|null): void $onSuccess
-     * @phpstan-param callable(\Throwable): void $onError
-     */
-    abstract public function getMoney(Player $player, callable $onSuccess, callable $onError) : void;
-
-    /**
      * @internal method to remove money from a player through the economy plugin while also using a
      * {@see \Generator} function which we can handle with {@see Await}.
      * @phpstan-return \Generator<mixed, AwaitGeneratorPromiseMethod, null, void>

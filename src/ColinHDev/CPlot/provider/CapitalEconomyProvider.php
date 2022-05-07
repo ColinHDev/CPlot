@@ -44,21 +44,6 @@ class CapitalEconomyProvider extends EconomyProvider {
         return (string) floor($money);
     }
 
-    public function getMoney(Player $player, callable $onSuccess, callable $onError) : void {
-        Capital::api(
-            self::CAPITAL_API_VERSION,
-            function(Capital $api) use($player, $onSuccess, $onError) : \Generator {
-                try {
-                    $accounts = yield from $api->findAccountsComplete($player, $this->selector);
-                    $money = yield from $api->getBalance($account);
-                    $onSuccess($money);
-                } catch (CapitalException $e) {
-                    $onError($e);
-                }
-            }
-        );
-    }
-
     /**
      * @throws \pocketmine\plugin\PluginException
      */
