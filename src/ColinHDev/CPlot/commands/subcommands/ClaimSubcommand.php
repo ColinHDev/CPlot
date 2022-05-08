@@ -12,6 +12,7 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
+use ColinHDev\CPlot\provider\utils\EconomyException;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\Permission;
@@ -80,6 +81,30 @@ class ClaimSubcommand extends Subcommand {
 
     public function onError(CommandSender $sender, \Throwable $error) : void {
         if ($sender instanceof Player && !$sender->isConnected()) {
+            return;
+        }
+        if ($error instanceof EconomyException) {
+            LanguageManager::getInstance()->getProvider()->translateForCommandSender(
+                $sender,
+                $error->getLanguageKey(),
+                static function(string $errorMessage) use($sender) : void {
+                    $economyManager = EconomyManager::getInstance();
+                    $economyProvider = $economyManager->getProvider();
+                    // This exception should not be thrown if no economy provider is set.
+                    assert($economyProvider instanceof EconomyProvider);
+                    LanguageManager::getInstance()->getProvider()->sendMessage(
+                        $sender,
+                        [
+                            "prefix",
+                            "claim.chargeMoneyError" => [
+                                $economyProvider->getCurrency(),
+                                $economyProvider->parseMoneyToString($economyManager->getClaimPrice()),
+                                $errorMessage
+                            ]
+                        ]
+                    );
+                }
+            );
             return;
         }
         LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "claim.saveError" => $error->getMessage()]);

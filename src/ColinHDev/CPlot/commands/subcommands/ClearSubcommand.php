@@ -13,6 +13,7 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
+use ColinHDev\CPlot\provider\utils\EconomyException;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -90,5 +91,34 @@ class ClearSubcommand extends Subcommand {
         );
         Server::getInstance()->getAsyncPool()->submitTask($task);
         return null;
+    }
+
+    public function onError(CommandSender $sender, \Throwable $error) : void {
+        if ($sender instanceof Player && !$sender->isConnected()) {
+            return;
+        }
+        if ($error instanceof EconomyException) {
+            LanguageManager::getInstance()->getProvider()->translateForCommandSender(
+                $sender,
+                $error->getLanguageKey(),
+                static function(string $errorMessage) use($sender) : void {
+                    $economyManager = EconomyManager::getInstance();
+                    $economyProvider = $economyManager->getProvider();
+                    // This exception should not be thrown if no economy provider is set.
+                    assert($economyProvider instanceof EconomyProvider);
+                    LanguageManager::getInstance()->getProvider()->sendMessage(
+                        $sender,
+                        [
+                            "prefix",
+                            "clear.chargeMoneyError" => [
+                                $economyProvider->getCurrency(),
+                                $economyProvider->parseMoneyToString($economyManager->getClaimPrice()),
+                                $errorMessage
+                            ]
+                        ]
+                    );
+                }
+            );
+        }
     }
 }
