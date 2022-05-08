@@ -29,7 +29,7 @@ class BedrockEconomyProvider extends EconomyProvider {
         return (string) floor($money);
     }
 
-    public function removeMoney(Player $player, float $money, callable $onSuccess, callable $onError) : void {
+    public function removeMoney(Player $player, float $money, string $reason, callable $onSuccess, callable $onError) : void {
         $intMoney = (int) floor($money);
         $promise = BedrockEconomyAPI::beta()->deduct(
             $player->getName(),

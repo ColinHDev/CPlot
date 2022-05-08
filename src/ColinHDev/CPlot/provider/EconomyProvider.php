@@ -27,9 +27,9 @@ abstract class EconomyProvider {
      * {@see \Generator} function which we can handle with {@see Await}.
      * @phpstan-return \Generator<mixed, Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator, null, void>
      */
-    final public function awaitMoneyRemoval(Player $player, float $money) : \Generator {
+    final public function awaitMoneyRemoval(Player $player, float $money, string $reason) : \Generator {
         yield from Await::promise(
-            fn($onSuccess, $onError) => $this->removeMoney($player, $money, $onSuccess, $onError)
+            fn($onSuccess, $onError) => $this->removeMoney($player, $money, $reason, $onSuccess, $onError)
         );
     }
 
@@ -38,5 +38,5 @@ abstract class EconomyProvider {
      * @phpstan-param callable(mixed=): void $onSuccess
      * @phpstan-param callable(\Throwable): void $onError
      */
-    abstract public function removeMoney(Player $player, float $money, callable $onSuccess, callable $onError) : void;
+    abstract public function removeMoney(Player $player, float $money, string $reason, callable $onSuccess, callable $onError) : void;
 }

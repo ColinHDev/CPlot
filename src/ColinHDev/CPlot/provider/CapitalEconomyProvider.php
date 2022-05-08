@@ -46,18 +46,18 @@ class CapitalEconomyProvider extends EconomyProvider {
         return (string) floor($money);
     }
 
-    public function removeMoney(Player $player, float $money, callable $onSuccess, callable $onError) : void {
+    public function removeMoney(Player $player, float $money, string $reason, callable $onSuccess, callable $onError) : void {
         $intMoney = (int) floor($money);
         Capital::api(
             self::CAPITAL_API_VERSION,
-            function(Capital $api) use($player, $intMoney, $onSuccess, $onError) : \Generator {
+            function(Capital $api) use($player, $intMoney, $reason, $onSuccess, $onError) : \Generator {
                 try {
                     yield from $api->takeMoney(
                         "CPlot",
                         $player,
                         $this->selector,
                         $intMoney,
-                        new LabelSet(["reason" => "chatting"]),
+                        new LabelSet(["reason" => $reason]),
                     );
                     $onSuccess();
                 } catch(CapitalException $capitalException) {
