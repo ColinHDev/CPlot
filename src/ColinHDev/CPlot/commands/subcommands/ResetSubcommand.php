@@ -67,7 +67,7 @@ class ResetSubcommand extends Subcommand {
             $price = EconomyManager::getInstance()->getResetPrice();
             if ($price > 0.0) {
                 yield $economyProvider->awaitMoneyRemoval($sender, $price);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.chargedMoney" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]]);
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
 
@@ -112,8 +112,8 @@ class ResetSubcommand extends Subcommand {
                         [
                             "prefix",
                             "reset.chargeMoneyError" => [
+                                $economyProvider->parseMoneyToString($economyManager->getResetPrice()),
                                 $economyProvider->getCurrency(),
-                                $economyProvider->parseMoneyToString($economyManager->getClaimPrice()),
                                 $errorMessage
                             ]
                         ]

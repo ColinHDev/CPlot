@@ -124,7 +124,7 @@ class MergeSubcommand extends Subcommand {
             $price = EconomyManager::getInstance()->getMergePrice();
             if ($price > 0.0) {
                 yield $economyProvider->awaitMoneyRemoval($sender, $price);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.chargedMoney" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]]);
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
 
@@ -170,8 +170,8 @@ class MergeSubcommand extends Subcommand {
                         [
                             "prefix",
                             "claim.chargeMoneyError" => [
+                                $economyProvider->parseMoneyToString($economyManager->getMergePrice()),
                                 $economyProvider->getCurrency(),
-                                $economyProvider->parseMoneyToString($economyManager->getClaimPrice()),
                                 $errorMessage
                             ]
                         ]
