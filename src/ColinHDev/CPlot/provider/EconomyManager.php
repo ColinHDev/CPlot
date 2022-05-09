@@ -27,7 +27,7 @@ final class EconomyManager {
     private array $reasons = [];
 
     public function __construct() {
-        /** @var array{provider: string, claimPrice?: float|string, clearPrice?: float|string, mergePrice?: float|string, resetPrice?: float|string} $settings */
+        /** @phpstan-var array{provider: string, claimPrice?: float|string, claimReason?: string, clearPrice?: float|string, clearReason?: string, mergePrice?: float|string, mergeReason?: string, resetPrice?: float|string, resetReason?: string} $settings */
         $settings = ResourceManager::getInstance()->getConfig()->get("economy", []);
         $this->provider = match (strtolower($settings["provider"])) {
             "bedrockeconomy" => new BedrockEconomyProvider(),

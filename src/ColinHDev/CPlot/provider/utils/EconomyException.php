@@ -34,7 +34,8 @@ class EconomyException extends Exception {
             self::UNKNOWN => "economy.error.unknown",
             self::EVENT_CANCELLED => "economy.error.eventCancelled",
             self::SOURCE_NON_EXISTENT => "economy.error.sourceNonExistent",
-            self::SOURCE_UNDERFLOW => "economy.error.sourceUnderflow"
+            self::SOURCE_UNDERFLOW => "economy.error.sourceUnderflow",
+            default => $this->message
         };
     }
 }

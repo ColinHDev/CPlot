@@ -29,11 +29,18 @@ class CapitalEconomyProvider extends EconomyProvider {
         if (Server::getInstance()->getPluginManager()->getPlugin("Capital") === null) {
             throw new \RuntimeException("CapitalEconomyProvider requires the plugin \"Capital\" to be installed.");
         }
-        $this->currency = ResourceManager::getInstance()->getConfig()->getNested("economy.capital.currency", "$");
+
+        $currency = ResourceManager::getInstance()->getConfig()->getNested("economy.capital.currency", "$");
+        assert(is_string($currency));
+        $this->currency = $currency;
+
         Capital::api(
             self::CAPITAL_API_VERSION,
-            function(Capital $api) : void {
-                $this->selector = $api->completeConfig(ResourceManager::getInstance()->getConfig()->getNested("economy.capital.selector", []));
+            function(Capital $api) {
+                $selector = ResourceManager::getInstance()->getConfig()->getNested("economy.capital.selector", []);
+                assert(is_array($selector));
+                $this->selector = $api->completeConfig($selector);
+                return null;
             }
         );
     }
