@@ -67,7 +67,7 @@ class ClearSubcommand extends Subcommand {
         if ($economyProvider instanceof EconomyProvider) {
             $price = $economyManager->getClearPrice();
             if ($price > 0.0) {
-                yield $economyProvider->awaitMoneyRemoval($sender, $price);
+                yield $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getClearReason());
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }

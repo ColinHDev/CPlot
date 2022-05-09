@@ -241,12 +241,20 @@ economy:
 
     # Define the price it costs to claim a plot.
     claimPrice: 0.0
+    # Define the charge reason which is maybe saved in the economy plugin's database when a plot is claimed.
+    claimReason: "plot claiming"
     # Define the price it costs to clear a plot.
     clearPrice: 0.0
+    # Define the charge reason which is maybe saved in the economy plugin's database when a plot is cleared.
+    clearReason: "plot clearing"
     # Define the price it costs to merge plots.
     mergePrice: 0.0
+    # Define the charge reason which is maybe saved in the economy plugin's database when plots are merged.
+    mergeReason: "plot merging"
     # Define the price it costs to reset a plot.
     resetPrice: 0.0
+    # Define the charge reason which is maybe saved in the economy plugin's database when a plot is resetted.
+    resetReason: "plot resetting"
 
 # Change the settings for CPlot's language integration.
 language:
