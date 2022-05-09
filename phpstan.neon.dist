@@ -6,6 +6,7 @@ parameters:
 	    - phar://virions/await-generator_v3.phar/src
 	    - phar://virions/libasynql_v4.phar/src
 	    - phar://virions/pmforms_v2.phar/src
+	    - /vendor/cooldogedev/bedrockeconomy/src
 	ignoreErrors:
 		-
 			message: '#Call to an undefined method [a-zA-Z0-9\\_]+::asyncGeneric\(\)#'

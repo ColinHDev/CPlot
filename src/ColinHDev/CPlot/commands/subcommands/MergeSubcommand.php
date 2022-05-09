@@ -13,6 +13,7 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
+use ColinHDev\CPlot\provider\utils\EconomyException;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -118,21 +119,13 @@ class MergeSubcommand extends Subcommand {
             return null;
         }
 
-        $economyProvider = EconomyManager::getInstance()->getProvider();
+        $economyManager = EconomyManager::getInstance();
+        $economyProvider = $economyManager->getProvider();
         if ($economyProvider instanceof EconomyProvider) {
-            $price = EconomyManager::getInstance()->getMergePrice();
+            $price = $economyManager->getMergePrice();
             if ($price > 0.0) {
-                $money = yield $economyProvider->awaitMoney($sender);
-                if (!is_float($money)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.loadMoneyError"]);
-                    return null;
-                }
-                if ($money < $price) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.senderNotOnline" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]]);
-                    return null;
-                }
-                yield $economyProvider->awaitMoneyRemoval($sender, $price);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.chargedMoney" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]]);
+                yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getMergeReason());
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
 
@@ -162,6 +155,30 @@ class MergeSubcommand extends Subcommand {
 
     public function onError(CommandSender $sender, \Throwable $error) : void {
         if ($sender instanceof Player && !$sender->isConnected()) {
+            return;
+        }
+        if ($error instanceof EconomyException) {
+            LanguageManager::getInstance()->getProvider()->translateForCommandSender(
+                $sender,
+                $error->getLanguageKey(),
+                static function(string $errorMessage) use($sender) : void {
+                    $economyManager = EconomyManager::getInstance();
+                    $economyProvider = $economyManager->getProvider();
+                    // This exception should not be thrown if no economy provider is set.
+                    assert($economyProvider instanceof EconomyProvider);
+                    LanguageManager::getInstance()->getProvider()->sendMessage(
+                        $sender,
+                        [
+                            "prefix",
+                            "claim.chargeMoneyError" => [
+                                $economyProvider->parseMoneyToString($economyManager->getMergePrice()),
+                                $economyProvider->getCurrency(),
+                                $errorMessage
+                            ]
+                        ]
+                    );
+                }
+            );
             return;
         }
         LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "merge.deleteError" => $error->getMessage()]);
