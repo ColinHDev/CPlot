@@ -119,9 +119,10 @@ class MergeSubcommand extends Subcommand {
             return null;
         }
 
-        $economyProvider = EconomyManager::getInstance()->getProvider();
+        $economyManager = EconomyManager::getInstance();
+        $economyProvider = $economyManager->getProvider();
         if ($economyProvider instanceof EconomyProvider) {
-            $price = EconomyManager::getInstance()->getMergePrice();
+            $price = $economyManager->getMergePrice();
             if ($price > 0.0) {
                 yield $economyProvider->awaitMoneyRemoval($sender, $price);
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
