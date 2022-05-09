@@ -67,7 +67,7 @@ class ClaimSubcommand extends Subcommand {
         if ($economyProvider instanceof EconomyProvider) {
             $price = $economyManager->getClaimPrice();
             if ($price > 0.0) {
-                yield $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getClaimReason());
+                yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getClaimReason());
                 yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
