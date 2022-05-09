@@ -8,6 +8,20 @@ While CPlot was meant to be closed-source to provide a good plot system for my s
 
 While it was always the goal to provide with CPlot an alternative with a whole load of unique features to MyPlot, the biggest focus is to provide a stable, lag-free and smooth experience for both server owners and players.
 
+## Features
+
+### Economy Support
+By default, CPlot hast built-in support for the most commonly used economy plugins within the PocketMine-MP plugin ecosystem. <br/>
+Currently, this includes the following plugins: [BedrockEconomy](https://github.com/cooldogedev/BedrockEconomy), [Capital](https://github.com/SOF3/Capital) <br/>
+If you use one of these plugins and want to charge users for certain actions regarding plots, you can head over to the `economy` configuration in the plugin's `config.yml` file.
+
+## For developers
+
+### Support for third-party economy plugins
+The requirement for an economy plugin to be supported by default by CPlot is basically only to be open-source, be commonly used and have a relatively stable API. <br/>
+But maybe your plugin is not well-known or closed-source and only for your own server, which would make it impossible for CPlot to support your plugin by default. Nonetheless, you can still make your economy plugin compatible with CPlot by using its internal API. <br/>
+The `EconomyManager` class (namespace: `ColinHDev\CPlot\provider`) allows you to set your own economy provider class. Just create a class within your plugin that extends CPlot's `EconomyProvider` class (namespace: `ColinHDev\CPlot\provider`). Then, simply connect your class's `getCurrency()`, `removeMoney()`, etc. methods to your economy plugin's API. If you did this, just make sure your plugin loads after CPlot and during its enabling, set CPlot's economy provider to your provider class by calling `EconomyManager::getInstance()->setProvider(new YourEconomyProviderClass());` in your plugins `onEnable()` method.
+
 ## TODO
 
 ### Schematics
