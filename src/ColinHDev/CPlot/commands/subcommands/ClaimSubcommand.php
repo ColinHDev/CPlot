@@ -19,7 +19,7 @@ use pocketmine\permission\Permission;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class ClaimSubcommand extends Subcommand {
 

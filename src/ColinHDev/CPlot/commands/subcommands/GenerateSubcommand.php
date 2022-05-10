@@ -16,7 +16,7 @@ use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
 
 /**
- * @phpstan-extends Subcommand<string>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, string>
  */
 class GenerateSubcommand extends Subcommand {
 

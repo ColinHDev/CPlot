@@ -11,7 +11,7 @@ use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\CommandSender;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class HelpSubcommand extends Subcommand {
 
@@ -52,7 +52,7 @@ class HelpSubcommand extends Subcommand {
         ksort($subcommands, SORT_NATURAL | SORT_FLAG_CASE);
         $screenLineHeight = $sender->getScreenLineHeight();
         assert($screenLineHeight >= 1);
-        /** @var array<int, array<string, Subcommand<mixed>>> $subcommands */
+        /** @var array<int, array<string, Subcommand<mixed, mixed, mixed, mixed>>> $subcommands */
         $subcommands = array_chunk($subcommands, $screenLineHeight);
         /** @var int $page */
         $page = min(count($subcommands), $page);

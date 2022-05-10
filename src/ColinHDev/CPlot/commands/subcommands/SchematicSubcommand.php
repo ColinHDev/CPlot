@@ -19,7 +19,7 @@ use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class SchematicSubcommand extends Subcommand {
 

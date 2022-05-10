@@ -20,7 +20,7 @@ use pocketmine\Server;
 use pocketmine\world\World;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class BiomeSubcommand extends Subcommand {
 

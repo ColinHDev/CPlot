@@ -29,7 +29,7 @@ use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class WallSubcommand extends Subcommand {
 
