@@ -29,7 +29,7 @@ use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class WallSubcommand extends Subcommand {
 
@@ -79,7 +79,7 @@ class WallSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "wall.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "wall.senderNotOnline"]);
             return null;
         }
 
@@ -88,32 +88,32 @@ class WallSubcommand extends Subcommand {
     }
 
     /**
-     * @phpstan-return \Generator<int, mixed, WorldSettings|NonWorldSettings|Plot|null, void>
+     * @phpstan-return \Generator<mixed, mixed, WorldSettings|NonWorldSettings|Plot|null, void>
      */
     public function onFormSubmit(Player $player, int $selectedOption) : \Generator {
         if (!$player->hasPermission($this->permissions[$selectedOption])) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.blockPermissionMessage"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.blockPermissionMessage"]);
             return;
         }
 
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($player->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlotWorld"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlotWorld"]);
             return;
         }
 
         $plot = yield Plot::awaitFromPosition($player->getPosition());
         if (!($plot instanceof Plot)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlot"]);
             return;
         }
         if (!$player->hasPermission("cplot.admin.wall")) {
             if (!$plot->hasPlotOwner()) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlotOwner"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlotOwner"]);
                 return;
             }
             if (!$plot->isPlotOwner($player)) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.notPlotOwner"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.notPlotOwner"]);
                 return;
             }
         }
@@ -121,11 +121,11 @@ class WallSubcommand extends Subcommand {
         /** @var BooleanAttribute $flag */
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.serverPlotFlag" => $flag->getID()]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.serverPlotFlag" => $flag->getID()]);
             return;
         }
 
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.start"]);
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.start"]);
         $world = $player->getWorld();
         $block = $this->blocks[$selectedOption];
         $task = new PlotWallChangeAsyncTask($world, $worldSettings, $plot, $block);

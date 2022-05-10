@@ -24,35 +24,35 @@ use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class ClearSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.senderNotOnline"]);
             return null;
         }
 
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlotWorld"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlotWorld"]);
             return null;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlot"]);
             return null;
         }
 
         if (!$sender->hasPermission("cplot.admin.clear")) {
             if (!$plot->hasPlotOwner()) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlotOwner"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlotOwner"]);
                 return null;
             }
             if (!$plot->isPlotOwner($sender)) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.notPlotOwner"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.notPlotOwner"]);
                 return null;
             }
         }
@@ -60,7 +60,7 @@ class ClearSubcommand extends Subcommand {
         /** @var BooleanAttribute $flag */
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.serverPlotFlag" => $flag->getID()]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.serverPlotFlag" => $flag->getID()]);
             return null;
         }
 
@@ -70,14 +70,14 @@ class ClearSubcommand extends Subcommand {
             $price = $economyManager->getClearPrice();
             if ($price > 0.0) {
                 yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getClearReason());
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
 
         /** @phpstan-var PlotClearEvent $event */
         $event = yield from PlotClearEvent::create($plot, $sender);
 
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.start"]);
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.start"]);
         $world = $sender->getWorld();
         $task = new PlotClearAsyncTask($world, $worldSettings, $plot);
         $task->setCallback(

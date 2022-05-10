@@ -25,16 +25,13 @@ abstract class LanguageProvider {
      * @internal method to translate a message for the given {@see CommandSender} while also using a {@see \Generator}
      * function which we can handle with {@see Await}.
      * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
-     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, (\Closure(mixed=): void)|(\Closure(\Throwable): void)|string, string>
+     * @phpstan-return \Generator<mixed, Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator, mixed, string>
      */
     final public function awaitTranslationForCommandSender(CommandSender $sender, array|string $keys) : \Generator {
-        /** @phpstan-var \Closure(mixed=): void $onSuccess */
-        $onSuccess = yield Await::RESOLVE;
-        /** @phpstan-var \Closure(\Throwable): void $onError */
-        $onError = yield Await::REJECT;
-        $this->translateForCommandSender($sender, $keys, $onSuccess, $onError);
         /** @phpstan-var string $message */
-        $message = yield Await::ONCE;
+        $message = yield from Await::promise(
+            fn($onSuccess, $onError) => $this->translateForCommandSender($sender, $keys, $onSuccess, $onError)
+        );
         return $message;
     }
 
@@ -50,17 +47,12 @@ abstract class LanguageProvider {
      * @internal method to send a message to the given {@see CommandSender} while also using a {@see \Generator}
      * function which we can handle with {@see Await}.
      * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
-     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, (\Closure(mixed=): void)|(\Closure(\Throwable): void)|null, null>
+     * @phpstan-return \Generator<mixed, Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator, mixed, void>
      */
     final public function awaitMessageSendage(CommandSender $sender, array|string $keys) : \Generator {
-        /** @phpstan-var \Closure(mixed=): void $onSuccess */
-        $onSuccess = yield Await::RESOLVE;
-        /** @phpstan-var \Closure(\Throwable): void $onError */
-        $onError = yield Await::REJECT;
-        $this->sendMessage($sender, $keys, $onSuccess, $onError);
-        /** @phpstan-var null $return */
-        $return = yield Await::ONCE;
-        return $return;
+        yield from Await::promise(
+            fn($onSuccess, $onError) => $this->sendMessage($sender, $keys, $onSuccess, $onError)
+        );
     }
 
     /**
@@ -75,17 +67,12 @@ abstract class LanguageProvider {
      * @internal method to send a tip to the given {@see Player} while also using a {@see \Generator}
      * function which we can handle with {@see Await}.
      * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
-     * @phpstan-return \Generator<int, Await::RESOLVE|Await::REJECT|Await::ONCE, (\Closure(mixed=): void)|(\Closure(\Throwable): void)|null, null>
+     * @phpstan-return \Generator<mixed, Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator, mixed, void>
      */
     final public function awaitTipSendage(Player $player, array|string $keys) : \Generator {
-        /** @phpstan-var \Closure(mixed=): void $onSuccess */
-        $onSuccess = yield Await::RESOLVE;
-        /** @phpstan-var \Closure(\Throwable): void $onError */
-        $onError = yield Await::REJECT;
-        $this->sendTip($player, $keys, $onSuccess, $onError);
-        /** @phpstan-var null $return */
-        $return = yield Await::ONCE;
-        return $return;
+        yield from Await::promise(
+            fn($onSuccess, $onError) => $this->sendTip($player, $keys, $onSuccess, $onError)
+        );
     }
 
     /**

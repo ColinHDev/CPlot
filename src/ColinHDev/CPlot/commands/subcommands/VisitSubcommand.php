@@ -15,13 +15,13 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class VisitSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.senderNotOnline"]);
             return null;
         }
 
@@ -34,16 +34,16 @@ class VisitSubcommand extends Subcommand {
                 /** @var Plot[] $plots */
                 $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
                 if (count($plots) === 0) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.noArguments.noPlots"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.noArguments.noPlots"]);
                     return null;
                 }
                 /** @var Plot $plot */
                 $plot = array_values($plots)[0];
                 if (!($plot->teleportTo($sender))) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.noArguments.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.noArguments.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
                     return null;
                 }
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.noArguments.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.noArguments.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
                 return null;
 
             case 1:
@@ -55,21 +55,21 @@ class VisitSubcommand extends Subcommand {
                     /** @var Plot[] $plots */
                     $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
                     if (count($plots) === 0) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.sender.noPlots"]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.sender.noPlots"]);
                         return null;
                     }
                     $plotNumber = (int) $args[0];
                     if ($plotNumber > count($plots)) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.sender.noPlot" => $plotNumber]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.sender.noPlot" => $plotNumber]);
                         return null;
                     }
                     /** @var Plot $plot */
                     $plot = array_values($plots)[($plotNumber - 1)];
                     if (!($plot->teleportTo($sender))) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.sender.teleportError" => [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.sender.teleportError" => [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
                         return null;
                     }
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.sender.success" => [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.sender.success" => [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
                     return null;
                 }
 
@@ -89,16 +89,16 @@ class VisitSubcommand extends Subcommand {
                     /** @var Plot[] $plots */
                     $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
                     if (count($plots) === 0) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.player.noPlots" => $playerName]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.player.noPlots" => $playerName]);
                         return null;
                     }
                     /** @var Plot $plot */
                     $plot = array_values($plots)[0];
                     if (!($plot->teleportTo($sender))) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.player.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.player.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]]);
                         return null;
                     }
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.player.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.player.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]]);
                     return null;
                 }
 
@@ -106,14 +106,14 @@ class VisitSubcommand extends Subcommand {
                 /** @var Plot|null $plot */
                 $plot = yield DataProvider::getInstance()->awaitPlotByAlias($alias);
                 if (!($plot instanceof Plot)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.alias.noPlot" => $alias]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.alias.noPlot" => $alias]);
                     return null;
                 }
                 if (!($plot->teleportTo($sender))) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.alias.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.alias.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]]);
                     return null;
                 }
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.alias.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.oneArgument.alias.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]]);
                 return null;
 
             default:
@@ -128,28 +128,28 @@ class VisitSubcommand extends Subcommand {
                     $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 }
                 if (!($playerData instanceof PlayerData)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.playerNotFound" => $playerName]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.playerNotFound" => $playerName]);
                     return null;
                 }
 
                 /** @var Plot[] $plots */
                 $plots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
                 if (count($plots) === 0) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.noPlots" => $playerName]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.noPlots" => $playerName]);
                     return null;
                 }
                 $plotNumber = (int) $args[1];
                 if ($plotNumber > count($plots)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.noPlot" => [$playerName, $plotNumber]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.noPlot" => [$playerName, $plotNumber]]);
                     return null;
                 }
                 /** @var Plot $plot */
                 $plot = array_values($plots)[($plotNumber - 1)];
                 if (!($plot->teleportTo($sender))) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.teleportError" => [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.teleportError" => [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]]);
                     return null;
                 }
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.success" => [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "visit.twoArguments.success" => [$plotNumber, $plot->getWorldName(), $plot->getX(), $plot->getZ(), $playerName]]);
         }
         return null;
     }

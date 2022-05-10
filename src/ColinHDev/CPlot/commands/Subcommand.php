@@ -9,6 +9,9 @@ use pocketmine\command\CommandSender;
 use poggit\libasynql\SqlError;
 
 /**
+ * @phpstan-template GeneratorKey
+ * @phpstan-template GeneratorValue
+ * @phpstan-template GeneratorSend
  * @phpstan-template GeneratorReturn
  */
 abstract class Subcommand {
@@ -59,7 +62,7 @@ abstract class Subcommand {
     /**
      * This generator function contains the code you want to be executed when the command is run.
      * @param string[] $args
-     * @phpstan-return \Generator<mixed, mixed, mixed, GeneratorReturn|null>
+     * @phpstan-return \Generator<GeneratorKey, GeneratorValue, GeneratorSend, GeneratorReturn|null>
      */
     abstract public function execute(CommandSender $sender, array $args) : \Generator;
 

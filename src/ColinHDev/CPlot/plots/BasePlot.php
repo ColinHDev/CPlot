@@ -217,7 +217,7 @@ class BasePlot {
     }
 
     /**
-     * @phpstan-param array{worldName: string, worldSettings: string, x: int, z: int, originX?: int, originZ?: int, alias?: string|null, mergePlots?: string, plotPlayers?: string, flags?: string, plotRates?: string} $data
+     * @phpstan-param array{worldName: string, worldSettings: string, x: int, z: int} $data
      */
     public function __unserialize(array $data) : void {
         $this->worldName = $data["worldName"];

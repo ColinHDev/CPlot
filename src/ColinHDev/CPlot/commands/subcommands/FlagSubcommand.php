@@ -23,26 +23,26 @@ use pocketmine\entity\Location;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class FlagSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.usage"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.usage"]);
             return null;
         }
 
         switch ($args[0]) {
             case "list":
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.list.success"]);
-                $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.list.success"]);
+                $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $sender,
                     "flag.list.success.separator"
                 );
                 $flagsByCategory = [];
                 foreach (FlagManager::getInstance()->getFlags() as $flag) {
-                    $flagCategory = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $flagCategory = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         "flag.category." . $flag->getID()
                     );
@@ -53,64 +53,64 @@ class FlagSubcommand extends Subcommand {
                     }
                 }
                 foreach ($flagsByCategory as $category => $flags) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.list.success.format" => [$category, $flags]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.list.success.format" => [$category, $flags]]);
                 }
                 break;
 
             case "info":
                 if (!isset($args[1])) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.info.usage"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.info.usage"]);
                     break;
                 }
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
                 if ($flag === null) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.info.noFlag" => $args[1]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.info.noFlag" => $args[1]]);
                     break;
                 }
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.info.flag" => $flag->getID()]);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.ID" => $flag->getID()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.info.flag" => $flag->getID()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.ID" => $flag->getID()]);
                 /** @phpstan-var string $category */
-                $category = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.category." . $flag->getID());
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.category" => $category]);
+                $category = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.category." . $flag->getID());
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.category" => $category]);
                 /** @phpstan-var string $description */
-                $description = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.description." . $flag->getID());
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.description" => $description]);
+                $description = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.description." . $flag->getID());
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.description" => $description]);
                 /** @phpstan-var string $type */
-                $type = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.type." . $flag->getID());
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.type" => $type]);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.default" => $flag->getDefault()]);
+                $type = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.type." . $flag->getID());
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.type" => $type]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.default" => $flag->getDefault()]);
                 break;
 
             case "here":
                 if (!$sender instanceof Player) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.here.senderNotOnline"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.here.senderNotOnline"]);
                     break;
                 }
                 if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.here.noPlotWorld"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.here.noPlotWorld"]);
                     break;
                 }
                 $plot = yield Plot::awaitFromPosition($sender->getPosition());
                 if (!($plot instanceof Plot)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.here.noPlot"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.here.noPlot"]);
                     break;
                 }
                 $flags = $plot->getFlags();
                 if (count($flags) === 0) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.here.noFlags"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.here.noFlags"]);
                     break;
                 }
                 $flagStrings = [];
                 foreach ($flags as $ID => $flag) {
-                    $flagStrings[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $flagStrings[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         ["flag.here.success.format" => [$ID, $flag->toString()]]
                     );
                 }
                 /** @phpstan-var string $separator */
-                $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.here.success.separator");
+                $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.here.success.separator");
                 $list = implode($separator, $flagStrings);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                     $sender,
                     ["prefix", "flag.here.success" => $list]
                 );
@@ -118,31 +118,31 @@ class FlagSubcommand extends Subcommand {
 
             case "set":
                 if (!isset($args[1])) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.usage"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.usage"]);
                     break;
                 }
 
                 if (!$sender instanceof Player) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.senderNotOnline"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.senderNotOnline"]);
                     break;
                 }
                 if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noPlotWorld"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noPlotWorld"]);
                     break;
                 }
                 $plot = yield Plot::awaitFromPosition($sender->getPosition());
                 if (!($plot instanceof Plot)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noPlot"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noPlot"]);
                     break;
                 }
 
                 if (!$plot->hasPlotOwner()) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noPlotOwner"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noPlotOwner"]);
                     break;
                 }
                 if (!$sender->hasPermission("cplot.admin.flag")) {
                     if (!$plot->isPlotOwner($sender)) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.notPlotOwner"]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.notPlotOwner"]);
                         break;
                     }
                 }
@@ -150,11 +150,11 @@ class FlagSubcommand extends Subcommand {
                 /** @var BaseAttribute<mixed> | null $flag */
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
                 if ($flag === null) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noFlag" => $args[1]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noFlag" => $args[1]]);
                     break;
                 }
                 if (!$sender->hasPermission($flag->getPermission())) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.permissionMessageForFlag" => $flag->getID()]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.permissionMessageForFlag" => $flag->getID()]);
                     break;
                 }
 
@@ -162,7 +162,7 @@ class FlagSubcommand extends Subcommand {
                     /** @var BooleanAttribute $serverPlotFlag */
                     $serverPlotFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
                     if ($serverPlotFlag->getValue() === true) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.serverPlotFlag" => $serverPlotFlag->getID()]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.serverPlotFlag" => $serverPlotFlag->getID()]);
                         break;
                     }
                 }
@@ -185,7 +185,7 @@ class FlagSubcommand extends Subcommand {
                 try {
                     $parsedValue = $flag->parse($arg);
                 } catch (AttributeParseException) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.parseError" => [$arg, $flag->getID()]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.parseError" => [$arg, $flag->getID()]]);
                     break;
                 }
 
@@ -199,7 +199,7 @@ class FlagSubcommand extends Subcommand {
                 );
 
                 yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.success" => [$flag->getID(), $flag->toString($parsedValue)]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.success" => [$flag->getID(), $flag->toString($parsedValue)]]);
                 foreach ($sender->getWorld()->getPlayers() as $player) {
                     if ($sender === $player) {
                         continue;
@@ -216,7 +216,7 @@ class FlagSubcommand extends Subcommand {
                     $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_CHANGE_FLAG . $newFlag->getID());
                     foreach ($setting->getValue() as $value) {
                         if ($value === $newFlag->getValue()) {
-                            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                                 $player,
                                 ["prefix", "flag.set.setting.warn_change_flag" => [$newFlag->getID(), $newFlag->toString()]]
                             );
@@ -228,7 +228,7 @@ class FlagSubcommand extends Subcommand {
                     $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_TELEPORT_CHANGE_FLAG . $newFlag->getID());
                     foreach ($setting->getValue() as $value) {
                         if ($value === $newFlag->getValue()) {
-                            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                                 $player,
                                 ["prefix", "flag.set.setting.teleport_change_flag" => [$newFlag->getID(), $newFlag->toString()]]
                             );
@@ -241,31 +241,31 @@ class FlagSubcommand extends Subcommand {
 
             case "remove":
                 if (!isset($args[1])) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.usage"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.usage"]);
                     break;
                 }
 
                 if (!$sender instanceof Player) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.senderNotOnline"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.senderNotOnline"]);
                     break;
                 }
                 if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.noPlotWorld"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.noPlotWorld"]);
                     break;
                 }
                 $plot = yield Plot::awaitFromPosition($sender->getPosition());
                 if (!($plot instanceof Plot)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.noPlot"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.noPlot"]);
                     break;
                 }
 
                 if (!$plot->hasPlotOwner()) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.noPlotOwner"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.noPlotOwner"]);
                     break;
                 }
                 if (!$sender->hasPermission("cplot.admin.flag")) {
                     if (!$plot->isPlotOwner($sender)) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.notPlotOwner"]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.notPlotOwner"]);
                         break;
                     }
                 }
@@ -273,11 +273,11 @@ class FlagSubcommand extends Subcommand {
                 /** @var BaseAttribute<mixed> | null $flag */
                 $flag = $plot->getFlagByID($args[1]);
                 if ($flag === null) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.flagNotSet" => $args[1]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.flagNotSet" => $args[1]]);
                     break;
                 }
                 if (!$sender->hasPermission($flag->getPermission())) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.permissionMessageForFlag" => $flag->getID()]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.permissionMessageForFlag" => $flag->getID()]);
                     break;
                 }
 
@@ -285,7 +285,7 @@ class FlagSubcommand extends Subcommand {
                     /** @var BooleanAttribute $serverPlotFlag */
                     $serverPlotFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
                     if ($serverPlotFlag->getValue() === true) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.serverPlotFlag" => $serverPlotFlag->getID()]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.serverPlotFlag" => $serverPlotFlag->getID()]);
                         break;
                     }
                 }
@@ -296,7 +296,7 @@ class FlagSubcommand extends Subcommand {
                     try {
                         $parsedValues = $flag->parse($arg);
                     } catch (AttributeParseException) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.parseError" => [$arg, $flag->getID()]]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.parseError" => [$arg, $flag->getID()]]);
                         break;
                     }
 
@@ -318,18 +318,18 @@ class FlagSubcommand extends Subcommand {
                         $flag = $flag->newInstance($values);
                         $plot->addFlag($flag);
                         yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.value.success" => [$flag->getID(), $flag->toString($removedValues)]]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.value.success" => [$flag->getID(), $flag->toString($removedValues)]]);
                         break;
                     }
                 }
 
                 $plot->removeFlag($flag->getID());
                 yield DataProvider::getInstance()->deletePlotFlag($plot, $flag->getID());
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.flag.success" => $flag->getID()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.flag.success" => $flag->getID()]);
                 break;
 
             default:
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.usage"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.usage"]);
                 break;
         }
         return null;

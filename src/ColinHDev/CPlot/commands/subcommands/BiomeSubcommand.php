@@ -20,7 +20,7 @@ use pocketmine\Server;
 use pocketmine\world\World;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class BiomeSubcommand extends Subcommand {
 
@@ -36,7 +36,7 @@ class BiomeSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!($sender instanceof Player)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.senderNotOnline"]);
             return null;
         }
 
@@ -44,7 +44,7 @@ class BiomeSubcommand extends Subcommand {
         $world = $position->world;
         assert($world instanceof World);
         if (!((yield DataProvider::getInstance()->awaitWorld($world->getFolderName())) instanceof WorldSettings)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.noPlotWorld"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.noPlotWorld"]);
             return null;
         }
 
@@ -54,22 +54,22 @@ class BiomeSubcommand extends Subcommand {
             if (!is_string($biomeName)) {
                 $biomeName = "Unknown (BiomeID: " . $biomeID . ")";
             }
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.plotBiome" => $biomeName]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.plotBiome" => $biomeName]);
             return null;
         }
         $biomeName = strtoupper(implode("_", $args));
         if (!isset($this->biomes[$biomeName])) {
             $biomes = [];
             foreach ($this->biomes as $name => $ID) {
-                $biomes[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                $biomes[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $sender,
                     ["biome.list" => $name]
                 );
             }
             /** @phpstan-var string $separator */
-            $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "biome.list.separator");
+            $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "biome.list.separator");
             $list = implode($separator, $biomes);
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                 $sender,
                 [
                     "prefix",
@@ -82,17 +82,17 @@ class BiomeSubcommand extends Subcommand {
 
         $plot = yield Plot::awaitFromPosition($position);
         if (!($plot instanceof Plot)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.noPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.noPlot"]);
             return null;
         }
 
         if (!$sender->hasPermission("cplot.admin.biome")) {
             if (!$plot->hasPlotOwner()) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.noPlotOwner"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.noPlotOwner"]);
                 return null;
             }
             if (!$plot->isPlotOwner($sender)) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.notPlotOwner"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.notPlotOwner"]);
                 return null;
             }
         }
@@ -100,11 +100,11 @@ class BiomeSubcommand extends Subcommand {
         /** @var BooleanAttribute $flag */
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.serverPlotFlag" => FlagIDs::FLAG_SERVER_PLOT]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.serverPlotFlag" => FlagIDs::FLAG_SERVER_PLOT]);
             return null;
         }
 
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.start"]);
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.start"]);
         $task = new PlotBiomeChangeAsyncTask($world, $plot, $biomeID);
         $task->setCallback(
             static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $sender, $biomeName, $biomeID) : void {

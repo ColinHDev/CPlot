@@ -24,13 +24,13 @@ use pocketmine\Server;
 use pocketmine\world\World;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class MergeSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.senderNotOnline"]);
             return null;
         }
 
@@ -39,7 +39,7 @@ class MergeSubcommand extends Subcommand {
         $worldName = $location->world->getFolderName();
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($worldName);
         if (!($worldSettings instanceof WorldSettings)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.noPlotWorld"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.noPlotWorld"]);
             return null;
         }
 
@@ -50,17 +50,17 @@ class MergeSubcommand extends Subcommand {
             $plot = yield $basePlot->toAsyncPlot();
         }
         if ($basePlot === null || $plot === null) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.noPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.noPlot"]);
             return null;
         }
 
         if (!$plot->hasPlotOwner()) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.noPlotOwner"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.noPlotOwner"]);
             return null;
         }
         if (!$sender->hasPermission("cplot.admin.merge")) {
             if (!$plot->isPlotOwner($sender)) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.notPlotOwner"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.notPlotOwner"]);
                 return null;
             }
         }
@@ -68,7 +68,7 @@ class MergeSubcommand extends Subcommand {
         /** @var BooleanAttribute $flag */
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.serverPlotFlag" => $flag->getID()]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.serverPlotFlag" => $flag->getID()]);
             return null;
         }
 
@@ -84,7 +84,7 @@ class MergeSubcommand extends Subcommand {
         } else if (225 <= $rotation && $rotation < 315) {
             $direction = Facing::WEST;
         } else {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.processDirectionError"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.processDirectionError"]);
             return null;
         }
 
@@ -92,11 +92,11 @@ class MergeSubcommand extends Subcommand {
         $basePlotToMerge = $basePlot->getSide($direction);
         $plotToMerge = yield $basePlotToMerge->toAsyncPlot();
         if (!($plotToMerge instanceof Plot)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.invalidSecondPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.invalidSecondPlot"]);
             return null;
         }
         if ($plot->isSame($plotToMerge)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.alreadyMerged"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.alreadyMerged"]);
             return null;
         }
 
@@ -108,14 +108,14 @@ class MergeSubcommand extends Subcommand {
             }
         }
         if (!$hasSameOwner) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.notSamePlotOwner"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.notSamePlotOwner"]);
             return null;
         }
 
         /** @var BooleanAttribute $flag */
         $flag = $plotToMerge->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.secondPlotServerPlotFlag" => $flag->getID()]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.secondPlotServerPlotFlag" => $flag->getID()]);
             return null;
         }
 
@@ -125,11 +125,11 @@ class MergeSubcommand extends Subcommand {
             $price = $economyManager->getMergePrice();
             if ($price > 0.0) {
                 yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getMergeReason());
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
 
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.start"]);
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.start"]);
         $world = $sender->getWorld();
         $task = new PlotMergeAsyncTask($world, $worldSettings, $plot, $plotToMerge);
         $task->setCallback(

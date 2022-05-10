@@ -14,23 +14,23 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class HelpersSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.senderNotOnline"]);
             return null;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.noPlotWorld"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.noPlotWorld"]);
             return null;
         }
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.noPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.noPlot"]);
             return null;
         }
 
@@ -38,11 +38,11 @@ class HelpersSubcommand extends Subcommand {
         foreach ($plot->getPlotHelpers() as $plotPlayer) {
             $plotPlayerData = $plotPlayer->getPlayerData();
             /** @phpstan-var string $addTime */
-            $addTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+            $addTime = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["helpers.success.list.addTime.format" => explode(".", date("d.m.Y.H.i.s", $plotPlayer->getAddTime()))]
             );
-            $helperData[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+            $helperData[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["helpers.success.list" => [
                     $plotPlayerData->getPlayerName() ?? "Error: " . ($plotPlayerData->getPlayerXUID() ?? $plotPlayerData->getPlayerUUID() ?? $plotPlayerData->getPlayerID()),
@@ -51,14 +51,14 @@ class HelpersSubcommand extends Subcommand {
             );
         }
         if (count($helperData) === 0) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.noHelpers"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.noHelpers"]);
             return null;
         }
 
         /** @phpstan-var string $separator */
-        $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "helpers.success.list.separator");
+        $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "helpers.success.list.separator");
         $list = implode($separator, $helperData);
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
             $sender,
             [
                 "prefix",

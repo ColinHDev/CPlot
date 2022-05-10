@@ -16,26 +16,26 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class SettingSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.usage"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.usage"]);
             return null;
         }
 
         switch ($args[0]) {
             case "list":
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.list.success"]);
-                $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.list.success"]);
+                $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $sender,
                     "flag.list.success.separator"
                 );
                 $settingsByCategory = [];
                 foreach (SettingManager::getInstance()->getSettings() as $setting) {
-                    $settingCategory = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $settingCategory = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         "setting.category." . $setting->getID()
                     );
@@ -46,60 +46,60 @@ class SettingSubcommand extends Subcommand {
                     }
                 }
                 foreach ($settingsByCategory as $category => $settings) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.list.success.format" => [$category, $settings]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.list.success.format" => [$category, $settings]]);
                 }
                 break;
 
             case "info":
                 if (!isset($args[1])) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.info.usage"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.info.usage"]);
                     break;
                 }
                 $setting = SettingManager::getInstance()->getSettingByID($args[1]);
                 if ($setting === null) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.info.noSetting" => $args[1]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.info.noSetting" => $args[1]]);
                     break;
                 }
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.info.setting" => $setting->getID()]);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.ID" => $setting->getID()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.info.setting" => $setting->getID()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.ID" => $setting->getID()]);
                 /** @phpstan-var string $category */
-                $category = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.category." . $setting->getID());
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.category" => $category]);
+                $category = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.category." . $setting->getID());
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.category" => $category]);
                 /** @phpstan-var string $description */
-                $description = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.description." . $setting->getID());
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.description" => $description]);
+                $description = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.description." . $setting->getID());
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.description" => $description]);
                 /** @phpstan-var string $type */
-                $type = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.type." . $setting->getID());
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.type" => $type]);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.default" => $setting->getDefault()]);
+                $type = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.type." . $setting->getID());
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.type" => $type]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.default" => $setting->getDefault()]);
                 break;
 
             case "my":
                 if (!$sender instanceof Player) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.my.senderNotOnline"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.my.senderNotOnline"]);
                     break;
                 }
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($sender);
                 if (!($playerData instanceof PlayerData)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.my.loadPlayerDataError"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.my.loadPlayerDataError"]);
                     break;
                 }
                 $settings = $playerData->getSettings();
                 if (count($settings) === 0) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.my.noSettings"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.my.noSettings"]);
                     break;
                 }
                 $settingStrings = [];
                 foreach ($settings as $ID => $setting) {
-                    $settingStrings[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $settingStrings[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         ["setting.my.success.format" => [$ID, $setting->toString()]]
                     );
                 }
                 /** @phpstan-var string $separator */
-                $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.my.success.separator");
+                $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.my.success.separator");
                 $list = implode($separator, $settingStrings);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                     $sender,
                     ["prefix", "setting.my.success" => $list]
                 );
@@ -107,28 +107,28 @@ class SettingSubcommand extends Subcommand {
 
             case "set":
                 if (!isset($args[1])) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.usage"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.usage"]);
                     break;
                 }
 
                 if (!$sender instanceof Player) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.senderNotOnline"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.senderNotOnline"]);
                     break;
                 }
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($sender);
                 if (!($playerData instanceof PlayerData)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.loadPlayerDataError"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.loadPlayerDataError"]);
                     break;
                 }
 
                 /** @var BaseAttribute<mixed> | null $setting */
                 $setting = SettingManager::getInstance()->getSettingByID($args[1]);
                 if ($setting === null) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.noSetting" => $args[1]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.noSetting" => $args[1]]);
                     break;
                 }
                 if (!$sender->hasPermission($setting->getPermission())) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.permissionMessageForSetting" => $setting->getID()]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.permissionMessageForSetting" => $setting->getID()]);
                     break;
                 }
 
@@ -137,7 +137,7 @@ class SettingSubcommand extends Subcommand {
                 try {
                     $parsedValue = $setting->parse($arg);
                 } catch (AttributeParseException) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.parseError" => [$arg, $setting->getID()]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.parseError" => [$arg, $setting->getID()]]);
                     break;
                 }
 
@@ -150,33 +150,33 @@ class SettingSubcommand extends Subcommand {
                     $setting
                 );
                 yield DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.success" => [$setting->getID(), $setting->toString($parsedValue)]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.success" => [$setting->getID(), $setting->toString($parsedValue)]]);
                 break;
 
             case "remove":
                 if (!isset($args[1])) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.usage"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.usage"]);
                     break;
                 }
 
                 if (!$sender instanceof Player) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.senderNotOnline"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.senderNotOnline"]);
                     break;
                 }
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($sender);
                 if (!($playerData instanceof PlayerData)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.loadPlayerDataError"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.loadPlayerDataError"]);
                     break;
                 }
 
                 /** @var BaseAttribute<mixed> | null $setting */
                 $setting = $playerData->getSettingByID($args[1]);
                 if ($setting === null) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.settingNotSet" => $args[1]]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.settingNotSet" => $args[1]]);
                     break;
                 }
                 if (!$sender->hasPermission($setting->getPermission())) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.permissionMessageForSetting" => $setting->getID()]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.permissionMessageForSetting" => $setting->getID()]);
                     break;
                 }
 
@@ -186,7 +186,7 @@ class SettingSubcommand extends Subcommand {
                     try {
                         $parsedValues = $setting->parse($arg);
                     } catch (AttributeParseException) {
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.parseError" => [$arg, $setting->getID()]]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.parseError" => [$arg, $setting->getID()]]);
                         break;
                     }
 
@@ -206,17 +206,17 @@ class SettingSubcommand extends Subcommand {
                         $setting = $setting->newInstance($values);
                         $playerData->addSetting($setting);
                         yield DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
-                        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.value.success" => [$setting->getID(), $setting->toString()]]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.value.success" => [$setting->getID(), $setting->toString()]]);
                         break;
                     }
                 }
                 $playerData->removeSetting($setting->getID());
                 yield DataProvider::getInstance()->deletePlayerSetting($playerData, $setting->getID());
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.setting.success" => $setting->getID()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.setting.success" => $setting->getID()]);
                 break;
 
             default:
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.usage"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.usage"]);
                 break;
         }
         return null;

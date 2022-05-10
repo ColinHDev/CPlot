@@ -11,7 +11,7 @@ use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\CommandSender;
 
 /**
- * @phpstan-extends Subcommand<null>
+ * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
  */
 class HelpSubcommand extends Subcommand {
 
@@ -52,7 +52,7 @@ class HelpSubcommand extends Subcommand {
         ksort($subcommands, SORT_NATURAL | SORT_FLAG_CASE);
         $screenLineHeight = $sender->getScreenLineHeight();
         assert($screenLineHeight >= 1);
-        /** @var array<int, array<string, Subcommand<mixed>>> $subcommands */
+        /** @var array<int, array<string, Subcommand<mixed, mixed, mixed, mixed>>> $subcommands */
         $subcommands = array_chunk($subcommands, $screenLineHeight);
         /** @var int $page */
         $page = min(count($subcommands), $page);
@@ -60,17 +60,17 @@ class HelpSubcommand extends Subcommand {
         $subcommandsOnPage = [];
         foreach ($subcommands[$page - 1] as $subcommand) {
             /** @phpstan-var string $description */
-            $description = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $subcommand->getName() . ".description");
-            $subcommandsOnPage[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+            $description = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $subcommand->getName() . ".description");
+            $subcommandsOnPage[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["help.success.list" => [$subcommand->getName(), $description]]
             );
         }
 
         /** @phpstan-var string $separator */
-        $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "help.success.list.separator");
+        $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "help.success.list.separator");
         $list = implode($separator, $subcommandsOnPage);
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
             $sender,
             [
                 "prefix",
