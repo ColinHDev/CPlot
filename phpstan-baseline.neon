@@ -6,12 +6,12 @@ parameters:
 			path: src/ColinHDev/CPlot/commands/PlotCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|ColinHDev\\\\CPlot\\\\worlds\\\\NonWorldSettings\\|ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\|null, void\\> given\\.$#"
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|ColinHDev\\\\CPlot\\\\worlds\\\\NonWorldSettings\\|ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\|null, void\\> given\\.$#"
 			count: 1
 			path: src/ColinHDev/CPlot/commands/subcommands/BorderSubcommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|ColinHDev\\\\CPlot\\\\worlds\\\\NonWorldSettings\\|ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\|null, void\\> given\\.$#"
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|ColinHDev\\\\CPlot\\\\worlds\\\\NonWorldSettings\\|ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\|null, void\\> given\\.$#"
 			count: 1
 			path: src/ColinHDev/CPlot/commands/subcommands/WallSubcommand.php
 
@@ -26,7 +26,7 @@ parameters:
 			path: src/ColinHDev/CPlot/listener/PlayerLoginListener.php
 
 		-
-			message: "#^Parameter \\#1 \\$closure of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:f2c\\(\\) expects callable\\(\\)\\: Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Closure\\(\\)\\: Generator\\<int, mixed, mixed, void\\> given\\.$#"
+			message: "#^Parameter \\#1 \\$closure of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:f2c\\(\\) expects callable\\(\\)\\: Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Closure\\(\\)\\: Generator\\<mixed, mixed, mixed, void\\> given\\.$#"
 			count: 1
 			path: src/ColinHDev/CPlot/listener/PlayerMoveListener.php
 
@@ -64,4 +64,3 @@ parameters:
 			message: "#^ColinHDev\\\\CPlot\\\\tasks\\\\utils\\\\DummyTile\\:\\:__construct\\(\\) does not call parent constructor from pocketmine\\\\block\\\\tile\\\\Tile\\.$#"
 			count: 1
 			path: src/ColinHDev/CPlot/tasks/utils/DummyTile.php
-
