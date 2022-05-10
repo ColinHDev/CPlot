@@ -25,27 +25,27 @@ class ClaimSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.senderNotOnline"]);
             return null;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.noPlotWorld"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.noPlotWorld"]);
             return null;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition(), false);
         if (!($plot instanceof Plot)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.noPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.noPlot"]);
             return null;
         }
 
         if ($plot->hasPlotOwner()) {
             if ($plot->isPlotOwner($sender)) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotAlreadyClaimedBySender"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotAlreadyClaimedBySender"]);
                 return null;
             }
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotAlreadyClaimed"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotAlreadyClaimed"]);
             return null;
         }
 
@@ -58,7 +58,7 @@ class ClaimSubcommand extends Subcommand {
         $claimedPlotsCount = count($claimedPlots);
         $maxPlots = $this->getMaxPlotsOfPlayer($sender);
         if ($claimedPlotsCount > $maxPlots) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotLimitReached" => [$claimedPlotsCount, $maxPlots]]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotLimitReached" => [$claimedPlotsCount, $maxPlots]]);
             return null;
         }
 
@@ -68,7 +68,7 @@ class ClaimSubcommand extends Subcommand {
             $price = $economyManager->getClaimPrice();
             if ($price > 0.0) {
                 yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getClaimReason());
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
 
@@ -76,7 +76,7 @@ class ClaimSubcommand extends Subcommand {
         $plot->addPlotPlayer($senderData);
         yield DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
 
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.success" => [$plot->toString(), $plot->toSmallString()]]);
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.success" => [$plot->toString(), $plot->toSmallString()]]);
         return null;
     }
 

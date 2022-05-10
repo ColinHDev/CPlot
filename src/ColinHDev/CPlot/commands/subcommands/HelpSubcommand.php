@@ -60,17 +60,17 @@ class HelpSubcommand extends Subcommand {
         $subcommandsOnPage = [];
         foreach ($subcommands[$page - 1] as $subcommand) {
             /** @phpstan-var string $description */
-            $description = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $subcommand->getName() . ".description");
-            $subcommandsOnPage[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+            $description = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $subcommand->getName() . ".description");
+            $subcommandsOnPage[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["help.success.list" => [$subcommand->getName(), $description]]
             );
         }
 
         /** @phpstan-var string $separator */
-        $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "help.success.list.separator");
+        $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "help.success.list.separator");
         $list = implode($separator, $subcommandsOnPage);
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
             $sender,
             [
                 "prefix",

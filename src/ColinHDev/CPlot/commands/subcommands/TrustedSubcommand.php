@@ -20,17 +20,17 @@ class TrustedSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.senderNotOnline"]);
             return null;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.noPlotWorld"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.noPlotWorld"]);
             return null;
         }
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.noPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.noPlot"]);
             return null;
         }
 
@@ -38,11 +38,11 @@ class TrustedSubcommand extends Subcommand {
         foreach ($plot->getPlotTrusted() as $plotPlayer) {
             $plotPlayerData = $plotPlayer->getPlayerData();
             /** @phpstan-var string $addTime */
-            $addTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+            $addTime = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["trusted.success.list.addTime.format" => explode(".", date("d.m.Y.H.i.s", $plotPlayer->getAddTime()))]
             );
-            $trustedPlayerData[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+            $trustedPlayerData[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["trusted.success.list" => [
                     $plotPlayerData->getPlayerName() ?? "Error: " . ($plotPlayerData->getPlayerXUID() ?? $plotPlayerData->getPlayerUUID() ?? $plotPlayerData->getPlayerID()),
@@ -51,14 +51,14 @@ class TrustedSubcommand extends Subcommand {
             );
         }
         if (count($trustedPlayerData) === 0) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.noTrustedPlayers"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.noTrustedPlayers"]);
             return null;
         }
 
         /** @phpstan-var string $separator */
-        $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "trusted.success.list.separator");
+        $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "trusted.success.list.separator");
         $list = implode($separator, $trustedPlayerData);
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
             $sender,
             [
                 "prefix",

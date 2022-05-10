@@ -25,12 +25,12 @@ class TrustSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.senderNotOnline"]);
             return null;
         }
 
         if (count($args) === 0) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.usage"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.usage"]);
             return null;
         }
 
@@ -43,18 +43,18 @@ class TrustSubcommand extends Subcommand {
                 $playerXUID = $player->getXuid();
                 $playerName = $player->getName();
             } else {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.usage" => $args[0]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.usage" => $args[0]]);
                 $playerName = $args[0];
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if (!($playerData instanceof PlayerData)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.playerNotFound" => $playerName]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.playerNotFound" => $playerName]);
                     return null;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
                 $playerXUID = $playerData->getPlayerXUID();
             }
             if ($playerUUID === $sender->getUniqueId()->getBytes()) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.senderIsPlayer"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.senderIsPlayer"]);
                 return null;
             }
         } else {
@@ -64,23 +64,23 @@ class TrustSubcommand extends Subcommand {
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.noPlotWorld"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.noPlotWorld"]);
             return null;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.noPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.noPlot"]);
             return null;
         }
 
         if (!$plot->hasPlotOwner()) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.noPlotOwner"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.noPlotOwner"]);
             return null;
         }
         if (!$sender->hasPermission("cplot.admin.trust")) {
             if (!$plot->isPlotOwner($sender)) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.notPlotOwner"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.notPlotOwner"]);
                 return null;
             }
         }
@@ -88,32 +88,32 @@ class TrustSubcommand extends Subcommand {
         /** @var BooleanAttribute $flag */
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.serverPlotFlag" => $flag->getID()]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.serverPlotFlag" => $flag->getID()]);
             return null;
         }
 
         if (!($playerData instanceof PlayerData)) {
             $playerData = yield DataProvider::getInstance()->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
             if (!($playerData instanceof PlayerData)) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.playerNotFound" => $playerName]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.playerNotFound" => $playerName]);
                 return null;
             }
         }
         if ($plot->isPlotTrustedExact($playerData)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.playerAlreadyTrusted" => $playerName]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.playerAlreadyTrusted" => $playerName]);
             return null;
         }
 
         $plotPlayer = new PlotPlayer($playerData, PlotPlayer::STATE_TRUSTED);
         $plot->addPlotPlayer($plotPlayer);
         yield DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.success" => $playerName]);
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.success" => $playerName]);
 
         if ($player instanceof Player) {
             /** @var BooleanAttribute $setting */
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_TRUSTED_ADD);
             if ($setting->getValue() === true) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                     $sender,
                     ["prefix", "trust.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                 );

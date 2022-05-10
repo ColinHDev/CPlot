@@ -25,12 +25,12 @@ class RemoveSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.senderNotOnline"]);
             return null;
         }
 
         if (count($args) === 0) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.usage"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.usage"]);
             return null;
         }
 
@@ -42,11 +42,11 @@ class RemoveSubcommand extends Subcommand {
                 $playerXUID = $player->getXuid();
                 $playerName = $player->getName();
             } else {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.playerNotOnline" => $args[0]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.playerNotOnline" => $args[0]]);
                 $playerName = $args[0];
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if (!($playerData instanceof PlayerData)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.playerNotFound" => $playerName]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.playerNotFound" => $playerName]);
                     return null;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
@@ -59,23 +59,23 @@ class RemoveSubcommand extends Subcommand {
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.noPlotWorld"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.noPlotWorld"]);
             return null;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.noPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.noPlot"]);
             return null;
         }
 
         if (!$plot->hasPlotOwner()) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.noPlotOwner"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.noPlotOwner"]);
             return null;
         }
         if (!$sender->hasPermission("cplot.admin.remove")) {
             if (!$plot->isPlotOwner($sender)) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.notPlotOwner"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.notPlotOwner"]);
                 return null;
             }
         }
@@ -83,27 +83,27 @@ class RemoveSubcommand extends Subcommand {
         /** @var BooleanAttribute $flag */
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.serverPlotFlag" => $flag->getID()]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.serverPlotFlag" => $flag->getID()]);
             return null;
         }
 
         $playerIdentifier = PlayerData::getIdentifierFromData($playerUUID, $playerXUID, $playerName);
         $plotPlayer = $plot->getPlotPlayerExact($playerIdentifier);
         if (!($plotPlayer instanceof PlotPlayer) || $plotPlayer->getState() !== PlotPlayer::STATE_HELPER) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.playerNotHelper" => $playerName]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.playerNotHelper" => $playerName]);
             return null;
         }
         $playerData = $plotPlayer->getPlayerData();
 
         $plot->removePlotPlayer($playerIdentifier);
         yield DataProvider::getInstance()->deletePlotPlayer($plot, $playerData->getPlayerID());
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.success" => $playerName]);
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.success" => $playerName]);
 
         if ($player instanceof Player) {
             /** @var BooleanAttribute $setting */
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_REMOVE);
             if ($setting->getValue() === true) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                     $sender,
                     ["prefix", "remove.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                 );

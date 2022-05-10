@@ -25,12 +25,12 @@ class AddSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.senderNotOnline"]);
             return null;
         }
 
         if (count($args) === 0) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.usage"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.usage"]);
             return null;
         }
 
@@ -43,18 +43,18 @@ class AddSubcommand extends Subcommand {
                 $playerXUID = $player->getXuid();
                 $playerName = $player->getName();
             } else {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerNotOnline" => $args[0]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerNotOnline" => $args[0]]);
                 $playerName = $args[0];
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if (!($playerData instanceof PlayerData)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerNotFound" => $playerName]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerNotFound" => $playerName]);
                     return null;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
                 $playerXUID = $playerData->getPlayerXUID();
             }
             if ($playerUUID === $sender->getUniqueId()->getBytes()) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.senderIsPlayer"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.senderIsPlayer"]);
                 return null;
             }
         } else {
@@ -64,23 +64,23 @@ class AddSubcommand extends Subcommand {
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.noPlotWorld"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.noPlotWorld"]);
             return null;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.noPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.noPlot"]);
             return null;
         }
 
         if (!$plot->hasPlotOwner()) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.noPlotOwner"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.noPlotOwner"]);
             return null;
         }
         if (!$sender->hasPermission("cplot.admin.add")) {
             if (!$plot->isPlotOwner($sender)) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.notPlotOwner"]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.notPlotOwner"]);
                 return null;
             }
         }
@@ -88,32 +88,32 @@ class AddSubcommand extends Subcommand {
         /** @var BooleanAttribute $flag */
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.serverPlotFlag" => $flag->getID()]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.serverPlotFlag" => $flag->getID()]);
             return null;
         }
 
         if (!($playerData instanceof PlayerData)) {
             $playerData = yield DataProvider::getInstance()->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
             if (!($playerData instanceof PlayerData)) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerNotFound" => $playerName]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerNotFound" => $playerName]);
                 return null;
             }
         }
         if ($plot->isPlotHelperExact($playerData)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerAlreadyHelper" => $playerName]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerAlreadyHelper" => $playerName]);
             return null;
         }
 
         $plotPlayer = new PlotPlayer($playerData, PlotPlayer::STATE_HELPER);
         $plot->addPlotPlayer($plotPlayer);
         yield DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.success" => $playerName]);
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.success" => $playerName]);
 
         if ($player instanceof Player) {
             /** @var BooleanAttribute $setting */
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_ADD);
             if ($setting->getValue() === true) {
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
             }
         }
         return null;

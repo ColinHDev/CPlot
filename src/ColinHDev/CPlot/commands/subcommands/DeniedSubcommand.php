@@ -20,17 +20,17 @@ class DeniedSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "denied.senderNotOnline"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "denied.senderNotOnline"]);
             return null;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "denied.noPlotWorld"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "denied.noPlotWorld"]);
             return null;
         }
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "denied.noPlot"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "denied.noPlot"]);
             return null;
         }
 
@@ -38,11 +38,11 @@ class DeniedSubcommand extends Subcommand {
         foreach ($plot->getPlotDenied() as $plotPlayer) {
             $plotPlayerData = $plotPlayer->getPlayerData();
             /** @phpstan-var string $addTime */
-            $addTime = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+            $addTime = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["denied.success.list.addTime.format" => explode(".", date("d.m.Y.H.i.s", $plotPlayer->getAddTime()))]
             );
-            $deniedPlayerData[] = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+            $deniedPlayerData[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                 $sender,
                 ["denied.success.list" => [
                     $plotPlayerData->getPlayerName() ?? "Error: " . ($plotPlayerData->getPlayerXUID() ?? $plotPlayerData->getPlayerUUID() ?? $plotPlayerData->getPlayerID()),
@@ -51,14 +51,14 @@ class DeniedSubcommand extends Subcommand {
             );
         }
         if (count($deniedPlayerData) === 0) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "denied.noDeniedPlayers"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "denied.noDeniedPlayers"]);
             return null;
         }
 
         /** @phpstan-var string $separator */
-        $separator = yield LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "denied.success.list.separator");
+        $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "denied.success.list.separator");
         $list = implode($separator, $deniedPlayerData);
-        yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
             $sender,
             [
                 "prefix",

@@ -25,12 +25,12 @@ class GenerateSubcommand extends Subcommand {
      */
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.usage"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.usage"]);
             return null;
         }
         $worldName = $args[0];
         if ($sender->getServer()->getWorldManager()->isWorldGenerated($worldName)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.worldExists" => $worldName]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.worldExists" => $worldName]);
             return null;
         }
 
@@ -42,7 +42,7 @@ class GenerateSubcommand extends Subcommand {
         $options->setGeneratorOptions(json_encode($worldSettingsArray, JSON_THROW_ON_ERROR));
         $options->setSpawnPosition(new Vector3(0, $worldSettings->getGroundSize() + 1, 0));
         if (!Server::getInstance()->getWorldManager()->generateWorld($worldName, $options)) {
-            yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.generateError"]);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.generateError"]);
             return null;
         }
         yield DataProvider::getInstance()->addWorld($worldName, $worldSettings);
