@@ -25,7 +25,7 @@ abstract class EconomyProvider {
     /**
      * @internal method to remove money from a player through the economy plugin while also using a
      * {@see \Generator} function which we can handle with {@see Await}.
-     * @phpstan-return \Generator<mixed, Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator, null, void>
+     * @phpstan-return \Generator<mixed, Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator, mixed, void>
      */
     final public function awaitMoneyRemoval(Player $player, float $money, string $reason) : \Generator {
         yield from Await::promise(
