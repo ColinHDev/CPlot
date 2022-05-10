@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "62b092345d153056736ccd9511f94744",
+    "content-hash": "f2290a6a31cf4d8572d9fde4eac842ff",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -122,16 +122,6 @@
             "time": "2021-08-15T20:50:18+00:00"
         },
         {
-            "name": "cooldogedev/bedrockeconomy",
-            "version": "2.0.8",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cooldogedev/BedrockEconomy",
-                "reference": "main"
-            },
-            "type": "library"
-        },
-        {
             "name": "colinhdev/libasyncevent",
             "version": "v1.0.0",
             "source": {
@@ -165,6 +155,16 @@
                 "source": "https://github.com/ColinHDev/libAsyncEvent/tree/v1.0.0"
             },
             "time": "2022-04-25T21:36:08+00:00"
+        },
+        {
+            "name": "cooldogedev/bedrockeconomy",
+            "version": "2.0.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cooldogedev/BedrockEconomy",
+                "reference": "main"
+            },
+            "type": "library"
         },
         {
             "name": "fgrosse/phpasn1",
@@ -580,16 +580,16 @@
         },
         {
             "name": "pocketmine/locale-data",
-            "version": "2.6.2",
+            "version": "2.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/Language.git",
-                "reference": "eae9303493884edcc5321b50002a5dc956a36a23"
+                "reference": "f00216c4709d2c5a2af478498315206b336b8e2e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/Language/zipball/eae9303493884edcc5321b50002a5dc956a36a23",
-                "reference": "eae9303493884edcc5321b50002a5dc956a36a23",
+                "url": "https://api.github.com/repos/pmmp/Language/zipball/f00216c4709d2c5a2af478498315206b336b8e2e",
+                "reference": "f00216c4709d2c5a2af478498315206b336b8e2e",
                 "shasum": ""
             },
             "type": "library",
@@ -597,9 +597,9 @@
             "description": "Language resources used by PocketMine-MP",
             "support": {
                 "issues": "https://github.com/pmmp/Language/issues",
-                "source": "https://github.com/pmmp/Language/tree/2.6.2"
+                "source": "https://github.com/pmmp/Language/tree/2.7.0"
             },
-            "time": "2022-04-10T20:44:40+00:00"
+            "time": "2022-05-10T13:29:27+00:00"
         },
         {
             "name": "pocketmine/log",
@@ -1378,7 +1378,7 @@
             "version": "0.1.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/SOF3/Capital.git",
+                "url": "git@github.com:SOF3/Capital.git",
                 "reference": "8003da9e594f759d20c711a1aef4ceda514212ad"
             },
             "dist": {
@@ -1415,10 +1415,6 @@
                     "email": "sofe2038@gmail.com"
                 }
             ],
-            "support": {
-                "source": "https://github.com/SOF3/Capital/tree/0.1.2",
-                "issues": "https://github.com/SOF3/Capital/issues"
-            },
             "time": "2022-03-05T10:12:13+00:00"
         },
         {
@@ -1740,16 +1736,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.6.7",
+            "version": "1.6.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "d41c39cb2e487663bce9bbd97c660e244b73abad"
+                "reference": "d76498c5531232cb8386ceb6004f7e013138d3ba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/d41c39cb2e487663bce9bbd97c660e244b73abad",
-                "reference": "d41c39cb2e487663bce9bbd97c660e244b73abad",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/d76498c5531232cb8386ceb6004f7e013138d3ba",
+                "reference": "d76498c5531232cb8386ceb6004f7e013138d3ba",
                 "shasum": ""
             },
             "require": {
@@ -1775,7 +1771,7 @@
             "description": "PHPStan - PHP Static Analysis Tool",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/1.6.7"
+                "source": "https://github.com/phpstan/phpstan/tree/1.6.8"
             },
             "funding": [
                 {
@@ -1795,7 +1791,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-05-04T22:55:41+00:00"
+            "time": "2022-05-10T06:54:21+00:00"
         },
         {
             "name": "phpstan/phpstan-strict-rules",
