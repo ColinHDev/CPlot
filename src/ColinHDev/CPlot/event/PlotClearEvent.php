@@ -30,7 +30,7 @@ class PlotClearEvent extends CPlotAsyncEvent implements Cancellable {
     }
 
     /**
-     * @phpstan-return \Generator<mixed, Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator, self, self>
+     * @phpstan-return \Generator<mixed, Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator, mixed, self>
      */
     public static function create(Plot $plot, Player $player) : \Generator {
         $event = yield from Await::promise(
