@@ -4,11 +4,32 @@
     "pocketmine/pocketmine-mp": "4.0.0",
     "sof3/await-generator": "^3.4.1",
     "sof3/libasynql": "^4.0.1",
+    "sofe/capital": "^0.1.2",
+    "sof3/await-std": "@dev",
+    "cooldogedev/bedrockeconomy": "^2.0.8",
     "colinhdev/libasyncevent": "^1.0.0"
   },
   "require-dev": {
-    "phpstan/phpstan": "^1.4.3",
-    "phpstan/phpstan-strict-rules": "^1.1",
+    "phpstan/phpstan": "^1.6.7",
+    "phpstan/phpstan-strict-rules": "^1.2.3",
     "phpstan/extension-installer": "^1.1"
+  },
+  "repositories": {
+    "capital": {
+      "type": "vcs",
+      "url": "https://github.com/SOF3/Capital"
+    },
+    "bedrockeconomy": {
+      "type": "package",
+      "package": {
+        "name": "cooldogedev/bedrockeconomy",
+        "version": "2.0.8",
+        "source": {
+          "type": "git",
+          "url": "https://github.com/cooldogedev/BedrockEconomy",
+          "reference": "main"
+        }
+      }
+    }
   }
 }

@@ -13,6 +13,7 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
+use ColinHDev\CPlot\provider\utils\EconomyException;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotResetAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -61,21 +62,13 @@ class ResetSubcommand extends Subcommand {
             return null;
         }
 
-        $economyProvider = EconomyManager::getInstance()->getProvider();
+        $economyManager = EconomyManager::getInstance();
+        $economyProvider = $economyManager->getProvider();
         if ($economyProvider instanceof EconomyProvider) {
-            $price = EconomyManager::getInstance()->getResetPrice();
+            $price = $economyManager->getResetPrice();
             if ($price > 0.0) {
-                $money = yield $economyProvider->awaitMoney($sender);
-                if (!is_float($money)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.loadMoneyError"]);
-                    return null;
-                }
-                if ($money < $price) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.notEnoughMoney" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]]);
-                    return null;
-                }
-                yield $economyProvider->awaitMoneyRemoval($sender, $price);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.chargedMoney" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]]);
+                yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getResetReason());
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
 
@@ -104,6 +97,30 @@ class ResetSubcommand extends Subcommand {
 
     public function onError(CommandSender $sender, \Throwable $error) : void {
         if ($sender instanceof Player && !$sender->isConnected()) {
+            return;
+        }
+        if ($error instanceof EconomyException) {
+            LanguageManager::getInstance()->getProvider()->translateForCommandSender(
+                $sender,
+                $error->getLanguageKey(),
+                static function(string $errorMessage) use($sender) : void {
+                    $economyManager = EconomyManager::getInstance();
+                    $economyProvider = $economyManager->getProvider();
+                    // This exception should not be thrown if no economy provider is set.
+                    assert($economyProvider instanceof EconomyProvider);
+                    LanguageManager::getInstance()->getProvider()->sendMessage(
+                        $sender,
+                        [
+                            "prefix",
+                            "reset.chargeMoneyError" => [
+                                $economyProvider->parseMoneyToString($economyManager->getResetPrice()),
+                                $economyProvider->getCurrency(),
+                                $errorMessage
+                            ]
+                        ]
+                    );
+                }
+            );
             return;
         }
         LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "reset.deletePlotError" => $error->getMessage()]);

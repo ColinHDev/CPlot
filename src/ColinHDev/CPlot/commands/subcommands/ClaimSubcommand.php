@@ -12,6 +12,7 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
+use ColinHDev\CPlot\provider\utils\EconomyException;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\Permission;
@@ -61,21 +62,13 @@ class ClaimSubcommand extends Subcommand {
             return null;
         }
 
-        $economyProvider = EconomyManager::getInstance()->getProvider();
+        $economyManager = EconomyManager::getInstance();
+        $economyProvider = $economyManager->getProvider();
         if ($economyProvider instanceof EconomyProvider) {
-            $price = EconomyManager::getInstance()->getClaimPrice();
+            $price = $economyManager->getClaimPrice();
             if ($price > 0.0) {
-                $money = yield $economyProvider->awaitMoney($sender);
-                if (!is_float($money)) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.loadMoneyError"]);
-                    return null;
-                }
-                if ($money < $price) {
-                    yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.senderNotOnline" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price), $economyProvider->parseMoneyToString($price - $money)]]);
-                    return null;
-                }
-                yield $economyProvider->awaitMoneyRemoval($sender, $price);
-                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.chargedMoney" => [$economyProvider->getCurrency(), $economyProvider->parseMoneyToString($price)]]);
+                yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getClaimReason());
+                yield LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
 
@@ -89,6 +82,30 @@ class ClaimSubcommand extends Subcommand {
 
     public function onError(CommandSender $sender, \Throwable $error) : void {
         if ($sender instanceof Player && !$sender->isConnected()) {
+            return;
+        }
+        if ($error instanceof EconomyException) {
+            LanguageManager::getInstance()->getProvider()->translateForCommandSender(
+                $sender,
+                $error->getLanguageKey(),
+                static function(string $errorMessage) use($sender) : void {
+                    $economyManager = EconomyManager::getInstance();
+                    $economyProvider = $economyManager->getProvider();
+                    // This exception should not be thrown if no economy provider is set.
+                    assert($economyProvider instanceof EconomyProvider);
+                    LanguageManager::getInstance()->getProvider()->sendMessage(
+                        $sender,
+                        [
+                            "prefix",
+                            "claim.chargeMoneyError" => [
+                                $economyProvider->parseMoneyToString($economyManager->getClaimPrice()),
+                                $economyProvider->getCurrency(),
+                                $errorMessage
+                            ]
+                        ]
+                    );
+                }
+            );
             return;
         }
         LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "claim.saveError" => $error->getMessage()]);
