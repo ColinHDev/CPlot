@@ -77,7 +77,6 @@ class ClearSubcommand extends Subcommand {
         /** @phpstan-var PlotClearEvent $event */
         $event = yield from PlotClearEvent::create($plot, $sender);
         if ($event->isCancelled()) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.eventCancelled"]);
             return null;
         }
 
