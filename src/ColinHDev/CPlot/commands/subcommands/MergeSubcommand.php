@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\event\PlotMergeAsyncEvent;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
@@ -127,6 +128,12 @@ class MergeSubcommand extends Subcommand {
                 yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getMergeReason());
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
+        }
+
+        /** @phpstan-var PlotMergeAsyncEvent $event */
+        $event = yield from PlotMergeAsyncEvent::create($plot, $plotToMerge, $sender);
+        if ($event->isCancelled()) {
+            return null;
         }
 
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.start"]);
