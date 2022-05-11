@@ -10,19 +10,14 @@ use pocketmine\event\CancellableTrait;
 use pocketmine\player\Player;
 use SOFe\AwaitGenerator\Await;
 
-class PlotClaimEvent extends CPlotAsyncEvent implements Cancellable {
+class PlotClaimEvent extends PlotEvent implements Cancellable {
     use CancellableTrait;
 
-    private Plot $plot;
     private Player $player;
 
     public function __construct(Plot $plot, Player $player) {
-        $this->plot = $plot;
+        parent::__construct($plot);
         $this->player = $player;
-    }
-
-    public function getPlot() : Plot {
-        return $this->plot;
     }
 
     public function getPlayer() : Player {
