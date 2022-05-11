@@ -49,11 +49,7 @@ class BiomeSubcommand extends Subcommand {
         }
 
         if (count($args) === 0) {
-            $biomeID = $world->getBiomeId($position->getFloorX(), $position->getFloorZ());
-            $biomeName = array_search($biomeID, $this->biomes, true);
-            if (!is_string($biomeName)) {
-                $biomeName = "Unknown (BiomeID: " . $biomeID . ")";
-            }
+            $biomeName = $this->getBiomeNameByID($world->getBiomeId($position->getFloorX(), $position->getFloorZ()));
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.plotBiome" => $biomeName]);
             return null;
         }
@@ -123,5 +119,16 @@ class BiomeSubcommand extends Subcommand {
         );
         Server::getInstance()->getAsyncPool()->submitTask($task);
         return null;
+    }
+
+    /**
+     * This method is used to get the name of a biome by its ID.
+     */
+    private function getBiomeNameByID(int $biomeID) : string {
+        $biomeName = array_search($biomeID, $this->biomes, true);
+        if (!is_string($biomeName)) {
+            $biomeName = "Unknown (BiomeID: " . $biomeID . ")";
+        }
+        return $biomeName;
     }
 }
