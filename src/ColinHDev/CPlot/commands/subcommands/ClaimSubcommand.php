@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\event\PlotClaimEvent;
+use ColinHDev\CPlot\event\PlotClaimAsyncAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
@@ -73,8 +73,8 @@ class ClaimSubcommand extends Subcommand {
             }
         }
 
-        /** @phpstan-var PlotClaimEvent $event */
-        $event = yield from PlotClaimEvent::create($plot, $sender);
+        /** @phpstan-var PlotClaimAsyncAsyncEvent $event */
+        $event = yield from PlotClaimAsyncAsyncEvent::create($plot, $sender);
         if ($event->isCancelled()) {
             return null;
         }

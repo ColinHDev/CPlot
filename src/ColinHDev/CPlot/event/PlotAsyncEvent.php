@@ -7,7 +7,7 @@ namespace ColinHDev\CPlot\event;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\libAsyncEvent\AsyncEvent;
 
-abstract class PlotEvent extends AsyncEvent {
+abstract class PlotAsyncEvent extends AsyncEvent {
 
     private Plot $plot;
 
