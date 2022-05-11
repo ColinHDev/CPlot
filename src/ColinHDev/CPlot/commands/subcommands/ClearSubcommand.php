@@ -6,7 +6,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\event\PlotClearAsyncAsyncEvent;
+use ColinHDev\CPlot\event\PlotClearAsyncEvent;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
@@ -74,8 +74,8 @@ class ClearSubcommand extends Subcommand {
             }
         }
 
-        /** @phpstan-var PlotClearAsyncAsyncEvent $event */
-        $event = yield from PlotClearAsyncAsyncEvent::create($plot, $sender);
+        /** @phpstan-var PlotClearAsyncEvent $event */
+        $event = yield from PlotClearAsyncEvent::create($plot, $sender);
         if ($event->isCancelled()) {
             return null;
         }

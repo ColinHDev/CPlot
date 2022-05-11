@@ -10,7 +10,7 @@ use pocketmine\event\CancellableTrait;
 use pocketmine\player\Player;
 use SOFe\AwaitGenerator\Await;
 
-class PlotClearAsyncAsyncEvent extends PlotAsyncEvent implements Cancellable {
+class PlotClaimAsyncEvent extends PlotAsyncEvent implements Cancellable {
     use CancellableTrait;
 
     private Player $player;
