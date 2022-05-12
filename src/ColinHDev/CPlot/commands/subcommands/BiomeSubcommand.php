@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
@@ -99,6 +100,14 @@ class BiomeSubcommand extends Subcommand {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.serverPlotFlag" => FlagIDs::FLAG_SERVER_PLOT]);
             return null;
         }
+
+        /** @phpstan-var PlotBiomeChangeAsyncEvent $event */
+        $event = yield from PlotBiomeChangeAsyncEvent::create($plot, $biomeID, $sender);
+        if ($event->isCancelled()) {
+            return null;
+        }
+        $biomeID = $event->getBiomeID();
+        $biomeName = $this->getBiomeNameByID($biomeID);
 
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.start"]);
         $task = new PlotBiomeChangeAsyncTask($world, $plot, $biomeID);
