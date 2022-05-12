@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
@@ -125,9 +126,15 @@ class BorderSubcommand extends Subcommand {
             return;
         }
 
+        /** @phpstan-var PlotBorderChangeAsyncEvent $event */
+        $event = yield from PlotBorderChangeAsyncEvent::create($plot, $this->blocks[$selectedOption], $player);
+        if ($event->isCancelled()) {
+            return;
+        }
+        $block = $event->getBlock();
+
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.start"]);
         $world = $player->getWorld();
-        $block = $this->blocks[$selectedOption];
         $task = new PlotBorderChangeAsyncTask($world, $worldSettings, $plot, $block);
         $task->setCallback(
             static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $player, $block) : void {
