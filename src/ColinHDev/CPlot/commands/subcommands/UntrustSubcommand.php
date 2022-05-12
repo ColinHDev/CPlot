@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\event\PlotPlayerRemoveAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
@@ -93,8 +94,14 @@ class UntrustSubcommand extends Subcommand {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.playerNotTrusted" => $playerName]);
             return null;
         }
-        $playerData = $plotPlayer->getPlayerData();
 
+        /** @phpstan-var PlotPlayerRemoveAsyncEvent $event */
+        $event = yield from PlotPlayerRemoveAsyncEvent::create($plot, $plotPlayer, $sender);
+        if ($event->isCancelled()) {
+            return null;
+        }
+
+        $playerData = $plotPlayer->getPlayerData();
         $plot->removePlotPlayer($playerIdentifier);
         yield DataProvider::getInstance()->deletePlotPlayer($plot, $playerData->getPlayerID());
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.success" => $playerName]);
