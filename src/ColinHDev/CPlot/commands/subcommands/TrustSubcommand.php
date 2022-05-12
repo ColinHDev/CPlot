@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
@@ -105,6 +106,12 @@ class TrustSubcommand extends Subcommand {
         }
 
         $plotPlayer = new PlotPlayer($playerData, PlotPlayer::STATE_TRUSTED);
+        /** @phpstan-var PlotPlayerAddAsyncEvent $event */
+        $event = yield from PlotPlayerAddAsyncEvent::create($plot, $plotPlayer, $sender);
+        if ($event->isCancelled()) {
+            return null;
+        }
+
         $plot->addPlotPlayer($plotPlayer);
         yield DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.success" => $playerName]);
