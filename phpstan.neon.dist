@@ -4,6 +4,7 @@ parameters:
 		- src
 	scanDirectories:
 	    - phar://virions/await-generator_v3.phar/src
+	    - phar://virions/libAsyncEvent_v1.phar/src
 	    - phar://virions/libasynql_v4.phar/src
 	    - phar://virions/pmforms_v2.phar/src
 	    - /vendor/cooldogedev/bedrockeconomy/src

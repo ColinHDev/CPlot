@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\event\PlotClaimAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
@@ -70,6 +71,12 @@ class ClaimSubcommand extends Subcommand {
                 yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getClaimReason());
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
+        }
+
+        /** @phpstan-var PlotClaimAsyncEvent $event */
+        $event = yield from PlotClaimAsyncEvent::create($plot, $sender);
+        if ($event->isCancelled()) {
+            return null;
         }
 
         $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);

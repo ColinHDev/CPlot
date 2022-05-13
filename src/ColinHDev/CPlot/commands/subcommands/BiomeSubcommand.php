@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
@@ -49,11 +50,7 @@ class BiomeSubcommand extends Subcommand {
         }
 
         if (count($args) === 0) {
-            $biomeID = $world->getBiomeId($position->getFloorX(), $position->getFloorZ());
-            $biomeName = array_search($biomeID, $this->biomes, true);
-            if (!is_string($biomeName)) {
-                $biomeName = "Unknown (BiomeID: " . $biomeID . ")";
-            }
+            $biomeName = $this->getBiomeNameByID($world->getBiomeId($position->getFloorX(), $position->getFloorZ()));
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.plotBiome" => $biomeName]);
             return null;
         }
@@ -104,6 +101,14 @@ class BiomeSubcommand extends Subcommand {
             return null;
         }
 
+        /** @phpstan-var PlotBiomeChangeAsyncEvent $event */
+        $event = yield from PlotBiomeChangeAsyncEvent::create($plot, $biomeID, $sender);
+        if ($event->isCancelled()) {
+            return null;
+        }
+        $biomeID = $event->getBiomeID();
+        $biomeName = $this->getBiomeNameByID($biomeID);
+
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.start"]);
         $task = new PlotBiomeChangeAsyncTask($world, $plot, $biomeID);
         $task->setCallback(
@@ -123,5 +128,16 @@ class BiomeSubcommand extends Subcommand {
         );
         Server::getInstance()->getAsyncPool()->submitTask($task);
         return null;
+    }
+
+    /**
+     * This method is used to get the name of a biome by its ID.
+     */
+    private function getBiomeNameByID(int $biomeID) : string {
+        $biomeName = array_search($biomeID, $this->biomes, true);
+        if (!is_string($biomeName)) {
+            $biomeName = "Unknown (BiomeID: " . $biomeID . ")";
+        }
+        return $biomeName;
     }
 }

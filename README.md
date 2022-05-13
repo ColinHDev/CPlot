@@ -17,6 +17,22 @@ If you use one of these plugins and want to charge users for certain actions reg
 
 ## For developers
 
+### CPlot's events
+CPlot provides a number of events that can be used to hook into the plugin's code.
+Currently, the following events can be used:
+- [ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent](src/ColinHDev/CPlot/event/PlotBiomeChangeAsyncEvent.php): Called when the biome of a plot is changed by a player.
+- [ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent](src/ColinHDev/CPlot/event/PlotBorderChangeAsyncEvent.php): Called when the border of a plot is changed by a player.
+- [ColinHDev\CPlot\event\PlotClaimAsyncEvent](src/ColinHDev/CPlot/event/PlotClaimAsyncEvent.php): Called when a plot is claimed by a player.
+- [ColinHDev\CPlot\event\PlotClearAsyncEvent](src/ColinHDev/CPlot/event/PlotClearAsyncEvent.php): Called when a plot is cleared by a player.
+- [ColinHDev\CPlot\event\PlotMergeAsyncEvent](src/ColinHDev/CPlot/event/PlotMergeAsyncEvent.php): Called when two plots are merged by a player.
+- [ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent](src/ColinHDev/CPlot/event/PlotPlayerAddAsyncEvent.php): Called when a plot player (e.g. helper) is added to a plot by a player.
+- [ColinHDev\CPlot\event\PlotPlayerRemoveAsyncEvent](src/ColinHDev/CPlot/event/PlotPlayerRemoveAsyncEvent.php): Called when a plot player (e.g. helper) is removed from a plot by a player.
+- [ColinHDev\CPlot\event\PlotResetAsyncEvent](src/ColinHDev/CPlot/event/PlotResetAsyncEvent.php): Called when a plot is reset by a player.
+- [ColinHDev\CPlot\event\PlotWallChangeAsyncEvent](src/ColinHDev/CPlot/event/PlotWallChangeAsyncEvent.php): Called when the wall of a plot is changed by a player.
+- [ColinHDev\CPlot\event\PlotWorldGenerateAsyncEvent](src/ColinHDev/CPlot/event/PlotWorldGenerateAsyncEvent.php): Called when a new plot world is generated.
+
+But, be aware that every event with the `AsyncEvent` suffix is created with the help of the [libAsyncEvent](https://github.com/ColinHDev/libAsyncEvent) virion, which allows the creation of asynchronous event execution. To understand how those events need to be handled, look at [libAsyncEvent's](https://github.com/ColinHDev/libAsyncEvent) documentation.
+
 ### Support for third-party economy plugins
 The requirement for an economy plugin to be supported by default by CPlot is basically only to be open-source, be commonly used and have a relatively stable API. <br/>
 But maybe your plugin is not well-known or closed-source and only for your own server, which would make it impossible for CPlot to support your plugin by default. Nonetheless, you can still make your economy plugin compatible with CPlot by using its internal API. <br/>

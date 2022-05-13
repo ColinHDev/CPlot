@@ -6,7 +6,8 @@
     "sof3/libasynql": "^4.0.1",
     "sofe/capital": "^0.1.2",
     "sof3/await-std": "@dev",
-    "cooldogedev/bedrockeconomy": "^2.0.8"
+    "cooldogedev/bedrockeconomy": "^2.0.8",
+    "colinhdev/libasyncevent": "^1.0.0"
   },
   "require-dev": {
     "phpstan/phpstan": "^1.6.7",

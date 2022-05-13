@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\event\PlotWorldGenerateAsyncEvent;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\generator\PlotGenerator;
@@ -41,11 +42,19 @@ class GenerateSubcommand extends Subcommand {
         $worldSettingsArray["worldName"] = $worldName;
         $options->setGeneratorOptions(json_encode($worldSettingsArray, JSON_THROW_ON_ERROR));
         $options->setSpawnPosition(new Vector3(0, $worldSettings->getGroundSize() + 1, 0));
-        if (!Server::getInstance()->getWorldManager()->generateWorld($worldName, $options)) {
+
+        /** @phpstan-var PlotWorldGenerateAsyncEvent $event */
+        $event = yield from PlotWorldGenerateAsyncEvent::create($worldName, $worldSettings, $options);
+        if ($event->isCancelled()) {
+            return null;
+        }
+        $worldName = $event->getWorldName();
+
+        if (!Server::getInstance()->getWorldManager()->generateWorld($worldName, $event->getWorldCreationOptions())) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.generateError"]);
             return null;
         }
-        yield DataProvider::getInstance()->addWorld($worldName, $worldSettings);
+        yield DataProvider::getInstance()->addWorld($worldName, $event->getWorldSettings());
         return $worldName;
     }
 
