@@ -21,9 +21,6 @@ use SOFe\AwaitGenerator\Await;
 class PlayerMoveListener implements Listener {
 
     public function onPlayerMove(PlayerMoveEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
         Await::f2c(
             static function () use ($event) : \Generator {
                 $toPosition = $event->getTo();
