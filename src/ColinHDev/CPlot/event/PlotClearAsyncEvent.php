@@ -10,6 +10,9 @@ use pocketmine\event\CancellableTrait;
 use pocketmine\player\Player;
 use SOFe\AwaitGenerator\Await;
 
+/**
+ * This event is called when a {@see Plot} is cleared by a {@see Player}.
+ */
 class PlotClearAsyncEvent extends PlotAsyncEvent implements Cancellable {
     use CancellableTrait;
 

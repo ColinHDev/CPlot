@@ -10,6 +10,9 @@ use pocketmine\event\CancellableTrait;
 use pocketmine\player\Player;
 use SOFe\AwaitGenerator\Await;
 
+/**
+ * This event is called when two {@see Plot}s are merged by a {@see Player}.
+ */
 class PlotMergeAsyncEvent extends PlotAsyncEvent implements Cancellable {
     use CancellableTrait;
 

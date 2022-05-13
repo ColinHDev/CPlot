@@ -11,6 +11,9 @@ use pocketmine\event\CancellableTrait;
 use pocketmine\player\Player;
 use SOFe\AwaitGenerator\Await;
 
+/**
+ * This event is called when a {@see PlotPlayer} is removed from a {@see Plot} by a {@see Player}.
+ */
 class PlotPlayerRemoveAsyncEvent extends PlotAsyncEvent implements Cancellable {
     use CancellableTrait;
 

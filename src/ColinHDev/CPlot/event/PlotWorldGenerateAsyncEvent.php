@@ -12,6 +12,9 @@ use pocketmine\world\generator\Generator;
 use pocketmine\world\WorldCreationOptions;
 use SOFe\AwaitGenerator\Await;
 
+/**
+ * This event is called when a new plot world is generated.
+ */
 class PlotWorldGenerateAsyncEvent extends AsyncEvent implements Cancellable {
     use CancellableTrait;
 

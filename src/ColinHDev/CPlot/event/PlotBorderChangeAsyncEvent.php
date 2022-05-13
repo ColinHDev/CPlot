@@ -11,6 +11,9 @@ use pocketmine\event\CancellableTrait;
 use pocketmine\player\Player;
 use SOFe\AwaitGenerator\Await;
 
+/**
+ * This event is called when the border of a {@see Plot} is changed by a {@see Player}.
+ */
 class PlotBorderChangeAsyncEvent extends PlotAsyncEvent implements Cancellable {
     use CancellableTrait;
 
