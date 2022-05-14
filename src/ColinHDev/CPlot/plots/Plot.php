@@ -350,10 +350,10 @@ class Plot extends BasePlot {
      * This method can be called to change the biome of a plot. By this, the biome of the entire plot area is changed.
      * @param int $biomeID The ID of the biome the plot will be changed to.
      * @phpstan-param BiomeIds::* $biomeID
-     * @param callable|null $onSuccess Callback to be called when the plot was cleared successfully.
-     * @phpstan-param (callable(): void)|(callable(PlotClearAsyncTask): void)|null $onSuccess
-     * @param callable|null $onError Callback to be called when the plot could not be cleared.
-     * @phpstan-param (callable(): void)|(callable(PlotClearAsyncTask|null=): void)|null $onError
+     * @param callable|null $onSuccess Callback to be called when the plot biome was changed successfully.
+     * @phpstan-param (callable(): void)|(callable(PlotBiomeChangeAsyncTask): void)|null $onSuccess
+     * @param callable|null $onError Callback to be called when the plot biome could not be changed.
+     * @phpstan-param (callable(): void)|(callable(PlotBiomeChangeAsyncTask|null=): void)|null $onError
      * @throws \RuntimeException when called outside of main thread.
      */
     public function setBiome(int $biomeID, ?callable $onSuccess = null, ?callable $onError = null) : void {
