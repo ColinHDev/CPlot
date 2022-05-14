@@ -19,6 +19,7 @@ use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\World;
+use SOFe\AwaitGenerator\Await;
 
 /**
  * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
@@ -101,32 +102,25 @@ class BiomeSubcommand extends Subcommand {
             return null;
         }
 
-        /** @phpstan-var PlotBiomeChangeAsyncEvent $event */
-        $event = yield from PlotBiomeChangeAsyncEvent::create($plot, $biomeID, $sender);
-        if ($event->isCancelled()) {
-            return null;
-        }
-        $biomeID = $event->getBiomeID();
-        $biomeName = $this->getBiomeNameByID($biomeID);
-
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.start"]);
-        $task = new PlotBiomeChangeAsyncTask($world, $plot, $biomeID);
-        $task->setCallback(
-            static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $sender, $biomeName, $biomeID) : void {
-                $plotCount = count($plot->getMergePlots()) + 1;
-                $plots = array_map(
-                    static function (BasePlot $plot) : string {
-                        return $plot->toSmallString();
-                    },
-                    array_merge([$plot], $plot->getMergePlots())
-                );
-                Server::getInstance()->getLogger()->debug(
-                    "Changing plot biome to " . $biomeName . "(ID: " . $biomeID . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
-                );
-                LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "biome.finish" => [$elapsedTimeString, $biomeName]]);
-            }
+        /** @phpstan-var PlotBiomeChangeAsyncTask $task */
+        $task = yield from Await::promise(
+            static fn($resolve) => $plot->setBiome($biomeID, $sender, $resolve)
         );
-        Server::getInstance()->getAsyncPool()->submitTask($task);
+        $plotCount = count($plot->getMergePlots()) + 1;
+        $plots = array_map(
+            static function (BasePlot $plot) : string {
+                return $plot->toSmallString();
+            },
+            array_merge([$plot], $plot->getMergePlots())
+        );
+        $biomeID = $task->getBiomeID();
+        $biomeName = $this->getBiomeNameByID($biomeID);
+        $elapsedTimeString = $task->getElapsedTimeString();
+        Server::getInstance()->getLogger()->debug(
+            "Changing plot biome to " . $biomeName . "(ID: " . $biomeID . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
+        );
+        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "biome.finish" => [$elapsedTimeString, $biomeName]]);
         return null;
     }
 
