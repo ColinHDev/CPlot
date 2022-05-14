@@ -54,4 +54,11 @@ class PlotBiomeChangeAsyncTask extends ChunkModifyingAsyncTask {
 
         $this->chunks = serialize($finishedChunks);
     }
+
+    /**
+     * @phpstan-return BiomeIds::*
+     */
+    public function getBiomeID() : int {
+        return $this->biomeID;
+    }
 }
