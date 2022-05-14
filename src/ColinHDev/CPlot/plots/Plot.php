@@ -5,16 +5,21 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\plots;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
+use ColinHDev\CPlot\event\PlotClearAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
 use pocketmine\player\Player;
+use pocketmine\Server;
 use pocketmine\world\Position;
+use pocketmine\world\World;
+use SOFe\AwaitGenerator\Await;
 
 class Plot extends BasePlot {
 
@@ -333,6 +338,35 @@ class Plot extends BasePlot {
         }
 
         return parent::teleportTo($player, $toPlotCenter);
+    }
+
+    /**
+     * This method can be called to clear a plot. By this, the plot area is completely reset while all data is kept.
+     * @param Player|null $player The player who cleared the plot or null if it was cleared e.g. by another plugin.
+     * @param callable|null $onSuccess Callback to be called when the plot was cleared successfully.
+     * @phpstan-param (callable(): void)|(callable(PlotClearAsyncTask): void)|null $onSuccess
+     * @param callable|null $onError Callback to be called when the plot could not be cleared.
+     * @phpstan-param (callable(): void)|(callable(PlotClearAsyncTask|null=): void)|null $onError
+     * @throws \RuntimeException when called outside of main thread.
+     */
+    public function clear(?Player $player = null, ?callable $onSuccess = null, ?callable $onError = null) : void {
+        Await::f2c(
+            function () use ($player, $onSuccess, $onError) {
+                /** @phpstan-var PlotClearAsyncEvent $event */
+                $event = yield from PlotClearAsyncEvent::create($this, $player);
+                if ($event->isCancelled()) {
+                    if ($onError !== null) {
+                        $onError();
+                    }
+                    return;
+                }
+                $world = $this->getWorld();
+                assert($world instanceof World);
+                $task = new PlotClearAsyncTask($world, $this->worldSettings, $this);
+                $task->setCallback($onSuccess, $onError);
+                Server::getInstance()->getAsyncPool()->submitTask($task);
+            }
+        );
     }
 
     public function isSame(BasePlot $plot, bool $checkMerge = true) : bool {
