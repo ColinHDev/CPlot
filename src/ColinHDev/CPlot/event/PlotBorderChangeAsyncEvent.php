@@ -8,22 +8,19 @@ use ColinHDev\CPlot\plots\Plot;
 use pocketmine\block\Block;
 use pocketmine\event\Cancellable;
 use pocketmine\event\CancellableTrait;
-use pocketmine\player\Player;
 use SOFe\AwaitGenerator\Await;
 
 /**
- * This event is called when the border of a {@see Plot} is changed by a {@see Player}.
+ * This event is called when the border of a {@see Plot} is changed.
  */
 class PlotBorderChangeAsyncEvent extends PlotAsyncEvent implements Cancellable {
     use CancellableTrait;
 
     private Block $block;
-    private Player $player;
 
-    public function __construct(Plot $plot, Block $block, Player $player) {
+    public function __construct(Plot $plot, Block $block) {
         parent::__construct($plot);
         $this->block = $block;
-        $this->player = $player;
     }
 
     public function getBlock() : Block {
@@ -34,17 +31,13 @@ class PlotBorderChangeAsyncEvent extends PlotAsyncEvent implements Cancellable {
         $this->block = $block;
     }
 
-    public function getPlayer() : Player {
-        return $this->player;
-    }
-
     /**
      * @phpstan-return \Generator<mixed, Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator, mixed, self>
      */
-    public static function create(Plot $plot, Block $block, Player $player) : \Generator {
+    public static function create(Plot $plot, Block $block) : \Generator {
         $event = yield from Await::promise(
-            static function ($onSuccess, $onError) use ($plot, $block, $player) : void {
-                $event = new self($plot, $block, $player);
+            static function ($onSuccess, $onError) use ($plot, $block) : void {
+                $event = new self($plot, $block);
                 $event->setCallback($onSuccess);
                 $event->call();
             }
