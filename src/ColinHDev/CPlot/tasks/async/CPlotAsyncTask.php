@@ -9,11 +9,13 @@ use pocketmine\scheduler\AsyncTask;
 abstract class CPlotAsyncTask extends AsyncTask {
 
     /**
-     * @phpstan-param callable(): void $onSuccess
-     * @phpstan-param null|callable(): void $onError
+     * @phpstan-param (callable(): void)|null $onSuccess
+     * @phpstan-param (callable(): void)|null $onError
      */
-    public function setCallback(callable $onSuccess, ?callable $onError = null) : void {
-        $this->storeLocal("onSuccess", $onSuccess);
+    public function setCallback(?callable $onSuccess, ?callable $onError) : void {
+        if ($onSuccess !== null) {
+            $this->storeLocal("onSuccess", $onSuccess);
+        }
         if ($onError !== null) {
             $this->storeLocal("onError", $onError);
         }
