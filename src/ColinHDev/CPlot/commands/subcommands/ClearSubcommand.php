@@ -77,7 +77,7 @@ class ClearSubcommand extends Subcommand {
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.start"]);
         /** @phpstan-var PlotClearAsyncTask $task */
         $task = yield from Await::promise(
-            static fn($resolve) => $plot->clear($sender, $resolve)
+            static fn($resolve) => $plot->clear($resolve)
         );
         $world = $sender->getWorld();
         $plotCount = count($plot->getMergePlots()) + 1;
