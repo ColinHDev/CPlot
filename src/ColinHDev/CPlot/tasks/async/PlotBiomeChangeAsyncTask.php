@@ -22,13 +22,15 @@ class PlotBiomeChangeAsyncTask extends ChunkModifyingAsyncTask {
     /**
      * @phpstan-param BiomeIds::* $biomeID
      */
-    public function __construct(World $world, Plot $plot, int $biomeID) {
+    public function __construct(Plot $plot, int $biomeID) {
         $this->biomeID = $biomeID;
 
         $chunks = [];
         $this->getChunksFromAreas("", $this->calculateBasePlotAreas($plot->getWorldSettings(), $plot), $chunks);
         $this->getChunksFromAreas("", $this->calculateMergeRoadAreas($plot->getWorldSettings(), $plot), $chunks);
 
+        $world = $plot->getWorld();
+        assert($world instanceof World);
         parent::__construct($world, $chunks);
     }
 

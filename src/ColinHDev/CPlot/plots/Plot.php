@@ -367,9 +367,7 @@ class Plot extends BasePlot {
                     }
                     return;
                 }
-                $world = $this->getWorld();
-                assert($world instanceof World);
-                $task = new PlotBiomeChangeAsyncTask($world, $this, $event->getBiomeID());
+                $task = new PlotBiomeChangeAsyncTask($this, $event->getBiomeID());
                 $task->setCallback($onSuccess, $onError);
                 Server::getInstance()->getAsyncPool()->submitTask($task);
             }
