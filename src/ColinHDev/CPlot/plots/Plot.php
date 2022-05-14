@@ -420,9 +420,7 @@ class Plot extends BasePlot {
                     }
                     return;
                 }
-                $world = $this->getWorld();
-                assert($world instanceof World);
-                $task = new PlotClearAsyncTask($world, $this->worldSettings, $this);
+                $task = new PlotClearAsyncTask($this);
                 $task->setCallback($onSuccess, $onError);
                 Server::getInstance()->getAsyncPool()->submitTask($task);
             }

@@ -25,7 +25,8 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
     private string $worldSettings;
     private string $hasPlotOwner;
 
-    public function __construct(World $world, WorldSettings $worldSettings, Plot $plot) {
+    public function __construct(Plot $plot) {
+        $worldSettings = $plot->getWorldSettings();
         $this->worldSettings = serialize($worldSettings->toArray());
         $this->hasPlotOwner = serialize($plot->hasPlotOwner());
 
@@ -35,6 +36,8 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
         $this->getChunksFromAreas("borderChange", $this->calculatePlotBorderAreas($worldSettings, $plot), $chunks);
         $this->getChunksFromAreas("borderReset", $this->calculatePlotBorderExtensionAreas($worldSettings, $plot), $chunks);
 
+        $world = $plot->getWorld();
+        assert($world instanceof World);
         parent::__construct($world, $chunks);
     }
 
