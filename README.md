@@ -23,7 +23,7 @@ Currently, the following events can be used:
 - [ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent](src/ColinHDev/CPlot/event/PlotBiomeChangeAsyncEvent.php): Called when the biome of a plot is changed by a player.
 - [ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent](src/ColinHDev/CPlot/event/PlotBorderChangeAsyncEvent.php): Called when the border of a plot is changed by a player.
 - [ColinHDev\CPlot\event\PlotClaimAsyncEvent](src/ColinHDev/CPlot/event/PlotClaimAsyncEvent.php): Called when a plot is claimed by a player.
-- [ColinHDev\CPlot\event\PlotClearAsyncEvent](src/ColinHDev/CPlot/event/PlotClearAsyncEvent.php): Called when a plot is cleared e.g. by a player or another plugin.
+- [ColinHDev\CPlot\event\PlotClearAsyncEvent](src/ColinHDev/CPlot/event/PlotClearAsyncEvent.php): Called when a plot is cleared.
 - [ColinHDev\CPlot\event\PlotMergeAsyncEvent](src/ColinHDev/CPlot/event/PlotMergeAsyncEvent.php): Called when two plots are merged by a player.
 - [ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent](src/ColinHDev/CPlot/event/PlotPlayerAddAsyncEvent.php): Called when a plot player (e.g. helper) is added to a plot by a player.
 - [ColinHDev\CPlot\event\PlotPlayerRemoveAsyncEvent](src/ColinHDev/CPlot/event/PlotPlayerRemoveAsyncEvent.php): Called when a plot player (e.g. helper) is removed from a plot by a player.
