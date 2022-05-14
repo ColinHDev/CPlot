@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\plots;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
+use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
 use pocketmine\player\Player;
@@ -338,6 +341,37 @@ class Plot extends BasePlot {
         }
 
         return parent::teleportTo($player, $toPlotCenter);
+    }
+
+    /**
+     * This method can be called to change the biome of a plot. By this, the biome of the entire plot area is changed.
+     * @param int $biomeID The ID of the biome the plot will be changed to.
+     * @phpstan-param BiomeIds::* $biomeID
+     * @param Player|null $player The player who cleared the plot or null if it was cleared e.g. by another plugin.
+     * @param callable|null $onSuccess Callback to be called when the plot was cleared successfully.
+     * @phpstan-param (callable(): void)|(callable(PlotClearAsyncTask): void)|null $onSuccess
+     * @param callable|null $onError Callback to be called when the plot could not be cleared.
+     * @phpstan-param (callable(): void)|(callable(PlotClearAsyncTask|null=): void)|null $onError
+     * @throws \RuntimeException when called outside of main thread.
+     */
+    public function setBiome(int $biomeID, ?Player $player = null, ?callable $onSuccess = null, ?callable $onError = null) : void {
+        Await::f2c(
+            function () use ($biomeID, $player, $onSuccess, $onError) {
+                /** @phpstan-var PlotBiomeChangeAsyncEvent $event */
+                $event = yield from PlotBiomeChangeAsyncEvent::create($this, $biomeID, $player);
+                if ($event->isCancelled()) {
+                    if ($onError !== null) {
+                        $onError();
+                    }
+                    return;
+                }
+                $world = $this->getWorld();
+                assert($world instanceof World);
+                $task = new PlotBiomeChangeAsyncTask($world, $this, $event->getBiomeID());
+                $task->setCallback($onSuccess, $onError);
+                Server::getInstance()->getAsyncPool()->submitTask($task);
+            }
+        );
     }
 
     /**
