@@ -140,14 +140,17 @@ class SchematicSubcommand extends Subcommand {
                 $world = $sender->getWorld();
                 $task = new SchematicSaveAsyncTask($world, $pos1, $pos2, $schematicName, $file, $type, $worldSettings->getRoadSize(), $worldSettings->getPlotSize());
                 $task->setCallback(
-                    static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $sender, $schematicName, $schematicType) : void {
+                    static function (SchematicSaveAsyncTask $task) use ($world, $sender, $schematicName, $schematicType) : void {
                         /** @phpstan-var array{0: int, 1: int, 2: string} $result */
+                        $result = $task->getResult();
                         [$blocksCount, $fileSize, $fileSizeString] = $result;
+                        $elapsedTimeString = $task->getElapsedTimeString();
                         Server::getInstance()->getLogger()->debug(
-                            "Saving schematic from world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") \"" . $schematicName . "\" (" . $schematicType . ") with the size of " . $blocksCount . " blocks and a filesize of " . $fileSizeString . " (" . $fileSize . " B) took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ")."
+                            "Saving schematic from world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") \"" . $schematicName . "\" (" . $schematicType . ") with the size of " . $blocksCount . " blocks and a filesize of " . $fileSizeString . " (" . $fileSize . " B) took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ")."
                         );
                         LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "schematic.save.finish" => [$schematicName, $elapsedTimeString]]);
-                    }
+                    },
+                    null
                 );
                 Server::getInstance()->getAsyncPool()->submitTask($task);
                 break;
