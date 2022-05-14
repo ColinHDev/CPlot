@@ -23,6 +23,7 @@ abstract class ChunkFetchingAsyncTask extends CPlotAsyncTask {
      * @phpstan-param array<ChunkHash, mixed> $chunkAreas
      */
     public function __construct(World $world, array $chunkAreas) {
+        parent::__construct();
         $this->minY = $world->getMinY();
         $this->maxY = $world->getMaxY();
         $chunks = [];
