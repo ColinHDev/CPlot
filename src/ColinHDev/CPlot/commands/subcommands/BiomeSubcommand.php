@@ -105,7 +105,7 @@ class BiomeSubcommand extends Subcommand {
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.start"]);
         /** @phpstan-var PlotBiomeChangeAsyncTask $task */
         $task = yield from Await::promise(
-            static fn($resolve) => $plot->setBiome($biomeID, $sender, $resolve)
+            static fn($resolve) => $plot->setBiome($biomeID, $resolve)
         );
         $plotCount = count($plot->getMergePlots()) + 1;
         $plots = array_map(
