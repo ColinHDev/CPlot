@@ -8,26 +8,23 @@ use ColinHDev\CPlot\plots\Plot;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\event\Cancellable;
 use pocketmine\event\CancellableTrait;
-use pocketmine\player\Player;
 use SOFe\AwaitGenerator\Await;
 
 /**
- * This event is called when the biome of a {@see Plot} is changed by a {@see Player}.
+ * This event is called when the biome of a {@see Plot} is changed.
  */
 class PlotBiomeChangeAsyncEvent extends PlotAsyncEvent implements Cancellable {
     use CancellableTrait;
 
     /** @phpstan-var BiomeIds::* */
     private int $biomeID;
-    private Player $player;
 
     /**
      * @phpstan-param BiomeIds::* $biomeID
      */
-    public function __construct(Plot $plot, int $biomeID, Player $player) {
+    public function __construct(Plot $plot, int $biomeID) {
         parent::__construct($plot);
         $this->biomeID = $biomeID;
-        $this->player = $player;
     }
 
     /**
@@ -44,18 +41,14 @@ class PlotBiomeChangeAsyncEvent extends PlotAsyncEvent implements Cancellable {
         $this->biomeID = $biomeID;
     }
 
-    public function getPlayer() : Player {
-        return $this->player;
-    }
-
     /**
      * @phpstan-param BiomeIds::* $biomeID
      * @phpstan-return \Generator<mixed, Await::RESOLVE|null|Await::RESOLVE_MULTI|Await::REJECT|Await::ONCE|Await::ALL|Await::RACE|\Generator, mixed, self>
      */
-    public static function create(Plot $plot, int $biomeID, Player $player) : \Generator {
+    public static function create(Plot $plot, int $biomeID) : \Generator {
         $event = yield from Await::promise(
-            static function ($onSuccess, $onError) use ($plot, $biomeID, $player) : void {
-                $event = new self($plot, $biomeID, $player);
+            static function ($onSuccess, $onError) use ($plot, $biomeID) : void {
+                $event = new self($plot, $biomeID);
                 $event->setCallback($onSuccess);
                 $event->call();
             }
