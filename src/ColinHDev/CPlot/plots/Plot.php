@@ -6,15 +6,18 @@ namespace ColinHDev\CPlot\plots;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
+use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
+use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use pocketmine\block\Block;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
@@ -367,6 +370,33 @@ class Plot extends BasePlot {
                 $world = $this->getWorld();
                 assert($world instanceof World);
                 $task = new PlotBiomeChangeAsyncTask($world, $this, $event->getBiomeID());
+                $task->setCallback($onSuccess, $onError);
+                Server::getInstance()->getAsyncPool()->submitTask($task);
+            }
+        );
+    }
+
+    /**
+     * This method can be called to change the block the border of a plot is made of.
+     * @param Block $block The block the plot border will be changed to.
+     * @param callable|null $onSuccess Callback to be called when the plot border was changed successfully.
+     * @phpstan-param (callable(): void)|(callable(PlotBorderChangeAsyncTask): void)|null $onSuccess
+     * @param callable|null $onError Callback to be called when the plot border could not be changed.
+     * @phpstan-param (callable(): void)|(callable(PlotBorderChangeAsyncTask|null=): void)|null $onError
+     * @throws \RuntimeException when called outside of main thread.
+     */
+    public function setBorderBlock(Block $block, ?callable $onSuccess = null, ?callable $onError = null) : void {
+        Await::f2c(
+            function () use ($block, $onSuccess, $onError) {
+                /** @phpstan-var PlotBorderChangeAsyncEvent $event */
+                $event = yield from PlotBorderChangeAsyncEvent::create($this, $block);
+                if ($event->isCancelled()) {
+                    if ($onError !== null) {
+                        $onError();
+                    }
+                    return;
+                }
+                $task = new PlotBorderChangeAsyncTask($this, $event->getBlock());
                 $task->setCallback($onSuccess, $onError);
                 Server::getInstance()->getAsyncPool()->submitTask($task);
             }
