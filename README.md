@@ -20,6 +20,10 @@ If you use one of these plugins and want to charge users for certain actions reg
 ### CPlot's events
 CPlot provides a number of events that can be used to hook into the plugin's code.
 Currently, the following events can be used:
+- [ColinHDev\CPlot\event\PlayerEnteredPlotEvent](src/ColinHDev/CPlot/event/PlayerEnteredPlotEvent.php): **Always** called when a player *entered* a plot.
+- [ColinHDev\CPlot\event\PlayerEnterPlotEvent](src/ColinHDev/CPlot/event/PlayerEnterPlotEvent.php): **Sometimes** called when a player *enters* a plot.
+- [ColinHDev\CPlot\event\PlayerLeavePlotEvent](src/ColinHDev/CPlot/event/PlayerLeavePlotEvent.php): **Sometimes** called when a player *leaves* a plot.
+- [ColinHDev\CPlot\event\PlayerLeftPlotEvent](src/ColinHDev/CPlot/event/PlayerLeftPlotEvent.php): **Always** called when a player *left* a plot.
 - [ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent](src/ColinHDev/CPlot/event/PlotBiomeChangeAsyncEvent.php): Called when the biome of a plot is changed.
 - [ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent](src/ColinHDev/CPlot/event/PlotBorderChangeAsyncEvent.php): Called when the border of a plot is changed.
 - [ColinHDev\CPlot\event\PlotClaimAsyncEvent](src/ColinHDev/CPlot/event/PlotClaimAsyncEvent.php): Called when a plot is claimed by a player.
