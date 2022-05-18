@@ -31,6 +31,21 @@ parameters:
 			path: src/ColinHDev/CPlot/listener/PlayerMoveListener.php
 
 		-
+			message: "#^Parameter \\#1 \\$data \\(array\\{worldName\\: string, worldSettings\\: string, x\\: int, z\\: int, originX\\: int, originZ\\: int\\}\\) of method ColinHDev\\\\CPlot\\\\plots\\\\MergePlot\\:\\:__unserialize\\(\\) should be compatible with parameter \\$data \\(array\\{worldName\\: string, worldSettings\\: string, x\\: int, z\\: int\\}\\) of method ColinHDev\\\\CPlot\\\\plots\\\\BasePlot\\:\\:__unserialize\\(\\)$#"
+			count: 1
+			path: src/ColinHDev/CPlot/plots/MergePlot.php
+
+		-
+			message: "#^Parameter \\#1 \\$closure of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:f2c\\(\\) expects callable\\(\\)\\: Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Closure\\(\\)\\: Generator\\<mixed, mixed, mixed, void\\> given\\.$#"
+			count: 2
+			path: src/ColinHDev/CPlot/plots/Plot.php
+
+		-
+			message: "#^Parameter \\#1 \\$data \\(array\\{worldName\\: string, worldSettings\\: string, x\\: int, z\\: int, alias\\: string\\|null, mergePlots\\: string, plotPlayers\\: string, flags\\: string, \\.\\.\\.\\}\\) of method ColinHDev\\\\CPlot\\\\plots\\\\Plot\\:\\:__unserialize\\(\\) should be compatible with parameter \\$data \\(array\\{worldName\\: string, worldSettings\\: string, x\\: int, z\\: int\\}\\) of method ColinHDev\\\\CPlot\\\\plots\\\\BasePlot\\:\\:__unserialize\\(\\)$#"
+			count: 1
+			path: src/ColinHDev/CPlot/plots/Plot.php
+
+		-
 			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<int, mixed, array\\<array\\<string, mixed\\>\\>, ColinHDev\\\\CPlot\\\\player\\\\PlayerData\\|null\\> given\\.$#"
 			count: 1
 			path: src/ColinHDev/CPlot/provider/DataProvider.php
