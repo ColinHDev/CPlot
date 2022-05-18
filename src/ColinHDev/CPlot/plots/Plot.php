@@ -432,33 +432,36 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-return \Generator<int, mixed, void, void>
+     * @internal method to merge the data of this plot with the provided one.
+     * @param Plot $plotToMerge The plot this plot will be merged with. If there are any conflicts in both plots' data,
+     *                          the data of the plot, which was provided as a parameter, will be discarded.
+     * @phpstan-return \Generator<mixed, mixed, mixed, void>
      */
-    private function mergeData(self $plot) : \Generator {
-        foreach (array_merge([$plot], $plot->getMergePlots()) as $mergePlot) {
+    private function mergeData(self $plotToMerge) : \Generator {
+        foreach (array_merge([$plotToMerge], $plotToMerge->getMergePlots()) as $mergePlot) {
             $mergePlot = MergePlot::fromBasePlot($mergePlot->toBasePlot(), $this->x, $this->z);
             $this->addMergePlot($mergePlot);
-            yield DataProvider::getInstance()->addMergePlot($this, $mergePlot);
+            yield from DataProvider::getInstance()->addMergePlot($this, $mergePlot);
         }
 
-        foreach ($plot->getPlotPlayers() as $mergePlotPlayer) {
-            yield DataProvider::getInstance()->savePlotPlayer($this, $mergePlotPlayer);
+        foreach ($plotToMerge->getPlotPlayers() as $mergePlotPlayer) {
+            yield from DataProvider::getInstance()->savePlotPlayer($this, $mergePlotPlayer);
             $this->addPlotPlayer($mergePlotPlayer);
         }
 
-        foreach ($plot->getFlags() as $mergeFlag) {
+        foreach ($plotToMerge->getFlags() as $mergeFlag) {
             $flag = $this->getFlagByID($mergeFlag->getID());
             if ($flag === null) {
                 $flag = $mergeFlag;
             } else {
                 $flag = $flag->merge($mergeFlag->getValue());
             }
-            yield DataProvider::getInstance()->savePlotFlag($this, $flag);
+            yield from DataProvider::getInstance()->savePlotFlag($this, $flag);
             $this->addFlag($flag);
         }
 
-        foreach ($plot->getPlotRates() as $mergePlotRate) {
-            yield DataProvider::getInstance()->savePlotRate($this, $mergePlotRate);
+        foreach ($plotToMerge->getPlotRates() as $mergePlotRate) {
+            yield from DataProvider::getInstance()->savePlotRate($this, $mergePlotRate);
             $this->addPlotRate($mergePlotRate);
         }
     }
