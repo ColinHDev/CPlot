@@ -24,7 +24,8 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
 
     private string $worldSettings;
 
-    public function __construct(World $world, WorldSettings $worldSettings, Plot $plot) {
+    public function __construct(Plot $plot) {
+        $worldSettings = $plot->getWorldSettings();
         $this->worldSettings = serialize($worldSettings->toArray());
 
         $chunks = [];
@@ -33,6 +34,8 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
         $this->getChunksFromAreas("borderChange", $this->calculateIndividualPlotBorderAreas($worldSettings, $plot), $chunks);
         $this->getChunksFromAreas("borderReset", $this->calculateIndividualPlotBorderExtensionAreas($worldSettings, $plot), $chunks);
 
+        $world = $plot->getWorld();
+        assert($world instanceof World);
         parent::__construct($world, $chunks);
     }
 
