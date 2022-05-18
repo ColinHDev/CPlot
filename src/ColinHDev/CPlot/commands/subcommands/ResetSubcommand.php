@@ -21,6 +21,7 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
+use SOFe\AwaitGenerator\Await;
 
 /**
  * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
@@ -80,25 +81,23 @@ class ResetSubcommand extends Subcommand {
         }
 
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.start"]);
-        $world = $sender->getWorld();
-        $task = new PlotResetAsyncTask($world, $worldSettings, $plot);
-        $task->setCallback(
-            static function (int $elapsedTime, string $elapsedTimeString, mixed $result) use ($world, $plot, $sender) : void {
-                $plotCount = count($plot->getMergePlots()) + 1;
-                $plots = array_map(
-                    static function (BasePlot $plot) : string {
-                        return $plot->toSmallString();
-                    },
-                    array_merge([$plot], $plot->getMergePlots())
-                );
-                Server::getInstance()->getLogger()->debug(
-                    "Resetting plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
-                );
-                LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "reset.finish" => $elapsedTimeString]);
-            }
+        /** @phpstan-var PlotResetAsyncTask $task */
+        $task = yield from Await::promise(
+            static fn($resolve) => $plot->reset($resolve)
         );
-        yield DataProvider::getInstance()->awaitPlotDeletion($plot);
-        Server::getInstance()->getAsyncPool()->submitTask($task);
+        $world = $sender->getWorld();
+        $plotCount = count($plot->getMergePlots()) + 1;
+        $plots = array_map(
+            static function (BasePlot $plot) : string {
+                return $plot->toSmallString();
+            },
+            array_merge([$plot], $plot->getMergePlots())
+        );
+        $elapsedTimeString = $task->getElapsedTimeString();
+        Server::getInstance()->getLogger()->debug(
+            "Resetting plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
+        );
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.finish" => $elapsedTimeString]);
         return null;
     }
 
