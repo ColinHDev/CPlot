@@ -28,7 +28,7 @@ Currently, the following events can be used:
 - [ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent](src/ColinHDev/CPlot/event/PlotPlayerAddAsyncEvent.php): Called when a plot player (e.g. helper) is added to a plot by a player.
 - [ColinHDev\CPlot\event\PlotPlayerRemoveAsyncEvent](src/ColinHDev/CPlot/event/PlotPlayerRemoveAsyncEvent.php): Called when a plot player (e.g. helper) is removed from a plot by a player.
 - [ColinHDev\CPlot\event\PlotResetAsyncEvent](src/ColinHDev/CPlot/event/PlotResetAsyncEvent.php): Called when a plot is reset by a player.
-- [ColinHDev\CPlot\event\PlotWallChangeAsyncEvent](src/ColinHDev/CPlot/event/PlotWallChangeAsyncEvent.php): Called when the wall of a plot is changed by a player.
+- [ColinHDev\CPlot\event\PlotWallChangeAsyncEvent](src/ColinHDev/CPlot/event/PlotWallChangeAsyncEvent.php): Called when the wall of a plot is changed.
 - [ColinHDev\CPlot\event\PlotWorldGenerateAsyncEvent](src/ColinHDev/CPlot/event/PlotWorldGenerateAsyncEvent.php): Called when a new plot world is generated.
 
 But, be aware that every event with the `AsyncEvent` suffix is created with the help of the [libAsyncEvent](https://github.com/ColinHDev/libAsyncEvent) virion, which allows the creation of asynchronous event execution. To understand how those events need to be handled, look at [libAsyncEvent's](https://github.com/ColinHDev/libAsyncEvent) documentation.
