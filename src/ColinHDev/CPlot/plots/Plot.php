@@ -445,8 +445,10 @@ class Plot extends BasePlot {
         }
 
         foreach ($plotToMerge->getPlotPlayers() as $mergePlotPlayer) {
-            yield from DataProvider::getInstance()->savePlotPlayer($this, $mergePlotPlayer);
-            $this->addPlotPlayer($mergePlotPlayer);
+            if (!($this->getPlotPlayerExact($mergePlotPlayer->getPlayerData()) instanceof PlotPlayer)) {
+                $this->addPlotPlayer($mergePlotPlayer);
+                yield from DataProvider::getInstance()->savePlotPlayer($this, $mergePlotPlayer);
+            }
         }
 
         foreach ($plotToMerge->getFlags() as $mergeFlag) {
@@ -456,13 +458,13 @@ class Plot extends BasePlot {
             } else {
                 $flag = $flag->merge($mergeFlag->getValue());
             }
-            yield from DataProvider::getInstance()->savePlotFlag($this, $flag);
             $this->addFlag($flag);
+            yield from DataProvider::getInstance()->savePlotFlag($this, $flag);
         }
 
         foreach ($plotToMerge->getPlotRates() as $mergePlotRate) {
-            yield from DataProvider::getInstance()->savePlotRate($this, $mergePlotRate);
             $this->addPlotRate($mergePlotRate);
+            yield from DataProvider::getInstance()->savePlotRate($this, $mergePlotRate);
         }
     }
 
