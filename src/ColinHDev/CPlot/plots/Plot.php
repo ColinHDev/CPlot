@@ -8,6 +8,7 @@ use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
+use ColinHDev\CPlot\event\PlotWallChangeAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
@@ -15,6 +16,7 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
+use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;
@@ -395,6 +397,33 @@ class Plot extends BasePlot {
                     return;
                 }
                 $task = new PlotBorderChangeAsyncTask($this, $event->getBlock());
+                $task->setCallback($onSuccess, $onError);
+                Server::getInstance()->getAsyncPool()->submitTask($task);
+            }
+        );
+    }
+
+    /**
+     * This method can be called to change the block the wall of a plot is made of.
+     * @param Block $block The block the plot wall will be changed to.
+     * @param callable|null $onSuccess Callback to be called when the plot wall was changed successfully.
+     * @phpstan-param (callable(): void)|(callable(PlotWallChangeAsyncTask): void)|null $onSuccess
+     * @param callable|null $onError Callback to be called when the plot wall could not be changed.
+     * @phpstan-param (callable(): void)|(callable(PlotWallChangeAsyncTask|null=): void)|null $onError
+     * @throws \RuntimeException when called outside of main thread.
+     */
+    public function setWallBlock(Block $block, ?callable $onSuccess = null, ?callable $onError = null) : void {
+        Await::f2c(
+            function () use ($block, $onSuccess, $onError) {
+                /** @phpstan-var PlotWallChangeAsyncEvent $event */
+                $event = yield from PlotWallChangeAsyncEvent::create($this, $block);
+                if ($event->isCancelled()) {
+                    if ($onError !== null) {
+                        $onError();
+                    }
+                    return;
+                }
+                $task = new PlotWallChangeAsyncTask($this, $event->getBlock());
                 $task->setCallback($onSuccess, $onError);
                 Server::getInstance()->getAsyncPool()->submitTask($task);
             }
