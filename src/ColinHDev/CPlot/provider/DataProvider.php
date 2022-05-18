@@ -130,19 +130,23 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, null, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     private function initializeDatabase() : Generator {
-        yield $this->database->asyncGeneric(self::INIT_FOREIGN_KEYS);
-        yield $this->database->asyncGeneric(self::INIT_PLAYERDATA_TABLE);
-        yield $this->database->asyncGeneric(self::INIT_ASTERISK_PLAYER, ["lastJoin" => date("d.m.Y H:i:s")]);
-        yield $this->database->asyncGeneric(self::INIT_PLAYERSETTINGS_TABLE);
-        yield $this->database->asyncGeneric(self::INIT_WORLDS_TABLE);
-        yield $this->database->asyncGeneric(self::INIT_PLOTALIASES_TABLE);
-        yield $this->database->asyncGeneric(self::INIT_MERGEPLOTS_TABLE);
-        yield $this->database->asyncGeneric(self::INIT_PLOTPLAYERS_TABLE);
-        yield $this->database->asyncGeneric(self::INIT_PLOTFLAGS_TABLE);
-        yield $this->database->asyncGeneric(self::INIT_PLOTRATES_TABLE);
+        /** @phpstan-var (Generator<mixed, Await::RESOLVE|Await::REJECT, mixed, null>)[] $generators */
+        $generators = [
+            $this->database->asyncGeneric(self::INIT_FOREIGN_KEYS),
+            $this->database->asyncGeneric(self::INIT_PLAYERDATA_TABLE),
+            $this->database->asyncGeneric(self::INIT_PLAYERSETTINGS_TABLE),
+            $this->database->asyncGeneric(self::INIT_WORLDS_TABLE),
+            $this->database->asyncGeneric(self::INIT_PLOTALIASES_TABLE),
+            $this->database->asyncGeneric(self::INIT_MERGEPLOTS_TABLE),
+            $this->database->asyncGeneric(self::INIT_PLOTPLAYERS_TABLE),
+            $this->database->asyncGeneric(self::INIT_PLOTFLAGS_TABLE),
+            $this->database->asyncGeneric(self::INIT_PLOTRATES_TABLE)
+        ];
+        yield from Await::all($generators);
+        yield from $this->database->asyncGeneric(self::INIT_ASTERISK_PLAYER, ["lastJoin" => date("d.m.Y H:i:s")]);
         $this->isInitialized = true;
     }
 
