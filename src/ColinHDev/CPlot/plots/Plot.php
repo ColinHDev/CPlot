@@ -477,6 +477,7 @@ class Plot extends BasePlot {
                     }
                     return;
                 }
+                yield from DataProvider::getInstance()->awaitPlotDeletion($this);
                 $task = new PlotResetAsyncTask($this);
                 $task->setCallback($onSuccess, $onError);
                 Server::getInstance()->getAsyncPool()->submitTask($task);
