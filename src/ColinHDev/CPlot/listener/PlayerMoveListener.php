@@ -21,24 +21,22 @@ use SOFe\AwaitGenerator\Await;
 class PlayerMoveListener implements Listener {
 
     public function onPlayerMove(PlayerMoveEvent $event) : void {
+        $player = $event->getPlayer();
+
+        $toPosition = $event->getTo();
+        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($toPosition->getWorld()->getFolderName());
+        if (!($worldSettings instanceof WorldSettings)) {
+            return;
+        }
+
+        $plotTo = Plot::loadFromPositionIntoCache($toPosition);
+        $plotFrom = Plot::loadFromPositionIntoCache($event->getFrom());
+        if (!($plotTo instanceof Plot) || !($plotFrom instanceof Plot)) {
+            return;
+        }
+
         Await::f2c(
-            static function () use ($event) : \Generator {
-                $toPosition = $event->getTo();
-                $worldSettings = yield from DataProvider::getInstance()->awaitWorld($toPosition->getWorld()->getFolderName());
-                if (!$worldSettings instanceof WorldSettings) {
-                    return;
-                }
-
-                /** @var Plot|null $plotTo */
-                $plotTo = yield from Plot::awaitFromPosition($toPosition);
-                /** @var Plot|null $plotFrom */
-                $plotFrom = yield from Plot::awaitFromPosition($event->getFrom());
-
-                $player = $event->getPlayer();
-                if (!$player->isConnected()) {
-                    return;
-                }
-
+            static function () use ($player, $plotTo, $plotFrom) : \Generator {
                 if ($plotTo instanceof Plot) {
                     // check if player is denied and hasn't bypass permission
                     if (!$player->hasPermission("cplot.bypass.deny")) {
