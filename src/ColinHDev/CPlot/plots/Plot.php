@@ -84,7 +84,7 @@ class Plot extends BasePlot {
     /**
      * @phpstan-return \Generator<int, mixed, void, void>
      */
-    public function mergeData(self $plot) : \Generator {
+    private function mergeData(self $plot) : \Generator {
         foreach (array_merge([$plot], $plot->getMergePlots()) as $mergePlot) {
             $mergePlot = MergePlot::fromBasePlot($mergePlot->toBasePlot(), $this->x, $this->z);
             $this->addMergePlot($mergePlot);
