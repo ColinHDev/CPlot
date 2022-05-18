@@ -8,6 +8,7 @@ use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
+use ColinHDev\CPlot\event\PlotResetAsyncEvent;
 use ColinHDev\CPlot\event\PlotWallChangeAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
@@ -16,6 +17,7 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
+use ColinHDev\CPlot\tasks\async\PlotResetAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -450,6 +452,32 @@ class Plot extends BasePlot {
                     return;
                 }
                 $task = new PlotClearAsyncTask($this);
+                $task->setCallback($onSuccess, $onError);
+                Server::getInstance()->getAsyncPool()->submitTask($task);
+            }
+        );
+    }
+
+    /**
+     * This method can be called to reset a plot. By this, both the plot's area and all data are completely reset.
+     * @param callable|null $onSuccess Callback to be called when the plot was reset successfully.
+     * @phpstan-param (callable(): void)|(callable(PlotResetAsyncTask): void)|null $onSuccess
+     * @param callable|null $onError Callback to be called when the plot could not be reset.
+     * @phpstan-param (callable(): void)|(callable(PlotResetAsyncTask|null=): void)|null $onError
+     * @throws \RuntimeException when called outside of main thread.
+     */
+    public function reset(?callable $onSuccess = null, ?callable $onError = null) : void {
+        Await::f2c(
+            function () use ($onSuccess, $onError) {
+                /** @phpstan-var PlotResetAsyncEvent $event */
+                $event = yield from PlotResetAsyncEvent::create($this);
+                if ($event->isCancelled()) {
+                    if ($onError !== null) {
+                        $onError();
+                    }
+                    return;
+                }
+                $task = new PlotResetAsyncTask($this);
                 $task->setCallback($onSuccess, $onError);
                 Server::getInstance()->getAsyncPool()->submitTask($task);
             }
