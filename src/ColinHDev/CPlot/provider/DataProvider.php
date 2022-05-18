@@ -110,12 +110,12 @@ final class DataProvider {
 
         /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|NonWorldSettings>, "cache_plot": Cache<string, BasePlot>} $caches */
         $caches = [
-            CacheIDs::CACHE_PLAYER => new Cache(64),
-            CacheIDs::CACHE_PLAYER_UUID => new Cache(64),
-            CacheIDs::CACHE_PLAYER_XUID => new Cache(64),
-            CacheIDs::CACHE_PLAYER_NAME => new Cache(64),
-            CacheIDs::CACHE_WORLDSETTING => new Cache(16),
-            CacheIDs::CACHE_PLOT => new Cache(128),
+            CacheIDs::CACHE_PLAYER => new Cache(256),
+            CacheIDs::CACHE_PLAYER_UUID => new Cache(256),
+            CacheIDs::CACHE_PLAYER_XUID => new Cache(256),
+            CacheIDs::CACHE_PLAYER_NAME => new Cache(256),
+            CacheIDs::CACHE_WORLDSETTING => new Cache(64),
+            CacheIDs::CACHE_PLOT => new Cache(256),
         ];
         $this->caches = $caches;
 
