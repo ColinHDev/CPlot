@@ -24,7 +24,8 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
 
     private string $worldSettings;
 
-    public function __construct(World $world, WorldSettings $worldSettings, Plot $plot, Plot $plotToMerge) {
+    public function __construct(Plot $plot, Plot $plotToMerge) {
+        $worldSettings = $plot->getWorldSettings();
         $this->worldSettings = serialize($worldSettings->toArray());
 
         $chunks = [];
@@ -37,6 +38,8 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
         $this->getChunksFromAreas("borderChange", $this->calculatePlotBorderAreas($worldSettings, $plot), $chunks);
         $this->getChunksFromAreas("borderReset", $this->calculatePlotBorderExtensionAreas($worldSettings, $plot), $chunks);
 
+        $world = $plot->getWorld();
+        assert($world instanceof World);
         parent::__construct($world, $chunks);
     }
 
