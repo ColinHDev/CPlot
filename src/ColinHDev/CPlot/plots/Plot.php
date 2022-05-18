@@ -423,6 +423,7 @@ class Plot extends BasePlot {
                     }
                     return;
                 }
+                yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
                 yield from $this->mergeData($plotToMerge);
                 $task = new PlotMergeAsyncTask($this, $plotToMerge);
                 $task->setCallback($onSuccess, $onError);
