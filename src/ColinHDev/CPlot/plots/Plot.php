@@ -8,6 +8,7 @@ use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
+use ColinHDev\CPlot\event\PlotMergeAsyncEvent;
 use ColinHDev\CPlot\event\PlotResetAsyncEvent;
 use ColinHDev\CPlot\event\PlotWallChangeAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
@@ -17,6 +18,7 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
+use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotResetAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
@@ -79,38 +81,6 @@ class Plot extends BasePlot {
 
     public function addMergePlot(MergePlot $mergedPlot) : void {
         $this->mergePlots[$mergedPlot->toString()] = $mergedPlot;
-    }
-
-    /**
-     * @phpstan-return \Generator<int, mixed, void, void>
-     */
-    private function mergeData(self $plot) : \Generator {
-        foreach (array_merge([$plot], $plot->getMergePlots()) as $mergePlot) {
-            $mergePlot = MergePlot::fromBasePlot($mergePlot->toBasePlot(), $this->x, $this->z);
-            $this->addMergePlot($mergePlot);
-            yield DataProvider::getInstance()->addMergePlot($this, $mergePlot);
-        }
-
-        foreach ($plot->getPlotPlayers() as $mergePlotPlayer) {
-            yield DataProvider::getInstance()->savePlotPlayer($this, $mergePlotPlayer);
-            $this->addPlotPlayer($mergePlotPlayer);
-        }
-
-        foreach ($plot->getFlags() as $mergeFlag) {
-            $flag = $this->getFlagByID($mergeFlag->getID());
-            if ($flag === null) {
-                $flag = $mergeFlag;
-            } else {
-                $flag = $flag->merge($mergeFlag->getValue());
-            }
-            yield DataProvider::getInstance()->savePlotFlag($this, $flag);
-            $this->addFlag($flag);
-        }
-
-        foreach ($plot->getPlotRates() as $mergePlotRate) {
-            yield DataProvider::getInstance()->savePlotRate($this, $mergePlotRate);
-            $this->addPlotRate($mergePlotRate);
-        }
     }
 
     /**
@@ -430,6 +400,67 @@ class Plot extends BasePlot {
                 Server::getInstance()->getAsyncPool()->submitTask($task);
             }
         );
+    }
+
+    /**
+     * This method can be called to merge this plot with another one. By this, both plots' areas and data are merged together.
+     * @param Plot $plotToMerge The plot this plot will be merged with. If there are any conflicts in both plots' data,
+     *                          the data of the plot, which was provided as a parameter, will be discarded.
+     * @param callable|null $onSuccess Callback to be called when the plot was reset successfully.
+     * @phpstan-param (callable(): void)|(callable(PlotMergeAsyncTask): void)|null $onSuccess
+     * @param callable|null $onError Callback to be called when the plot could not be reset.
+     * @phpstan-param (callable(): void)|(callable(PlotMergeAsyncTask|null=): void)|null $onError
+     * @throws \RuntimeException when called outside of main thread.
+     */
+    public function merge(self $plotToMerge, ?callable $onSuccess = null, ?callable $onError = null) : void {
+        Await::f2c(
+            function () use ($plotToMerge, $onSuccess, $onError) {
+                /** @phpstan-var PlotMergeAsyncEvent $event */
+                $event = yield from PlotMergeAsyncEvent::create($this, $plotToMerge);
+                if ($event->isCancelled()) {
+                    if ($onError !== null) {
+                        $onError();
+                    }
+                    return;
+                }
+                yield from $this->mergeData($plotToMerge);
+                $task = new PlotMergeAsyncTask($this, $plotToMerge);
+                $task->setCallback($onSuccess, $onError);
+                Server::getInstance()->getAsyncPool()->submitTask($task);
+            }
+        );
+    }
+
+    /**
+     * @phpstan-return \Generator<int, mixed, void, void>
+     */
+    private function mergeData(self $plot) : \Generator {
+        foreach (array_merge([$plot], $plot->getMergePlots()) as $mergePlot) {
+            $mergePlot = MergePlot::fromBasePlot($mergePlot->toBasePlot(), $this->x, $this->z);
+            $this->addMergePlot($mergePlot);
+            yield DataProvider::getInstance()->addMergePlot($this, $mergePlot);
+        }
+
+        foreach ($plot->getPlotPlayers() as $mergePlotPlayer) {
+            yield DataProvider::getInstance()->savePlotPlayer($this, $mergePlotPlayer);
+            $this->addPlotPlayer($mergePlotPlayer);
+        }
+
+        foreach ($plot->getFlags() as $mergeFlag) {
+            $flag = $this->getFlagByID($mergeFlag->getID());
+            if ($flag === null) {
+                $flag = $mergeFlag;
+            } else {
+                $flag = $flag->merge($mergeFlag->getValue());
+            }
+            yield DataProvider::getInstance()->savePlotFlag($this, $flag);
+            $this->addFlag($flag);
+        }
+
+        foreach ($plot->getPlotRates() as $mergePlotRate) {
+            yield DataProvider::getInstance()->savePlotRate($this, $mergePlotRate);
+            $this->addPlotRate($mergePlotRate);
+        }
     }
 
     /**
