@@ -58,7 +58,7 @@ class PlayerMoveListener implements Listener {
             return;
         }
 
-        if ($plotFrom instanceof Plot && $plotTo === null) {
+        if ($plotFrom instanceof Plot) {
             $playerLeavePlotEvent = new PlayerLeavePlotEvent($plotFrom, $player);
             $playerLeavePlotEvent->call();
             if ($playerLeavePlotEvent->isCancelled()) {
@@ -66,7 +66,7 @@ class PlayerMoveListener implements Listener {
                 return;
             }
             $event->cancel();
-            $this->onPlotLeave($plotTo, $player);
+            $this->onPlotLeave($plotFrom, $player);
         }
     }
 
@@ -101,10 +101,10 @@ class PlayerMoveListener implements Listener {
             return;
         }
 
-        if ($plotFrom instanceof Plot && $plotTo === null) {
+        if ($plotFrom instanceof Plot) {
             $playerLeavePlotEvent = new PlayerLeftPlotEvent($plotFrom, $player);
             $playerLeavePlotEvent->call();
-            $this->onPlotLeave($plotTo, $player);
+            $this->onPlotLeave($plotFrom, $player);
         }
     }
 
