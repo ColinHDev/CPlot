@@ -65,7 +65,7 @@ class PlayerMoveListener implements Listener {
                 $event->cancel();
                 return;
             }
-            $event->cancel();
+            $event->uncancel();
             $this->onPlotLeave($plotFrom, $player);
         }
     }
