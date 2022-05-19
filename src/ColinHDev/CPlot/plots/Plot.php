@@ -666,7 +666,7 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-return \Generator<int, mixed, WorldSettings|NonWorldSettings|Plot|null, Plot|null>
+     * @phpstan-return \Generator<mixed, mixed, mixed, Plot|null>
      */
     public static function awaitFromPosition(Position $position, bool $checkMerge = true) : \Generator {
         $worldName = $position->getWorld()->getFolderName();
