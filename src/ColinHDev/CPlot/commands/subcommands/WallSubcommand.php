@@ -48,7 +48,7 @@ class WallSubcommand extends Subcommand {
         assert($operatorRoot instanceof Permission);
 
         /** @phpstan-var array{block: string, permission: string, form: array<string, string>} $wallData */
-        foreach (ResourceManager::getInstance()->getBordersConfig()->getAll() as $wallData) {
+        foreach (ResourceManager::getInstance()->getWallsConfig()->getAll() as $wallData) {
             $block = ParseUtils::parseBlockFromString($wallData["block"]);
             if ($block !== null) {
                 $this->blocks[] = $block;
