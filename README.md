@@ -15,6 +15,9 @@ By default, CPlot hast built-in support for the most commonly used economy plugi
 Currently, this includes the following plugins: [BedrockEconomy](https://github.com/cooldogedev/BedrockEconomy), [Capital](https://github.com/SOF3/Capital) <br/>
 If you use one of these plugins and want to charge users for certain actions regarding plots, you can head over to the `economy` configuration in the plugin's `config.yml` file.
 
+## Addons
+- [CPlotClaimAddon](https://github.com/ColinHDev/CPlotClaimAddon): An addon for performing certain actions (changing the plot's biome, border and wall) once a plot is claimed.
+
 ## For developers
 
 ### CPlot's events
