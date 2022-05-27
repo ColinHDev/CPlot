@@ -27,8 +27,10 @@ class EntityDamageByEntityListener implements Listener {
         $damaged = $event->getEntity();
 
         $plot = Plot::loadFromPositionIntoCache($damaged->getPosition());
-        if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($damager, ["prefix", "player.interact.plotNotLoaded"]);
+        if (!($plot instanceof Plot)) {
+            if ($plot instanceof BasePlot) {
+                LanguageManager::getInstance()->getProvider()->sendMessage($damager, ["prefix", "player.interact.plotNotLoaded"]);
+            }
             $event->cancel();
             return;
         }
