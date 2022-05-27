@@ -30,6 +30,7 @@ Currently, the following events can be used:
 - [ColinHDev\CPlot\event\PlotClearAsyncEvent](src/ColinHDev/CPlot/event/PlotClearAsyncEvent.php): Called when a plot is cleared.
 - [ColinHDev\CPlot\event\PlotClearedAsyncEvent](src/ColinHDev/CPlot/event/PlotClearedAsyncEvent.php): Called when a plot was successfully cleared.
 - [ColinHDev\CPlot\event\PlotMergeAsyncEvent](src/ColinHDev/CPlot/event/PlotMergeAsyncEvent.php): Called when two plots are merged.
+- [ColinHDev\CPlot\event\PlotMergedAsyncEvent](src/ColinHDev/CPlot/event/PlotMergedAsyncEvent.php): Called when two plots were successfully merged into one single plot.
 - [ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent](src/ColinHDev/CPlot/event/PlotPlayerAddAsyncEvent.php): Called when a plot player (e.g. helper) is added to a plot by a player.
 - [ColinHDev\CPlot\event\PlotPlayerRemoveAsyncEvent](src/ColinHDev/CPlot/event/PlotPlayerRemoveAsyncEvent.php): Called when a plot player (e.g. helper) is removed from a plot by a player.
 - [ColinHDev\CPlot\event\PlotResetAsyncEvent](src/ColinHDev/CPlot/event/PlotResetAsyncEvent.php): Called when a plot is reset.

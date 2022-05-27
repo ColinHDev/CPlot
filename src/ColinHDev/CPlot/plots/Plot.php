@@ -10,6 +10,7 @@ use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearedAsyncEvent;
 use ColinHDev\CPlot\event\PlotMergeAsyncEvent;
+use ColinHDev\CPlot\event\PlotMergedAsyncEvent;
 use ColinHDev\CPlot\event\PlotResetAsyncEvent;
 use ColinHDev\CPlot\event\PlotWallChangeAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
@@ -424,11 +425,21 @@ class Plot extends BasePlot {
                     }
                     return;
                 }
-                $task = new PlotMergeAsyncTask($this, $plotToMerge);
+                $oldPlot = clone $this;
                 yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
                 yield from $this->mergeData($plotToMerge);
-                $task->setCallback($onSuccess, $onError);
-                Server::getInstance()->getAsyncPool()->submitTask($task);
+                /** @phpstan-var PlotMergeAsyncTask $task */
+                $task = yield from Await::promise(
+                    static function(\Closure $onSuccess) use($oldPlot, $plotToMerge, $onError) : void {
+                        $task = new PlotMergeAsyncTask($oldPlot, $plotToMerge);
+                        $task->setCallback($onSuccess, $onError);
+                        Server::getInstance()->getAsyncPool()->submitTask($task);
+                    }
+                );
+                yield from PlotMergedAsyncEvent::create($this);
+                if ($onSuccess !== null) {
+                    $onSuccess($task);
+                }
             }
         );
     }
