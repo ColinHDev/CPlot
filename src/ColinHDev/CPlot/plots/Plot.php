@@ -8,6 +8,7 @@ use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
+use ColinHDev\CPlot\event\PlotClearedAsyncEvent;
 use ColinHDev\CPlot\event\PlotMergeAsyncEvent;
 use ColinHDev\CPlot\event\PlotResetAsyncEvent;
 use ColinHDev\CPlot\event\PlotWallChangeAsyncEvent;
@@ -488,9 +489,18 @@ class Plot extends BasePlot {
                     }
                     return;
                 }
-                $task = new PlotClearAsyncTask($this);
-                $task->setCallback($onSuccess, $onError);
-                Server::getInstance()->getAsyncPool()->submitTask($task);
+                /** @phpstan-var PlotClearAsyncTask $task */
+                $task = yield from Await::promise(
+                    function(\Closure $onSuccess) use($onError) : void {
+                        $task = new PlotClearAsyncTask($this);
+                        $task->setCallback($onSuccess, $onError);
+                        Server::getInstance()->getAsyncPool()->submitTask($task);
+                    }
+                );
+                yield from PlotClearedAsyncEvent::create($this);
+                if ($onSuccess !== null) {
+                    $onSuccess($task);
+                }
             }
         );
     }
