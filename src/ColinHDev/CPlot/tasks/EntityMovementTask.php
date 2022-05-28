@@ -9,16 +9,16 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\entity\Human;
+use pocketmine\entity\Location;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
-use pocketmine\world\Position;
 use pocketmine\world\WorldManager;
 
 class EntityMovementTask extends Task {
 
     private WorldManager $worldManager;
-    /** @var Position[] */
+    /** @var Location[] */
     private array $lastPositions = [];
 
     public function __construct() {
@@ -52,12 +52,12 @@ class EntityMovementTask extends Task {
                 }
 
                 if (!isset($this->lastPositions[$entityId])) {
-                    $this->lastPositions[$entityId] = $entity->getPosition();
+                    $this->lastPositions[$entityId] = $entity->getLocation();
                     continue;
                 }
 
                 $lastPosition = $this->lastPositions[$entityId];
-                $position = $this->lastPositions[$entityId] = $entity->getPosition();
+                $position = $this->lastPositions[$entityId] = $entity->getLocation();
                 if (
                     // Only if the world did not change, e.g. due to a teleport, we need to check how far the entity moved.
                     $position->world === $lastPosition->world &&
