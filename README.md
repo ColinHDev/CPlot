@@ -17,6 +17,7 @@ If you use one of these plugins and want to charge users for certain actions reg
 
 ## Addons
 - [CPlotClaimAddon](https://github.com/ColinHDev/CPlotClaimAddon): An addon for performing certain actions (changing the plot's biome, border and wall) once a plot is claimed.
+- [CPlotRedstoneCircuitIntegration](https://github.com/ColinHDev/CPlotRedstoneCircuitIntegration): An addon for integrating the [RedstoneCircuit](https://github.com/tedo0627/RedstoneCircuit) plugin into plot worlds.
 
 ## For developers
 
