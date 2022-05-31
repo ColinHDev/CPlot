@@ -71,13 +71,7 @@ class BasePlot {
             }
             return $player->teleport(
                 Location::fromObject(
-                    $relativeSpawn->addVector(
-                        $this->getVector3NonNull(
-                            $this->worldSettings->getRoadSize(),
-                            $this->worldSettings->getPlotSize(),
-                            $this->worldSettings->getGroundSize()
-                        )
-                    ),
+                    $relativeSpawn->addVector($this->getVector3()),
                     $world,
                     $relativeSpawn->getYaw(),
                     $relativeSpawn->getPitch()
@@ -141,18 +135,12 @@ class BasePlot {
     }
 
     public function getVector3() : Vector3 {
-        return $this->getVector3NonNull(
-            $this->worldSettings->getRoadSize(),
-            $this->worldSettings->getPlotSize(),
-            $this->worldSettings->getGroundSize()
-        );
-    }
-
-    public function getVector3NonNull(int $sizeRoad, int $sizePlot, int $sizeGround) : Vector3 {
+        $roadSize = $this->worldSettings->getRoadSize();
+        $roadPlotSize = $roadSize + $this->worldSettings->getPlotSize();
         return new Vector3(
-            $sizeRoad + ($sizeRoad + $sizePlot) * $this->x,
-            $sizeGround,
-            $sizeRoad + ($sizeRoad + $sizePlot) * $this->z
+            $roadSize + $roadPlotSize * $this->x,
+            $this->worldSettings->getGroundSize(),
+            $roadSize + $roadPlotSize * $this->z
         );
     }
 
