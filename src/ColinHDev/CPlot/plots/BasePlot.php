@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\plots;
 
-use ColinHDev\CPlot\plots\flags\FlagIDs;
-use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
-use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
 use pocketmine\world\World;
@@ -59,26 +56,21 @@ class BasePlot {
     }
 
     /**
+     * Returns a nice {@see Location} of the plot where a player could be teleported to.
+     * @param bool $toCenter Whether to teleport to the center or the edge of the plot.
      * @throws \RuntimeException when called outside of main thread.
      */
-    public function teleportTo(Player $player, bool $toPlotCenter = false) : bool {
-        $flag = FlagManager::getInstance()->getFlagByID(FlagIDs::FLAG_SPAWN);
-        $relativeSpawn = $flag?->getValue();
-        if ($relativeSpawn instanceof Location) {
-            $world = $this->getWorld();
-            if ($world === null) {
-                return false;
-            }
-            return $player->teleport(
-                Location::fromObject(
-                    $relativeSpawn->addVector($this->getVector3()),
-                    $world,
-                    $relativeSpawn->getYaw(),
-                    $relativeSpawn->getPitch()
-                )
-            );
-        }
-        return false;
+    public function getTeleportLocation(bool $toCenter = false) : Location {
+        return Location::fromObject(
+            $this->getVector3()->add(
+                floor($this->worldSettings->getPlotSize() / 2),
+                1,
+                $toCenter ? floor($this->worldSettings->getPlotSize() / 2) : 0
+            ),
+            $this->getWorld(),
+            0,
+            0
+        );
     }
 
     public function getSide(int $side, int $step = 1) : ?self {
