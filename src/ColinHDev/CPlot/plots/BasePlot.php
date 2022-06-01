@@ -56,16 +56,33 @@ class BasePlot {
     }
 
     /**
-     * Returns a nice {@see Location} of the plot where a player could be teleported to.
-     * @param bool $toCenter Whether to teleport to the center or the edge of the plot.
+     * Returns a {@see Location} at the edge of the plot where a player could be teleported to.
      * @throws \RuntimeException when called outside of main thread.
      */
-    public function getTeleportLocation(bool $toCenter = false) : Location {
+    public function getTeleportLocation() : Location {
         return Location::fromObject(
             $this->getVector3()->add(
-                floor($this->worldSettings->getPlotSize() / 2),
+                $this->worldSettings->getPlotSize() / 2,
                 1,
-                $toCenter ? floor($this->worldSettings->getPlotSize() / 2) : 0
+                0
+            ),
+            $this->getWorld(),
+            0,
+            0
+        );
+    }
+
+    /**
+     * Returns a {@see Location} at the center of the plot where a player could be teleported to.
+     * @throws \RuntimeException when called outside of main thread.
+     */
+    public function getCenterTeleportLocation() : Location {
+        $halfPlotSize = $this->worldSettings->getPlotSize() / 2;
+        return Location::fromObject(
+            $this->getVector3()->add(
+                $halfPlotSize,
+                1,
+                $halfPlotSize
             ),
             $this->getWorld(),
             0,
