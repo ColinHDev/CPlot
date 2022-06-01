@@ -322,10 +322,16 @@ class Plot extends BasePlot {
     }
 
     /**
+     * This method can be used to teleport a player to the plot.
+     * @param Player $player The player who should be teleported.
+     * @param int $destination The destination where the player should be teleported to. A list of destinations can be
+     *                         found in {@see PlotTeleportDestination}.
+     * @phpstan-param TeleportDestination::* $destination
+     * @return bool Returns TRUE if the player was successfully teleported or FALSE if not.
      * @throws \RuntimeException when called outside of main thread.
      */
-    public function teleportTo(Player $player, bool $toCenter = false) : bool {
-        if (!$toCenter) {
+    public function teleportTo(Player $player, int $destination = TeleportDestination::PLOT_SPAWN_OR_EDGE) : bool {
+        if ($destination === TeleportDestination::PLOT_SPAWN_OR_EDGE || $destination === TeleportDestination::PLOT_SPAWN_OR_CENTER) {
             $flag = $this->getFlagNonNullByID(FlagIDs::FLAG_SPAWN);
             $relativeSpawn = $flag?->getValue();
             if ($relativeSpawn instanceof Location) {
@@ -343,10 +349,16 @@ class Plot extends BasePlot {
                 );
             }
         }
-        if ($toCenter) {
+        if ($destination === TeleportDestination::PLOT_SPAWN_OR_CENTER || $destination === TeleportDestination::PLOT_CENTER) {
             $location = $this->getCenterTeleportLocation();
         } else {
             $location = $this->getTeleportLocation();
+            if ($destination === TeleportDestination::ROAD_EDGE) {
+                $location = Location::fromObject(
+                    $location->subtract(0, 0, 2),
+                    $location->world, $location->yaw, $location->pitch
+                );
+            }
         }
         return $player->teleport($location);
     }
