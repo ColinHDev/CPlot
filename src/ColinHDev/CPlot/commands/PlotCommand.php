@@ -94,6 +94,13 @@ class PlotCommand extends Command implements PluginOwned {
     }
 
     /**
+     * @phpstan-return null|Subcommand<mixed, mixed, mixed, mixed>
+     */
+    public function getSubcommandByName(string $name) : ?Subcommand {
+        return $this->subcommands[$name] ?? null;
+    }
+
+    /**
      * @phpstan-template TSubcommand of Subcommand<mixed, mixed, mixed, mixed>
      * @phpstan-param TSubcommand $subcommand
      */
