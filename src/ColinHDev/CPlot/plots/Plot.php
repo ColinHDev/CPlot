@@ -332,7 +332,7 @@ class Plot extends BasePlot {
      */
     public function teleportTo(Player $player, int $destination = TeleportDestination::PLOT_SPAWN_OR_EDGE) : bool {
         if ($destination === TeleportDestination::PLOT_SPAWN_OR_EDGE || $destination === TeleportDestination::PLOT_SPAWN_OR_CENTER) {
-            $flag = $this->getFlagNonNullByID(FlagIDs::FLAG_SPAWN);
+            $flag = $this->getFlagByID(FlagIDs::FLAG_SPAWN);
             $relativeSpawn = $flag?->getValue();
             if ($relativeSpawn instanceof Location) {
                 $world = $this->getWorld();
