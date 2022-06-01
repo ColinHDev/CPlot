@@ -77,7 +77,7 @@ class AutoSubcommand extends Subcommand {
 
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "auto.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
         if ($this->automaticClaim) {
-            $claimSubcommand->execute($sender, []);
+            yield from $claimSubcommand->execute($sender, []);
         }
         return null;
     }
