@@ -232,7 +232,11 @@ class FlagSubcommand extends Subcommand {
                                 $player,
                                 ["prefix", "flag.set.setting.teleport_change_flag" => [$newFlag->getID(), $newFlag->toString()]]
                             );
-                            $plot->teleportTo($player, false, false);
+                            $location = $plot->getTeleportLocation();
+                            $player->teleport(Location::fromObject(
+                                $location->subtract(0, 0, 2),
+                                $location->world, $location->yaw, $location->pitch
+                            ));
                             break;
                         }
                     }

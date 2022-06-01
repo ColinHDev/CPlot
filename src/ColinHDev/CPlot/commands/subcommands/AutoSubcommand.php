@@ -37,7 +37,7 @@ class AutoSubcommand extends Subcommand {
             return null;
         }
 
-        if (!($plot->toBasePlot()->teleportTo($sender))) {
+        if (!($plot->teleportTo($sender))) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "auto.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
             return null;
         }
