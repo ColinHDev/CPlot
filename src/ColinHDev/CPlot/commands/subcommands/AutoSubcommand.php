@@ -26,8 +26,8 @@ class AutoSubcommand extends Subcommand {
 
     public function __construct(string $key, PlotCommand $command) {
         parent::__construct($key);
-        $this->automaticClaim = match (ResourceManager::getInstance()->getConfig()->get("auto.automaticClaim", "false")) {
-            "true", true => true,
+        $this->automaticClaim = match (ResourceManager::getInstance()->getConfig()->get("auto.automaticClaim", false)) {
+            true, "true" => true,
             default => false
         };
         $this->command = $command;
