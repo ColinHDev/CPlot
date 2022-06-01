@@ -1,3 +1,8 @@
+# Decide if upon executing the "/plot auto" command, the found free plot should be automatically claimed for the player.
+# Possible values: true, false
+# Default value: true
+auto.automaticClaim: true
+
 # decide if only subcommands a player has permissions for should be shown in the help menu
 # possible values: true, false
 # default value: true

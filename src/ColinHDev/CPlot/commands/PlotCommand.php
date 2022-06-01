@@ -60,7 +60,7 @@ class PlotCommand extends Command implements PluginOwned {
         $this->setPermission("cplot.command.plot");
 
         $this->registerSubcommand(new AddSubcommand("add"));
-        $this->registerSubcommand(new AutoSubcommand("auto"));
+        $this->registerSubcommand(new AutoSubcommand("auto", $this));
         $this->registerSubcommand(new BiomeSubcommand("biome"));
         $this->registerSubcommand(new BorderSubcommand("border"));
         $this->registerSubcommand(new ClaimSubcommand("claim"));
