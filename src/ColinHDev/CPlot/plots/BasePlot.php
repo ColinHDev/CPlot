@@ -137,7 +137,7 @@ class BasePlot {
     }
 
     /**
-     * @phpstan-return \Generator<int, mixed, Plot|null, Plot|null>
+     * @phpstan-return \Generator<mixed, mixed, mixed, Plot|null>
      */
     public function toAsyncPlot() : \Generator {
         return yield from DataProvider::getInstance()->awaitMergeOrigin($this);
