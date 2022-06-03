@@ -43,11 +43,9 @@ class StructureGrowListener implements Listener {
             if ($flag->getValue() === true) {
                 $transaction = $event->getTransaction();
                 foreach ($transaction->getBlocks() as [$x, $y, $z, $block]) {
-                    $plotAtPosition = Plot::loadFromPositionIntoCache(new Position($x, $y, $z, $world));
-                    if ($plotAtPosition instanceof Plot && $plotAtPosition->isSame($plot)) {
-                        continue;
+                    if ($plot->isOnPlot(new Position($x, $y, $z, $world))) {
+                        $transaction->addBlockAt($x, $y, $z, $world->getBlockAt($x, $y, $z));
                     }
-                    $transaction->addBlockAt($x, $y, $z, $world->getBlockAt($x, $y, $z));
                 }
                 return;
             }
