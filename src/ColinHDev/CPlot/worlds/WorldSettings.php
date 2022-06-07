@@ -13,6 +13,7 @@ use pocketmine\data\bedrock\BiomeIds;
 class WorldSettings {
 
     public const TYPE_CPLOT_DEFAULT = "cplot_default";
+    public const TYPE_MYPLOT = "myplot";
 
     private string $worldType;
     private int $biomeID;

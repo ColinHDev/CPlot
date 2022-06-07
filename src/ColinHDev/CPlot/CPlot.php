@@ -17,6 +17,7 @@ use ColinHDev\CPlot\listener\EntityExplodeListener;
 use ColinHDev\CPlot\listener\EntityItemPickupListener;
 use ColinHDev\CPlot\listener\EntityShootBowListener;
 use ColinHDev\CPlot\listener\EntityTrampleFarmlandListener;
+use ColinHDev\CPlot\listener\MyPlotConversionListener;
 use ColinHDev\CPlot\listener\PlayerDropItemListener;
 use ColinHDev\CPlot\listener\PlayerInteractListener;
 use ColinHDev\CPlot\listener\PlayerLoginListener;
@@ -72,6 +73,7 @@ class CPlot extends PluginBase {
         $pluginManager->registerEvents(new PlayerLoginListener(), $this);
         $pluginManager->registerEvents(new ProjectileLaunchListener(), $this);
         $pluginManager->registerEvents(new StructureGrowListener(), $this);
+        $pluginManager->registerEvents(new MyPlotConversionListener(), $this);
 
         $server->getCommandMap()->register("CPlot", new PlotCommand());
     }
