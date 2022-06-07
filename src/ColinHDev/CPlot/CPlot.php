@@ -45,10 +45,10 @@ class CPlot extends PluginBase {
         DataProvider::getInstance();
         EconomyManager::getInstance();
 
-		$generatorManager = GeneratorManager::getInstance();
-		$generatorManager->addGenerator(MyPlotGenerator::class, MyPlotGenerator::GENERATOR_NAME, fn() => null, true);
-		$generatorManager->addGenerator(PlotGenerator::class, PlotGenerator::GENERATOR_NAME, fn() => null, true);
-		$generatorManager->addGenerator(SchematicGenerator::class, SchematicGenerator::GENERATOR_NAME, fn() => null, true);
+        $generatorManager = GeneratorManager::getInstance();
+        $generatorManager->addGenerator(MyPlotGenerator::class, MyPlotGenerator::GENERATOR_NAME, fn() => null, true);
+        $generatorManager->addGenerator(PlotGenerator::class, PlotGenerator::GENERATOR_NAME, fn() => null, true);
+        $generatorManager->addGenerator(SchematicGenerator::class, SchematicGenerator::GENERATOR_NAME, fn() => null, true);
 
         $this->getScheduler()->scheduleRepeatingTask(new EntityMovementTask(), 1);
 
