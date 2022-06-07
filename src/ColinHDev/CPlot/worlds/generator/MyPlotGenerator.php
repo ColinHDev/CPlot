@@ -6,9 +6,6 @@ namespace ColinHDev\CPlot\worlds\generator;
 
 use ColinHDev\CPlot\math\CoordinateUtils;
 use ColinHDev\CPlot\utils\ParseUtils;
-use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
-use pocketmine\block\UnknownBlock;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\world\ChunkManager;
@@ -42,43 +39,22 @@ class MyPlotGenerator extends Generator {
             }
         }
 
-        $this->biomeID = BiomeIds::PLAINS;
+        $this->biomeID = BiomeIds::PLAINS; // MyPlot always uses the plains biome
 
         $this->roadSize = ParseUtils::parseIntegerFromArray($generatorOptions, "RoadWidth") ?? 7;
         $this->plotSize = ParseUtils::parseIntegerFromArray($generatorOptions, "PlotSize") ?? 32;
         $this->groundSize = ParseUtils::parseIntegerFromArray($generatorOptions, "GroundHeight") ?? 64;
 
-        $roadBlock = $this->parseMyPlotBlock($generatorOptions, "RoadBlock") ?? VanillaBlocks::OAK_PLANKS();
+        $roadBlock = ParseUtils::parseMyPlotBlock($generatorOptions, "RoadBlock") ?? VanillaBlocks::OAK_PLANKS();
         $this->roadBlockFullID = $roadBlock->getFullId();
-        $borderBlock = $this->parseMyPlotBlock($generatorOptions, "WallBlock") ?? VanillaBlocks::STONE_SLAB();
+        $borderBlock = ParseUtils::parseMyPlotBlock($generatorOptions, "WallBlock") ?? VanillaBlocks::STONE_SLAB();
         $this->borderBlockFullID = $borderBlock->getFullId();
-        $plotFloorBlock = $this->parseMyPlotBlock($generatorOptions, "PlotFloorBlock") ?? VanillaBlocks::GRASS();
+        $plotFloorBlock = ParseUtils::parseMyPlotBlock($generatorOptions, "PlotFloorBlock") ?? VanillaBlocks::GRASS();
         $this->plotFloorBlockFullID = $plotFloorBlock->getFullId();
-        $plotFillBlock = $this->parseMyPlotBlock($generatorOptions, "PlotFillBlock") ?? VanillaBlocks::DIRT();
+        $plotFillBlock = ParseUtils::parseMyPlotBlock($generatorOptions, "PlotFillBlock") ?? VanillaBlocks::DIRT();
         $this->plotFillBlockFullID = $plotFillBlock->getFullId();
-        $plotBottomBlock = $this->parseMyPlotBlock($generatorOptions, "BottomBlock") ?? VanillaBlocks::BEDROCK();
+        $plotBottomBlock = ParseUtils::parseMyPlotBlock($generatorOptions, "BottomBlock") ?? VanillaBlocks::BEDROCK();
         $this->plotBottomBlockFullID = $plotBottomBlock->getFullId();
-    }
-
-    /**
-     * This is different from CPlot because of the $blockData separator character and output keys
-     *
-     * @phpstan-param array<string|int, string|int> $array
-     */
-    private function parseMyPlotBlock(array $array, string|int $key) : ?Block {
-        if (isset($array[$key]) && is_string($array[$key])) {
-            $blockData = explode(":", $array[$key]);
-            $blockID = ParseUtils::parseIntegerFromArray($blockData, 0);
-            $blockMeta = ParseUtils::parseIntegerFromArray($blockData, 1) ?? 0;
-            if ($blockID !== null) {
-                $block = BlockFactory::getInstance()->get($blockID, $blockMeta);
-                if ($block instanceof UnknownBlock) {
-                    $block = null;
-                }
-                return $block;
-            }
-        }
-        return null;
     }
 
     public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
