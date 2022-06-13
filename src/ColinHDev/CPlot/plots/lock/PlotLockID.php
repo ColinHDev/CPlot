@@ -20,6 +20,6 @@ abstract class PlotLockID {
     protected static array $compatibleLocks = [];
 
     final public function isCompatible(PlotLockID $other) : bool {
-        return isset(self::$compatibleLocks[$other::class]);
+        return isset(static::$compatibleLocks[$other::class]);
     }
 }

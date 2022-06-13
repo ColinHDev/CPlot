@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\plots\lock;
 
 use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\MergePlot;
 use ColinHDev\CPlot\plots\Plot;
 use pocketmine\utils\SingletonTrait;
 use function spl_object_id;
@@ -19,9 +20,9 @@ final class PlotLockManager {
     private array $plotLocks = [];
 
     /**
-     * Returns whether anyone currently has a lock on the {@see Plot}.
-     * You should check this to make sure that population tasks aren't currently modifying chunks that you want to use
-     * in async tasks.
+     * Returns whether a lock is currently holden on the {@see Plot} or any of its {@see MergePlot}s.
+     * This should be checked to ensure that nothing changes a plot or its area while you want to modify it in an
+     * async task.
      */
     public function isPlotLocked(Plot $plot) : bool {
         /** @phpstan-var PlotIdentifier $identifier */
@@ -31,6 +32,15 @@ final class PlotLockManager {
             }
         }
         return false;
+    }
+
+    public function lockPlotSilent(Plot $plot, PlotLockID $lockID) : bool {
+        try {
+            $this->lockPlot($plot, $lockID);
+        } catch (\InvalidArgumentException) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -48,9 +58,14 @@ final class PlotLockManager {
      * @throws \InvalidArgumentException
      */
     public function lockPlot(Plot $plot, PlotLockID $lockID) : void {
-        $this->lockBasePlot($plot, $lockID);
-        foreach ($plot->getMergePlots() as $mergePlot) {
-            $this->lockBasePlot($mergePlot, $lockID);
+        try {
+            $this->lockBasePlot($plot, $lockID);
+            foreach ($plot->getMergePlots() as $mergePlot) {
+                $this->lockBasePlot($mergePlot, $lockID);
+            }
+        } catch (\InvalidArgumentException $exception) {
+            $this->unlockPlot($plot, $lockID);
+            throw $exception;
         }
     }
 
@@ -60,7 +75,7 @@ final class PlotLockManager {
     private function lockBasePlot(BasePlot $plot, PlotLockID $lockID) : void {
         if (isset($this->plotLocks[$plot->toString()])) {
             foreach ($this->plotLocks[$plot->toString()] as $plotLockID) {
-                if ($plotLockID->isCompatible($lockID)) {
+                if (!$plotLockID->isCompatible($lockID)) {
                     throw new \InvalidArgumentException("Plot " . $plot->toString() . " is already locked.");
                 }
             }

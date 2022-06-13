@@ -10,6 +10,8 @@ use ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\lock\PlotAddHelperLockID;
+use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -102,6 +104,12 @@ class AddSubcommand extends Subcommand {
         }
         if ($plot->isPlotHelperExact($playerData)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerAlreadyHelper" => $playerName]);
+            return null;
+        }
+
+        $plotLockID = new PlotAddHelperLockID();
+        if (!PlotLockManager::getInstance()->isPlotLocked($plot) && PlotLockManager::getInstance()->lockPlotSilent($plot, $plotLockID)) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.plotLocked"]);
             return null;
         }
 
