@@ -28,6 +28,7 @@ use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
 use SOFe\AwaitGenerator\Await;
+use function is_int;
 
 /**
  * This is an @internal class for handling the storage of data of this plugin in a database.
@@ -497,6 +498,30 @@ final class DataProvider {
             ]
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
+    }
+
+    /**
+     * Fetches and returns the {@see WorldSettings} or {@see NonWorldSettings} of a world by its name synchronously from the cache.
+     * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
+     * is synchronously available the next time this method is called. By providing a callback, the result can be
+     * worked with once it was successfully loaded from the database.
+     * @phpstan-param null|\Closure(WorldSettings|NonWorldSettings): void $onSuccess
+     * @phpstan-param null|\Closure(\Throwable): void $onError
+     */
+    public function getOrLoadWorldSettings(string $worldName, ?\Closure $onSuccess = null, ?\Closure $onError = null) : WorldSettings|NonWorldSettings|null {
+        $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
+        if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
+            if ($onSuccess !== null) {
+                $onSuccess($worldSettings);
+            }
+            return $worldSettings;
+        }
+        Await::g2c(
+            $this->awaitWorld($worldName),
+            $onSuccess,
+            $onError === null ? [] : [$onError]
+        );
+        return null;
     }
 
     /**
