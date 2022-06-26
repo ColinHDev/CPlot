@@ -92,7 +92,9 @@ class EntityMovementTask extends Task {
                     $entity->flagForDespawn();
                     continue;
                 }
-                if ($lastPlot instanceof BasePlot || $plot instanceof BasePlot) {
+                // If the entity's origin or current plot could not be correctly fetched, we can not perform any
+                // actions on that entity.
+                if (($lastPlot instanceof BasePlot && !($lastPlot instanceof Plot)) || ($plot instanceof BasePlot && !($plot instanceof Plot))) {
                     continue;
                 }
 
