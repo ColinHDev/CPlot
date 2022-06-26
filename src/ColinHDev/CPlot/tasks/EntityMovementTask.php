@@ -62,7 +62,7 @@ class EntityMovementTask extends Task {
                 }
 
                 $lastPosition = $this->lastPositions[$entityId];
-                $position = $this->lastPositions[$entityId] = $entity->getLocation();
+                $position = ($this->lastPositions[$entityId] = $entity->getLocation());
                 if (
                     // Only if the world did not change, e.g. due to a teleport, we need to check how far the entity moved.
                     $position->world === $lastPosition->world &&
@@ -77,7 +77,7 @@ class EntityMovementTask extends Task {
 
                 $lastBasePlot = BasePlot::fromVector3($worldName, $worldSettings, $lastPosition);
                 $basePlot = BasePlot::fromVector3($worldName, $worldSettings, $position);
-                if ($lastBasePlot !== null && $basePlot !== null && $lastBasePlot->isSame($basePlot)) {
+                if ($lastBasePlot instanceof BasePlot && $basePlot instanceof BasePlot && $lastBasePlot->isSame($basePlot)) {
                     continue;
                 }
 
