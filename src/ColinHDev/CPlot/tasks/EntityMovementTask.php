@@ -105,7 +105,7 @@ class EntityMovementTask extends Task {
         if ($f <= 0) {
             return;
         }
-        if (mt_rand() / mt_getrandmax() > ($entity->getAttributeMap()->get(Attribute::KNOCKBACK_RESISTANCE)?->getValue() ?? -1)) {
+        if (mt_rand() / mt_getrandmax() > ($entity->getAttributeMap()->get(Attribute::KNOCKBACK_RESISTANCE)?->getValue() ?? -1.0)) {
             $f = 1 / $f;
 
             $oldVelocity = $entity->getMotion();
