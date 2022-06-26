@@ -10,10 +10,9 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\entity\Attribute;
 use pocketmine\entity\Entity;
-use pocketmine\entity\Human;
 use pocketmine\entity\Location;
-use pocketmine\entity\object\ItemEntity;
 use pocketmine\math\Vector3;
+use pocketmine\player\Player;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\world\WorldManager;
@@ -43,7 +42,7 @@ class EntityMovementTask extends Task {
             }
 
             foreach ($world->updateEntities as $entity) {
-                if ($entity instanceof Human || $entity instanceof ItemEntity) {
+                if ($entity instanceof Player) {
                     continue;
                 }
 
