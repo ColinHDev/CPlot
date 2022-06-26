@@ -92,6 +92,11 @@ class EntityMovementTask extends Task {
                     $entity->flagForDespawn();
                     continue;
                 }
+                // Either if the entity actually left the plot or the plot could not be correctly fetched, its movement
+                // needs to be reversed, so the entity does not actually leave a plot without the plugin
+                // noticing / acting accordingly.
+                $this->lastPositions[$entityId] = $lastPosition;
+                $entity->teleport($lastPosition);
                 // If the entity's origin or current plot could not be correctly fetched, we can not perform any
                 // actions on that entity.
                 if (($lastPlot instanceof BasePlot && !($lastPlot instanceof Plot)) || ($plot instanceof BasePlot && !($plot instanceof Plot))) {
