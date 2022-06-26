@@ -8,12 +8,18 @@ use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use pocketmine\entity\Attribute;
+use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
 use pocketmine\entity\Location;
 use pocketmine\entity\object\ItemEntity;
+use pocketmine\math\Vector3;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\world\WorldManager;
+use function mt_getrandmax;
+use function mt_rand;
+use function sqrt;
 
 class EntityMovementTask extends Task {
 
@@ -85,8 +91,38 @@ class EntityMovementTask extends Task {
                     continue;
                 }
 
-                $entity->flagForDespawn();
+                $this->knockBackEntity(
+                    $entity,
+                    $lastPosition->x - $position->x,
+                    $lastPosition->z - $position->z
+                );
             }
         }
+    }
+
+    private function knockBackEntity(Entity $entity, float $x, float $z, float $force = 0.4, ?float $verticalLimit = 0.4) : void {
+        $f = sqrt($x * $x + $z * $z);
+        if ($f <= 0) {
+            return;
+        }
+        if (mt_rand() / mt_getrandmax() > ($entity->getAttributeMap()->get(Attribute::KNOCKBACK_RESISTANCE)?->getValue() ?? -1)) {
+            $f = 1 / $f;
+
+            $oldVelocity = $entity->getMotion();
+            $motionX = $oldVelocity->x / 2;
+            $motionY = $oldVelocity->y / 2;
+            $motionZ = $oldVelocity->z / 2;
+            $motionX += $x * $f * $force;
+            $motionY += $force;
+            $motionZ += $z * $f * $force;
+
+            $verticalLimit ??= $force;
+            if ($motionY > $verticalLimit) {
+                $motionY = $verticalLimit;
+            }
+
+            $entity->setMotion(new Vector3($motionX, $motionY, $motionZ));
+        }
+        return;
     }
 }
