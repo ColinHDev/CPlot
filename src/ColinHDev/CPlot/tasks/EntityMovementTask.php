@@ -86,6 +86,12 @@ class EntityMovementTask extends Task {
                 if ($lastPlot instanceof Plot && $plot instanceof Plot && $lastPlot->isSame($plot)) {
                     continue;
                 }
+                // If the entity's last position was not on a plot, the entity can be removed, as there is no longer an
+                // origin plot associated with it.
+                if ($lastBasePlot === null && $lastPlot === null) {
+                    $entity->flagForDespawn();
+                    continue;
+                }
                 if ($lastPlot instanceof BasePlot || $plot instanceof BasePlot) {
                     continue;
                 }
