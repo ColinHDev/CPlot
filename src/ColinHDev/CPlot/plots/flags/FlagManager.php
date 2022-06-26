@@ -52,11 +52,20 @@ class FlagManager {
      */
     private function register(string $ID, string $className) : void {
         Utils::testValidInstance($className, BaseAttribute::class);
-        $this->flags[$ID] = new $className(
-            $ID,
-            "cplot.flag." . $ID,
-            ResourceManager::getInstance()->getConfig()->getNested("flag." . $ID)
-        );
+        // HACK
+        if ($className === LocationAttribute::class) {
+            $this->flags[$ID] = new $className(
+                $ID,
+                "cplot.flag." . $ID,
+                "0;0;0;0;0"
+            );
+        } else {
+            $this->flags[$ID] = new $className(
+                $ID,
+                "cplot.flag." . $ID,
+                ResourceManager::getInstance()->getConfig()->getNested("flag." . $ID)
+            );
+        }
     }
 
     /**

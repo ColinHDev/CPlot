@@ -60,7 +60,7 @@ class PlotCommand extends Command implements PluginOwned {
         $this->setPermission("cplot.command.plot");
 
         $this->registerSubcommand(new AddSubcommand("add"));
-        $this->registerSubcommand(new AutoSubcommand("auto"));
+        $this->registerSubcommand(new AutoSubcommand("auto", $this));
         $this->registerSubcommand(new BiomeSubcommand("biome"));
         $this->registerSubcommand(new BorderSubcommand("border"));
         $this->registerSubcommand(new ClaimSubcommand("claim"));
@@ -91,6 +91,13 @@ class PlotCommand extends Command implements PluginOwned {
      */
     public function getSubcommands() : array {
         return $this->subcommands;
+    }
+
+    /**
+     * @phpstan-return null|Subcommand<mixed, mixed, mixed, mixed>
+     */
+    public function getSubcommandByName(string $name) : ?Subcommand {
+        return $this->subcommands[$name] ?? null;
     }
 
     /**

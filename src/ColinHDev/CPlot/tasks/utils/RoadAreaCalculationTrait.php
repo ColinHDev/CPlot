@@ -24,7 +24,7 @@ trait RoadAreaCalculationTrait {
         $plots = array_merge([$originPlot], $originPlot->getMergePlots());
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
-            $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPosition = $plot->getVector3();
             $plotPositionX = $plotPosition->getFloorX();
             $plotPositionZ = $plotPosition->getFloorZ();
 
@@ -47,18 +47,18 @@ trait RoadAreaCalculationTrait {
 
             if ($originPlot->isMerged($plotInNorth)) {
                 if ($originPlot->isMerged($plotInWest) && $originPlot->isMerged($plotInNorthWest)) {
-                    $areaXMin = $plotPosition->getFloorX() - $worldSettings->getRoadSize();
-                    $areaZMin = $plotPosition->getFloorZ() - $worldSettings->getRoadSize();
+                    $areaXMin = $plotPositionX - $worldSettings->getRoadSize();
+                    $areaZMin = $plotPositionZ - $worldSettings->getRoadSize();
                 } else {
-                    $areaXMin = $plotPosition->getFloorX();
-                    $areaZMin = $plotPosition->getFloorZ() - $worldSettings->getRoadSize();
+                    $areaXMin = $plotPositionX;
+                    $areaZMin = $plotPositionZ - $worldSettings->getRoadSize();
                 }
                 if ($originPlot->isMerged($plotInEast) && $originPlot->isMerged($plotInNorthEast)) {
-                    $areaXMax = $plotPosition->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                    $areaZMax = $plotPosition->getFloorZ() - 1;
+                    $areaXMax = $plotPositionX + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $areaZMax = $plotPositionZ - 1;
                 } else {
-                    $areaXMax = $plotPosition->getFloorX() + ($worldSettings->getPlotSize() - 1);
-                    $areaZMax = $plotPosition->getFloorZ() - 1;
+                    $areaXMax = $plotPositionX + ($worldSettings->getPlotSize() - 1);
+                    $areaZMax = $plotPositionZ - 1;
                 }
                 $area = new Area($areaXMin, $areaZMin, $areaXMax, $areaZMax);
                 $key = $area->toString();
@@ -69,18 +69,18 @@ trait RoadAreaCalculationTrait {
 
             if ($originPlot->isMerged($plotInSouth)) {
                 if ($originPlot->isMerged($plotInWest) && $originPlot->isMerged($plotInSouthWest)) {
-                    $areaXMin = $plotPosition->getFloorX() - $worldSettings->getRoadSize();
-                    $areaZMin = $plotPosition->getFloorZ() + $worldSettings->getPlotSize();
+                    $areaXMin = $plotPositionX - $worldSettings->getRoadSize();
+                    $areaZMin = $plotPositionZ + $worldSettings->getPlotSize();
                 } else {
-                    $areaXMin = $plotPosition->getFloorX();
-                    $areaZMin = $plotPosition->getFloorZ() + $worldSettings->getPlotSize();
+                    $areaXMin = $plotPositionX;
+                    $areaZMin = $plotPositionZ + $worldSettings->getPlotSize();
                 }
                 if ($originPlot->isMerged($plotInEast) && $originPlot->isMerged($plotInSouthEast)) {
-                    $areaXMax = $plotPosition->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                    $areaZMax = $plotPosition->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $areaXMax = $plotPositionX + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $areaZMax = $plotPositionZ + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 } else {
-                    $areaXMax = $plotPosition->getFloorX() + ($worldSettings->getPlotSize() - 1);
-                    $areaZMax = $plotPosition->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $areaXMax = $plotPositionX + ($worldSettings->getPlotSize() - 1);
+                    $areaZMax = $plotPositionZ + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 }
                 $area = new Area($areaXMin, $areaZMin, $areaXMax, $areaZMax);
                 $key = $area->toString();
@@ -91,18 +91,18 @@ trait RoadAreaCalculationTrait {
 
             if ($originPlot->isMerged($plotInWest)) {
                 if ($originPlot->isMerged($plotInNorth) && $originPlot->isMerged($plotInNorthWest)) {
-                    $areaXMin = $plotPosition->getFloorX() - $worldSettings->getRoadSize();
-                    $areaZMin = $plotPosition->getFloorZ() - $worldSettings->getRoadSize();
+                    $areaXMin = $plotPositionX - $worldSettings->getRoadSize();
+                    $areaZMin = $plotPositionZ - $worldSettings->getRoadSize();
                 } else {
-                    $areaXMin = $plotPosition->getFloorX() - $worldSettings->getRoadSize();
-                    $areaZMin = $plotPosition->getFloorZ();
+                    $areaXMin = $plotPositionX - $worldSettings->getRoadSize();
+                    $areaZMin = $plotPositionZ;
                 }
                 if ($originPlot->isMerged($plotInSouth) && $originPlot->isMerged($plotInSouthWest)) {
-                    $areaXMax = $plotPosition->getFloorX() - 1;
-                    $areaZMax = $plotPosition->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $areaXMax = $plotPositionX - 1;
+                    $areaZMax = $plotPositionZ + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 } else {
-                    $areaXMax = $plotPosition->getFloorX() - 1;
-                    $areaZMax = $plotPosition->getFloorZ() + ($worldSettings->getPlotSize() - 1);
+                    $areaXMax = $plotPositionX - 1;
+                    $areaZMax = $plotPositionZ + ($worldSettings->getPlotSize() - 1);
                 }
                 $area = new Area($areaXMin, $areaZMin, $areaXMax, $areaZMax);
                 $key = $area->toString();
@@ -113,18 +113,18 @@ trait RoadAreaCalculationTrait {
 
             if ($originPlot->isMerged($plotInEast)) {
                 if ($originPlot->isMerged($plotInNorth) && $originPlot->isMerged($plotInNorthEast)) {
-                    $areaXMin = $plotPosition->getFloorX() + $worldSettings->getPlotSize();
-                    $areaZMin = $plotPosition->getFloorZ() - $worldSettings->getRoadSize();
+                    $areaXMin = $plotPositionX + $worldSettings->getPlotSize();
+                    $areaZMin = $plotPositionZ - $worldSettings->getRoadSize();
                 } else {
-                    $areaXMin = $plotPosition->getFloorX() + $worldSettings->getPlotSize();
-                    $areaZMin = $plotPosition->getFloorZ();
+                    $areaXMin = $plotPositionX + $worldSettings->getPlotSize();
+                    $areaZMin = $plotPositionZ;
                 }
                 if ($originPlot->isMerged($plotInSouth) && $originPlot->isMerged($plotInSouthEast)) {
-                    $areaXMax = $plotPosition->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                    $areaZMax = $plotPosition->getFloorZ() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $areaXMax = $plotPositionX + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $areaZMax = $plotPositionZ + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
                 }  else {
-                    $areaXMax = $plotPosition->getFloorX() + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
-                    $areaZMax = $plotPosition->getFloorZ() + ($worldSettings->getPlotSize() - 1);
+                    $areaXMax = $plotPositionX + ($worldSettings->getPlotSize() + $worldSettings->getRoadSize() - 1);
+                    $areaZMax = $plotPositionZ + ($worldSettings->getPlotSize() - 1);
                 }
                 $area = new Area($areaXMin, $areaZMin, $areaXMax, $areaZMax);
                 $key = $area->toString();
@@ -148,7 +148,7 @@ trait RoadAreaCalculationTrait {
         $plots = array_merge([$originPlot], $originPlot->getMergePlots());
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
-            $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPosition = $plot->getVector3();
             $plotPositionX = $plotPosition->getFloorX();
             $plotPositionZ = $plotPosition->getFloorZ();
 

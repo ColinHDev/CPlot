@@ -28,6 +28,7 @@ use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
 use SOFe\AwaitGenerator\Await;
+use function is_int;
 
 /**
  * This is an @internal class for handling the storage of data of this plugin in a database.
@@ -165,17 +166,19 @@ final class DataProvider {
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
-     * @phpstan-return Generator<int, mixed, PlayerData|null, PlayerData|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByPlayer(Player $player) : Generator {
-        return yield $this->awaitPlayerDataByData($player->getUniqueId()->getBytes(), $player->getXuid(), $player->getName());
+        /** @phpstan-var PlayerData|null $playerData */
+        $playerData = yield from $this->awaitPlayerDataByData($player->getUniqueId()->getBytes(), $player->getXuid(), $player->getName());
+        return $playerData;
     }
 
     /**
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
-     * @phpstan-return Generator<int, mixed, PlayerData|null, PlayerData|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : Generator {
         $playerData = null;
@@ -229,14 +232,15 @@ final class DataProvider {
     /**
      * Fetches the {@see PlayerData} of a player by its identifier asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>, PlayerData|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByID(int $playerID) : Generator {
         $playerData = $this->caches[CacheIDs::CACHE_PLAYER]->getObjectFromCache($playerID);
         if ($playerData instanceof PlayerData) {
             return $playerData;
         }
-        $rows = yield $this->database->asyncSelect(
+        /** @phpstan-var array{0?: array{playerUUID: string|null, playerXUID: string|null, playerName: string|null, lastJoin: string}} $rows */
+        $rows = yield from $this->database->asyncSelect(
             self::GET_PLAYERDATA_BY_IDENTIFIER,
             ["playerID" => $playerID]
         );
@@ -271,7 +275,7 @@ final class DataProvider {
     /**
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>, PlayerData|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByUUID(string $playerUUID) : Generator {
         $playerID = $this->caches[CacheIDs::CACHE_PLAYER_UUID]->getObjectFromCache($playerUUID);
@@ -281,7 +285,8 @@ final class DataProvider {
                 return $playerData;
             }
         }
-        $rows = yield $this->database->asyncSelect(
+        /** @phpstan-var array{0?: array{playerID: int, playerXUID: string|null, playerName: string|null, lastJoin: string}} $rows */
+        $rows = yield from $this->database->asyncSelect(
             self::GET_PLAYERDATA_BY_UUID,
             ["playerUUID" => $playerUUID]
         );
@@ -314,7 +319,7 @@ final class DataProvider {
     /**
      * Fetches the {@see PlayerData} of a player by its XUID asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>, PlayerData|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByXUID(string $playerXUID) : Generator {
         $playerID = $this->caches[CacheIDs::CACHE_PLAYER_XUID]->getObjectFromCache($playerXUID);
@@ -324,7 +329,8 @@ final class DataProvider {
                 return $playerData;
             }
         }
-        $rows = yield $this->database->asyncSelect(
+        /** @phpstan-var array{0?: array{playerID: int, playerUUID: string|null, playerName: string|null, lastJoin: string}} $rows */
+        $rows = yield from $this->database->asyncSelect(
             self::GET_PLAYERDATA_BY_XUID,
             ["playerXUID" => $playerXUID]
         );
@@ -357,7 +363,7 @@ final class DataProvider {
     /**
      * Fetches the {@see PlayerData} of a player by its name asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>, PlayerData|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByName(string $playerName) : Generator {
         $playerID = $this->caches[CacheIDs::CACHE_PLAYER_NAME]->getObjectFromCache($playerName);
@@ -367,7 +373,8 @@ final class DataProvider {
                 return $playerData;
             }
         }
-        $rows = yield $this->database->asyncSelect(
+        /** @phpstan-var array{0?: array{playerID: int, playerUUID: string|null, playerXUID: string|null, lastJoin: string}} $rows */
+        $rows = yield from $this->database->asyncSelect(
             self::GET_PLAYERDATA_BY_NAME,
             ["playerName" => $playerName]
         );
@@ -400,10 +407,11 @@ final class DataProvider {
     /**
      * Fetches the settings ({@see BaseAttribute}s) of a player asynchronously from the database and returns a {@see \Generator}. The
      * player settings can be get by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>, array<string, BaseAttribute<mixed>>>
+     * @phpstan-return Generator<mixed, mixed, mixed, array<string, BaseAttribute<mixed>>>
      */
     private function awaitPlayerSettings(int $playerID) : Generator {
-        $rows = yield $this->database->asyncSelect(
+        /** @phpstan-var array<array{ID: string, value: string}> $rows */
+        $rows = yield from $this->database->asyncSelect(
             self::GET_PLAYERSETTINGS,
             ["playerID" => $playerID]
         );
@@ -423,7 +431,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, PlayerData|null, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     public function updatePlayerData(string $playerUUID, string $playerXUID, string $playerName) : Generator {
         $playerData = yield $this->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
@@ -462,7 +470,7 @@ final class DataProvider {
     /**
      * @phpstan-template TAttributeValue
      * @phpstan-param BaseAttribute<TAttributeValue> $setting
-     * @phpstan-return Generator<int, mixed, void, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     public function savePlayerSetting(PlayerData $playerData, BaseAttribute $setting) : Generator {
         $playerID = $playerData->getPlayerID();
@@ -478,7 +486,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, void, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     public function deletePlayerSetting(PlayerData $playerData, string $settingID) : Generator {
         $playerID = $playerData->getPlayerID();
@@ -490,6 +498,30 @@ final class DataProvider {
             ]
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
+    }
+
+    /**
+     * Fetches and returns the {@see WorldSettings} or {@see NonWorldSettings} of a world by its name synchronously from the cache.
+     * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
+     * is synchronously available the next time this method is called. By providing a callback, the result can be
+     * worked with once it was successfully loaded from the database.
+     * @phpstan-param null|\Closure(WorldSettings|NonWorldSettings): void $onSuccess
+     * @phpstan-param null|\Closure(\Throwable): void $onError
+     */
+    public function getOrLoadWorldSettings(string $worldName, ?\Closure $onSuccess = null, ?\Closure $onError = null) : WorldSettings|NonWorldSettings|null {
+        $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
+        if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
+            if ($onSuccess !== null) {
+                $onSuccess($worldSettings);
+            }
+            return $worldSettings;
+        }
+        Await::g2c(
+            $this->awaitWorld($worldName),
+            $onSuccess,
+            $onError === null ? [] : [$onError]
+        );
+        return null;
     }
 
     /**
@@ -512,14 +544,15 @@ final class DataProvider {
      * Fetches the {@see WorldSettings} of a world asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>, WorldSettings|NonWorldSettings>
+     * @phpstan-return Generator<mixed, mixed, mixed, WorldSettings|NonWorldSettings>
      */
     public function awaitWorld(string $worldName) : Generator {
         $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
         if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
             return $worldSettings;
         }
-        $rows = yield $this->database->asyncSelect(
+        /** @phpstan-var array{0?: array{worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, borderBlockOnClaim?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string}} $rows */
+        $rows = yield from $this->database->asyncSelect(
             self::GET_WORLD,
             ["worldName" => $worldName]
         );
@@ -535,7 +568,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, void, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     public function addWorld(string $worldName, WorldSettings $worldSettings) : Generator {
         yield $this->database->asyncInsert(
@@ -583,7 +616,7 @@ final class DataProvider {
      * Fetches a {@see Plot} asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
-     * @phpstan-return Generator<int, mixed, (WorldSettings|NonWorldSettings)|(string|null)|array<string, MergePlot>|array<string, PlotPlayer>|array<string, BaseAttribute<mixed>>|array<string, PlotRate>, Plot|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
      */
     public function awaitPlot(string $worldName, int $x, int $z) : Generator {
         $plot = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($worldName . ";" . $x . ";" . $z);
@@ -618,7 +651,7 @@ final class DataProvider {
     /**
      * Fetches the aliases of a plot asynchronously from the database and returns a {@see \Generator}. They can be get
      * by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array{alias: string}>, string|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, string|null>
      */
     private function awaitPlotAliases(string $worldName, int $x, int $z) : Generator {
         /** @phpstan-var array<array{alias: string}> $rows */
@@ -640,10 +673,11 @@ final class DataProvider {
     /**
      * Fetches the {@see MergePlot}s of a plot asynchronously from the database and returns a {@see \Generator}. The
      * merge plots can be get by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>, array<string, MergePlot>>
+     * @phpstan-return Generator<mixed, mixed, mixed, array<string, MergePlot>>
      */
     private function awaitMergePlots(string $worldName, WorldSettings $worldSettings, int $x, int $z) : Generator {
-        $rows = yield $this->database->asyncSelect(
+        /** @phpstan-var array<array{mergeX: int, mergeZ: int}> $rows */
+        $rows = yield from $this->database->asyncSelect(
             self::GET_MERGEPLOTS,
             [
                 "worldName" => $worldName,
@@ -665,10 +699,11 @@ final class DataProvider {
     /**
      * Fetches the {@see PlotPlayer}s of a plot asynchronously from the database and returns a {@see \Generator}. The
      * plot players can be get by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>, array<string, PlotPlayer>>
+     * @phpstan-return Generator<mixed, mixed, mixed, array<string, PlotPlayer>>
      */
     private function awaitPlotPlayers(string $worldName, int $x, int $z) : Generator {
-        $rows = yield $this->database->asyncSelect(
+        /** @phpstan-var array<array{playerID: int, state: string, addTime: string}> $rows */
+        $rows = yield from $this->database->asyncSelect(
             self::GET_PLOTPLAYERS,
             [
                 "worldName" => $worldName,
@@ -695,10 +730,11 @@ final class DataProvider {
     /**
      * Fetches the flags ({@see BaseAttribute}s) of a plot asynchronously from the database and returns a {@see \Generator}. The
      * plot flags can be get by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>, array<string, BaseAttribute<mixed>>>
+     * @phpstan-return Generator<mixed, mixed, mixed, array<string, BaseAttribute<mixed>>>
      */
     private function awaitPlotFlags(string $worldName, int $x, int $z) : Generator {
-        $rows = yield $this->database->asyncSelect(
+        /** @phpstan-var array<array{flag: string, value: string}> $rows */
+        $rows = yield from $this->database->asyncSelect(
             self::GET_PLOTFLAGS,
             [
                 "worldName" => $worldName,
@@ -724,10 +760,11 @@ final class DataProvider {
     /**
      * Fetches the {@see PlotRate}s of a plot asynchronously from the database and returns a {@see \Generator}. The
      * plot rates can be get by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>, array<string, PlotRate>>
+     * @phpstan-return Generator<mixed, mixed, mixed, array<string, PlotRate>>
      */
     private function awaitPlotRates(string $worldName, int $x, int $z) : Generator {
-        $rows = yield $this->database->asyncSelect(
+        /** @phpstan-var array<array{rate: string, playerID: int, rateTime: string, comment: string|null}> $rows */
+        $rows = yield from $this->database->asyncSelect(
             self::GET_PLOTRATES,
             [
                 "worldName" => $worldName,
@@ -755,7 +792,7 @@ final class DataProvider {
     /**
      * Fetches a {@see Plot} by its alias asynchronously from the database and returns a {@see \Generator}. It can be get
      * by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>|WorldSettings|array<string, MergePlot>|array<string, PlotPlayer>|array<string, BaseAttribute<mixed>>|array<string, PlotRate>, Plot|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
      */
     public function awaitPlotByAlias(string $alias) : Generator {
         /** @phpstan-var array<array<string, mixed>> $rows */
@@ -774,7 +811,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, void, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     public function awaitPlotDeletion(Plot $plot) : Generator {
         yield $this->awaitPlotAliasesDeletion($plot);
@@ -786,7 +823,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, void, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     private function awaitPlotAliasesDeletion(Plot $plot) : Generator {
         yield $this->database->asyncInsert(
@@ -800,7 +837,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, void, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     public function awaitMergePlotsDeletion(Plot $plot) : Generator {
         yield $this->database->asyncInsert(
@@ -817,7 +854,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, void, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     public function awaitPlotPlayersDeletion(Plot $plot) : Generator {
         yield $this->database->asyncInsert(
@@ -831,7 +868,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, void, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     public function awaitPlotFlagsDeletion(Plot $plot) : Generator {
         yield $this->database->asyncInsert(
@@ -845,7 +882,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, void, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     public function awaitPlotRatesDeletion(Plot $plot) : Generator {
         yield $this->database->asyncInsert(
@@ -887,7 +924,7 @@ final class DataProvider {
      * Fetches the origin plot ({@see Plot}) of another plot asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get
      * by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>|Plot|null, Plot|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
      */
     public function awaitMergeOrigin(BasePlot $plot) : Generator {
         if ($plot instanceof Plot) {
@@ -933,11 +970,12 @@ final class DataProvider {
      * worldName;0;0 from the database. Returns a {@see \Generator} that returns a plot that is in the radius, closest
      * to the spawn and has no data in the database or null if no such plot could be found, by using {@see Await}.
      * @param int $limitXZ Limits the radius in which plots are fetched.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>, Plot|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
      */
     public function awaitNextFreePlot(string $worldName, WorldSettings $worldSettings, int $limitXZ = 0) : Generator {
         for ($i = 0; $limitXZ <= 0 || $i < $limitXZ; $i++) {
             $plots = [];
+            /** @phpstan-var array<array{x: int, z: int}> $rows */
             $rows = yield $this->database->asyncSelect(
                 self::GET_OWNED_PLOTS,
                 [
@@ -945,6 +983,7 @@ final class DataProvider {
                     "number" => $i
                 ]
             );
+            /** @var array{x: int, z: int} $row */
             foreach ($rows as $row) {
                 /** @phpstan-var array<int, non-empty-array<int, true>> $plots */
                 $plots[$row["x"]][$row["z"]] = true;
@@ -1034,7 +1073,7 @@ final class DataProvider {
     /**
      * Fetches {@see Plot}s by a common {@see PlotPlayer} asynchronously from the database and returns a {@see \Generator}.
      * It can be get by using {@see Await}.
-     * @phpstan-return Generator<int, mixed, array<array<string, mixed>>|Plot|null, array<string, Plot>>
+     * @phpstan-return Generator<mixed, mixed, mixed, array<string, Plot>>
      */
     public function awaitPlotsByPlotPlayer(int $playerID, string $state) : Generator {
         /** @phpstan-var array<array<string, mixed>> $rows */
@@ -1074,7 +1113,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, void, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     public function deletePlotPlayer(Plot $plot, int $playerID) : Generator {
         yield $this->database->asyncInsert(
@@ -1106,7 +1145,7 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<int, mixed, void, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
     public function deletePlotFlag(Plot $plot, string $flagID) : Generator {
         yield $this->database->asyncInsert(
