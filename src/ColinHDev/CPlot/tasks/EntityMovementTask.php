@@ -93,7 +93,8 @@ class EntityMovementTask extends Task {
                 $this->knockBackEntity(
                     $entity,
                     $lastPosition->x - $position->x,
-                    $lastPosition->z - $position->z
+                    $lastPosition->z - $position->z,
+                    0.3
                 );
             }
         }
