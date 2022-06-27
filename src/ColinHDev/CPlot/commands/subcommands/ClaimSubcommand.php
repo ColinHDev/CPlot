@@ -118,7 +118,7 @@ class ClaimSubcommand extends Subcommand {
         LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "claim.saveError" => $error->getMessage()]);
     }
 
-    private function getMaxPlotsOfPlayer(Player $player) : int {
+    public function getMaxPlotsOfPlayer(Player $player) : int {
         if ($player->hasPermission("cplot.claimPlots.unlimited")) {
             return PHP_INT_MAX;
         }

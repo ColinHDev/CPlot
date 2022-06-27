@@ -286,11 +286,53 @@ class Plot extends BasePlot {
     }
 
     /**
+     * Returns a {@see Location} at the edge of the plot where a player could be teleported to. If the plot is merged
+     * with other plots, the edge of a most northern plot is used.
      * @throws \RuntimeException when called outside of main thread.
      */
-    public function teleportTo(Player $player, bool $toPlotCenter = false, bool $checkSpawnFlag = true) : bool {
-        if (!$toPlotCenter && $checkSpawnFlag) {
-            $flag = $this->getFlagNonNullByID(FlagIDs::FLAG_SPAWN);
+    public function getTeleportLocation() : Location {
+        if (count($this->mergePlots) >= 1) {
+            $northestPlot = $this->toBasePlot();
+            foreach ($this->mergePlots as $mergePlot) {
+                if ($northestPlot->getZ() > $mergePlot->getZ()) {
+                    $northestPlot = $mergePlot;
+                }
+            }
+            return $northestPlot->getTeleportLocation();
+        }
+        return parent::getTeleportLocation();
+    }
+
+    /**
+     * Returns a {@see Location} at the center of the plot where a player could be teleported to. If the plot is merged
+     * with other plots, the center of a most northern plot is used.
+     * @throws \RuntimeException when called outside of main thread.
+     */
+    public function getCenterTeleportLocation() : Location {
+        if (count($this->mergePlots) >= 1) {
+            $northestPlot = $this->toBasePlot();
+            foreach ($this->mergePlots as $mergePlot) {
+                if ($northestPlot->getZ() > $mergePlot->getZ()) {
+                    $northestPlot = $mergePlot;
+                }
+            }
+            return $northestPlot->getCenterTeleportLocation();
+        }
+        return parent::getCenterTeleportLocation();
+    }
+
+    /**
+     * This method can be used to teleport a player to the plot.
+     * @param Player $player The player who should be teleported.
+     * @param int $destination The destination where the player should be teleported to. A list of destinations can be
+     *                         found in {@see PlotTeleportDestination}.
+     * @phpstan-param TeleportDestination::* $destination
+     * @return bool Returns TRUE if the player was successfully teleported or FALSE if not.
+     * @throws \RuntimeException when called outside of main thread.
+     */
+    public function teleportTo(Player $player, int $destination = TeleportDestination::PLOT_SPAWN_OR_EDGE) : bool {
+        if ($destination === TeleportDestination::PLOT_SPAWN_OR_EDGE || $destination === TeleportDestination::PLOT_SPAWN_OR_CENTER) {
+            $flag = $this->getFlagByID(FlagIDs::FLAG_SPAWN);
             $relativeSpawn = $flag?->getValue();
             if ($relativeSpawn instanceof Location) {
                 $world = $this->getWorld();
@@ -307,19 +349,18 @@ class Plot extends BasePlot {
                 );
             }
         }
-
-        $mergePlots = $this->getMergePlots();
-        if (count($mergePlots) >= 1) {
-            $northestPlot = $this;
-            foreach ($mergePlots as $mergePlot) {
-                if ($northestPlot->getZ() > $mergePlot->getZ()) {
-                    $northestPlot = $mergePlot;
-                }
+        if ($destination === TeleportDestination::PLOT_SPAWN_OR_CENTER || $destination === TeleportDestination::PLOT_CENTER) {
+            $location = $this->getCenterTeleportLocation();
+        } else {
+            $location = $this->getTeleportLocation();
+            if ($destination === TeleportDestination::ROAD_EDGE) {
+                $location = Location::fromObject(
+                    $location->subtract(0, 0, 2),
+                    $location->world, $location->yaw, $location->pitch
+                );
             }
-            return $northestPlot->teleportTo($player, $toPlotCenter);
         }
-
-        return parent::teleportTo($player, $toPlotCenter);
+        return $player->teleport($location);
     }
 
     /**

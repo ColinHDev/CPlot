@@ -45,8 +45,7 @@ class EntityExplodeListener implements Listener {
             if ($flag->getValue() === true) {
                 $affectedBlocks = [];
                 foreach ($event->getBlockList() as $hash => $block) {
-                    $plotAtPosition = Plot::loadFromPositionIntoCache($block->getPosition());
-                    if ($plotAtPosition instanceof Plot && $plotAtPosition->isSame($plot)) {
+                    if ($plot->isOnPlot($block->getPosition())) {
                         $affectedBlocks[$hash] = $block;
                     }
                 }

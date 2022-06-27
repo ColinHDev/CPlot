@@ -24,7 +24,7 @@ trait PlotBorderAreaCalculationTrait {
         $plots = array_merge([$originPlot], $originPlot->getMergePlots());
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
-            $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPosition = $plot->getVector3();
             $plotPositionX = $plotPosition->getFloorX();
             $plotPositionZ = $plotPosition->getFloorZ();
 
@@ -140,7 +140,7 @@ trait PlotBorderAreaCalculationTrait {
         $plots = array_merge([$originPlot], $originPlot->getMergePlots());
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
-            $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPosition = $plot->getVector3();
             $plotPositionX = $plotPosition->getFloorX();
             $plotPositionZ = $plotPosition->getFloorZ();
 
@@ -276,7 +276,7 @@ trait PlotBorderAreaCalculationTrait {
         $plots = array_merge([$originPlot], $originPlot->getMergePlots());
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
-            $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPosition = $plot->getVector3();
             $plotPositionX = $plotPosition->getFloorX();
             $plotPositionZ = $plotPosition->getFloorZ();
 
@@ -343,7 +343,7 @@ trait PlotBorderAreaCalculationTrait {
         $plots = array_merge([$originPlot], $originPlot->getMergePlots());
         /** @var BasePlot $plot */
         foreach ($plots as $plot) {
-            $plotPosition = $plot->getVector3NonNull($worldSettings->getRoadSize(), $worldSettings->getPlotSize(), $worldSettings->getGroundSize());
+            $plotPosition = $plot->getVector3();
             $plotPositionX = $plotPosition->getFloorX();
             $plotPositionZ = $plotPosition->getFloorZ();
 

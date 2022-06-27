@@ -1,3 +1,8 @@
+# Decide if upon executing the "/plot auto" command, the found free plot should be automatically claimed for the player.
+# Possible values: true, false
+# Default value: true
+auto.automaticClaim: true
+
 # decide if only subcommands a player has permissions for should be shown in the help menu
 # possible values: true, false
 # default value: true
@@ -69,10 +74,6 @@ flag:
     # Define the default value of the message flag.
     # default: ""
     message: ""
-
-    # Define the default value of the spawn flag.
-    # default: "16;1;-1;0;0"
-    spawn: "16;1;-1;0;0"
 
     # Define the default value of the item_drop flag.
     # default: "true"

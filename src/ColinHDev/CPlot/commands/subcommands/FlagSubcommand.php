@@ -15,6 +15,7 @@ use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -232,7 +233,7 @@ class FlagSubcommand extends Subcommand {
                                 $player,
                                 ["prefix", "flag.set.setting.teleport_change_flag" => [$newFlag->getID(), $newFlag->toString()]]
                             );
-                            $plot->teleportTo($player, false, false);
+                            $plot->teleportTo($player, TeleportDestination::ROAD_EDGE);
                             break;
                         }
                     }

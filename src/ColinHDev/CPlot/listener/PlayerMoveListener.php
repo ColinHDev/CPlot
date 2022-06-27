@@ -15,8 +15,10 @@ use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
+use pocketmine\entity\Location;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\player\Player;
@@ -52,7 +54,7 @@ class PlayerMoveListener implements Listener {
                 $event->uncancel();
                 $this->onPlotEnter($plotTo, $player);
             } else if (!$player->hasPermission("cplot.bypass.deny") && $plotTo->isPlotDenied($player)) {
-                $plotTo->teleportTo($player, false, false);
+                $plotTo->teleportTo($player, TeleportDestination::ROAD_EDGE);
                 return;
             }
             return;
@@ -92,7 +94,7 @@ class PlayerMoveListener implements Listener {
             $playerEnterPlotEvent = new PlayerEnteredPlotEvent($plotTo, $player);
             $playerEnterPlotEvent->call();
             if (!$player->hasPermission("cplot.bypass.deny") && $plotTo->isPlotDenied($player)) {
-                $plotTo->teleportTo($player, false, false);
+                $plotTo->teleportTo($player, TeleportDestination::ROAD_EDGE);
                 return;
             }
             if ($plotFrom === null) {
