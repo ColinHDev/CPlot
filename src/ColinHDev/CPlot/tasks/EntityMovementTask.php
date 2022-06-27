@@ -107,7 +107,7 @@ class EntityMovementTask extends Task {
                     $entity,
                     $lastPosition->x - $position->x,
                     $lastPosition->z - $position->z,
-                    0.3
+                    0.25
                 );
             }
         }
