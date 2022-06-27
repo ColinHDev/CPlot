@@ -6,11 +6,13 @@ namespace ColinHDev\CPlot\tasks\async;
 
 use ColinHDev\CPlot\math\CoordinateUtils;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\tasks\utils\PlotAreaCalculationTrait;
 use ColinHDev\CPlot\tasks\utils\PlotBorderAreaCalculationTrait;
 use ColinHDev\CPlot\tasks\utils\RoadAreaCalculationTrait;
 use ColinHDev\CPlot\worlds\schematic\Schematic;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use pocketmine\player\Player;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\format\SubChunk;
@@ -36,6 +38,18 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
 
         $world = $plot->getWorld();
         assert($world instanceof World);
+        foreach($chunks as $chunkHash => $data) {
+            World::getXZ($chunkHash, $chunkX, $chunkZ);
+            foreach ($world->getChunkEntities($chunkX, $chunkZ) as $entity) {
+                if ($plot->isOnPlot($entity->getPosition())) {
+                    if ($entity instanceof Player) {
+                        $plot->teleportTo($entity, TeleportDestination::PLOT_EDGE);
+                    } else {
+                        $entity->flagForDespawn();
+                    }
+                }
+            }
+        }
         parent::__construct($world, $chunks);
     }
 
