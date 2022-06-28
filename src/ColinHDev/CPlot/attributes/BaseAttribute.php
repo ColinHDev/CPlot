@@ -7,29 +7,22 @@ namespace ColinHDev\CPlot\attributes;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 
 /**
- * @template AttributeValue
+ * @phpstan-template AttributeValue
  */
 abstract class BaseAttribute {
 
     protected string $ID;
     protected string $permission;
-    protected string $default;
-    /** @var AttributeValue */
+    /** @phpstan-var AttributeValue */
     protected mixed $value;
 
     /**
-     * @param AttributeValue $value
-     * @throws AttributeParseException
+     * @phpstan-param AttributeValue $value
      */
-    final public function __construct(string $ID, string $permission, string $default, mixed $value = null) {
+    final public function __construct(string $ID, string $permission, mixed $value) {
         $this->ID = $ID;
         $this->permission = $permission;
-        $this->default = $default;
-        if ($value === null) {
-            $this->value = $this->getParsedDefault();
-        } else {
-            $this->value = $value;
-        }
+        $this->value = $value;
     }
 
     public function getID() : string {
@@ -38,18 +31,6 @@ abstract class BaseAttribute {
 
     public function getPermission() : string {
         return $this->permission;
-    }
-
-    public function getDefault() : string {
-        return $this->default;
-    }
-
-    /**
-     * @return AttributeValue
-     * @throws AttributeParseException
-     */
-    public function getParsedDefault() : mixed {
-        return $this->parse($this->default);
     }
 
     /**
