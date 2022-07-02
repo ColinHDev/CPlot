@@ -44,6 +44,7 @@ class MyPlotConversionListener implements Listener{
 					ParseUtils::parseIntegerFromArray($worldOptions, "RoadWidth") ?? 7,
 					ParseUtils::parseIntegerFromArray($worldOptions, "PlotSize") ?? 32,
 					ParseUtils::parseIntegerFromArray($worldOptions, "GroundHeight") ?? 64,
+					7, // MyPlot generation is +7 blocks in the X/Z directions
 					ParseUtils::parseMyPlotBlock($worldOptions, "RoadBlock") ?? VanillaBlocks::OAK_PLANKS(),
 					ParseUtils::parseMyPlotBlock($worldOptions, "WallBlock") ?? VanillaBlocks::STONE_SLAB(),
 					ParseUtils::parseMyPlotBlock($worldOptions, "PlotFloorBlock") ?? VanillaBlocks::GRASS(),
