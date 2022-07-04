@@ -108,16 +108,16 @@ class BasePlot {
             return false;
         }
         $totalSize = $this->worldSettings->getRoadSize() + $this->worldSettings->getPlotSize();
-        if ($position->getX() < $this->x * $totalSize + $this->worldSettings->getRoadSize()) {
+        if ($position->getX() < $this->x * $totalSize + $this->worldSettings->getRoadSize() + $this->worldSettings->getCoordinateOffset()) {
             return false;
         }
-        if ($position->getZ() < $this->z * $totalSize + $this->worldSettings->getRoadSize()) {
+        if ($position->getZ() < $this->z * $totalSize + $this->worldSettings->getRoadSize() + $this->worldSettings->getCoordinateOffset()) {
             return false;
         }
-        if ($position->getX() > $this->x * $totalSize + ($totalSize - 1)) {
+        if ($position->getX() > $this->x * $totalSize + ($totalSize - 1) + $this->worldSettings->getCoordinateOffset()) {
             return false;
         }
-        if ($position->getZ() > $this->z * $totalSize + ($totalSize - 1)) {
+        if ($position->getZ() > $this->z * $totalSize + ($totalSize - 1) + $this->worldSettings->getCoordinateOffset()) {
             return false;
         }
         return true;
@@ -146,9 +146,9 @@ class BasePlot {
         $roadSize = $this->worldSettings->getRoadSize();
         $roadPlotSize = $roadSize + $this->worldSettings->getPlotSize();
         return new Vector3(
-            $roadSize + $roadPlotSize * $this->x,
+            $roadSize + $roadPlotSize * $this->x + $this->worldSettings->getCoordinateOffset(),
             $this->worldSettings->getGroundSize(),
-            $roadSize + $roadPlotSize * $this->z
+            $roadSize + $roadPlotSize * $this->z + $this->worldSettings->getCoordinateOffset()
         );
     }
 
@@ -183,7 +183,7 @@ class BasePlot {
     public static function fromVector3(string $worldName, WorldSettings $worldSettings, Vector3 $vector3) : ?self {
         $totalSize = $worldSettings->getPlotSize() + $worldSettings->getRoadSize();
 
-        $x = $vector3->getFloorX() - $worldSettings->getRoadSize();
+        $x = $vector3->getFloorX() - $worldSettings->getRoadSize() - $worldSettings->getCoordinateOffset();
         if ($x >= 0) {
             $X = (int) floor($x / $totalSize);
             $difX = $x % $totalSize;
@@ -192,7 +192,7 @@ class BasePlot {
             $difX = abs(($x - $worldSettings->getPlotSize() + 1) % $totalSize);
         }
 
-        $z = $vector3->getFloorZ() - $worldSettings->getRoadSize();
+        $z = $vector3->getFloorZ() - $worldSettings->getRoadSize() - $worldSettings->getCoordinateOffset();
         if ($z >= 0) {
             $Z = (int) floor($z / $totalSize);
             $difZ = $z % $totalSize;

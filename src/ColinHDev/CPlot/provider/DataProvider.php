@@ -621,6 +621,7 @@ final class DataProvider {
                 "roadSize" => $worldSettings->getRoadSize(),
                 "plotSize" => $worldSettings->getPlotSize(),
                 "groundSize" => $worldSettings->getGroundSize(),
+				"coordinateOffset" => $worldSettings->getCoordinateOffset(),
                 "roadBlock" => ParseUtils::parseStringFromBlock($worldSettings->getRoadBlock()),
                 "borderBlock" => ParseUtils::parseStringFromBlock($worldSettings->getBorderBlock()),
                 "plotFloorBlock" => ParseUtils::parseStringFromBlock($worldSettings->getPlotFloorBlock()),

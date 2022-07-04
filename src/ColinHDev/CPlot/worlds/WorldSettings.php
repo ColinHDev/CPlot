@@ -161,7 +161,7 @@ class WorldSettings {
         $roadSize = ParseUtils::parseIntegerFromArray($settings, "roadSize") ?? 7;
         $plotSize = ParseUtils::parseIntegerFromArray($settings, "plotSize") ?? 32;
         $groundSize = ParseUtils::parseIntegerFromArray($settings, "groundSize") ?? 64;
-		$coordinateOffset = ParseUtils::parseIntegerFromArray($settings, "coordinateOffset") ?? 0;
+		$coordinateOffset = ParseUtils::parseIntegerFromArray($settings, "coordinateOffset") ?? ($worldType === self::TYPE_MYPLOT ? -$roadSize : 0);
 
         $roadBlock = ParseUtils::parseBlockFromArray($settings, "roadBlock") ?? VanillaBlocks::OAK_PLANKS();
         $borderBlock = ParseUtils::parseBlockFromArray($settings, "borderBlock") ?? VanillaBlocks::STONE_SLAB();
