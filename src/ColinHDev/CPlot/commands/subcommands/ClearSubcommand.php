@@ -9,6 +9,8 @@ use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\lock\PlotClearLockID;
+use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
@@ -60,6 +62,12 @@ class ClearSubcommand extends Subcommand {
         /** @var BooleanAttribute $flag */
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.serverPlotFlag" => $flag->getID()]);
+            return null;
+        }
+
+        $lockID = new PlotClearLockID();
+        if (PlotLockManager::getInstance()->isPlotLockedForOperation($plot, $lockID) || !PlotLockManager::getInstance()->lockPlotSilent($plot, $lockID)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.serverPlotFlag" => $flag->getID()]);
             return null;
         }
