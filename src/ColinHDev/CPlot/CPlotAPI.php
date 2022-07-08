@@ -156,9 +156,42 @@ final class CPlotAPI {
      * @return Plot|false|null
      */
     public function getOrLoadPlot(World $world, int $x, int $z, ?Closure $onSuccess = null, ?Closure $onError = null) : Plot|false|null {
-        $worldSettings = $this->getOrLoadWorldSettings($world);
+        $worldSettings = $this->getOrLoadWorldSettings(
+            $world,
+            static function(WorldSettings|false $worldSettings) use($world, $x, $z, $onSuccess, $onError) : void {
+                if ($worldSettings === false) {
+                    if ($onSuccess !== null) {
+                        $onSuccess(false);
+                    }
+                    return;
+                }
+                DataProvider::getInstance()->getOrLoadMergeOrigin(new BasePlot($world->getFolderName(), $worldSettings, $x, $z),
+                    static function(Plot|null $plot) use($onSuccess) : void {
+                        if ($onSuccess !== null) {
+                            $onSuccess($plot instanceof Plot ? $plot : false);
+                        }
+                    },
+                    static function(Throwable $error) use($onError) : void {
+                        if ($onError !== null) {
+                            $onError($error);
+                        }
+                    }
+                );
+            },
+            static function(Throwable $error) use($onError) : void {
+                if ($onError !== null) {
+                    $onError($error);
+                }
+            }
+        );
         if (!($worldSettings instanceof WorldSettings)) {
-            return $worldSettings === false ? false : null;
+            if ($worldSettings === false) {
+                if ($onSuccess !== null) {
+                    $onSuccess(false);
+                }
+                return false;
+            }
+            return null;
         }
         return DataProvider::getInstance()->getOrLoadMergeOrigin(new BasePlot($world->getFolderName(), $worldSettings, $x, $z),
             static function(Plot|null $plot) use($onSuccess) : void {
