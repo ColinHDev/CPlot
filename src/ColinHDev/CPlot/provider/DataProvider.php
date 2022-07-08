@@ -594,6 +594,31 @@ final class DataProvider {
     }
 
     /**
+     * Fetches and returns the {@see WorldSettings} or {@see NonWorldSettings} of a world by its name synchronously from the cache.
+     * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
+     * is synchronously available the next time this method is called. By providing a callback, the result can be
+     * worked with once it was successfully loaded from the database.
+     * @phpstan-param null|\Closure(Plot|null): void $onSuccess
+     * @phpstan-param null|\Closure(\Throwable): void $onError
+     */
+    public function getOrLoadPlot(string $worldName, int $x, int $z, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?Plot {
+        $plot = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($worldName . ";" . $x . ";" . $z);
+        if ($plot instanceof BasePlot) {
+            $return = $plot instanceof Plot ? $plot : null;
+            if ($onSuccess !== null) {
+                $onSuccess($return);
+            }
+            return $return;
+        }
+        Await::g2c(
+            $this->awaitPlot($worldName, $x, $z),
+            $onSuccess,
+            $onError === null ? [] : [$onError]
+        );
+        return null;
+    }
+
+    /**
      * Fetches and returns a {@see Plot} synchronously from the cache.
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called.
@@ -893,6 +918,48 @@ final class DataProvider {
                 "z" => $plot->getZ()
             ]
         );
+    }
+
+    /**
+     * Fetches and returns the {@see WorldSettings} or {@see NonWorldSettings} of a world by its name synchronously from the cache.
+     * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
+     * is synchronously available the next time this method is called. By providing a callback, the result can be
+     * worked with once it was successfully loaded from the database.
+     * @phpstan-param null|\Closure(Plot|null): void $onSuccess
+     * @phpstan-param null|\Closure(\Throwable): void $onError
+     */
+    public function getOrLoadMergeOrigin(BasePlot $plot, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?Plot {
+        if ($plot instanceof Plot) {
+            if ($onSuccess !== null) {
+                $onSuccess($plot);
+            }
+            return $plot;
+        }
+        if ($plot instanceof MergePlot) {
+            return $this->getOrLoadPlot(
+                $plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ(),
+                $onSuccess, $onError
+            );
+        }
+        $plotInCache = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($plot->toString());
+        if ($plotInCache instanceof Plot) {
+            if ($onSuccess !== null) {
+                $onSuccess($plotInCache);
+            }
+            return $plotInCache;
+        }
+        if ($plotInCache instanceof MergePlot) {
+            return $this->getOrLoadPlot(
+                $plotInCache->getWorldName(), $plotInCache->getOriginX(), $plotInCache->getOriginZ(),
+                $onSuccess, $onError
+            );
+        }
+        Await::g2c(
+            $this->awaitMergeOrigin($plot),
+            $onSuccess,
+            $onError === null ? [] : [$onError]
+        );
+        return null;
     }
 
     /**
