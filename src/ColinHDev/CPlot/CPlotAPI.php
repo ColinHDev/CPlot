@@ -46,10 +46,10 @@ final class CPlotAPI {
      *
      * @param World $world The world to check
      *
-     * If data about the world is cached, the callback functions are called immediately, while also letting the method
+     * If data about the world is cached, the $onSuccess function is called immediately, while also letting the method
      * return either true or false.
      * If no data about the world is cached, it needs to be asychronously loaded from the database. Once this is done,
-     * the callback functions are called and the result cached for the next call of this method.
+     * the $onSuccess function is called and the result cached for the next call of this method.
      *
      * @param Closure|null $onSuccess The callback function to call if the data about the world is cached or loaded
      *                                successfully and it is figured out whether the world is a plot world or not.
@@ -60,7 +60,7 @@ final class CPlotAPI {
      * @phpstan-param (Closure():void)|(Closure(Throwable):void)|null $onError
      *
      * Returns true if the world is a plot world, false otherwise, or null if there is no cached data about the world,
-     * which could synchronously be get.
+     * which could synchronously be gotten.
      * @return bool|null
      */
     public function isPlotWorld(World $world, ?Closure $onSuccess = null, ?Closure $onError = null) : ?bool {
@@ -91,10 +91,10 @@ final class CPlotAPI {
      *
      * @param World $world The world to get the {@see WorldSettings} of
      *
-     * If data about the world is cached, the callback functions are called immediately, while also letting the method
+     * If data about the world is cached, the $onSuccess function is called immediately, while also letting the method
      * return either the {@see WorldSettings} or false.
      * If no data about the world is cached, it needs to be asychronously loaded from the database. Once this is done,
-     * the callback functions are called and the result cached for the next call of this method.
+     * the $onSuccess function is called and the result cached for the next call of this method.
      *
      * @param Closure|null $onSuccess The callback function to call if the data about the world is cached or loaded
      *                                successfully.
@@ -105,7 +105,7 @@ final class CPlotAPI {
      * @phpstan-param (Closure():void)|(Closure(Throwable):void)|null $onError
      *
      * Returns the {@see WorldSettings} associated to the given world, false if the world is not a plot world, or null
-     * if there is no cached data about the world, which could synchronously be get.
+     * if there is no cached data about the world, which could synchronously be gotten.
      * @return WorldSettings|false|null
      */
     public function getOrLoadWorldSettings(World $world, ?Closure $onSuccess = null, ?Closure $onError = null) : WorldSettings|false|null {
@@ -138,10 +138,10 @@ final class CPlotAPI {
      * @param int $x The X coordinate of the plot
      * @param int $z The Z coordinate of the plot
      *
-     * If data about the plot is cached, the callback functions are called immediately, while also letting the method
+     * If data about the plot is cached, the $onSuccess function is called immediately, while also letting the method
      * return either the {@see Plot} or false.
      * If no data about the plot is cached, it needs to be asychronously loaded from the database. Once this is done,
-     * the callback functions are called and the result cached for the next call of this method.
+     * the $onSuccess function is called and the result cached for the next call of this method.
      *
      * @param Closure|null $onSuccess The callback function to call if the data about the plot is cached or loaded
      *                                successfully.
@@ -152,7 +152,7 @@ final class CPlotAPI {
      * @phpstan-param (Closure():void)|(Closure(Throwable):void)|null $onError
      *
      * Returns the {@see Plot} in the given world with the given coordinates, false if the world is not a plot world or
-     * there is no plot to get, or null if there is no cached data about the plot, which could synchronously be get.
+     * there is no plot to get, or null if there is no cached data about the plot, which could synchronously be gotten.
      * @return Plot|false|null
      */
     public function getOrLoadPlot(World $world, int $x, int $z, ?Closure $onSuccess = null, ?Closure $onError = null) : Plot|false|null {
