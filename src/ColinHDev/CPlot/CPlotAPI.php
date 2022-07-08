@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot;
 
 use Closure;
+use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -127,5 +129,48 @@ final class CPlotAPI {
             return false;
         }
         return null;
+    }
+
+    /**
+     * Get the {@see Plot} in the given world with the given coordinates.
+     *
+     * @param World $world The world the plot is in
+     * @param int $x The X coordinate of the plot
+     * @param int $z The Z coordinate of the plot
+     *
+     * If data about the plot is cached, the callback functions are called immediately, while also letting the method
+     * return either the {@see Plot} or false.
+     * If no data about the plot is cached, it needs to be asychronously loaded from the database. Once this is done,
+     * the callback functions are called and the result cached for the next call of this method.
+     *
+     * @param Closure|null $onSuccess The callback function to call if the data about the plot is cached or loaded
+     *                                successfully.
+     * @phpstan-param (Closure(Plot|false):void)|null $onSuccess
+     *
+     * @param Closure|null $onError The callback function to call if something went wrong during the loading of the
+     *                              data from the database.
+     * @phpstan-param (Closure():void)|(Closure(Throwable):void)|null $onError
+     *
+     * Returns the {@see Plot} in the given world with the given coordinates, false if the world is not a plot world or
+     * there is no plot to get, or null if there is no cached data about the plot, which could synchronously be get.
+     * @return Plot|false|null
+     */
+    public function getOrLoadPlot(World $world, int $x, int $z, ?Closure $onSuccess = null, ?Closure $onError = null) : Plot|false|null {
+        $worldSettings = $this->getOrLoadWorldSettings($world);
+        if (!($worldSettings instanceof WorldSettings)) {
+            return $worldSettings === false ? false : null;
+        }
+        return DataProvider::getInstance()->getOrLoadMergeOrigin(new BasePlot($world->getFolderName(), $worldSettings, $x, $z),
+            static function(Plot|null $plot) use($onSuccess) : void {
+                if ($onSuccess !== null) {
+                    $onSuccess($plot instanceof Plot ? $plot : false);
+                }
+            },
+            static function(Throwable $error) use($onError) : void {
+                if ($onError !== null) {
+                    $onError($error);
+                }
+            }
+        );
     }
 }
