@@ -13,7 +13,6 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\plugin\ApiVersion;
 use pocketmine\utils\VersionString;
 use pocketmine\world\World;
-use Throwable;
 
 final class CPlotAPI {
 
@@ -71,11 +70,7 @@ final class CPlotAPI {
                     $onSuccess($worldSettings instanceof WorldSettings);
                 }
             },
-            static function(Throwable $error) use($onError) : void {
-                if ($onError !== null) {
-                    $onError($error);
-                }
-            }
+            $onError
         );
         if ($worldSettings instanceof WorldSettings) {
             return true;
@@ -116,11 +111,7 @@ final class CPlotAPI {
                     $onSuccess($worldSettings instanceof WorldSettings ? $worldSettings : false);
                 }
             },
-            static function(Throwable $error) use($onError) : void {
-                if ($onError !== null) {
-                    $onError($error);
-                }
-            }
+            $onError
         );
         if ($worldSettings instanceof WorldSettings) {
             return $worldSettings;
@@ -171,18 +162,10 @@ final class CPlotAPI {
                             $onSuccess($plot instanceof Plot ? $plot : false);
                         }
                     },
-                    static function(Throwable $error) use($onError) : void {
-                        if ($onError !== null) {
-                            $onError($error);
-                        }
-                    }
+                    $onError
                 );
             },
-            static function(Throwable $error) use($onError) : void {
-                if ($onError !== null) {
-                    $onError($error);
-                }
-            }
+            $onError
         );
         if (!($worldSettings instanceof WorldSettings)) {
             if ($worldSettings === false) {
@@ -199,11 +182,7 @@ final class CPlotAPI {
                     $onSuccess($plot instanceof Plot ? $plot : false);
                 }
             },
-            static function(Throwable $error) use($onError) : void {
-                if ($onError !== null) {
-                    $onError($error);
-                }
-            }
+            $onError
         );
     }
 }
