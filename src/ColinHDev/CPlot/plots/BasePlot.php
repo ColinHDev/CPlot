@@ -153,6 +153,9 @@ class BasePlot {
         );
     }
 
+    /**
+     * @deprecated
+     */
     public static function loadFromPositionIntoCache(Position $position) : ?self {
         $worldName = $position->getWorld()->getFolderName();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($worldName);
@@ -163,6 +166,7 @@ class BasePlot {
     }
 
     /**
+     * @deprecated
      * @phpstan-return \Generator<int, mixed, WorldSettings|NonWorldSettings|Plot|null, BasePlot|null>
      */
     public static function awaitFromPosition(Position $position) : \Generator {
@@ -174,6 +178,9 @@ class BasePlot {
         return self::fromVector3($worldName, $worldSettings, $position->asVector3());
     }
 
+    /**
+     * @deprecated
+     */
     public static function fromVector3(string $worldName, WorldSettings $worldSettings, Vector3 $vector3) : ?self {
         $totalSize = $worldSettings->getPlotSize() + $worldSettings->getRoadSize();
 

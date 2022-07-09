@@ -635,6 +635,7 @@ class Plot extends BasePlot {
     }
 
     /**
+     * @deprecated
      * Tries to load a {@see Plot} from a given {@see Position}. Returns an instance of {@see Plot} on success, an
      * instance of {@see BasePlot} if the plot could not be loaded from the cache {@see DataProvider::getPlotCache()} or
      * null if no plot is at that positon.
@@ -728,6 +729,7 @@ class Plot extends BasePlot {
     }
 
     /**
+     * @deprecated
      * @phpstan-return \Generator<mixed, mixed, mixed, Plot|null>
      */
     public static function awaitFromPosition(Position $position, bool $checkMerge = true) : \Generator {
