@@ -168,13 +168,7 @@ final class CPlotAPI {
             $onError
         );
         if (!($worldSettings instanceof WorldSettings)) {
-            if ($worldSettings === false) {
-                if ($onSuccess !== null) {
-                    $onSuccess(false);
-                }
-                return false;
-            }
-            return null;
+            return $worldSettings === false ? false : null;
         }
         return DataProvider::getInstance()->getOrLoadMergeOrigin(new BasePlot($world->getFolderName(), $worldSettings, $x, $z),
             static function(Plot|null $plot) use($onSuccess) : void {
