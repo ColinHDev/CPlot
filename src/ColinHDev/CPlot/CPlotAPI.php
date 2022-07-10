@@ -5,19 +5,24 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot;
 
 use Closure;
+use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
+use pocketmine\player\Player;
 use pocketmine\plugin\ApiVersion;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\VersionString;
 use pocketmine\world\Position;
 use pocketmine\world\World;
 use RuntimeException;
+use SOFe\AwaitGenerator\Await;
 use function abs;
 use function ceil;
 use function count;
@@ -493,5 +498,34 @@ final class CPlotAPI {
             return $plots;
         }
         return null;
+    }
+
+    /**
+     * Loads all the {@see Plot}s where the given {@see Player} is an owner of.
+     *
+     * @param Player $player The player to load the plots of
+     *
+     * @param Closure $onSuccess The callback function to call if the data about the plots is loaded successfully.
+     * @phpstan-param (Closure(array<string, Plot>):void)|null $onSuccess
+     *
+     * @param Closure $onError The callback function to call if something went wrong during the loading of the data from
+     *                         the database.
+     * @phpstan-param (Closure():void)|(Closure(Throwable):void)|null $onError
+     */
+    public function loadPlotsOfPlayer(Player $player, Closure $onSuccess, Closure $onError) : void {
+        Await::f2c(
+            static function() use($player) : Generator {
+                /** @phpstan-var PlayerData|null $playerData */
+                $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
+                if ($playerData === null) {
+                    throw new RuntimeException("Player data not found");
+                }
+                /** @phpstan-var array<string, Plot> $plots */
+                $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
+                return $plots;
+            },
+            $onSuccess,
+            $onError
+        );
     }
 }
