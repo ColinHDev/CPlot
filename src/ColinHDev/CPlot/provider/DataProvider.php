@@ -206,7 +206,7 @@ final class DataProvider {
             }
         }
 
-        /** @phpstan-var array<non-empty-array{playerID: int, playerUUID: string|null, playerXUID: string|null, playerName: string|null, lastJoin: string}> $rows */
+        /** @phpstan-var array<(not-empty-array{playerID: int, playerUUID: string|null, playerXUID: string|null, playerName: string|null, lastJoin: string})> $rows */
         $rows = yield from $this->database->asyncSelect(
             self::GET_PLAYERDATA_BY_DATA,
             ["playerUUID" => $playerUUID, "playerXUID" => $playerXUID, "playerName" => $playerName]
