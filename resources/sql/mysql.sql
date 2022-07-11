@@ -233,9 +233,9 @@ WHERE worldName = :worldName AND x = :x AND z = :z;
 
 -- #  { set
 -- #    { newPlayerData
--- #      :playerUUID string
--- #      :playerXUID string
--- #      :playerName string
+-- #      :playerUUID ?string
+-- #      :playerXUID ?string
+-- #      :playerName ?string
 -- #      :lastJoin string
 INSERT INTO playerData (playerUUID, playerXUID, playerName, lastJoin)
 VALUES (:playerUUID, :playerXUID, :playerName, :lastJoin);
