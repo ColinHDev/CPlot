@@ -48,8 +48,13 @@ final class PlotPlayerContainer {
     }
 
     /**
+     * Get the exact corresponding {@see PlotPlayer} to the given {@see Player}, {@see PlayerData} or PlayerID.
+     *
+     * @param Player|PlayerData|int $player The player information to get the {@see PlotPlayer} for.
      * @phpstan-param Player|PlayerData|PlayerID $player
-     * @phpstan-return PlotPlayer|null
+     *
+     * Returns the corresponding {@see PlotPlayer} or null if not found.
+     * @return PlotPlayer|null
      */
     public function getPlotPlayerExact(Player|PlayerData|int $player) : ?PlotPlayer {
         if ($player instanceof Player) {
@@ -68,14 +73,24 @@ final class PlotPlayerContainer {
     }
 
     /**
+     * Get the exact corresponding {@see PlotPlayer} to the given {@see Player}, {@see PlayerData} or PlayerID or the
+     * asterisk (*) plot player if set.
+     *
+     * @param Player|PlayerData|int $player The player information to get the {@see PlotPlayer} for.
      * @phpstan-param Player|PlayerData|PlayerID $player
-     * @phpstan-return PlotPlayer|null
+     *
+     * Returns the corresponding {@see PlotPlayer}, the asterisk (*) plot player if set, or null.
+     * @return PlotPlayer|null
      */
     public function getPlotPlayer(Player|PlayerData|int $player) : ?PlotPlayer {
         $plotPlayer = $this->getPlotPlayerExact($player);
         return $plotPlayer ?? $this->plotPlayersByUUID["*"] ?? null;
     }
 
+    /**
+     * Add a {@see PlotPlayer} to this container and therefore to its associated {@see Plot}.
+     * @param PlotPlayer $plotPlayer The {@see PlotPlayer} to add.
+     */
     public function addPlotPlayer(PlotPlayer $plotPlayer) : void {
         $playerData = $plotPlayer->getPlayerData();
         $playerID = $playerData->getPlayerID();
@@ -101,6 +116,10 @@ final class PlotPlayerContainer {
         }
     }
 
+    /**
+     * Remove a {@see PlotPlayer} from this container and therefore from its associated {@see Plot}.
+     * @param PlotPlayer $plotPlayer The {@see PlotPlayer} to remove.
+     */
     public function removePlotPlayer(PlotPlayer $plotPlayer) : void {
         $playerData = $plotPlayer->getPlayerData();
         $playerID = $playerData->getPlayerID();
