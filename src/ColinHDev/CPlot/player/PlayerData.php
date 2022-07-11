@@ -6,7 +6,6 @@ namespace ColinHDev\CPlot\player;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\player\settings\SettingManager;
-use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\player\OfflinePlayer;
 use pocketmine\player\Player;
@@ -172,33 +171,6 @@ class PlayerData {
 
     public function removeSetting(string $settingID) : void {
         unset($this->settings[$settingID]);
-    }
-
-    public static function getIdentifierFromPlayer(Player $player) : string {
-        return self::getIdentifierFromData($player->getUniqueId()->getBytes(), $player->getXuid(), $player->getName());
-    }
-
-    public static function getIdentifierFromPlayerData(self $player) : string {
-        return self::getIdentifierFromData($player->getPlayerUUID(), $player->getPlayerXUID(), $player->getPlayerName());
-    }
-
-    public static function getIdentifierFromData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : string {
-        $identifier = "";
-        switch (DataProvider::getInstance()->getPlayerIdentifierType()) {
-            case "uuid":
-                assert(is_string($playerUUID));
-                $identifier = $playerUUID;
-                break;
-            case "xuid":
-                assert(is_string($playerXUID));
-                $identifier = $playerXUID;
-                break;
-            case "name":
-                assert(is_string($playerName));
-                $identifier = $playerName;
-                break;
-        }
-        return $identifier;
     }
 
     /**
