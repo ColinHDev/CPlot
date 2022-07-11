@@ -104,7 +104,7 @@ class UndenySubcommand extends Subcommand {
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_DENIED_REMOVE);
             if ($setting->getValue() === true) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                    $sender,
+                    $player,
                     ["prefix", "undeny.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                 );
             }

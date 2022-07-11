@@ -104,7 +104,7 @@ class RemoveSubcommand extends Subcommand {
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_REMOVE);
             if ($setting->getValue() === true) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                    $sender,
+                    $player,
                     ["prefix", "remove.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                 );
             }
