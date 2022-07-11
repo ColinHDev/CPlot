@@ -42,10 +42,6 @@ class PlotPlayer {
         return $this->addTime;
     }
 
-    public function toString() : string {
-        return PlayerData::getIdentifierFromData($this->playerData->getPlayerUUID(), $this->playerData->getPlayerXUID(), $this->playerData->getPlayerName());
-    }
-
     /**
      * @phpstan-return array{playerData: string, state: PlotPlayer::STATE_*, addTime: int}
      */
