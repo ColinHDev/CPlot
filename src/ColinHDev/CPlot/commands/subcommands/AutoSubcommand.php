@@ -33,10 +33,11 @@ class AutoSubcommand extends Subcommand {
             default => false
         };
         $fallbackWorld = ResourceManager::getInstance()->getConfig()->get("auto.fallbackWorld", false);
-        $this->fallbackWorld = match($fallbackWorld) {
-            false, "false" => null,
-            default => $fallbackWorld
-        };
+        if ($fallbackWorld === false || $fallbackWorld === "false" || !is_string($fallbackWorld)) {
+            $this->fallbackWorld = null;
+        } else {
+            $this->fallbackWorld = $fallbackWorld;
+        }
         $this->command = $command;
     }
 
