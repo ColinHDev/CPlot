@@ -110,7 +110,7 @@ final class DataProvider {
             $this->initializeDatabase()
         );
 
-        /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|NonWorldSettings>, "cache_plot": Cache<string, BasePlot>} $caches */
+        /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|NonWorldSettings>, "cache_plot": Cache<string, Plot|MergePlot>} $caches */
         $caches = [
             CacheIDs::CACHE_PLAYER => new Cache(256),
             CacheIDs::CACHE_PLAYER_UUID => new Cache(256),
@@ -120,6 +120,30 @@ final class DataProvider {
             CacheIDs::CACHE_PLOT => new Cache(256),
         ];
         $this->caches = $caches;
+    }
+
+    /**
+     * Returns the {@see PlayerData} cache.
+     * @phpstan-return Cache<PlayerID, PlayerData>
+     */
+    public function getPlayerCache(): Cache {
+        return $this->caches[CacheIDs::CACHE_PLAYER];
+    }
+
+    /**
+     * Returns the {@see WorldSettings} cache.
+     * @phpstan-return Cache<string, WorldSettings|NonWorldSettings>
+     */
+    public function getWorldSettingsCache(): Cache {
+        return $this->caches[CacheIDs::CACHE_WORLDSETTING];
+    }
+
+    /**
+     * Returns the {@see Plot} / {@see MergePlot} cache.
+     * @phpstan-return Cache<string, Plot|MergePlot>
+     */
+    public function getPlotCache() : Cache {
+        return $this->caches[CacheIDs::CACHE_PLOT];
     }
 
     /**
