@@ -34,6 +34,9 @@ use pocketmine\Server;
 use pocketmine\world\Position;
 use pocketmine\world\World;
 use SOFe\AwaitGenerator\Await;
+use function assert;
+use function is_int;
+use function unserialize;
 
 class Plot extends BasePlot {
 
@@ -41,8 +44,7 @@ class Plot extends BasePlot {
 
     /** @var array<string, MergePlot> */
     private array $mergePlots;
-    /** @var array<string, PlotPlayer> */
-    private array $plotPlayers;
+    private PlotPlayerContainer $plotPlayerContainer;
     /** @var array<string, BaseAttribute<mixed>> */
     private array $flags;
     /** @var array<string, PlotRate> */
@@ -50,15 +52,14 @@ class Plot extends BasePlot {
 
     /**
      * @param array<string, MergePlot> $mergePlots
-     * @param array<string, PlotPlayer> $plotPlayers
      * @param array<string, BaseAttribute<mixed>> $flags
      * @param array<string, PlotRate> $plotRates
      */
-    public function __construct(string $worldName, WorldSettings $worldSettings, int $x, int $z, ?string $alias = null, array $mergePlots = [], array $plotPlayers = [], array $flags = [], array $plotRates = []) {
+    public function __construct(string $worldName, WorldSettings $worldSettings, int $x, int $z, ?string $alias = null, array $mergePlots = [], ?PlotPlayerContainer $plotPlayerContainer = null, array $flags = [], array $plotRates = []) {
         parent::__construct($worldName, $worldSettings, $x, $z);
         $this->alias = $alias;
         $this->mergePlots = $mergePlots;
-        $this->plotPlayers = $plotPlayers;
+        $this->plotPlayerContainer = $plotPlayerContainer ?? new PlotPlayerContainer();
         $this->flags = $flags;
         $this->plotRates = $plotRates;
     }
@@ -86,30 +87,17 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @return array<string, PlotPlayer>
+     * @return array<int, PlotPlayer>
      */
     public function getPlotPlayers() : array {
-        return $this->plotPlayers;
+        return $this->plotPlayerContainer->getPlotPlayers();
     }
 
     /**
-     * @return array<string, PlotPlayer>
-     */
-    public function getPlotPlayersByState(string $state) : array {
-        $plotPlayers = [];
-        foreach ($this->getPlotPlayers() as $plotPlayer) {
-            if ($plotPlayer->getState() === $state) {
-                $plotPlayers[$plotPlayer->toString()] = $plotPlayer;
-            }
-        }
-        return $plotPlayers;
-    }
-
-    /**
-     * @return array<string, PlotPlayer>
+     * @return array<int, PlotPlayer>
      */
     public function getPlotOwners() : array {
-        return $this->getPlotPlayersByState(PlotPlayer::STATE_OWNER);
+        return $this->plotPlayerContainer->getPlotPlayersByState(PlotPlayer::STATE_OWNER);
     }
 
     public function hasPlotOwner() : bool {
@@ -117,109 +105,92 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @return array<string, PlotPlayer>
+     * @return array<int, PlotPlayer>
      */
     public function getPlotTrusted() : array {
-        return $this->getPlotPlayersByState(PlotPlayer::STATE_TRUSTED);
+        return $this->plotPlayerContainer->getPlotPlayersByState(PlotPlayer::STATE_TRUSTED);
     }
 
     /**
-     * @return array<string, PlotPlayer>
+     * @return array<int, PlotPlayer>
      */
     public function getPlotHelpers() : array {
-        return $this->getPlotPlayersByState(PlotPlayer::STATE_HELPER);
+        return $this->plotPlayerContainer->getPlotPlayersByState(PlotPlayer::STATE_HELPER);
     }
 
     /**
-     * @return array<string, PlotPlayer>
+     * @return array<int, PlotPlayer>
      */
     public function getPlotDenied() : array {
-        return $this->getPlotPlayersByState(PlotPlayer::STATE_DENIED);
+        return $this->plotPlayerContainer->getPlotPlayersByState(PlotPlayer::STATE_DENIED);
     }
 
-    public function getPlotPlayerExact(Player|PlayerData|string $player) : ?PlotPlayer {
-        if ($player instanceof Player) {
-            $identifier = PlayerData::getIdentifierFromPlayer($player);
-        } else if ($player instanceof PlayerData) {
-            $identifier = PlayerData::getIdentifierFromPlayerData($player);
-        } else {
-            $identifier = $player;
-        }
-        if (isset($this->plotPlayers[$identifier])) {
-            return $this->plotPlayers[$identifier];
-        }
-        return null;
+    public function getPlotPlayerExact(Player|PlayerData|int $player) : ?PlotPlayer {
+        return $this->plotPlayerContainer->getPlotPlayerExact($player);
     }
 
-    public function getPlotPlayer(Player|PlayerData|string $player) : ?PlotPlayer {
-        $plotPlayer = $this->getPlotPlayerExact($player);
-        if ($plotPlayer !== null) {
-            return $plotPlayer;
-        }
-        if (isset($this->plotPlayers["*"])) {
-            return $this->plotPlayers["*"];
-        }
-        return null;
+    public function getPlotPlayer(Player|PlayerData|int $player) : ?PlotPlayer {
+        return $this->plotPlayerContainer->getPlotPlayer($player);
     }
 
-    public function isPlotOwnerExact(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($player);
+    public function isPlotOwnerExact(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_OWNER;
     }
 
-    public function isPlotOwner(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayer($player);
+    public function isPlotOwner(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_OWNER;
     }
 
-    public function isPlotTrustedExact(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($player);
+    public function isPlotTrustedExact(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_TRUSTED;
     }
 
-    public function isPlotTrusted(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayer($player);
+    public function isPlotTrusted(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_TRUSTED;
     }
 
-    public function isPlotHelperExact(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($player);
+    public function isPlotHelperExact(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_HELPER;
     }
 
-    public function isPlotHelper(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayer($player);
+    public function isPlotHelper(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_HELPER;
     }
 
-    public function isPlotDeniedExact(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($player);
+    public function isPlotDeniedExact(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_DENIED;
     }
 
-    public function isPlotDenied(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayer($player);
+    public function isPlotDenied(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
@@ -227,11 +198,11 @@ class Plot extends BasePlot {
     }
 
     public function addPlotPlayer(PlotPlayer $plotPlayer) : void {
-        $this->plotPlayers[$plotPlayer->toString()] = $plotPlayer;
+        $this->plotPlayerContainer->addPlotPlayer($plotPlayer);
     }
 
-    public function removePlotPlayer(string $playerIdentifier) : void {
-        unset($this->plotPlayers[$playerIdentifier]);
+    public function removePlotPlayer(PlotPlayer $plotPlayer) : void {
+        $this->plotPlayerContainer->removePlotPlayer($plotPlayer);
     }
 
     /**
@@ -821,7 +792,7 @@ class Plot extends BasePlot {
         $data = parent::__serialize();
         $data["alias"] = $this->alias;
         $data["mergePlots"] = serialize($this->mergePlots);
-        $data["plotPlayers"] = serialize($this->plotPlayers);
+        $data["plotPlayers"] = serialize($this->plotPlayerContainer);
         $data["flags"] = serialize($this->flags);
         $data["plotRates"] = serialize($this->plotRates);
         return $data;
@@ -836,9 +807,9 @@ class Plot extends BasePlot {
         /** @phpstan-var array<string, MergePlot> $mergePlots */
         $mergePlots = unserialize($data["mergePlots"], ["allowed_classes" => false]);
         $this->mergePlots = $mergePlots;
-        /** @phpstan-var array<string, PlotPlayer> $plotPlayers */
-        $plotPlayers = unserialize($data["plotPlayers"], ["allowed_classes" => false]);
-        $this->plotPlayers = $plotPlayers;
+        $plotPlayerContainer = unserialize($data["plotPlayers"], ["allowed_classes" => [PlotPlayerContainer::class]]);
+        assert($plotPlayerContainer instanceof PlotPlayerContainer);
+        $this->plotPlayerContainer = $plotPlayerContainer;
         /** @phpstan-var array<string, BaseAttribute<mixed>> $flags */
         $flags = unserialize($data["flags"], ["allowed_classes" => false]);
         $this->flags = $flags;

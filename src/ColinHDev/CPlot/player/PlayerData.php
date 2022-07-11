@@ -11,6 +11,7 @@ use ColinHDev\CPlot\ResourceManager;
 use pocketmine\player\OfflinePlayer;
 use pocketmine\player\Player;
 use pocketmine\Server;
+use function is_string;
 
 class PlayerData {
 
@@ -49,6 +50,25 @@ class PlayerData {
 
     public function getPlayerName() : ?string {
         return $this->playerName;
+    }
+
+    /**
+     * Check whether  this class instance represents the {@see PlayerData} of the given {@see Player}.
+     * @param Player $player The player to check.
+     * Returns true if the given player is the same as the player this class instance represents.
+     * @return bool
+     */
+    public function isSame(Player $player) : bool {
+        if (is_string($this->playerUUID)) {
+            return $this->playerUUID === $player->getUniqueId()->getBytes();
+        }
+        if (is_string($this->playerXUID)) {
+            return $this->playerXUID === $player->getXuid();
+        }
+        if (is_string($this->playerName)) {
+            return $this->playerName === $player->getName();
+        }
+        return false;
     }
 
     /**

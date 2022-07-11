@@ -14,6 +14,7 @@ use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\plots\MergePlot;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
+use ColinHDev\CPlot\plots\PlotPlayerContainer;
 use ColinHDev\CPlot\plots\PlotRate;
 use ColinHDev\CPlot\provider\cache\Cache;
 use ColinHDev\CPlot\provider\cache\CacheIDs;
@@ -29,6 +30,7 @@ use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
 use SOFe\AwaitGenerator\Await;
 use function is_int;
+use function time;
 
 /**
  * This is an @internal class for handling the storage of data of this plugin in a database.
@@ -658,8 +660,8 @@ final class DataProvider {
         $plotAliases = yield $this->awaitPlotAliases($worldName, $x, $z);
         /** @phpstan-var array<string, MergePlot> $mergePlots */
         $mergePlots = yield $this->awaitMergePlots($worldName, $worldSettings, $x, $z);
-        /** @phpstan-var array<string, PlotPlayer> $plotPlayers */
-        $plotPlayers = yield $this->awaitPlotPlayers($worldName, $x, $z);
+        /** @phpstan-var PlotPlayerContainer $plotPlayerContainer */
+        $plotPlayerContainer = yield $this->awaitPlotPlayers($worldName, $x, $z);
         /** @phpstan-var array<string, BaseAttribute<mixed>> $plotFlags */
         $plotFlags = yield $this->awaitPlotFlags($worldName, $x, $z);
         /** @phpstan-var array<string, PlotRate> $plotRates */
@@ -667,7 +669,7 @@ final class DataProvider {
         $plot = new Plot(
             $worldName, $worldSettings, $x, $z,
             $plotAliases,
-            $mergePlots, $plotPlayers, $plotFlags, $plotRates
+            $mergePlots, $plotPlayerContainer, $plotFlags, $plotRates
         );
         $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
         return $plot;
@@ -724,7 +726,7 @@ final class DataProvider {
     /**
      * Fetches the {@see PlotPlayer}s of a plot asynchronously from the database and returns a {@see \Generator}. The
      * plot players can be get by using {@see Await}.
-     * @phpstan-return Generator<mixed, mixed, mixed, array<string, PlotPlayer>>
+     * @phpstan-return Generator<mixed, mixed, mixed, PlotPlayerContainer>
      */
     private function awaitPlotPlayers(string $worldName, int $x, int $z) : Generator {
         /** @phpstan-var array<array{playerID: int, state: string, addTime: string}> $rows */
@@ -736,20 +738,19 @@ final class DataProvider {
                 "z" => $z
             ]
         );
-        $plotPlayers = [];
+        $plotPlayerContainer = new PlotPlayerContainer();
         /** @phpstan-var array{playerID: int, state: string, addTime: string} $row */
         foreach ($rows as $row) {
             /** @phpstan-var PlayerData $playerData */
             $playerData = yield $this->awaitPlayerDataByID($row["playerID"]);
             $addTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["addTime"]);
-            $plotPlayer = new PlotPlayer(
+            $plotPlayerContainer->addPlotPlayer(new PlotPlayer(
                 $playerData,
                 $row["state"],
                 $addTime instanceof \DateTime ? $addTime->getTimestamp() : time()
-            );
-            $plotPlayers[$plotPlayer->toString()] = $plotPlayer;
+            ));
         }
-        return $plotPlayers;
+        return $plotPlayerContainer;
     }
 
     /**
