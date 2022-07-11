@@ -30,6 +30,7 @@ use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
 use SOFe\AwaitGenerator\Await;
 use function is_int;
+use function is_string;
 use function time;
 
 /**
@@ -55,6 +56,7 @@ final class DataProvider {
     private const INIT_PLOTRATES_TABLE = "cplot.init.plotRatesTable";
 
     private const GET_PLAYERDATA_BY_IDENTIFIER = "cplot.get.playerDataByIdentifier";
+    private const GET_PLAYERDATA_BY_DATA = "cplot.get.playerDataByData";
     private const GET_PLAYERDATA_BY_UUID = "cplot.get.playerDataByUUID";
     private const GET_PLAYERDATA_BY_XUID = "cplot.get.playerDataByXUID";
     private const GET_PLAYERDATA_BY_NAME = "cplot.get.playerDataByName";
@@ -95,9 +97,6 @@ final class DataProvider {
     /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|NonWorldSettings>, "cache_plot": Cache<string, BasePlot>} */
     private array $caches;
 
-    /** @phpstan-var "uuid"|"xuid"|"name" */
-    private string $playerIdentifierType;
-
     /**
      * @throws SqlError
      */
@@ -121,15 +120,6 @@ final class DataProvider {
             CacheIDs::CACHE_PLOT => new Cache(256),
         ];
         $this->caches = $caches;
-
-        /** @phpstan-var string $playerIdentifierType */
-        $playerIdentifierType = ResourceManager::getInstance()->getConfig()->get("player.identifier.type", "uuid");
-        $this->playerIdentifierType = match (strtolower($playerIdentifierType)) {
-            "uuid" => "uuid",
-            "xuid" => "xuid",
-            "name" => "name",
-            default => "uuid"
-        };
     }
 
     /**
@@ -158,13 +148,6 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return "uuid"|"xuid"|"name"
-     */
-    public function getPlayerIdentifierType() : string {
-        return $this->playerIdentifierType;
-    }
-
-    /**
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
@@ -177,29 +160,59 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by
-     * using {@see Await}.
+     * Fetches the {@see PlayerData} of a player by either its UUID, XUID or name asynchronously from the database (or
+     * synchronously from the cache if contained) and returns a {@see \Generator}. It can be gotten by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : Generator {
-        $playerData = null;
-        switch ($this->playerIdentifierType) {
-            case "uuid":
-                assert(is_string($playerUUID));
-                /** @phpstan-var PlayerData|null $playerData */
-                $playerData = yield $this->awaitPlayerDataByUUID($playerUUID);
-                break;
-            case "xuid":
-                assert(is_string($playerXUID));
-                /** @phpstan-var PlayerData|null $playerData */
-                $playerData = yield $this->awaitPlayerDataByXUID($playerXUID);
-                break;
-            case "name":
-                assert(is_string($playerName));
-                /** @phpstan-var PlayerData|null $playerData */
-                $playerData = yield $this->awaitPlayerDataByName($playerName);
-                break;
+        $cachedPlayerID = null;
+        if (is_string($playerUUID)) {
+            $cachedPlayerID = $this->caches[CacheIDs::CACHE_PLAYER_UUID]->getObjectFromCache($playerUUID);
+        }
+        if (is_string($playerXUID) && !is_int($cachedPlayerID)) {
+            $cachedPlayerID = $this->caches[CacheIDs::CACHE_PLAYER_XUID]->getObjectFromCache($playerXUID);
+        }
+        if (is_string($playerName) && !is_int($cachedPlayerID)) {
+            $cachedPlayerID = $this->caches[CacheIDs::CACHE_PLAYER_NAME]->getObjectFromCache($playerName);
+        }
+
+        if (is_int($cachedPlayerID)) {
+            $playerData = $this->caches[CacheIDs::CACHE_PLAYER]->getObjectFromCache($cachedPlayerID);
+            if ($playerData instanceof PlayerData) {
+                return $playerData;
+            }
+        }
+
+        /** @phpstan-var array<non-empty-array{playerID: int, playerUUID: string|null, playerXUID: string|null, playerName: string|null, lastJoin: string}> $rows */
+        $rows = yield from $this->database->asyncSelect(
+            self::GET_PLAYERDATA_BY_DATA,
+            ["playerUUID" => $playerUUID, "playerXUID" => $playerXUID, "playerName" => $playerName]
+        );
+        /** @phpstan-var array{playerID: int, playerUUID: string|null, playerXUID: string|null, playerName: string|null, lastJoin: string}|null $playerData */
+        $playerData = $rows[array_key_first($rows)] ?? null;
+        if ($playerData === null) {
+            return null;
+        }
+        $playerID = $playerData["playerID"];
+        $playerUUID ??= $playerData["playerUUID"];
+        $playerXUID ??= $playerData["playerXUID"];
+        $playerName ??= $playerData["playerName"];
+        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $playerData = new PlayerData(
+            $playerID,
+            $playerUUID, $playerXUID, $playerName,
+            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            (yield from $this->awaitPlayerSettings($playerID))
+        );
+        $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
+        if (is_string($playerUUID)) {
+            $this->caches[CacheIDs::CACHE_PLAYER_UUID]->cacheObject($playerUUID, $playerID);
+        }
+        if (is_string($playerXUID)) {
+            $this->caches[CacheIDs::CACHE_PLAYER_XUID]->cacheObject($playerXUID, $playerID);
+        }
+        if (is_string($playerName)) {
+            $this->caches[CacheIDs::CACHE_PLAYER_NAME]->cacheObject($playerName, $playerID);
         }
         return $playerData;
     }

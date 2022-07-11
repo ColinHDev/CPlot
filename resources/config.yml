@@ -227,10 +227,6 @@ database:
     # Recommended: 1 for sqlite, 2 for MySQL. You may want to further increase this value if your MySQL connection is very slow.
     worker-limit: 1
 
-# Decide how players should be identified within the database. Either by their UUID, their XUID or their name.
-# Possible values: uuid, xuid, name
-player.identifier.type: "uuid"
-
 # Change the settings for CPlot's economy plugin integration.
 economy:
     # Define the economy plugin, that will be used.
