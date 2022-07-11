@@ -20,7 +20,6 @@ use ColinHDev\CPlot\provider\cache\Cache;
 use ColinHDev\CPlot\provider\cache\CacheIDs;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\utils\ParseUtils;
-use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use Generator;
 use pocketmine\player\Player;
@@ -94,7 +93,7 @@ final class DataProvider {
     private DataConnector $database;
     private bool $isInitialized = false;
 
-    /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|NonWorldSettings>, "cache_plot": Cache<string, BasePlot>} */
+    /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|false>, "cache_plot": Cache<string, Plot|MergePlot>} */
     private array $caches;
 
     /**
@@ -110,7 +109,7 @@ final class DataProvider {
             $this->initializeDatabase()
         );
 
-        /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|NonWorldSettings>, "cache_plot": Cache<string, Plot|MergePlot>} $caches */
+        /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|false>, "cache_plot": Cache<string, Plot|MergePlot>} $caches */
         $caches = [
             CacheIDs::CACHE_PLAYER => new Cache(256),
             CacheIDs::CACHE_PLAYER_UUID => new Cache(256),
@@ -132,7 +131,7 @@ final class DataProvider {
 
     /**
      * Returns the {@see WorldSettings} cache.
-     * @phpstan-return Cache<string, WorldSettings|NonWorldSettings>
+     * @phpstan-return Cache<string, WorldSettings|false>
      */
     public function getWorldSettingsCache(): Cache {
         return $this->caches[CacheIDs::CACHE_WORLDSETTING];
@@ -540,16 +539,16 @@ final class DataProvider {
     }
 
     /**
-     * Fetches and returns the {@see WorldSettings} or {@see NonWorldSettings} of a world by its name synchronously from the cache.
+     * Fetches and returns the {@see WorldSettings} or false of a world by its name synchronously from the cache.
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the result can be
      * worked with once it was successfully loaded from the database.
-     * @phpstan-param null|\Closure(WorldSettings|NonWorldSettings): void $onSuccess
+     * @phpstan-param null|\Closure(WorldSettings|false): void $onSuccess
      * @phpstan-param null|\Closure(\Throwable): void $onError
      */
-    public function getOrLoadWorldSettings(string $worldName, ?\Closure $onSuccess = null, ?\Closure $onError = null) : WorldSettings|NonWorldSettings|null {
+    public function getOrLoadWorldSettings(string $worldName, ?\Closure $onSuccess = null, ?\Closure $onError = null) : WorldSettings|false|null {
         $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
-        if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
+        if ($worldSettings instanceof WorldSettings || $worldSettings === false) {
             if ($onSuccess !== null) {
                 $onSuccess($worldSettings);
             }
@@ -568,9 +567,9 @@ final class DataProvider {
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called.
      */
-    public function loadWorldIntoCache(string $worldName) : WorldSettings|NonWorldSettings|null {
+    public function loadWorldIntoCache(string $worldName) : WorldSettings|false|null {
         $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
-        if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
+        if ($worldSettings instanceof WorldSettings || $worldSettings === false) {
             return $worldSettings;
         }
         Await::g2c(
@@ -583,11 +582,11 @@ final class DataProvider {
      * Fetches the {@see WorldSettings} of a world asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
-     * @phpstan-return Generator<mixed, mixed, mixed, WorldSettings|NonWorldSettings>
+     * @phpstan-return Generator<mixed, mixed, mixed, WorldSettings|false>
      */
     public function awaitWorld(string $worldName) : Generator {
         $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
-        if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
+        if ($worldSettings instanceof WorldSettings || $worldSettings === false) {
             return $worldSettings;
         }
         /** @phpstan-var array{0?: array{worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, borderBlockOnClaim?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string}} $rows */
@@ -598,7 +597,7 @@ final class DataProvider {
         /** @phpstan-var null|array{worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, borderBlockOnClaim?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $worldData */
         $worldData = $rows[array_key_first($rows)] ?? null;
         if ($worldData === null) {
-            $worldSettings = new NonWorldSettings();
+            $worldSettings = false;
         } else {
             $worldSettings = WorldSettings::fromArray($worldData);
         }
@@ -633,7 +632,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches and returns the {@see WorldSettings} or {@see NonWorldSettings} of a world by its name synchronously from the cache.
+     * Fetches and returns the {@see WorldSettings} or false of a world by its name synchronously from the cache.
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the result can be
      * worked with once it was successfully loaded from the database.
@@ -690,7 +689,7 @@ final class DataProvider {
             }
             return null;
         }
-        /** @phpstan-var WorldSettings|NonWorldSettings $worldSettings */
+        /** @phpstan-var WorldSettings|false $worldSettings */
         $worldSettings = yield $this->awaitWorld($worldName);
         assert($worldSettings instanceof WorldSettings);
         /** @phpstan-var string|null $plotAliases */
@@ -959,7 +958,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches and returns the {@see WorldSettings} or {@see NonWorldSettings} of a world by its name synchronously from the cache.
+     * Fetches and returns the {@see WorldSettings} or false of a world by its name synchronously from the cache.
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the result can be
      * worked with once it was successfully loaded from the database.

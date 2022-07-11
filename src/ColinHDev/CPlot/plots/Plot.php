@@ -23,7 +23,6 @@ use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotResetAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
-use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;
 use pocketmine\data\bedrock\BiomeIds;
@@ -32,10 +31,8 @@ use pocketmine\math\Facing;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
-use pocketmine\world\World;
 use SOFe\AwaitGenerator\Await;
 use function assert;
-use function is_int;
 use function unserialize;
 
 class Plot extends BasePlot {

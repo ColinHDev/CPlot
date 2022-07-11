@@ -8,7 +8,6 @@ use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
@@ -28,7 +27,7 @@ class ProjectileLaunchListener implements Listener {
         $position = $entity->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
-            if (!($worldSettings instanceof NonWorldSettings)) {
+            if ($worldSettings !== false) {
                 $event->cancel();
                 return;
             }

@@ -10,7 +10,6 @@ use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use Generator;
 use pocketmine\math\Facing;
@@ -80,7 +79,7 @@ final class CPlotAPI {
     public function isPlotWorld(World $world, ?Closure $onSuccess = null, ?Closure $onError = null) : ?bool {
         $worldSettings = DataProvider::getInstance()->getOrLoadWorldSettings(
             $world->getFolderName(),
-            static function(WorldSettings|NonWorldSettings $worldSettings) use($onSuccess) : void {
+            static function(WorldSettings|false $worldSettings) use($onSuccess) : void {
                 if ($onSuccess !== null) {
                     $onSuccess($worldSettings instanceof WorldSettings);
                 }
@@ -90,7 +89,7 @@ final class CPlotAPI {
         if ($worldSettings instanceof WorldSettings) {
             return true;
         }
-        if ($worldSettings instanceof NonWorldSettings) {
+        if ($worldSettings === false) {
             return false;
         }
         return null;
@@ -121,7 +120,7 @@ final class CPlotAPI {
     public function getOrLoadWorldSettings(World $world, ?Closure $onSuccess = null, ?Closure $onError = null) : WorldSettings|false|null {
         $worldSettings = DataProvider::getInstance()->getOrLoadWorldSettings(
             $world->getFolderName(),
-            static function(WorldSettings|NonWorldSettings $worldSettings) use($onSuccess) : void {
+            static function(WorldSettings|false $worldSettings) use($onSuccess) : void {
                 if ($onSuccess !== null) {
                     $onSuccess($worldSettings instanceof WorldSettings ? $worldSettings : false);
                 }
@@ -131,7 +130,7 @@ final class CPlotAPI {
         if ($worldSettings instanceof WorldSettings) {
             return $worldSettings;
         }
-        if ($worldSettings instanceof NonWorldSettings) {
+        if ($worldSettings === false) {
             return false;
         }
         return null;
