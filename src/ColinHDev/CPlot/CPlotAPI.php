@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot;
 
-use Closure;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\Plot;
@@ -27,7 +26,6 @@ use SOFe\AwaitGenerator\Await;
 use Throwable;
 use function abs;
 use function ceil;
-use function count;
 use function floor;
 
 final class CPlotAPI {
@@ -388,55 +386,6 @@ final class CPlotAPI {
             return false;
         }
         return new BasePlot($worldName, $worldSettings, $X, $Z);
-    }
-
-    /**
-     * Converts the given array of {@see BasePlot}s to an array of corresponding {@see Plot}s.
-     *
-     * @param array $basePlots The array of {@see BasePlot} objects
-     * @phpstan-param non-empty-array<mixed, BasePlot> $basePlots
-     *
-     * If data about the plots is cached, the $onSuccess function is called immediately, while also letting the method
-     * return the array of plot objects.
-     * If no data about a plot is cached, it needs to be asychronously loaded from the database. Once this is done,
-     * the $onSuccess function is called and the result cached for the next call of this method.
-     *
-     * @param array $plots The array of already converted {@see Plot} objects. This parameter is for internal use only.
-     * @phpstan-param array<mixed, Plot|false> $plots
-     *
-     * Returns the array of {@see Plot}s, or null if there is no cached data about them, which could synchronously be
-     * gotten.
-     * @return non-empty-array<mixed, Plot|false>|null
-     *
-     * @throws RuntimeException when called outside of main thread.
-     */
-    public function getOrLoadPlotsFromBasePlots(array $basePlots, ?Closure $onSuccess = null, ?Closure $onError = null, array $plots = []) : array|null {
-        foreach($basePlots as $key => $basePlot) {
-            if (isset($plots[$key])) {
-                continue;
-            }
-            $plot = $this->getOrLoadPlot($basePlot->getWorld(), $basePlot->getX(), $basePlot->getZ());
-            if ($plot instanceof Plot || $plot === false) {
-                $plots[$key] = $plot;
-                continue;
-            }
-            $this->getOrLoadPlot(
-                $basePlot->getWorld(), $basePlot->getX(), $basePlot->getZ(),
-                function(Plot|false $plot) use($basePlots, $key, $onSuccess, $onError, $plots) : void {
-                    $plots[$key] = $plot;
-                    $this->getOrLoadPlotsFromBasePlots($basePlots, $onSuccess, $onError, $plots);
-                },
-                $onError
-            );
-            break;
-        }
-        if (count($plots) === count($basePlots)) {
-            if ($onSuccess !== null) {
-                $onSuccess($plots);
-            }
-            return $plots;
-        }
-        return null;
     }
 
     /**
