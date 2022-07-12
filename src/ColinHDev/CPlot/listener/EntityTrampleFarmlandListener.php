@@ -29,7 +29,6 @@ class EntityTrampleFarmlandListener implements Listener {
         $position = $event->getBlock()->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
         if ($worldSettings === null) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($entity, ["prefix", "player.interact.worldNotLoaded"]);
             $event->cancel();
             return;
         }
@@ -39,7 +38,6 @@ class EntityTrampleFarmlandListener implements Listener {
 
         $plot = Plot::loadFromPositionIntoCache($position);
         if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($entity, ["prefix", "player.interact.plotNotLoaded"]);
             $event->cancel();
             return;
         }

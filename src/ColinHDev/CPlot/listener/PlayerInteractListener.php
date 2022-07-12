@@ -10,7 +10,6 @@ use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;
 use pocketmine\block\Door;
@@ -18,7 +17,6 @@ use pocketmine\block\FenceGate;
 use pocketmine\block\Trapdoor;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
-use Ramsey\Uuid\Uuid;
 
 class PlayerInteractListener implements Listener {
 
@@ -30,7 +28,6 @@ class PlayerInteractListener implements Listener {
         $position = $event->getBlock()->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
         if ($worldSettings === null) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($event->getPlayer(), ["prefix", "player.interact.worldNotLoaded"]);
             $event->cancel();
             return;
         }
@@ -40,7 +37,6 @@ class PlayerInteractListener implements Listener {
 
         $plot = Plot::loadFromPositionIntoCache($position);
         if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($event->getPlayer(), ["prefix", "player.interact.plotNotLoaded"]);
             $event->cancel();
             return;
         }

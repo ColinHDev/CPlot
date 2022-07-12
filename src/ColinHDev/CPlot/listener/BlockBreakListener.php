@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\attributes\BlockListAttribute;
-use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\CPlotAPI;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
-use Ramsey\Uuid\Uuid;
 
 class BlockBreakListener implements Listener {
 
@@ -26,7 +24,6 @@ class BlockBreakListener implements Listener {
         $position = $event->getBlock()->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
         if ($worldSettings === null) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($event->getPlayer(), ["prefix", "player.break.worldNotLoaded"]);
             $event->cancel();
             return;
         }
@@ -34,9 +31,9 @@ class BlockBreakListener implements Listener {
             return;
         }
 
-        $plot = Plot::loadFromPositionIntoCache($position);
-        if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($event->getPlayer(), ["prefix", "player.break.plotNotLoaded"]);
+        /** @phpstan-var Plot|false|null $plot */
+        $plot = CPlotAPI::getInstance("1.0.0")->getOrLoadPlotAtPosition($position)->getResult();
+        if ($plot === null) {
             $event->cancel();
             return;
         }

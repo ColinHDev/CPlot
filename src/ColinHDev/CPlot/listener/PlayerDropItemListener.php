@@ -26,7 +26,6 @@ class PlayerDropItemListener implements Listener {
         $position = $player->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
         if ($worldSettings === null) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($player, ["prefix", "player.interact.worldNotLoaded"]);
             $event->cancel();
             return;
         }
@@ -36,7 +35,6 @@ class PlayerDropItemListener implements Listener {
 
         $plot = Plot::loadFromPositionIntoCache($position);
         if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($player, ["prefix", "player.interact.plotNotLoaded"]);
             $event->cancel();
             return;
         }

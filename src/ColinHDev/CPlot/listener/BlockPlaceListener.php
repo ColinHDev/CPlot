@@ -26,7 +26,6 @@ class BlockPlaceListener implements Listener {
         $position = $event->getBlock()->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
         if ($worldSettings === null) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($event->getPlayer(), ["prefix", "player.place.worldNotLoaded"]);
             $event->cancel();
             return;
         }
@@ -36,7 +35,6 @@ class BlockPlaceListener implements Listener {
 
         $plot = Plot::loadFromPositionIntoCache($position);
         if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($event->getPlayer(), ["prefix", "player.place.plotNotLoaded"]);
             $event->cancel();
             return;
         }
