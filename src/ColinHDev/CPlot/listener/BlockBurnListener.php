@@ -13,7 +13,7 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\event\block\BlockBurnEvent;
 use pocketmine\event\Listener;
 
-class BlockBurningListener implements Listener {
+class BlockBurnListener implements Listener {
 
     /**
      * @handleCancelled false

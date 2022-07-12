@@ -6,7 +6,7 @@ namespace ColinHDev\CPlot;
 
 use ColinHDev\CPlot\commands\PlotCommand;
 use ColinHDev\CPlot\listener\BlockBreakListener;
-use ColinHDev\CPlot\listener\BlockBurningListener;
+use ColinHDev\CPlot\listener\BlockBurnListener;
 use ColinHDev\CPlot\listener\BlockGrowListener;
 use ColinHDev\CPlot\listener\BlockPlaceListener;
 use ColinHDev\CPlot\listener\BlockSpreadListener;
@@ -53,7 +53,7 @@ class CPlot extends PluginBase {
         $server = $this->getServer();
         $pluginManager = $server->getPluginManager();
         $pluginManager->registerEvents(new BlockBreakListener(), $this);
-        $pluginManager->registerEvents(new BlockBurningListener(), $this);
+        $pluginManager->registerEvents(new BlockBurnListener(), $this);
         $pluginManager->registerEvents(new BlockGrowListener(), $this);
         $pluginManager->registerEvents(new BlockPlaceListener(), $this);
         $pluginManager->registerEvents(new BlockSpreadListener(), $this);
