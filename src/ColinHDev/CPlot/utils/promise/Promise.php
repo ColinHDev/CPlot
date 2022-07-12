@@ -61,4 +61,35 @@ final class Promise {
     public function getError() : ?Throwable {
         return $this->shared->error;
     }
+
+    /**
+     * Utility method to create a promise that resolves once all the given promises have resolved.
+     *
+     * @param array $promises An array of promises.
+     * @phpstan-param non-empty-array<mixed, Promise<TValue>> $promises
+     *
+     * Returns a {@see Promise} that resolves with an array of all the results of the given promises. The mapping of the
+     * results in the array is the same as the one in the promise array, so the keys are preserved.
+     * If any of the given promises is rejected, the returned promise is rejected with the same exception.
+     * @return Promise
+     * @phpstan-return Promise<array<mixed, TValue>>
+     */
+    public static function all(array $promises) : Promise {
+        $resolver = new PromiseResolver();
+        $results = [];
+        foreach($promises as $key => $promise) {
+            $promise->onCompletion(
+                function(mixed $value) use($promises, $key, &$results, $resolver) : void {
+                    $results[$key] = $value;
+                    if (count($results) === count($promises)) {
+                        $resolver->resolveSilent($results);
+                    }
+                },
+                function(Throwable $error) use($resolver) : void {
+                    $resolver->rejectSilent($error);
+                }
+            );
+        }
+        return $resolver->getPromise();
+    }
 }
