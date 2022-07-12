@@ -20,11 +20,10 @@ use pocketmine\event\player\PlayerInteractEvent;
 
 class PlayerInteractListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onPlayerInteract(PlayerInteractEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $position = $event->getBlock()->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
         if ($worldSettings === null) {

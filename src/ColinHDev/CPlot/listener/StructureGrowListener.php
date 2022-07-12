@@ -16,11 +16,10 @@ use pocketmine\world\Position;
 
 class StructureGrowListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onStructureGrow(StructureGrowEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $position = $event->getBlock()->getPosition();
         $world = $position->getWorld();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($world->getFolderName());

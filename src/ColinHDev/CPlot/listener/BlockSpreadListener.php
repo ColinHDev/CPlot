@@ -16,10 +16,10 @@ use pocketmine\event\Listener;
 
 class BlockSpreadListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onBlockSpread(BlockSpreadEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
         if (!$event->getNewState() instanceof Liquid) {
             return;
         }

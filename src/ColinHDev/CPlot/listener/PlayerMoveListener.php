@@ -25,6 +25,9 @@ use SOFe\AwaitGenerator\Await;
 
 class PlayerMoveListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onPlayerMove(PlayerMoveEvent $event) : void {
         $plotTo = Plot::loadFromPositionIntoCache($event->getTo());
         $plotFrom = Plot::loadFromPositionIntoCache($event->getFrom());

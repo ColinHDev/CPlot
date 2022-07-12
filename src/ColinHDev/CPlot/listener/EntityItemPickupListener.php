@@ -16,11 +16,10 @@ use pocketmine\player\Player;
 
 class EntityItemPickupListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onEntityItemPickup(EntityItemPickupEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $entity = $event->getEntity();
         if (!$entity instanceof Player) {
             return;

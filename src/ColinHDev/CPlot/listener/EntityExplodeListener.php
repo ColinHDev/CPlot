@@ -15,10 +15,10 @@ use pocketmine\event\Listener;
 
 class EntityExplodeListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onEntityExplode(EntityExplodeEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
         if (count($event->getBlockList()) === 0) {
             return;
         }

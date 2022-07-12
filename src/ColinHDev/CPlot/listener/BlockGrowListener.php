@@ -15,11 +15,10 @@ use pocketmine\event\Listener;
 
 class BlockGrowListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onBlockGrow(BlockGrowEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $position = $event->getBlock()->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
         if ($worldSettings === null) {

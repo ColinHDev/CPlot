@@ -12,11 +12,10 @@ use SOFe\AwaitGenerator\Await;
 
 class PlayerLoginListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onPlayerLogin(PlayerLoginEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $player = $event->getPlayer();
         Await::g2c(
             DataProvider::getInstance()->updatePlayerData(

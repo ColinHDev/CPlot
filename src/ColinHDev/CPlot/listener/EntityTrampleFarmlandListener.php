@@ -14,11 +14,10 @@ use pocketmine\player\Player;
 
 class EntityTrampleFarmlandListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onEntityTrampleFarmland(EntityTrampleFarmlandEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $entity = $event->getEntity();
         if (!$entity instanceof Player) {
             return;

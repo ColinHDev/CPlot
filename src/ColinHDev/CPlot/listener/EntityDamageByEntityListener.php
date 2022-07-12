@@ -16,11 +16,10 @@ use pocketmine\player\Player;
 
 class EntityDamageByEntityListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onEntityDamageByEntity(EntityDamageByEntityEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $damager = $event->getDamager();
         if (!$damager instanceof Player) {
             return;

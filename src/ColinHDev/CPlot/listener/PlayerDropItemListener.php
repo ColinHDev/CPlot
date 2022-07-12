@@ -15,11 +15,10 @@ use pocketmine\event\player\PlayerDropItemEvent;
 
 class PlayerDropItemListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onPlayerDropItem(PlayerDropItemEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $player = $event->getPlayer();
         $position = $player->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());

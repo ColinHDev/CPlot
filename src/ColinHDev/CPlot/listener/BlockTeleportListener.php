@@ -14,11 +14,10 @@ use pocketmine\world\Position;
 
 class BlockTeleportListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onBlockTeleport(BlockTeleportEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $fromPosition = $event->getBlock()->getPosition();
         $world = $fromPosition->getWorld();
         $worldName = $world->getFolderName();

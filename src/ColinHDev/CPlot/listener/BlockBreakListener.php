@@ -16,11 +16,10 @@ use pocketmine\event\Listener;
 
 class BlockBreakListener implements Listener {
 
+    /**
+     * @handleCancelled false
+     */
     public function onBlockBreak(BlockBreakEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $position = $event->getBlock()->getPosition();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
         if ($worldSettings === null) {
