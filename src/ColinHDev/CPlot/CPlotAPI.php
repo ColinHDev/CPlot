@@ -10,6 +10,8 @@ use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\utils\promise\Promise;
+use ColinHDev\CPlot\utils\promise\PromiseResolver;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use Generator;
 use pocketmine\math\Facing;
@@ -22,11 +24,11 @@ use pocketmine\world\Position;
 use pocketmine\world\World;
 use RuntimeException;
 use SOFe\AwaitGenerator\Await;
+use Throwable;
 use function abs;
 use function ceil;
 use function count;
 use function floor;
-use function is_array;
 
 final class CPlotAPI {
 
@@ -59,40 +61,29 @@ final class CPlotAPI {
      *
      * @param World $world The world to check
      *
-     * If data about the world is cached, the $onSuccess function is called immediately, while also letting the method
-     * return either true or false.
-     * If no data about the world is cached, it needs to be asychronously loaded from the database. Once this is done,
-     * the $onSuccess function is called and the result cached for the next call of this method.
-     *
-     * @param Closure|null $onSuccess The callback function to call if the data about the world is cached or loaded
-     *                                successfully and it is figured out whether the world is a plot world or not.
-     * @phpstan-param (\Closure(bool):void)|null $onSuccess
-     *
-     * @param Closure|null $onError The callback function to call if something went wrong during the loading of the
-     *                              data from the database.
-     * @phpstan-param (Closure():void)|(Closure(Throwable):void)|null $onError
-     *
-     * Returns true if the world is a plot world, false otherwise, or null if there is no cached data about the world,
-     * which could synchronously be gotten.
-     * @return bool|null
+     * Returns a {@see Promise} that resolves to true if the world is a plot world, or false if it is not.
+     * If data about the world was cached, the promise might already be resolved once it is returned by this method.
+     * @return Promise
+     * @phpstan-return Promise<bool>
      */
-    public function isPlotWorld(World $world, ?Closure $onSuccess = null, ?Closure $onError = null) : ?bool {
+    public function isPlotWorld(World $world) : Promise {
+        /** @phpstan-var PromiseResolver<bool> $resolver */
+        $resolver = new PromiseResolver();
         $worldSettings = DataProvider::getInstance()->getOrLoadWorldSettings(
             $world->getFolderName(),
-            static function(WorldSettings|false $worldSettings) use($onSuccess) : void {
-                if ($onSuccess !== null) {
-                    $onSuccess($worldSettings instanceof WorldSettings);
-                }
+            static function(WorldSettings|false $worldSettings) use($resolver) : void {
+                $resolver->resolveSilent($worldSettings instanceof WorldSettings);
             },
-            $onError
+            static function(Throwable $error) use($resolver) : void {
+                $resolver->rejectSilent($error);
+            }
         );
         if ($worldSettings instanceof WorldSettings) {
-            return true;
+            $resolver->resolveSilent(true);
+        } else if ($worldSettings === false) {
+            $resolver->resolveSilent(false);
         }
-        if ($worldSettings === false) {
-            return false;
-        }
-        return null;
+        return $resolver->getPromise();
     }
 
     /**
@@ -100,98 +91,68 @@ final class CPlotAPI {
      *
      * @param World $world The world to get the {@see WorldSettings} of
      *
-     * If data about the world is cached, the $onSuccess function is called immediately, while also letting the method
-     * return either the {@see WorldSettings} or false.
-     * If no data about the world is cached, it needs to be asychronously loaded from the database. Once this is done,
-     * the $onSuccess function is called and the result cached for the next call of this method.
-     *
-     * @param Closure|null $onSuccess The callback function to call if the data about the world is cached or loaded
-     *                                successfully.
-     * @phpstan-param (Closure(WorldSettings|false):void)|null $onSuccess
-     *
-     * @param Closure|null $onError The callback function to call if something went wrong during the loading of the
-     *                              data from the database.
-     * @phpstan-param (Closure():void)|(Closure(Throwable):void)|null $onError
-     *
-     * Returns the {@see WorldSettings} associated to the given world, false if the world is not a plot world, or null
-     * if there is no cached data about the world, which could synchronously be gotten.
-     * @return WorldSettings|false|null
+     * Returns a {@see Promise} that resolves the associated {@see WorldSettings} object of the world, or false if it
+     * is not a plot world.
+     * If data about the world was cached, the promise might already be resolved once it is returned by this method.
+     * @return Promise
+     * @phpstan-return Promise<WorldSettings|false>
      */
-    public function getOrLoadWorldSettings(World $world, ?Closure $onSuccess = null, ?Closure $onError = null) : WorldSettings|false|null {
+    public function getOrLoadWorldSettings(World $world) : Promise {
+        /** @phpstan-var PromiseResolver<WorldSettings|false> $resolver */
+        $resolver = new PromiseResolver();
         $worldSettings = DataProvider::getInstance()->getOrLoadWorldSettings(
             $world->getFolderName(),
-            static function(WorldSettings|false $worldSettings) use($onSuccess) : void {
-                if ($onSuccess !== null) {
-                    $onSuccess($worldSettings instanceof WorldSettings ? $worldSettings : false);
-                }
+            static function(WorldSettings|false $worldSettings) use($resolver) : void {
+                $resolver->resolveSilent($worldSettings);
             },
-            $onError
+            static function(Throwable $error) use($resolver) : void {
+                $resolver->rejectSilent($error);
+            }
         );
         if ($worldSettings instanceof WorldSettings) {
-            return $worldSettings;
+            $resolver->resolveSilent($worldSettings);
+        } else if ($worldSettings === false) {
+            $resolver->resolveSilent(false);
         }
-        if ($worldSettings === false) {
-            return false;
-        }
-        return null;
+        return $resolver->getPromise();
     }
 
     /**
-     * Get the {@see Plot} in the given world with the given coordinates.
+     * Get the {@see Plot} in the given {@see World} with the given coordinates.
      *
      * @param World $world The world the plot is in
      * @param int $x The X coordinate of the plot
      * @param int $z The Z coordinate of the plot
      *
-     * If data about the plot is cached, the $onSuccess function is called immediately, while also letting the method
-     * return either the {@see Plot} or false.
-     * If no data about the plot is cached, it needs to be asychronously loaded from the database. Once this is done,
-     * the $onSuccess function is called and the result cached for the next call of this method.
-     *
-     * @param Closure|null $onSuccess The callback function to call if the data about the plot is cached or loaded
-     *                                successfully.
-     * @phpstan-param (Closure(Plot|false):void)|null $onSuccess
-     *
-     * @param Closure|null $onError The callback function to call if something went wrong during the loading of the
-     *                              data from the database.
-     * @phpstan-param (Closure():void)|(Closure(Throwable):void)|null $onError
-     *
-     * Returns the {@see Plot} in the given world with the given coordinates, false if the world is not a plot world or
-     * there is no plot to get, or null if there is no cached data about the plot, which could synchronously be gotten.
-     * @return Plot|false|null
+     * Returns a {@see Promise} that resolves the requested {@see Plot} object with the given coordinates in the given
+     * world, or false if it is not a plot world.
+     * If data about the plot was cached, the promise might already be resolved once it is returned by this method.
+     * @return Promise
+     * @phpstan-return Promise<Plot|false>
      */
-    public function getOrLoadPlot(World $world, int $x, int $z, ?Closure $onSuccess = null, ?Closure $onError = null) : Plot|false|null {
-        $worldSettings = $this->getOrLoadWorldSettings(
-            $world,
-            static function(WorldSettings|false $worldSettings) use($world, $x, $z, $onSuccess, $onError) : void {
+    public function getOrLoadPlot(World $world, int $x, int $z) : Promise {
+        /** @phpstan-var PromiseResolver<Plot|false> $resolver */
+        $resolver = new PromiseResolver();
+        $this->getOrLoadWorldSettings($world)->onCompletion(
+            static function(WorldSettings|false $worldSettings) use($resolver, $world, $x, $z) : void {
                 if ($worldSettings === false) {
-                    if ($onSuccess !== null) {
-                        $onSuccess(false);
-                    }
+                    $resolver->resolveSilent(false);
                     return;
                 }
                 DataProvider::getInstance()->getOrLoadMergeOrigin(new BasePlot($world->getFolderName(), $worldSettings, $x, $z),
-                    static function(Plot|null $plot) use($onSuccess) : void {
-                        if ($onSuccess !== null) {
-                            $onSuccess($plot instanceof Plot ? $plot : false);
-                        }
+                    static function(Plot|null $plot) use($resolver) : void {
+                        $resolver->resolveSilent($plot instanceof Plot ? $plot : false);
                     },
-                    $onError
+                    static function(Throwable $error) use($resolver) : void {
+                        $resolver->rejectSilent($error);
+                    }
                 );
             },
-            $onError
+            static function(Throwable $error) use($resolver) : void {
+                $resolver->rejectSilent($error);
+            }
         );
-        if (!($worldSettings instanceof WorldSettings)) {
-            return $worldSettings === false ? false : null;
-        }
-        return DataProvider::getInstance()->getOrLoadMergeOrigin(new BasePlot($world->getFolderName(), $worldSettings, $x, $z),
-            static function(Plot|null $plot) use($onSuccess) : void {
-                if ($onSuccess !== null) {
-                    $onSuccess($plot instanceof Plot ? $plot : false);
-                }
-            },
-            $onError
-        );
+        return $resolver->getPromise();
     }
 
     /**
@@ -199,81 +160,101 @@ final class CPlotAPI {
      *
      * @param Position $position The position to get the plot of
      *
-     * If data about the plot is cached, the $onSuccess function is called immediately, while also letting the method
-     * return either the {@see Plot} or false.
-     * If no data about the plot is cached, it needs to be asychronously loaded from the database. Once this is done,
-     * the $onSuccess function is called and the result cached for the next call of this method.
+     * Returns a {@see Promise} that resolves the requested {@see Plot} object at the given {@see Position}, or false
+     * if there is no plot there.
+     * If data about the plot was cached, the promise might already be resolved once it is returned by this method.
+     * @return Promise
+     * @phpstan-return Promise<Plot|false>
      *
-     * @param Closure|null $onSuccess The callback function to call if the data about the plot is cached or loaded
-     *                                successfully.
-     * @phpstan-param (Closure(Plot|false):void)|null $onSuccess
-     *
-     * @param Closure|null $onError The callback function to call if something went wrong during the loading of the
-     *                              data from the database.
-     * @phpstan-param (Closure():void)|(Closure(Throwable):void)|null $onError
-     *
-     * Returns the {@see Plot} at the given {@see Position}, false if there is no plot there, or null if there is no
-     * cached data about the plot, which could synchronously be gotten.
-     * @return Plot|false|null
-     *
-     * @throws RuntimeException when called outside of main thread.
-     * @throws AssumptionFailedError if given a {@see Position} with an invalid or unloaded {@see World}.
+     * @throws AssumptionFailedError if given a {@see Position} with an invalid or unloaded {@see World}
      */
-    public function getOrLoadPlotAtPosition(Position $position, ?Closure $onSuccess = null, ?Closure $onError = null) : Plot|false|null {
+    public function getOrLoadPlotAtPosition(Position $position) : Promise {
+        /** @phpstan-var PromiseResolver<Plot|false> $resolver */
+        $resolver = new PromiseResolver();
         $world = $position->getWorld();
-        $worldSettings = $this->getOrLoadWorldSettings(
-            $world,
-            function(WorldSettings|false $worldSettings) use($position, $world, $onSuccess, $onError) : void {
+        $this->getOrLoadWorldSettings($world)->onCompletion(
+            function(WorldSettings|false $worldSettings) use($position, $world, $resolver) : void {
                 if ($worldSettings === false) {
-                    if ($onSuccess !== null) {
-                        $onSuccess(false);
-                    }
+                    $resolver->resolveSilent(false);
                     return;
                 }
                 $worldName = $world->getFolderName();
                 $basePlot = $this->getBasePlotAtPoint($worldName, $worldSettings, $position);
                 if ($basePlot instanceof BasePlot) {
-                    $this->getOrLoadPlot($world, $basePlot->getX(), $basePlot->getZ(), $onSuccess, $onError);
+                    $this->getOrLoadPlot($world, $basePlot->getX(), $basePlot->getZ())->onCompletion(
+                        static function(Plot|false $plot) use($resolver) : void {
+                            $resolver->resolveSilent($plot instanceof Plot ? $plot : false);
+                        },
+                        static function(Throwable $error) use($resolver) : void {
+                            $resolver->rejectSilent($error);
+                        }
+                    );
                     return;
                 }
                 $roadSize = $worldSettings->getRoadSize();
                 $basePlotInNorth = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->getSide(Facing::NORTH, $roadSize));
                 $basePlotInSouth = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->getSide(Facing::SOUTH, $roadSize));
                 if ($basePlotInNorth instanceof BasePlot && $basePlotInSouth instanceof BasePlot) {
-                    $this->getOrLoadPlotsFromBasePlots(
-                        [$basePlotInNorth, $basePlotInSouth],
-                        static function(array $plots) use($onSuccess) : void {
+                    /** @phpstan-var Promise<Plot|false> $promiseNorth */
+                    $promiseNorth = $this->getOrLoadPlot($world, $basePlotInNorth->getX(), $basePlotInNorth->getZ());
+                    if ($promiseNorth->isResolved() && ($plotInNorth = $promiseNorth->getResult()) instanceof Plot) {
+                        /** @phpstan-var Plot $plotInNorth */
+                        $resolver->resolveSilent($plotInNorth->isMerged($basePlotInSouth) ? $plotInNorth : false);
+                        return;
+                    }
+                    /** @phpstan-var Promise<Plot|false> $promiseSouth */
+                    $promiseSouth = $this->getOrLoadPlot($world, $basePlotInSouth->getX(), $basePlotInSouth->getZ());
+                    if ($promiseSouth->isResolved() && ($plotInSouth = $promiseSouth->getResult()) instanceof Plot) {
+                        /** @phpstan-var Plot $plotInSouth */
+                        $resolver->resolveSilent($plotInSouth->isMerged($basePlotInNorth) ? $plotInSouth : false);
+                        return;
+                    }
+                    Promise::all([$promiseNorth, $promiseSouth])->onCompletion(
+                        /**
+                         * @phpstan-param array<mixed, Plot|false> $plots
+                         */
+                        static function(array $plots) use($resolver) : void {
                             [$plotInNorth, $plotInSouth] = $plots;
-                            if ($plotInNorth instanceof Plot && $plotInSouth instanceof Plot && $plotInNorth->isSame($plotInSouth)) {
-                                $plot = $plotInNorth;
-                            } else {
-                                $plot = false;
-                            }
-                            if ($onSuccess !== null) {
-                                $onSuccess($plot);
-                            }
+                            $resolver->resolveSilent(
+                                ($plotInNorth instanceof Plot && $plotInSouth instanceof Plot && $plotInNorth->isSame($plotInSouth)) ? $plotInNorth : false
+                            );
                         },
-                        $onError
+                        static function(Throwable $error) use($resolver) : void {
+                            $resolver->rejectSilent($error);
+                        }
                     );
                     return;
                 }
                 $basePlotInWest = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->getSide(Facing::WEST, $roadSize));
                 $basePlotInEast = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->getSide(Facing::EAST, $roadSize));
                 if ($basePlotInWest instanceof BasePlot && $basePlotInEast instanceof BasePlot) {
-                    $this->getOrLoadPlotsFromBasePlots(
-                        [$basePlotInWest, $basePlotInEast],
-                        static function(array $plots) use($onSuccess) : void {
+                    /** @phpstan-var Promise<Plot|false> $promiseWest */
+                    $promiseWest = $this->getOrLoadPlot($world, $basePlotInWest->getX(), $basePlotInWest->getZ());
+                    if ($promiseWest->isResolved() && ($plotInWest = $promiseWest->getResult()) instanceof Plot) {
+                        /** @phpstan-var Plot $plotInWest */
+                        $resolver->resolveSilent($plotInWest->isMerged($basePlotInEast) ? $plotInWest : false);
+                        return;
+                    }
+                    /** @phpstan-var Promise<Plot|false> $promiseEast */
+                    $promiseEast = $this->getOrLoadPlot($world, $basePlotInEast->getX(), $basePlotInEast->getZ());
+                    if ($promiseEast->isResolved() && ($plotInEast = $promiseEast->getResult()) instanceof Plot) {
+                        /** @phpstan-var Plot $plotInEast */
+                        $resolver->resolveSilent($plotInEast->isMerged($basePlotInWest) ? $plotInEast : false);
+                        return;
+                    }
+                    Promise::all([$promiseWest, $promiseEast])->onCompletion(
+                    /**
+                     * @phpstan-param array<mixed, Plot|false> $plots
+                     */
+                        static function(array $plots) use($resolver) : void {
                             [$plotInWest, $plotInEast] = $plots;
-                            if ($plotInWest instanceof Plot && $plotInEast instanceof Plot && $plotInWest->isSame($plotInEast)) {
-                                $plot = $plotInWest;
-                            } else {
-                                $plot = false;
-                            }
-                            if ($onSuccess !== null) {
-                                $onSuccess($plot);
-                            }
+                            $resolver->resolveSilent(
+                                ($plotInWest instanceof Plot && $plotInEast instanceof Plot && $plotInWest->isSame($plotInEast)) ? $plotInWest : false
+                            );
                         },
-                        $onError
+                        static function(Throwable $error) use($resolver) : void {
+                            $resolver->rejectSilent($error);
+                        }
                     );
                     return;
                 }
@@ -282,128 +263,95 @@ final class CPlotAPI {
                 $basePlotInSouthWest = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->add(- $roadSize, 0, $roadSize));
                 $basePlotInSouthEast = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->add($roadSize, 0, $roadSize));
                 if ($basePlotInNorthWest instanceof BasePlot && $basePlotInNorthEast instanceof BasePlot && $basePlotInSouthWest instanceof BasePlot && $basePlotInSouthEast instanceof BasePlot) {
-                    $this->getOrLoadPlotsFromBasePlots(
-                        [$basePlotInNorthWest, $basePlotInNorthEast, $basePlotInSouthWest, $basePlotInSouthEast],
-                        static function(array $plots) use($onSuccess) : void {
+                    /** @phpstan-var Promise<Plot|false> $promiseNorthWest */
+                    $promiseNorthWest = $this->getOrLoadPlot($world, $basePlotInNorthWest->getX(), $basePlotInNorthWest->getZ());
+                    if ($promiseNorthWest->isResolved() && ($plotInNorthWest = $promiseNorthWest->getResult()) instanceof Plot) {
+                        /** @phpstan-var Plot $plotInNorthWest */
+                        if (
+                            $plotInNorthWest->isMerged($basePlotInNorthEast) &&
+                            $plotInNorthWest->isMerged($basePlotInSouthWest) &&
+                            $plotInNorthWest->isMerged($basePlotInSouthEast)
+                        ) {
+                            $resolver->resolveSilent($plotInNorthWest);
+                        } else {
+                            $resolver->resolveSilent(false);
+                        }
+                        return;
+                    }
+                    /** @phpstan-var Promise<Plot|false> $promiseNorthEast */
+                    $promiseNorthEast = $this->getOrLoadPlot($world, $basePlotInNorthEast->getX(), $basePlotInNorthEast->getZ());
+                    if ($promiseNorthEast->isResolved() && ($plotInNorthEast = $promiseNorthEast->getResult()) instanceof Plot) {
+                        /** @phpstan-var Plot $plotInNorthEast */
+                        if (
+                            $plotInNorthEast->isMerged($basePlotInNorthWest) &&
+                            $plotInNorthEast->isMerged($basePlotInSouthWest) &&
+                            $plotInNorthEast->isMerged($basePlotInSouthEast)
+                        ) {
+                            $resolver->resolveSilent($plotInNorthEast);
+                        } else {
+                            $resolver->resolveSilent(false);
+                        }
+                        return;
+                    }
+                    /** @phpstan-var Promise<Plot|false> $promiseSouthWest */
+                    $promiseSouthWest = $this->getOrLoadPlot($world, $basePlotInSouthWest->getX(), $basePlotInSouthWest->getZ());
+                    if ($promiseSouthWest->isResolved() && ($plotInSouthWest = $promiseSouthWest->getResult()) instanceof Plot) {
+                        /** @phpstan-var Plot $plotInSouthWest */
+                        if (
+                            $plotInSouthWest->isMerged($basePlotInNorthWest) &&
+                            $plotInSouthWest->isMerged($basePlotInNorthEast) &&
+                            $plotInSouthWest->isMerged($basePlotInSouthEast)
+                        ) {
+                            $resolver->resolveSilent($plotInSouthWest);
+                        } else {
+                            $resolver->resolveSilent(false);
+                        }
+                        return;
+                    }
+                    /** @phpstan-var Promise<Plot|false> $promiseSouthEast */
+                    $promiseSouthEast = $this->getOrLoadPlot($world, $basePlotInSouthEast->getX(), $basePlotInSouthEast->getZ());
+                    if ($promiseSouthEast->isResolved() && ($plotInSouthEast = $promiseSouthEast->getResult()) instanceof Plot) {
+                        /** @phpstan-var Plot $plotInSouthEast */
+                        if (
+                            $plotInSouthEast->isMerged($basePlotInNorthWest) &&
+                            $plotInSouthEast->isMerged($basePlotInNorthEast) &&
+                            $plotInSouthEast->isMerged($basePlotInSouthWest)
+                        ) {
+                            $resolver->resolveSilent($plotInSouthEast);
+                        } else {
+                            $resolver->resolveSilent(false);
+                        }
+                        return;
+                    }
+                    Promise::all([$promiseNorthWest, $promiseNorthEast, $promiseSouthWest, $promiseSouthEast])->onCompletion(
+                    /**
+                     * @phpstan-param array<mixed, Plot|false> $plots
+                     */
+                        static function(array $plots) use($resolver) : void {
                             [$plotInNorthWest, $plotInNorthEast, $plotInSouthWest, $plotInSouthEast] = $plots;
-                            if (
-                                $plotInNorthWest instanceof Plot && $plotInNorthEast instanceof Plot && $plotInSouthWest instanceof Plot && $plotInSouthEast instanceof Plot &&
-                                $plotInNorthWest->isSame($plotInNorthEast) && $plotInNorthWest->isSame($plotInSouthWest) && $plotInNorthWest->isSame($plotInSouthEast)
-                            ) {
-                                $plot = $plotInNorthWest;
-                            } else {
-                                $plot = false;
-                            }
-                            if ($onSuccess !== null) {
-                                $onSuccess($plot);
-                            }
+                            $resolver->resolveSilent(
+                                (
+                                    $plotInNorthWest instanceof Plot && $plotInNorthEast instanceof Plot &&
+                                    $plotInSouthWest instanceof Plot && $plotInSouthEast instanceof Plot &&
+                                    $plotInNorthWest->isSame($plotInNorthEast) &&
+                                    $plotInNorthWest->isSame($plotInSouthWest) &&
+                                    $plotInNorthWest->isSame($plotInSouthEast)
+                                ) ? $plotInNorthWest : false
+                            );
                         },
-                        $onError
+                        static function(Throwable $error) use($resolver) : void {
+                            $resolver->rejectSilent($error);
+                        }
                     );
                     return;
                 }
+                $resolver->resolveSilent(false);
             },
-            $onError
+            static function(Throwable $error) use($resolver) : void {
+                $resolver->rejectSilent($error);
+            }
         );
-        if (!($worldSettings instanceof WorldSettings)) {
-            return $worldSettings === false ? false : null;
-        }
-        $worldName = $world->getFolderName();
-        $basePlot = $this->getBasePlotAtPoint($worldName, $worldSettings, $position);
-        if ($basePlot instanceof BasePlot) {
-            return $this->getOrLoadPlot($world, $basePlot->getX(), $basePlot->getZ(), $onSuccess, $onError);
-        }
-        $roadSize = $worldSettings->getRoadSize();
-        $basePlotInNorth = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->getSide(Facing::NORTH, $roadSize));
-        $basePlotInSouth = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->getSide(Facing::SOUTH, $roadSize));
-        if ($basePlotInNorth instanceof BasePlot && $basePlotInSouth instanceof BasePlot) {
-            $plots = $this->getOrLoadPlotsFromBasePlots(
-                [$basePlotInNorth, $basePlotInSouth],
-                static function(array $plots) use($onSuccess) : void {
-                    [$plotInNorth, $plotInSouth] = $plots;
-                    if ($plotInNorth instanceof Plot && $plotInSouth instanceof Plot && $plotInNorth->isSame($plotInSouth)) {
-                        $plot = $plotInNorth;
-                    } else {
-                        $plot = false;
-                    }
-                    if ($onSuccess !== null) {
-                        $onSuccess($plot);
-                    }
-                },
-                $onError
-            );
-            if (is_array($plots)) {
-                [$plotInNorth, $plotInSouth] = $plots;
-                if ($plotInNorth instanceof Plot && $plotInSouth instanceof Plot && $plotInNorth->isSame($plotInSouth)) {
-                    return $plotInNorth;
-                }
-                return false;
-            }
-            return null;
-        }
-        $basePlotInWest = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->getSide(Facing::WEST, $roadSize));
-        $basePlotInEast = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->getSide(Facing::EAST, $roadSize));
-        if ($basePlotInWest instanceof BasePlot && $basePlotInEast instanceof BasePlot) {
-            $plots = $this->getOrLoadPlotsFromBasePlots(
-                [$basePlotInWest, $basePlotInEast],
-                static function(array $plots) use($onSuccess) : void {
-                    [$plotInWest, $plotInEast] = $plots;
-                    if ($plotInWest instanceof Plot && $plotInEast instanceof Plot && $plotInWest->isSame($plotInEast)) {
-                        $plot = $plotInWest;
-                    } else {
-                        $plot = false;
-                    }
-                    if ($onSuccess !== null) {
-                        $onSuccess($plot);
-                    }
-                },
-                $onError
-            );
-            if (is_array($plots)) {
-                [$plotInWest, $plotInEast] = $plots;
-                if ($plotInWest instanceof Plot && $plotInEast instanceof Plot && $plotInWest->isSame($plotInEast)) {
-                    return $plotInWest;
-                }
-                return false;
-            }
-            return null;
-        }
-        $basePlotInNorthWest = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->add(- $roadSize, 0, - $roadSize));
-        $basePlotInNorthEast = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->add($roadSize, 0, - $roadSize));
-        $basePlotInSouthWest = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->add(- $roadSize, 0, $roadSize));
-        $basePlotInSouthEast = $this->getBasePlotAtPoint($worldName, $worldSettings, $position->add($roadSize, 0, $roadSize));
-        if ($basePlotInNorthWest instanceof BasePlot && $basePlotInNorthEast instanceof BasePlot && $basePlotInSouthWest instanceof BasePlot && $basePlotInSouthEast instanceof BasePlot) {
-            $plots = $this->getOrLoadPlotsFromBasePlots(
-                [$basePlotInNorthWest, $basePlotInNorthEast, $basePlotInSouthWest, $basePlotInSouthEast],
-                static function(array $plots) use($onSuccess) : void {
-                    [$plotInNorthWest, $plotInNorthEast, $plotInSouthWest, $plotInSouthEast] = $plots;
-                    if (
-                        $plotInNorthWest instanceof Plot && $plotInNorthEast instanceof Plot && $plotInSouthWest instanceof Plot && $plotInSouthEast instanceof Plot &&
-                        $plotInNorthWest->isSame($plotInNorthEast) && $plotInNorthWest->isSame($plotInSouthWest) && $plotInNorthWest->isSame($plotInSouthEast)
-                    ) {
-                        $plot = $plotInNorthWest;
-                    } else {
-                        $plot = false;
-                    }
-                    if ($onSuccess !== null) {
-                        $onSuccess($plot);
-                    }
-                },
-                $onError
-            );
-            if (is_array($plots)) {
-                [$plotInNorthWest, $plotInNorthEast, $plotInSouthWest, $plotInSouthEast] = $plots;
-                if (
-                    $plotInNorthWest instanceof Plot && $plotInNorthEast instanceof Plot && $plotInSouthWest instanceof Plot && $plotInSouthEast instanceof Plot &&
-                    $plotInNorthWest->isSame($plotInNorthEast) && $plotInNorthWest->isSame($plotInSouthWest) && $plotInNorthWest->isSame($plotInSouthEast)
-                ) {
-                    return $plotInNorthWest;
-                }
-                return false;
-            }
-            return null;
-        }
-        return false;
+        return $resolver->getPromise();
     }
 
     /**
@@ -453,14 +401,6 @@ final class CPlotAPI {
      * If no data about a plot is cached, it needs to be asychronously loaded from the database. Once this is done,
      * the $onSuccess function is called and the result cached for the next call of this method.
      *
-     * @param Closure|null $onSuccess The callback function to call if the data about the plots is cached or loaded
-     *                                successfully.
-     * @phpstan-param (Closure(non-empty-array<mixed, Plot|false>):void)|null $onSuccess
-     *
-     * @param Closure|null $onError The callback function to call if something went wrong during the loading of the
-     *                              data from the database.
-     * @phpstan-param (Closure():void)|(Closure(Throwable):void)|null $onError
-     *
      * @param array $plots The array of already converted {@see Plot} objects. This parameter is for internal use only.
      * @phpstan-param array<mixed, Plot|false> $plots
      *
@@ -504,15 +444,17 @@ final class CPlotAPI {
      *
      * @param Player $player The player to load the plots of
      *
-     * @param Closure $onSuccess The callback function to call if the data about the plots is loaded successfully.
-     * @phpstan-param (Closure(array<string, Plot>):void)|null $onSuccess
-     *
-     * @param Closure $onError The callback function to call if something went wrong during the loading of the data from
-     *                         the database.
-     * @phpstan-param (Closure():void)|(Closure(Throwable):void)|null $onError
+     * Returns a {@see Promise} that resolves the requested {@see Plot}s object of the given {@see Player}.
+     * @return Promise
+     * @phpstan-return Promise<array<string, Plot>>
      */
-    public function loadPlotsOfPlayer(Player $player, Closure $onSuccess, Closure $onError) : void {
+    public function loadPlotsOfPlayer(Player $player) : Promise {
+        /** @phpstan-var PromiseResolver<array<string, Plot>> $resolver */
+        $resolver = new PromiseResolver();
         Await::f2c(
+            /**
+             * @phpstan-return Generator<mixed, mixed, mixed, array<string, Plot>>
+             */
             static function() use($player) : Generator {
                 /** @phpstan-var PlayerData|null $playerData */
                 $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
@@ -523,8 +465,16 @@ final class CPlotAPI {
                 $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
                 return $plots;
             },
-            $onSuccess,
-            $onError
+            /**
+             * @phpstan-param array<string, Plot> $plots
+             */
+            static function(array $plots) use($resolver) : void {
+                $resolver->resolveSilent($plots);
+            },
+            static function(Throwable $error) use($resolver) : void {
+                $resolver->rejectSilent($error);
+            }
         );
+        return $resolver->getPromise();
     }
 }
