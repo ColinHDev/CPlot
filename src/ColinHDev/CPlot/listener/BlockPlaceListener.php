@@ -9,12 +9,10 @@ use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
-use Ramsey\Uuid\Uuid;
 
 class BlockPlaceListener implements Listener {
 

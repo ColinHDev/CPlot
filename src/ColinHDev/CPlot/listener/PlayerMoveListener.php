@@ -18,7 +18,6 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
-use pocketmine\entity\Location;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\player\Player;
