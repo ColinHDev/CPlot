@@ -24,7 +24,7 @@ class PlayerLoginListener implements Listener {
                 $player->getName()
             ),
             null,
-            static function (\Throwable $error) use ($player) : void {
+            static function() use ($player) : void {
                 if ($player->isConnected()) {
                     $player->kick(
                         LanguageManager::getInstance()->getProvider()->translateString(["prefix", "player.login.savePlayerDataError"])

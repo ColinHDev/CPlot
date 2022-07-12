@@ -5,37 +5,32 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\attributes\BlockListAttribute;
-use ColinHDev\CPlot\CPlotAPI;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\block\Block;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 
 class BlockBreakListener implements Listener {
+    use APIHolder;
 
     /**
      * @handleCancelled false
      */
     public function onBlockBreak(BlockBreakEvent $event) : void {
         $position = $event->getBlock()->getPosition();
-        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
-        if ($worldSettings === null) {
-            $event->cancel();
-            return;
-        }
-        if (!$worldSettings instanceof WorldSettings) {
+        /** @phpstan-var true|false|null $isPlotWorld */
+        $isPlotWorld = $this->getAPI()->isPlotWorld($position->getWorld())->getResult();
+        if ($isPlotWorld !== true) {
+            if ($isPlotWorld !== false) {
+                $event->cancel();
+            }
             return;
         }
 
         /** @phpstan-var Plot|false|null $plot */
-        $plot = CPlotAPI::getInstance("1.0.0")->getOrLoadPlotAtPosition($position)->getResult();
-        if ($plot === null) {
-            $event->cancel();
-            return;
-        }
+        $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
         if ($plot instanceof Plot) {
             $player = $event->getPlayer();
             if ($player->hasPermission("cplot.break.plot")) {
@@ -67,7 +62,7 @@ class BlockBreakListener implements Listener {
                 }
             }
 
-        } else {
+        } else if ($plot === false) {
             if ($event->getPlayer()->hasPermission("cplot.break.road")) {
                 return;
             }

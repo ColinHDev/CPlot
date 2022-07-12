@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\worlds\WorldSettings;
+use Closure;
+use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\block\tile\TileFactory;
 use pocketmine\data\SavedDataLoadingException;
 use pocketmine\event\Listener;
@@ -17,17 +17,20 @@ use pocketmine\world\World;
 use SOFe\AwaitGenerator\Await;
 
 class ChunkPopulateListener implements Listener {
+    use APIHolder;
 
     public function onChunkPopulate(ChunkPopulateEvent $event) : void {
         Await::f2c(
-            static function() use($event) : \Generator {
+            function() use($event) : \Generator {
                 $world = $event->getWorld();
-                $worldName = $world->getFolderName();
-                $worldSettings = yield from DataProvider::getInstance()->awaitWorld($worldName);
-                if (!($worldSettings instanceof WorldSettings)) {
+                /** @phpstan-var bool $isPlotWorld */
+                $isPlotWorld = yield from Await::promise(
+                    fn(Closure $resolve, Closure $reject) => $this->getAPI()->isPlotWorld($world)->onCompletion($resolve, $reject)
+                );
+                if ($isPlotWorld !== true) {
                     return;
                 }
-                $file = "worlds" . DIRECTORY_SEPARATOR . $worldName . DIRECTORY_SEPARATOR . World::chunkHash($event->getChunkX(), $event->getChunkZ()) . ".cplot_tile_entities";
+                $file = "worlds" . DIRECTORY_SEPARATOR . $world->getFolderName() . DIRECTORY_SEPARATOR . World::chunkHash($event->getChunkX(), $event->getChunkZ()) . ".cplot_tile_entities";
                 if (!(file_exists($file))) {
                     return;
                 }

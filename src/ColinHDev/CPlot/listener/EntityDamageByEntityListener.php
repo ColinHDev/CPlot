@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;
 
 class EntityDamageByEntityListener implements Listener {
+    use APIHolder;
 
     /**
      * @handleCancelled false
@@ -26,14 +25,18 @@ class EntityDamageByEntityListener implements Listener {
         }
         $damaged = $event->getEntity();
 
-        if (!((DataProvider::getInstance()->loadWorldIntoCache($damaged->getWorld()->getFolderName())) instanceof WorldSettings)) {
+        /** @phpstan-var true|false|null $isPlotWorld */
+        $isPlotWorld = $this->getAPI()->isPlotWorld($damaged->getWorld())->getResult();
+        if ($isPlotWorld !== true) {
+            if ($isPlotWorld !== false) {
+                $event->cancel();
+            }
             return;
         }
-        $plot = Plot::loadFromPositionIntoCache($damaged->getPosition());
-        if ($plot instanceof BasePlot && !($plot instanceof Plot)) {
-            $event->cancel();
-            return;
-        }
+
+        /** @phpstan-var Plot|false|null $plot */
+        $plot = $this->getAPI()->getOrLoadPlotAtPosition($damaged->getPosition())->getResult();
+
         // pvp flag
         if ($damaged instanceof Player) {
             if ($plot instanceof Plot) {
@@ -46,7 +49,7 @@ class EntityDamageByEntityListener implements Listener {
                     return;
                 }
 
-            } else {
+            } else if ($plot === false) {
                 if ($damager->hasPermission("cplot.pvp.road")) {
                     return;
                 }

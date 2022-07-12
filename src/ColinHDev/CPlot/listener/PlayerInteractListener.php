@@ -6,11 +6,9 @@ namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\attributes\BlockListAttribute;
 use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\block\Block;
 use pocketmine\block\Door;
 use pocketmine\block\FenceGate;
@@ -19,26 +17,24 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 
 class PlayerInteractListener implements Listener {
+    use APIHolder;
 
     /**
      * @handleCancelled false
      */
     public function onPlayerInteract(PlayerInteractEvent $event) : void {
         $position = $event->getBlock()->getPosition();
-        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
-        if ($worldSettings === null) {
-            $event->cancel();
-            return;
-        }
-        if (!$worldSettings instanceof WorldSettings) {
+        /** @phpstan-var true|false|null $isPlotWorld */
+        $isPlotWorld = $this->getAPI()->isPlotWorld($position->getWorld())->getResult();
+        if ($isPlotWorld !== true) {
+            if ($isPlotWorld !== false) {
+                $event->cancel();
+            }
             return;
         }
 
-        $plot = Plot::loadFromPositionIntoCache($position);
-        if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            $event->cancel();
-            return;
-        }
+        /** @phpstan-var Plot|false|null $plot */
+        $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
         if ($plot instanceof Plot) {
             $player = $event->getPlayer();
             if ($player->hasPermission("cplot.interact.plot")) {
@@ -77,7 +73,7 @@ class PlayerInteractListener implements Listener {
                 }
             }
 
-        } else {
+        } else if ($plot === false) {
             if ($event->getPlayer()->hasPermission("cplot.interact.road")) {
                 return;
             }
