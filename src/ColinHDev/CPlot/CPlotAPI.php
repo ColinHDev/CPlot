@@ -207,9 +207,9 @@ final class CPlotAPI {
                         $resolver->resolveSilent($plotInSouth->isMerged($basePlotInNorth) ? $plotInSouth : false);
                         return;
                     }
-                    Promise::all([$promiseNorth, $promiseSouth])->onCompletion(
+                    Promise::all($promiseNorth, $promiseSouth)->onCompletion(
                         /**
-                         * @phpstan-param array<mixed, Plot|false> $plots
+                         * @phpstan-param array<Plot|false> $plots
                          */
                         static function(array $plots) use($resolver) : void {
                             [$plotInNorth, $plotInSouth] = $plots;
@@ -240,9 +240,9 @@ final class CPlotAPI {
                         $resolver->resolveSilent($plotInEast->isMerged($basePlotInWest) ? $plotInEast : false);
                         return;
                     }
-                    Promise::all([$promiseWest, $promiseEast])->onCompletion(
+                    Promise::all($promiseWest, $promiseEast)->onCompletion(
                     /**
-                     * @phpstan-param array<mixed, Plot|false> $plots
+                     * @phpstan-param array<Plot|false> $plots
                      */
                         static function(array $plots) use($resolver) : void {
                             [$plotInWest, $plotInEast] = $plots;
@@ -321,9 +321,9 @@ final class CPlotAPI {
                         }
                         return;
                     }
-                    Promise::all([$promiseNorthWest, $promiseNorthEast, $promiseSouthWest, $promiseSouthEast])->onCompletion(
+                    Promise::all($promiseNorthWest, $promiseNorthEast, $promiseSouthWest, $promiseSouthEast)->onCompletion(
                     /**
-                     * @phpstan-param array<mixed, Plot|false> $plots
+                     * @phpstan-param array<Plot|false> $plots
                      */
                         static function(array $plots) use($resolver) : void {
                             [$plotInNorthWest, $plotInNorthEast, $plotInSouthWest, $plotInSouthEast] = $plots;

@@ -65,17 +65,20 @@ final class Promise {
     /**
      * Utility method to create a promise that resolves once all the given promises have resolved.
      *
-     * @param array $promises An array of promises.
-     * @phpstan-param non-empty-array<mixed, Promise<TValue>> $promises
+     * @param Promise ...$promises All the promises to wait for.
+     * @phpstan-template UValue of mixed
+     * @phpstan-param Promise<UValue> ...$promises
      *
-     * Returns a {@see Promise} that resolves with an array of all the results of the given promises. The mapping of the
-     * results in the array is the same as the one in the promise array, so the keys are preserved.
+     * Returns a {@see Promise} that resolves with an array of all the results of the given promises. The results in the
+     * array are in the same order in which the promises were given to the method.
      * If any of the given promises is rejected, the returned promise is rejected with the same exception.
      * @return Promise
-     * @phpstan-return Promise<array<mixed, TValue>>
+     * @phpstan-return Promise<non-empty-array<UValue>>
      */
-    public static function all(array $promises) : Promise {
+    public static function all(Promise ...$promises) : Promise {
+        /** @phpstan-var PromiseResolver<non-empty-array<UValue>> $resolver */
         $resolver = new PromiseResolver();
+        /** @phpstan-var non-empty-array<UValue> $results */
         $results = [];
         foreach($promises as $key => $promise) {
             $promise->onCompletion(

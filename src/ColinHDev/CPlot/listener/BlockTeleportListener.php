@@ -21,7 +21,7 @@ class BlockTeleportListener implements Listener {
     public function onBlockTeleport(BlockTeleportEvent $event) : void {
         $fromPosition = $event->getBlock()->getPosition();
         $world = $fromPosition->getWorld();
-        /** @phpstan-var WorldSettings|false|null $isPlotWorld */
+        /** @phpstan-var WorldSettings|false|null $worldSettings */
         $worldSettings = $this->getAPI()->getOrLoadWorldSettings($world)->getResult();
         if (!($worldSettings instanceof WorldSettings)) {
             if ($worldSettings !== false) {
