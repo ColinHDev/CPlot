@@ -16,7 +16,10 @@ use pocketmine\utils\Utils;
 class FlagManager {
     use SingletonTrait;
 
-    /** @var array<string, BaseAttribute<mixed>> */
+    /**
+     * @var array<string, BaseAttribute>
+     * @phpstan-var (non-empty-array<FlagIDs::*, BaseAttribute<mixed>>)
+     */
     private array $flags = [];
 
     public function __construct() {
@@ -76,7 +79,8 @@ class FlagManager {
     }
 
     /**
-     * @phpstan-return BaseAttribute<mixed>
+     * @phpstan-param string $ID
+     * @phpstan-return ($ID is FlagIDs::* ? BaseAttribute<mixed> : null)
      */
     public function getFlagByID(string $ID) : ?BaseAttribute {
         if (!isset($this->flags[$ID])) {
