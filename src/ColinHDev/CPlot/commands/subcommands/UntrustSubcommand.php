@@ -35,28 +35,22 @@ class UntrustSubcommand extends Subcommand {
             return null;
         }
 
-        $player = null;
         if ($args[0] !== "*") {
-            $player = Server::getInstance()->getPlayerByPrefix($args[0]);
+            $player = $sender->getServer()->getPlayerByPrefix($args[0]);
             if ($player instanceof Player) {
-                $playerUUID = $player->getUniqueId()->getBytes();
-                $playerXUID = $player->getXuid();
                 $playerName = $player->getName();
             } else {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.playerNotOnline" => $args[0]]);
                 $playerName = $args[0];
-                $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
-                if (!($playerData instanceof PlayerData)) {
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.playerNotFound" => $playerName]);
-                    return null;
-                }
-                $playerUUID = $playerData->getPlayerUUID();
-                $playerXUID = $playerData->getPlayerXUID();
+                $player = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
             }
         } else {
-            $playerUUID = "*";
-            $playerXUID = "*";
             $playerName = "*";
+            $player = yield from DataProvider::getInstance()->awaitPlayerDataByXUID("*");
+        }
+        if (!($player instanceof Player) && !($player instanceof PlayerData)) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.playerNotFound" => $playerName]);
+            return null;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
@@ -88,8 +82,7 @@ class UntrustSubcommand extends Subcommand {
             return null;
         }
 
-        $playerIdentifier = PlayerData::getIdentifierFromData($playerUUID, $playerXUID, $playerName);
-        $plotPlayer = $plot->getPlotPlayerExact($playerIdentifier);
+        $plotPlayer = $plot->getPlotPlayerExact($player);
         if (!($plotPlayer instanceof PlotPlayer) || $plotPlayer->getState() !== PlotPlayer::STATE_TRUSTED) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.playerNotTrusted" => $playerName]);
             return null;
@@ -101,8 +94,8 @@ class UntrustSubcommand extends Subcommand {
             return null;
         }
 
+        $plot->removePlotPlayer($plotPlayer);
         $playerData = $plotPlayer->getPlayerData();
-        $plot->removePlotPlayer($playerIdentifier);
         yield DataProvider::getInstance()->deletePlotPlayer($plot, $playerData->getPlayerID());
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.success" => $playerName]);
 
@@ -111,7 +104,7 @@ class UntrustSubcommand extends Subcommand {
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_TRUSTED_REMOVE);
             if ($setting->getValue() === true) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                    $sender,
+                    $player,
                     ["prefix", "untrust.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                 );
             }

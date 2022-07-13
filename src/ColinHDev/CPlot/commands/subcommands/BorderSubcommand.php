@@ -14,7 +14,6 @@ use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
 use ColinHDev\CPlot\utils\ParseUtils;
-use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use dktapps\pmforms\FormIcon;
 use dktapps\pmforms\MenuForm;
@@ -88,7 +87,7 @@ class BorderSubcommand extends Subcommand {
     }
 
     /**
-     * @phpstan-return \Generator<mixed, mixed, WorldSettings|NonWorldSettings|Plot|null, void>
+     * @phpstan-return \Generator<mixed, mixed, mixed, void>
      */
     public function onFormSubmit(Player $player, int $selectedOption) : \Generator {
         if (!$player->hasPermission($this->permissions[$selectedOption])) {

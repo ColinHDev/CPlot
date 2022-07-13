@@ -14,12 +14,12 @@ use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\plots\MergePlot;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
+use ColinHDev\CPlot\plots\PlotPlayerContainer;
 use ColinHDev\CPlot\plots\PlotRate;
 use ColinHDev\CPlot\provider\cache\Cache;
 use ColinHDev\CPlot\provider\cache\CacheIDs;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\utils\ParseUtils;
-use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use Generator;
 use pocketmine\player\Player;
@@ -29,6 +29,8 @@ use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
 use SOFe\AwaitGenerator\Await;
 use function is_int;
+use function is_string;
+use function time;
 
 /**
  * This is an @internal class for handling the storage of data of this plugin in a database.
@@ -53,6 +55,7 @@ final class DataProvider {
     private const INIT_PLOTRATES_TABLE = "cplot.init.plotRatesTable";
 
     private const GET_PLAYERDATA_BY_IDENTIFIER = "cplot.get.playerDataByIdentifier";
+    private const GET_PLAYERDATA_BY_DATA = "cplot.get.playerDataByData";
     private const GET_PLAYERDATA_BY_UUID = "cplot.get.playerDataByUUID";
     private const GET_PLAYERDATA_BY_XUID = "cplot.get.playerDataByXUID";
     private const GET_PLAYERDATA_BY_NAME = "cplot.get.playerDataByName";
@@ -90,11 +93,8 @@ final class DataProvider {
     private DataConnector $database;
     private bool $isInitialized = false;
 
-    /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|NonWorldSettings>, "cache_plot": Cache<string, BasePlot>} */
+    /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|false>, "cache_plot": Cache<string, Plot|MergePlot>} */
     private array $caches;
-
-    /** @phpstan-var "uuid"|"xuid"|"name" */
-    private string $playerIdentifierType;
 
     /**
      * @throws SqlError
@@ -109,7 +109,7 @@ final class DataProvider {
             $this->initializeDatabase()
         );
 
-        /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|NonWorldSettings>, "cache_plot": Cache<string, BasePlot>} $caches */
+        /** @phpstan-var array{"cache_player": Cache<PlayerID, PlayerData>, "cache_player_uuid": Cache<PlayerUUID, PlayerID>, "cache_player_xuid": Cache<PlayerXUID, PlayerID>, "cache_player_name": Cache<PlayerName, PlayerID>, "cache_worldSetting": Cache<string, WorldSettings|false>, "cache_plot": Cache<string, Plot|MergePlot>} $caches */
         $caches = [
             CacheIDs::CACHE_PLAYER => new Cache(256),
             CacheIDs::CACHE_PLAYER_UUID => new Cache(256),
@@ -119,15 +119,30 @@ final class DataProvider {
             CacheIDs::CACHE_PLOT => new Cache(256),
         ];
         $this->caches = $caches;
+    }
 
-        /** @phpstan-var string $playerIdentifierType */
-        $playerIdentifierType = ResourceManager::getInstance()->getConfig()->get("player.identifier.type", "uuid");
-        $this->playerIdentifierType = match (strtolower($playerIdentifierType)) {
-            "uuid" => "uuid",
-            "xuid" => "xuid",
-            "name" => "name",
-            default => "uuid"
-        };
+    /**
+     * Returns the {@see PlayerData} cache.
+     * @phpstan-return Cache<PlayerID, PlayerData>
+     */
+    public function getPlayerCache(): Cache {
+        return $this->caches[CacheIDs::CACHE_PLAYER];
+    }
+
+    /**
+     * Returns the {@see WorldSettings} cache.
+     * @phpstan-return Cache<string, WorldSettings|false>
+     */
+    public function getWorldSettingsCache(): Cache {
+        return $this->caches[CacheIDs::CACHE_WORLDSETTING];
+    }
+
+    /**
+     * Returns the {@see Plot} / {@see MergePlot} cache.
+     * @phpstan-return Cache<string, Plot|MergePlot>
+     */
+    public function getPlotCache() : Cache {
+        return $this->caches[CacheIDs::CACHE_PLOT];
     }
 
     /**
@@ -156,13 +171,6 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return "uuid"|"xuid"|"name"
-     */
-    public function getPlayerIdentifierType() : string {
-        return $this->playerIdentifierType;
-    }
-
-    /**
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
@@ -175,29 +183,59 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by
-     * using {@see Await}.
+     * Fetches the {@see PlayerData} of a player by either its UUID, XUID or name asynchronously from the database (or
+     * synchronously from the cache if contained) and returns a {@see \Generator}. It can be gotten by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : Generator {
-        $playerData = null;
-        switch ($this->playerIdentifierType) {
-            case "uuid":
-                assert(is_string($playerUUID));
-                /** @phpstan-var PlayerData|null $playerData */
-                $playerData = yield $this->awaitPlayerDataByUUID($playerUUID);
-                break;
-            case "xuid":
-                assert(is_string($playerXUID));
-                /** @phpstan-var PlayerData|null $playerData */
-                $playerData = yield $this->awaitPlayerDataByXUID($playerXUID);
-                break;
-            case "name":
-                assert(is_string($playerName));
-                /** @phpstan-var PlayerData|null $playerData */
-                $playerData = yield $this->awaitPlayerDataByName($playerName);
-                break;
+        $cachedPlayerID = null;
+        if (is_string($playerUUID)) {
+            $cachedPlayerID = $this->caches[CacheIDs::CACHE_PLAYER_UUID]->getObjectFromCache($playerUUID);
+        }
+        if (is_string($playerXUID) && !is_int($cachedPlayerID)) {
+            $cachedPlayerID = $this->caches[CacheIDs::CACHE_PLAYER_XUID]->getObjectFromCache($playerXUID);
+        }
+        if (is_string($playerName) && !is_int($cachedPlayerID)) {
+            $cachedPlayerID = $this->caches[CacheIDs::CACHE_PLAYER_NAME]->getObjectFromCache($playerName);
+        }
+
+        if (is_int($cachedPlayerID)) {
+            $playerData = $this->caches[CacheIDs::CACHE_PLAYER]->getObjectFromCache($cachedPlayerID);
+            if ($playerData instanceof PlayerData) {
+                return $playerData;
+            }
+        }
+
+        /** @phpstan-var array<(not-empty-array{playerID: int, playerUUID: string|null, playerXUID: string|null, playerName: string|null, lastJoin: string})> $rows */
+        $rows = yield from $this->database->asyncSelect(
+            self::GET_PLAYERDATA_BY_DATA,
+            ["playerUUID" => $playerUUID, "playerXUID" => $playerXUID, "playerName" => $playerName]
+        );
+        /** @phpstan-var array{playerID: int, playerUUID: string|null, playerXUID: string|null, playerName: string|null, lastJoin: string}|null $playerData */
+        $playerData = $rows[array_key_first($rows)] ?? null;
+        if ($playerData === null) {
+            return null;
+        }
+        $playerID = $playerData["playerID"];
+        $playerUUID ??= $playerData["playerUUID"];
+        $playerXUID ??= $playerData["playerXUID"];
+        $playerName ??= $playerData["playerName"];
+        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $playerData = new PlayerData(
+            $playerID,
+            $playerUUID, $playerXUID, $playerName,
+            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            (yield from $this->awaitPlayerSettings($playerID))
+        );
+        $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
+        if (is_string($playerUUID)) {
+            $this->caches[CacheIDs::CACHE_PLAYER_UUID]->cacheObject($playerUUID, $playerID);
+        }
+        if (is_string($playerXUID)) {
+            $this->caches[CacheIDs::CACHE_PLAYER_XUID]->cacheObject($playerXUID, $playerID);
+        }
+        if (is_string($playerName)) {
+            $this->caches[CacheIDs::CACHE_PLAYER_NAME]->cacheObject($playerName, $playerID);
         }
         return $playerData;
     }
@@ -501,16 +539,16 @@ final class DataProvider {
     }
 
     /**
-     * Fetches and returns the {@see WorldSettings} or {@see NonWorldSettings} of a world by its name synchronously from the cache.
+     * Fetches and returns the {@see WorldSettings} or false of a world by its name synchronously from the cache.
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the result can be
      * worked with once it was successfully loaded from the database.
-     * @phpstan-param null|\Closure(WorldSettings|NonWorldSettings): void $onSuccess
+     * @phpstan-param null|\Closure(WorldSettings|false): void $onSuccess
      * @phpstan-param null|\Closure(\Throwable): void $onError
      */
-    public function getOrLoadWorldSettings(string $worldName, ?\Closure $onSuccess = null, ?\Closure $onError = null) : WorldSettings|NonWorldSettings|null {
+    public function getOrLoadWorldSettings(string $worldName, ?\Closure $onSuccess = null, ?\Closure $onError = null) : WorldSettings|false|null {
         $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
-        if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
+        if ($worldSettings instanceof WorldSettings || $worldSettings === false) {
             if ($onSuccess !== null) {
                 $onSuccess($worldSettings);
             }
@@ -529,9 +567,9 @@ final class DataProvider {
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called.
      */
-    public function loadWorldIntoCache(string $worldName) : WorldSettings|NonWorldSettings|null {
+    public function loadWorldIntoCache(string $worldName) : WorldSettings|false|null {
         $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
-        if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
+        if ($worldSettings instanceof WorldSettings || $worldSettings === false) {
             return $worldSettings;
         }
         Await::g2c(
@@ -544,11 +582,11 @@ final class DataProvider {
      * Fetches the {@see WorldSettings} of a world asynchronously from the database (or synchronously from the
      * cache if contained) and returns a {@see \Generator}. It can be get by
      * using {@see Await}.
-     * @phpstan-return Generator<mixed, mixed, mixed, WorldSettings|NonWorldSettings>
+     * @phpstan-return Generator<mixed, mixed, mixed, WorldSettings|false>
      */
     public function awaitWorld(string $worldName) : Generator {
         $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
-        if ($worldSettings instanceof WorldSettings || $worldSettings instanceof NonWorldSettings) {
+        if ($worldSettings instanceof WorldSettings || $worldSettings === false) {
             return $worldSettings;
         }
         /** @phpstan-var array{0?: array{worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, borderBlockOnClaim?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string}} $rows */
@@ -559,7 +597,7 @@ final class DataProvider {
         /** @phpstan-var null|array{worldType?: string, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, borderBlockOnClaim?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $worldData */
         $worldData = $rows[array_key_first($rows)] ?? null;
         if ($worldData === null) {
-            $worldSettings = new NonWorldSettings();
+            $worldSettings = false;
         } else {
             $worldSettings = WorldSettings::fromArray($worldData);
         }
@@ -591,6 +629,31 @@ final class DataProvider {
             ]
         );
         $this->caches[CacheIDs::CACHE_WORLDSETTING]->cacheObject($worldName, $worldSettings);
+    }
+
+    /**
+     * Fetches and returns the {@see WorldSettings} or false of a world by its name synchronously from the cache.
+     * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
+     * is synchronously available the next time this method is called. By providing a callback, the result can be
+     * worked with once it was successfully loaded from the database.
+     * @phpstan-param null|\Closure(Plot|null): void $onSuccess
+     * @phpstan-param null|\Closure(\Throwable): void $onError
+     */
+    public function getOrLoadPlot(string $worldName, int $x, int $z, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?Plot {
+        $plot = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($worldName . ";" . $x . ";" . $z);
+        if ($plot instanceof BasePlot) {
+            $return = $plot instanceof Plot ? $plot : null;
+            if ($onSuccess !== null) {
+                $onSuccess($return);
+            }
+            return $return;
+        }
+        Await::g2c(
+            $this->awaitPlot($worldName, $x, $z),
+            $onSuccess,
+            $onError === null ? [] : [$onError]
+        );
+        return null;
     }
 
     /**
@@ -626,15 +689,15 @@ final class DataProvider {
             }
             return null;
         }
-        /** @phpstan-var WorldSettings|NonWorldSettings $worldSettings */
+        /** @phpstan-var WorldSettings|false $worldSettings */
         $worldSettings = yield $this->awaitWorld($worldName);
         assert($worldSettings instanceof WorldSettings);
         /** @phpstan-var string|null $plotAliases */
         $plotAliases = yield $this->awaitPlotAliases($worldName, $x, $z);
         /** @phpstan-var array<string, MergePlot> $mergePlots */
         $mergePlots = yield $this->awaitMergePlots($worldName, $worldSettings, $x, $z);
-        /** @phpstan-var array<string, PlotPlayer> $plotPlayers */
-        $plotPlayers = yield $this->awaitPlotPlayers($worldName, $x, $z);
+        /** @phpstan-var PlotPlayerContainer $plotPlayerContainer */
+        $plotPlayerContainer = yield $this->awaitPlotPlayers($worldName, $x, $z);
         /** @phpstan-var array<string, BaseAttribute<mixed>> $plotFlags */
         $plotFlags = yield $this->awaitPlotFlags($worldName, $x, $z);
         /** @phpstan-var array<string, PlotRate> $plotRates */
@@ -642,7 +705,7 @@ final class DataProvider {
         $plot = new Plot(
             $worldName, $worldSettings, $x, $z,
             $plotAliases,
-            $mergePlots, $plotPlayers, $plotFlags, $plotRates
+            $mergePlots, $plotPlayerContainer, $plotFlags, $plotRates
         );
         $this->caches[CacheIDs::CACHE_PLOT]->cacheObject($plot->toString(), $plot);
         return $plot;
@@ -699,7 +762,7 @@ final class DataProvider {
     /**
      * Fetches the {@see PlotPlayer}s of a plot asynchronously from the database and returns a {@see \Generator}. The
      * plot players can be get by using {@see Await}.
-     * @phpstan-return Generator<mixed, mixed, mixed, array<string, PlotPlayer>>
+     * @phpstan-return Generator<mixed, mixed, mixed, PlotPlayerContainer>
      */
     private function awaitPlotPlayers(string $worldName, int $x, int $z) : Generator {
         /** @phpstan-var array<array{playerID: int, state: string, addTime: string}> $rows */
@@ -711,20 +774,19 @@ final class DataProvider {
                 "z" => $z
             ]
         );
-        $plotPlayers = [];
+        $plotPlayerContainer = new PlotPlayerContainer();
         /** @phpstan-var array{playerID: int, state: string, addTime: string} $row */
         foreach ($rows as $row) {
             /** @phpstan-var PlayerData $playerData */
             $playerData = yield $this->awaitPlayerDataByID($row["playerID"]);
             $addTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["addTime"]);
-            $plotPlayer = new PlotPlayer(
+            $plotPlayerContainer->addPlotPlayer(new PlotPlayer(
                 $playerData,
                 $row["state"],
                 $addTime instanceof \DateTime ? $addTime->getTimestamp() : time()
-            );
-            $plotPlayers[$plotPlayer->toString()] = $plotPlayer;
+            ));
         }
-        return $plotPlayers;
+        return $plotPlayerContainer;
     }
 
     /**
@@ -893,6 +955,48 @@ final class DataProvider {
                 "z" => $plot->getZ()
             ]
         );
+    }
+
+    /**
+     * Fetches and returns the {@see WorldSettings} or false of a world by its name synchronously from the cache.
+     * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
+     * is synchronously available the next time this method is called. By providing a callback, the result can be
+     * worked with once it was successfully loaded from the database.
+     * @phpstan-param null|\Closure(Plot|null): void $onSuccess
+     * @phpstan-param null|\Closure(\Throwable): void $onError
+     */
+    public function getOrLoadMergeOrigin(BasePlot $plot, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?Plot {
+        if ($plot instanceof Plot) {
+            if ($onSuccess !== null) {
+                $onSuccess($plot);
+            }
+            return $plot;
+        }
+        if ($plot instanceof MergePlot) {
+            return $this->getOrLoadPlot(
+                $plot->getWorldName(), $plot->getOriginX(), $plot->getOriginZ(),
+                $onSuccess, $onError
+            );
+        }
+        $plotInCache = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($plot->toString());
+        if ($plotInCache instanceof Plot) {
+            if ($onSuccess !== null) {
+                $onSuccess($plotInCache);
+            }
+            return $plotInCache;
+        }
+        if ($plotInCache instanceof MergePlot) {
+            return $this->getOrLoadPlot(
+                $plotInCache->getWorldName(), $plotInCache->getOriginX(), $plotInCache->getOriginZ(),
+                $onSuccess, $onError
+            );
+        }
+        Await::g2c(
+            $this->awaitMergeOrigin($plot),
+            $onSuccess,
+            $onError === null ? [] : [$onError]
+        );
+        return null;
     }
 
     /**

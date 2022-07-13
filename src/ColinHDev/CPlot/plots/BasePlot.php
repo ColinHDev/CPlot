@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\plots;
 
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
@@ -132,11 +131,15 @@ class BasePlot {
         return $this->x . ";" . $this->z;
     }
 
+    /**
+     * @deprecated
+     */
     public function toSyncPlot() : ?Plot {
         return DataProvider::getInstance()->loadMergeOriginIntoCache($this);
     }
 
     /**
+     * @deprecated
      * @phpstan-return \Generator<mixed, mixed, mixed, Plot|null>
      */
     public function toAsyncPlot() : \Generator {
@@ -153,6 +156,9 @@ class BasePlot {
         );
     }
 
+    /**
+     * @deprecated
+     */
     public static function loadFromPositionIntoCache(Position $position) : ?self {
         $worldName = $position->getWorld()->getFolderName();
         $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($worldName);
@@ -163,7 +169,8 @@ class BasePlot {
     }
 
     /**
-     * @phpstan-return \Generator<int, mixed, WorldSettings|NonWorldSettings|Plot|null, BasePlot|null>
+     * @deprecated
+     * @phpstan-return \Generator<mixed, mixed, mixed, BasePlot|null>
      */
     public static function awaitFromPosition(Position $position) : \Generator {
         $worldName = $position->getWorld()->getFolderName();
@@ -174,6 +181,9 @@ class BasePlot {
         return self::fromVector3($worldName, $worldSettings, $position->asVector3());
     }
 
+    /**
+     * @deprecated
+     */
     public static function fromVector3(string $worldName, WorldSettings $worldSettings, Vector3 $vector3) : ?self {
         $totalSize = $worldSettings->getPlotSize() + $worldSettings->getRoadSize();
 

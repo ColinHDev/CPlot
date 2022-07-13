@@ -112,6 +112,16 @@ SELECT playerUUID, playerXUID, playerName, lastJoin
 FROM playerData
 WHERE playerID = :playerID;
 -- #    }
+-- #    { playerDataByData
+-- #      :playerUUID ?string
+-- #      :playerXUID ?string
+-- #      :playerName ?string
+SELECT playerID, playerUUID, playerXUID, playerName, lastJoin
+FROM playerData
+WHERE (:playerUUID IS NOT NULL AND playerUUID = :playerUUID) OR
+      (:playerXUID IS NOT NULL AND playerXUID = :playerXUID) OR
+      (:playerName IS NOT NULL AND playerName = :playerName);
+-- #    }
 -- #    { playerDataByUUID
 -- #      :playerUUID string
 SELECT playerID, playerXUID, playerName, lastJoin
@@ -232,9 +242,9 @@ WHERE worldName = :worldName AND x = :x AND z = :z;
 
 -- #  { set
 -- #    { newPlayerData
--- #      :playerUUID string
--- #      :playerXUID string
--- #      :playerName string
+-- #      :playerUUID ?string
+-- #      :playerXUID ?string
+-- #      :playerName ?string
 -- #      :lastJoin string
 INSERT INTO playerData (playerUUID, playerXUID, playerName, lastJoin)
 VALUES (:playerUUID, :playerXUID, :playerName, :lastJoin);

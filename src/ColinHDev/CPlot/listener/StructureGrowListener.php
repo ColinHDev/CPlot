@@ -5,45 +5,40 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\block\StructureGrowEvent;
 use pocketmine\event\Listener;
 use pocketmine\world\Position;
 
 class StructureGrowListener implements Listener {
+    use APIHolder;
 
+    /**
+     * @handleCancelled false
+     */
     public function onStructureGrow(StructureGrowEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $position = $event->getBlock()->getPosition();
         $world = $position->getWorld();
-        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($world->getFolderName());
-        if ($worldSettings === null) {
-            $event->cancel();
-            return;
-        }
-        if (!$worldSettings instanceof WorldSettings) {
+        /** @phpstan-var true|false|null $isPlotWorld */
+        $isPlotWorld = $this->getAPI()->isPlotWorld($world)->getResult();
+        if ($isPlotWorld !== true) {
+            if ($isPlotWorld !== false) {
+                $event->cancel();
+            }
             return;
         }
 
-        $plot = Plot::loadFromPositionIntoCache($position);
-        if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            $event->cancel();
-            return;
-        }
+        /** @phpstan-var Plot|false|null $plot */
+        $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
         if ($plot instanceof Plot) {
             /** @var BooleanAttribute $flag */
             $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_GROWING);
             if ($flag->getValue() === true) {
                 $transaction = $event->getTransaction();
                 foreach ($transaction->getBlocks() as [$x, $y, $z, $block]) {
-                    if ($plot->isOnPlot(new Position($x, $y, $z, $world))) {
+                    if (!$plot->isOnPlot(new Position($x, $y, $z, $world))) {
                         $transaction->addBlockAt($x, $y, $z, $world->getBlockAt($x, $y, $z));
                     }
                 }

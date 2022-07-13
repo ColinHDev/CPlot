@@ -6,41 +6,41 @@ namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\Plot;
-use ColinHDev\CPlot\provider\DataProvider;
+use ColinHDev\CPlot\utils\APIHolder;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\event\block\BlockTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\world\Position;
 
 class BlockTeleportListener implements Listener {
+    use APIHolder;
 
+    /**
+     * @handleCancelled false
+     */
     public function onBlockTeleport(BlockTeleportEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $fromPosition = $event->getBlock()->getPosition();
         $world = $fromPosition->getWorld();
-        $worldName = $world->getFolderName();
-        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($worldName);
-        if (!$worldSettings instanceof WorldSettings) {
-            if ($worldSettings === null) {
+        /** @phpstan-var WorldSettings|false|null $isPlotWorld */
+        $worldSettings = $this->getAPI()->getOrLoadWorldSettings($world)->getResult();
+        if (!($worldSettings instanceof WorldSettings)) {
+            if ($worldSettings !== false) {
                 $event->cancel();
             }
             return;
         }
 
-        $toVector3 = $event->getTo();
-        $fromBasePlot = BasePlot::fromVector3($worldName, $worldSettings, $fromPosition);
-        $toBasePlot = BasePlot::fromVector3($worldName, $worldSettings, $toVector3);
-        if ($fromBasePlot !== null && $toBasePlot !== null && $fromBasePlot->isSame($toBasePlot)) {
-            return;
-        }
-
-        $fromPlot = $fromBasePlot?->toSyncPlot() ?? Plot::loadFromPositionIntoCache($fromPosition);
-        $toPlot = $toBasePlot?->toSyncPlot() ?? Plot::loadFromPositionIntoCache(Position::fromObject($toVector3, $world));
-        if ($fromPlot instanceof Plot && $toPlot instanceof Plot && $fromPlot->isSame($toPlot)) {
-            return;
+        $fromBasePlot = $this->getAPI()->getBasePlotAtPoint($world->getFolderName(), $worldSettings, $fromPosition);
+        if ($fromBasePlot instanceof BasePlot) {
+            $toPosition = Position::fromObject($event->getTo(), $world);
+            if ($fromBasePlot->isOnPlot($toPosition)) {
+                return;
+            }
+            /** @phpstan-var Plot|false|null $fromPlot */
+            $fromPlot = $this->getAPI()->getOrLoadPlot($world, $fromBasePlot->getX(), $fromBasePlot->getZ())->getResult();
+            if ($fromPlot instanceof Plot && $fromPlot->isOnPlot($toPosition)) {
+                return;
+            }
         }
 
         $event->cancel();

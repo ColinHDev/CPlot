@@ -121,7 +121,7 @@ class TrustSubcommand extends Subcommand {
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_TRUSTED_ADD);
             if ($setting->getValue() === true) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                    $sender,
+                    $player,
                     ["prefix", "trust.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                 );
             }

@@ -120,7 +120,10 @@ class AddSubcommand extends Subcommand {
             /** @var BooleanAttribute $setting */
             $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_ADD);
             if ($setting->getValue() === true) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                    $player,
+                    ["prefix", "add.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+                );
             }
         }
         return null;

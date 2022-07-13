@@ -1,3 +1,8 @@
+# If upon executing the "/plot auto" command, the player is not in a plot world, decide whether a backup plot world
+# should be used to find a free plot.
+# Possible values: A valid plot world name or false.
+auto.fallbackWorld: false
+
 # Decide if upon executing the "/plot auto" command, the found free plot should be automatically claimed for the player.
 # Possible values: true, false
 # Default value: true
@@ -221,10 +226,6 @@ database:
     # The maximum number of simultaneous SQL queries
     # Recommended: 1 for sqlite, 2 for MySQL. You may want to further increase this value if your MySQL connection is very slow.
     worker-limit: 1
-
-# Decide how players should be identified within the database. Either by their UUID, their XUID or their name.
-# Possible values: uuid, xuid, name
-player.identifier.type: "uuid"
 
 # Change the settings for CPlot's economy plugin integration.
 economy:
