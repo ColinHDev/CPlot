@@ -7,7 +7,7 @@ namespace ColinHDev\CPlot\attributes;
 /**
  * @extends BaseAttribute<string>
  */
-class StringAttribute extends BaseAttribute {
+abstract class StringAttribute extends BaseAttribute {
 
     /**
      * @param string $value

@@ -11,7 +11,7 @@ use pocketmine\block\Block;
 /**
  * @extends ArrayAttribute<Block[]>
  */
-class BlockListAttribute extends ArrayAttribute {
+abstract class BlockListAttribute extends ArrayAttribute {
 
     /**
      * @param Block[] | null $value

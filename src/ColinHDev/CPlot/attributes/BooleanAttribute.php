@@ -9,7 +9,7 @@ use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 /**
  * @extends BaseAttribute<bool>
  */
-class BooleanAttribute extends BaseAttribute {
+abstract class BooleanAttribute extends BaseAttribute {
 
     /** @var array{true, string} */
     public const TRUE_VALUES = [true, "1", "y", "yes", "allow", "true"];

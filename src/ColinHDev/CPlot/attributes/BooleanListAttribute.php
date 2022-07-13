@@ -9,7 +9,7 @@ use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 /**
  * @extends ArrayAttribute<bool[]>
  */
-class BooleanListAttribute extends ArrayAttribute {
+abstract class BooleanListAttribute extends ArrayAttribute {
 
     /**
      * @param bool[] | null $value

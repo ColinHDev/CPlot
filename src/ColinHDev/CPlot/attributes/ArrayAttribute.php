@@ -10,7 +10,7 @@ use ColinHDev\CPlot\attributes\utils\AttributeParseException;
  * @template AttributeValue of array
  * @extends BaseAttribute<AttributeValue>
  */
-class ArrayAttribute extends BaseAttribute {
+abstract class ArrayAttribute extends BaseAttribute {
 
     /**
      * @phpstan-param AttributeValue $value

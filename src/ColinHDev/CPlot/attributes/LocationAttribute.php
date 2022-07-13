@@ -10,7 +10,7 @@ use pocketmine\entity\Location;
 /**
  * @extends BaseAttribute<Location>
  */
-class LocationAttribute extends BaseAttribute {
+abstract class LocationAttribute extends BaseAttribute {
 
     /**
      * @param Location $value
