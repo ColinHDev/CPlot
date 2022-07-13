@@ -131,11 +131,15 @@ class BasePlot {
         return $this->x . ";" . $this->z;
     }
 
+    /**
+     * @deprecated
+     */
     public function toSyncPlot() : ?Plot {
         return DataProvider::getInstance()->loadMergeOriginIntoCache($this);
     }
 
     /**
+     * @deprecated
      * @phpstan-return \Generator<mixed, mixed, mixed, Plot|null>
      */
     public function toAsyncPlot() : \Generator {
