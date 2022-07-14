@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\attributes;
 
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
+use InvalidArgumentException;
+use function is_string;
 
 /**
  * @phpstan-template AttributeValue
@@ -60,23 +62,28 @@ abstract class BaseAttribute {
     abstract public function parse(string $value) : mixed;
 
     /**
-     * @phpstan-return array{ID: string, default: string, value: string}
+     * @phpstan-return array{ID: string, value: string}
      */
     public function __serialize() : array {
         return [
             "ID" => $this->ID,
-            "default" => $this->default,
             "value" => $this->toString()
         ];
     }
 
     /**
-     * @phpstan-param array{ID: string, default: string, value: string} $data
-     * @throws AttributeParseException
+     * @phpstan-param array<mixed, mixed> $data
+     * @throws InvalidArgumentException
      */
     public function __unserialize(array $data) : void {
-        $this->ID = $data["ID"];
-        $this->default = $data["default"];
-        $this->value = $this->parse($data["value"]);
+        if (isset($data["ID"], $data["value"]) && is_string($data["ID"]) && is_string($data["value"])) {
+            $this->ID = $data["ID"];
+            try {
+                $this->value = $this->parse($data["value"]);
+                return;
+            } catch(AttributeParseException) {
+            }
+        }
+        throw new InvalidArgumentException("Invalid serialized data given for " . static::class);
     }
 }
