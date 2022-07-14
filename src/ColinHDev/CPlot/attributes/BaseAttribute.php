@@ -18,7 +18,7 @@ abstract class BaseAttribute {
     /**
      * @phpstan-param AttributeValue $value
      */
-    final public function __construct(string $ID, mixed $value) {
+    public function __construct(string $ID, mixed $value) {
         $this->ID = $ID;
         $this->value = $value;
     }
