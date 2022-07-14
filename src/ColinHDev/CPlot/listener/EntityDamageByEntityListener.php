@@ -44,7 +44,7 @@ class EntityDamageByEntityListener implements Listener {
                     return;
                 }
                 /** @var BooleanAttribute $flag */
-                $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVP);
+                $flag = $plot->getFlagByID(FlagIDs::FLAG_PVP);
                 if ($flag->getValue() === true) {
                     return;
                 }
@@ -59,7 +59,7 @@ class EntityDamageByEntityListener implements Listener {
         } else {
             if ($plot instanceof Plot) {
                 /** @var BooleanAttribute $flag */
-                $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVE);
+                $flag = $plot->getFlagByID(FlagIDs::FLAG_PVE);
                 if ($flag->getValue() === true) {
                     return;
                 }

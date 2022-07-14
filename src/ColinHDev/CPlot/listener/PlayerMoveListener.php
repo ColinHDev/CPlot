@@ -148,7 +148,7 @@ class PlayerMoveListener implements Listener {
             // title flag && message flag
             $title = "";
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_TITLE);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_TITLE);
             if ($flag->getValue() === true) {
                 $title .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $player,
@@ -172,7 +172,7 @@ class PlayerMoveListener implements Listener {
                 }
             }
             /** @var StringAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_MESSAGE);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_MESSAGE);
             if ($flag->getValue() !== "") {
                 $title .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $player,
@@ -183,7 +183,7 @@ class PlayerMoveListener implements Listener {
 
             // plot_enter flag
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PLOT_ENTER);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_PLOT_ENTER);
             if ($flag->getValue() === true) {
                 foreach ($plot->getPlotOwners() as $plotOwner) {
                     $owner = $plotOwner->getPlayerData()->getPlayer();
@@ -209,7 +209,7 @@ class PlayerMoveListener implements Listener {
         Await::f2c(static function() use($player, $plot) : \Generator {
             // plot_leave flag
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PLOT_LEAVE);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_PLOT_LEAVE);
             if ($flag->getValue() === true) {
                 foreach ($plot->getPlotOwners() as $plotOwner) {
                     $owner = $plotOwner->getPlayerData()->getPlayer();

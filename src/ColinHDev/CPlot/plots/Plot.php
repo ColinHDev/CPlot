@@ -212,7 +212,7 @@ class Plot extends BasePlot {
     /**
      * @phpstan-return BaseAttribute<mixed>|null
      */
-    public function getFlagByID(string $flagID) : ?BaseAttribute {
+    public function getLocalFlagByID(string $flagID) : ?BaseAttribute {
         if (!isset($this->flags[$flagID])) {
             return null;
         }
@@ -222,8 +222,8 @@ class Plot extends BasePlot {
     /**
      * @phpstan-return BaseAttribute<mixed>|null
      */
-    public function getFlagNonNullByID(string $flagID) : ?BaseAttribute {
-        $flag = $this->getFlagByID($flagID);
+    public function getFlagByID(string $flagID) : ?BaseAttribute {
+        $flag = $this->getLocalFlagByID($flagID);
         if ($flag === null) {
             $flag = FlagManager::getInstance()->getFlagByID($flagID);
         }
@@ -300,7 +300,7 @@ class Plot extends BasePlot {
      */
     public function teleportTo(Player $player, int $destination = TeleportDestination::PLOT_SPAWN_OR_EDGE) : bool {
         if ($destination === TeleportDestination::PLOT_SPAWN_OR_EDGE || $destination === TeleportDestination::PLOT_SPAWN_OR_CENTER) {
-            $flag = $this->getFlagByID(FlagIDs::FLAG_SPAWN);
+            $flag = $this->getLocalFlagByID(FlagIDs::FLAG_SPAWN);
             $relativeSpawn = $flag?->getValue();
             if ($relativeSpawn instanceof Location) {
                 $world = $this->getWorld();
@@ -474,7 +474,7 @@ class Plot extends BasePlot {
         }
 
         foreach ($plotToMerge->getFlags() as $mergeFlag) {
-            $flag = $this->getFlagByID($mergeFlag->getID());
+            $flag = $this->getLocalFlagByID($mergeFlag->getID());
             if ($flag === null) {
                 $flag = $mergeFlag;
             } else {

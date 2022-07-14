@@ -54,7 +54,7 @@ class BlockPlaceListener implements Listener {
 
             $block = $event->getBlock();
             /** @var BlockListAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PLACE);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_PLACE);
             /** @var Block $value */
             foreach ($flag->getValue() as $value) {
                 if ($block->isSameType($value)) {

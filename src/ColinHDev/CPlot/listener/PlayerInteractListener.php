@@ -58,14 +58,14 @@ class PlayerInteractListener implements Listener {
 
             $block = $event->getBlock();
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PLAYER_INTERACT);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_PLAYER_INTERACT);
             if ($flag->getValue() === true) {
                 if ($block instanceof Door || $block instanceof Trapdoor || $block instanceof FenceGate) {
                     return;
                 }
             }
             /** @var BlockListAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_USE);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_USE);
             /** @var Block $value */
             foreach ($flag->getValue() as $value) {
                 if ($block->isSameType($value)) {

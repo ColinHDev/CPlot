@@ -52,7 +52,7 @@ class PlayerDropItemListener implements Listener {
             }
 
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_ITEM_DROP);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_ITEM_DROP);
             if ($flag->getValue() === true) {
                 return;
             }

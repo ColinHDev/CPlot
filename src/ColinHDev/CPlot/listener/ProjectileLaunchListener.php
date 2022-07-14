@@ -45,7 +45,7 @@ class ProjectileLaunchListener implements Listener {
         if (!($owningEntity instanceof Player)) {
             if ($owningEntity !== null) {
                 /** @var BooleanAttribute $flag */
-                $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVE);
+                $flag = $plot->getFlagByID(FlagIDs::FLAG_PVE);
                 if ($flag->getValue() === true) {
                     return;
                 }
@@ -71,7 +71,7 @@ class ProjectileLaunchListener implements Listener {
 
         if ($entity instanceof Arrow || $entity instanceof Egg || $entity instanceof Snowball || $entity instanceof SplashPotion) {
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVP);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_PVP);
             if ($flag->getValue() === true) {
                 return;
             }

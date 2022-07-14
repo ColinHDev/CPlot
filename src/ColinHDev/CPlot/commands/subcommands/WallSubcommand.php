@@ -118,7 +118,7 @@ class WallSubcommand extends Subcommand {
         }
 
         /** @var BooleanAttribute $flag */
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+        $flag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.serverPlotFlag" => $flag->getID()]);
             return;

@@ -34,10 +34,10 @@ class BlockSpreadListener implements Listener {
         if ($plot instanceof Plot) {
             if ($event->getNewState() instanceof Liquid) {
                 /** @var BooleanAttribute $flag */
-                $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_FLOWING);
+                $flag = $plot->getFlagByID(FlagIDs::FLAG_FLOWING);
             } else {
                 /** @var BooleanAttribute $flag */
-                $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_GROWING);
+                $flag = $plot->getFlagByID(FlagIDs::FLAG_GROWING);
             }
             if ($flag->getValue() === true) {
                 return;

@@ -34,7 +34,7 @@ class StructureGrowListener implements Listener {
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
         if ($plot instanceof Plot) {
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_GROWING);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_GROWING);
             if ($flag->getValue() === true) {
                 $transaction = $event->getTransaction();
                 foreach ($transaction->getBlocks() as [$x, $y, $z, $block]) {

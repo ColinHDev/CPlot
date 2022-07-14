@@ -161,7 +161,7 @@ class FlagSubcommand extends Subcommand {
 
                 if ($flag->getID() !== FlagIDs::FLAG_SERVER_PLOT) {
                     /** @var BooleanAttribute $serverPlotFlag */
-                    $serverPlotFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+                    $serverPlotFlag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
                     if ($serverPlotFlag->getValue() === true) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.serverPlotFlag" => $serverPlotFlag->getID()]);
                         break;
@@ -191,7 +191,7 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 $flag = $newFlag = $flag->newInstance($parsedValue);
-                $oldFlag = $plot->getFlagByID($flag->getID());
+                $oldFlag = $plot->getLocalFlagByID($flag->getID());
                 if ($oldFlag !== null) {
                     $flag = $oldFlag->merge($flag->getValue());
                 }
@@ -272,7 +272,7 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 /** @var BaseAttribute<mixed> | null $flag */
-                $flag = $plot->getFlagByID($args[1]);
+                $flag = $plot->getLocalFlagByID($args[1]);
                 if ($flag === null) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.flagNotSet" => $args[1]]);
                     break;
@@ -284,7 +284,7 @@ class FlagSubcommand extends Subcommand {
 
                 if ($flag->getID() !== FlagIDs::FLAG_SERVER_PLOT) {
                     /** @var BooleanAttribute $serverPlotFlag */
-                    $serverPlotFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+                    $serverPlotFlag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
                     if ($serverPlotFlag->getValue() === true) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.serverPlotFlag" => $serverPlotFlag->getID()]);
                         break;

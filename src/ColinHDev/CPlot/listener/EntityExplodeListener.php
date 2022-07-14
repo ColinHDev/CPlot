@@ -36,7 +36,7 @@ class EntityExplodeListener implements Listener {
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
         if ($plot instanceof Plot) {
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_EXPLOSION);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_EXPLOSION);
             if ($flag->getValue() === true) {
                 $affectedBlocks = [];
                 foreach ($event->getBlockList() as $hash => $block) {

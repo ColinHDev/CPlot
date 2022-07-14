@@ -57,7 +57,7 @@ class EntityItemPickupListener implements Listener {
             }
 
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_ITEM_PICKUP);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_ITEM_PICKUP);
             if ($flag->getValue() === true) {
                 return;
             }

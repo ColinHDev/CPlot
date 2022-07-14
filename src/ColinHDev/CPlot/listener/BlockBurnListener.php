@@ -32,7 +32,7 @@ class BlockBurnListener implements Listener {
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
         if ($plot instanceof Plot) {
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_BURNING);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_BURNING);
             if ($flag->getValue() === true) {
                 return;
             }

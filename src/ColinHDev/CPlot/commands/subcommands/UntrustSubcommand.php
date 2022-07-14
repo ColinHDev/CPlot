@@ -76,7 +76,7 @@ class UntrustSubcommand extends Subcommand {
         }
 
         /** @var BooleanAttribute $flag */
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
+        $flag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.serverPlotFlag" => $flag->getID()]);
             return null;
