@@ -17,8 +17,8 @@ class FlagManager {
     use SingletonTrait;
 
     /**
-     * @var array<string, BaseAttribute>
-     * @phpstan-var (non-empty-array<FlagIDs::*, BaseAttribute<mixed>>)
+     * @var array<string, Flag>
+     * @phpstan-var (non-empty-array<FlagIDs::*, Flag<mixed>>)
      */
     private array $flags = [];
 
@@ -49,7 +49,7 @@ class FlagManager {
     }
 
     /**
-     * @phpstan-template TAttributeClass of BaseAttribute<mixed>
+     * @phpstan-template TAttributeClass of Flag<mixed>
      * @phpstan-param class-string<TAttributeClass> $className
      * @throws \InvalidArgumentException
      */
@@ -70,7 +70,7 @@ class FlagManager {
     }
 
     /**
-     * @return array<string, BaseAttribute<mixed>>
+     * @return array<string, Flag<mixed>>
      */
     public function getFlags() : array {
         return $this->flags;
@@ -78,9 +78,9 @@ class FlagManager {
 
     /**
      * @phpstan-param string $ID
-     * @phpstan-return ($ID is FlagIDs::* ? BaseAttribute<mixed> : null)
+     * @phpstan-return ($ID is FlagIDs::* ? Flag<mixed> : null)
      */
-    public function getFlagByID(string $ID) : ?BaseAttribute {
+    public function getFlagByID(string $ID) : ?Flag {
         if (!isset($this->flags[$ID])) {
             return null;
         }
