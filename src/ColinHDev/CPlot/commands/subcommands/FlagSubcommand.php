@@ -154,7 +154,7 @@ class FlagSubcommand extends Subcommand {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noFlag" => $args[1]]);
                     break;
                 }
-                if (!$sender->hasPermission($flag->getPermission())) {
+                if (!$sender->hasPermission("cplot.flag." . $flag->getID())) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.permissionMessageForFlag" => $flag->getID()]);
                     break;
                 }
@@ -277,7 +277,7 @@ class FlagSubcommand extends Subcommand {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.flagNotSet" => $args[1]]);
                     break;
                 }
-                if (!$sender->hasPermission($flag->getPermission())) {
+                if (!$sender->hasPermission("cplot.flag." . $flag->getID())) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.permissionMessageForFlag" => $flag->getID()]);
                     break;
                 }

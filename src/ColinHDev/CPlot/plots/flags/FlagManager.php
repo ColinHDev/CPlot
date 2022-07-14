@@ -59,13 +59,11 @@ class FlagManager {
         if ($className === LocationAttribute::class) {
             $this->flags[$ID] = new $className(
                 $ID,
-                "cplot.flag." . $ID,
                 "0;0;0;0;0"
             );
         } else {
             $this->flags[$ID] = new $className(
                 $ID,
-                "cplot.flag." . $ID,
                 ResourceManager::getInstance()->getConfig()->getNested("flag." . $ID)
             );
         }

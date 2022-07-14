@@ -61,7 +61,6 @@ class SettingManager {
         Utils::testValidInstance($className, BaseAttribute::class);
         $this->settings[$ID] = new $className(
             $ID,
-            "cplot.setting." . $ID,
             ResourceManager::getInstance()->getConfig()->getNested("setting." . $ID)
         );
     }

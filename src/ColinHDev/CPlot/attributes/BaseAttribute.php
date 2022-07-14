@@ -12,25 +12,19 @@ use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 abstract class BaseAttribute {
 
     protected string $ID;
-    protected string $permission;
     /** @phpstan-var AttributeValue */
     protected mixed $value;
 
     /**
      * @phpstan-param AttributeValue $value
      */
-    final public function __construct(string $ID, string $permission, mixed $value) {
+    final public function __construct(string $ID, mixed $value) {
         $this->ID = $ID;
-        $this->permission = $permission;
         $this->value = $value;
     }
 
     public function getID() : string {
         return $this->ID;
-    }
-
-    public function getPermission() : string {
-        return $this->permission;
     }
 
     /**
@@ -66,24 +60,22 @@ abstract class BaseAttribute {
     abstract public function parse(string $value) : mixed;
 
     /**
-     * @phpstan-return array{ID: string, permission: string, default: string, value: string}
+     * @phpstan-return array{ID: string, default: string, value: string}
      */
     public function __serialize() : array {
         return [
             "ID" => $this->ID,
-            "permission" => $this->permission,
             "default" => $this->default,
             "value" => $this->toString()
         ];
     }
 
     /**
-     * @phpstan-param array{ID: string, permission: string, default: string, value: string} $data
+     * @phpstan-param array{ID: string, default: string, value: string} $data
      * @throws AttributeParseException
      */
     public function __unserialize(array $data) : void {
         $this->ID = $data["ID"];
-        $this->permission = $data["permission"];
         $this->default = $data["default"];
         $this->value = $this->parse($data["value"]);
     }

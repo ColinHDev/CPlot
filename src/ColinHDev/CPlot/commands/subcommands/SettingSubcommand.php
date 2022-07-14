@@ -127,7 +127,7 @@ class SettingSubcommand extends Subcommand {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.noSetting" => $args[1]]);
                     break;
                 }
-                if (!$sender->hasPermission($setting->getPermission())) {
+                if (!$sender->hasPermission("cplot.setting." . $setting->getID())) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.permissionMessageForSetting" => $setting->getID()]);
                     break;
                 }
@@ -175,7 +175,7 @@ class SettingSubcommand extends Subcommand {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.settingNotSet" => $args[1]]);
                     break;
                 }
-                if (!$sender->hasPermission($setting->getPermission())) {
+                if (!$sender->hasPermission("cplot.setting." . $setting->getID())) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.permissionMessageForSetting" => $setting->getID()]);
                     break;
                 }
