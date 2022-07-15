@@ -137,7 +137,7 @@ class PlayerMoveListener implements Listener {
                         if ($value === $flag->getValue()) {
                             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                                 $player,
-                                ["prefix", "player.move.setting.warn_flag" => [$flag->getID(), $flag->toString()]]
+                                ["prefix", "playerMove.setting.warn_flag" => [$flag->getID(), $flag->toString()]]
                             );
                             continue 2;
                         }
@@ -152,7 +152,7 @@ class PlayerMoveListener implements Listener {
             if ($flag->getValue() === true) {
                 $title .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $player,
-                    ["player.move.plotEnter.title.coordinates" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+                    ["playerMove.plotEnter.tip.coordinates" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                 );
                 if ($plot->hasPlotOwner()) {
                     $plotOwners = [];
@@ -162,12 +162,17 @@ class PlayerMoveListener implements Listener {
                     }
                     $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $player,
-                        "player.move.plotEnter.title.owner.separator"
+                        "playerMove.plotEnter.tip.owner.separator"
                     );
                     $list = implode($separator, $plotOwners);
                     $title .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $player,
-                        ["player.move.plotEnter.title.owner" => $list]
+                        ["playerMove.plotEnter.tip.owner" => $list]
+                    );
+                } else {
+                    $title .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                        $player,
+                        "playerMove.plotEnter.tip.claimable"
                     );
                 }
             }
@@ -176,7 +181,7 @@ class PlayerMoveListener implements Listener {
             if ($flag->getValue() !== "") {
                 $title .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $player,
-                    ["player.move.plotEnter.title.flag.message" => $flag->getValue()]
+                    ["playerMove.plotEnter.tip.flag.message" => $flag->getValue()]
                 );
             }
             $player->sendTip($title);
@@ -190,7 +195,7 @@ class PlayerMoveListener implements Listener {
                     if ($owner instanceof Player) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                             $owner,
-                            ["player.move.plotEnter.flag.plot_enter" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+                            ["playerMove.plotEnter.flag.plot_enter" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                         );
                     }
                 }
@@ -216,7 +221,7 @@ class PlayerMoveListener implements Listener {
                     if ($owner instanceof Player) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                             $owner,
-                            ["player.move.plotEnter.flag.plot_leave" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+                            ["playerMove.plotEnter.flag.plot_leave" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                         );
                     }
                 }
