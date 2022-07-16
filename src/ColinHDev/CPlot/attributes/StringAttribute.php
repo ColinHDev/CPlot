@@ -13,7 +13,7 @@ abstract class StringAttribute extends BaseAttribute {
      * @param string $value
      */
     public function merge(mixed $value) : StringAttribute {
-        return $this->newInstance($value);
+        return $this->createInstance($value);
     }
 
     /**

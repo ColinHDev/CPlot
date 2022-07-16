@@ -461,7 +461,7 @@ final class DataProvider {
                 continue;
             }
             try {
-                $settings[$setting->getID()] = $setting->newInstance($setting->parse($row["value"]));
+                $settings[$setting->getID()] = $setting->createInstance($setting->parse($row["value"]));
             } catch (AttributeParseException) {
             }
         }
@@ -818,7 +818,7 @@ final class DataProvider {
                 continue;
             }
             try {
-                $plotFlags[$plotFlag->getID()] = $plotFlag->newInstance($plotFlag->parse($row["value"]));
+                $plotFlags[$plotFlag->getID()] = $plotFlag->createInstance($plotFlag->parse($row["value"]));
             } catch (AttributeParseException) {
             }
         }

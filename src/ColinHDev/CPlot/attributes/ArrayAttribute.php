@@ -32,7 +32,7 @@ abstract class ArrayAttribute extends BaseAttribute {
             }
             $values[] = $newValue;
         }
-        return $this->newInstance($values);
+        return $this->createInstance($values);
     }
 
     /**

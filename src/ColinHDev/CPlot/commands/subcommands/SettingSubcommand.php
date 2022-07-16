@@ -141,7 +141,7 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
 
-                $setting = $setting->newInstance($parsedValue);
+                $setting = $setting->createInstance($parsedValue);
                 $oldSetting = $playerData->getSettingByID($setting->getID());
                 if ($oldSetting !== null) {
                     $setting = $oldSetting->merge($setting->getValue());
@@ -203,7 +203,7 @@ class SettingSubcommand extends Subcommand {
                     }
 
                     if (count($values) > 0) {
-                        $setting = $setting->newInstance($values);
+                        $setting = $setting->createInstance($values);
                         $playerData->addSetting($setting);
                         yield DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.value.success" => [$setting->getID(), $setting->toString()]]);

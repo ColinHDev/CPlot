@@ -21,7 +21,7 @@ abstract class BooleanAttribute extends BaseAttribute {
      * @return BooleanAttribute
      */
     public function merge(mixed $value) : BooleanAttribute {
-        return $this->newInstance($value);
+        return $this->createInstance($value);
     }
 
     /**

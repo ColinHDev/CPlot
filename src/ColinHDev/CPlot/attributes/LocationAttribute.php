@@ -16,7 +16,7 @@ abstract class LocationAttribute extends BaseAttribute {
      * @param Location $value
      */
     public function merge(mixed $value) : LocationAttribute {
-        return $this->newInstance($value);
+        return $this->createInstance($value);
     }
 
     /**

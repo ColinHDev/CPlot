@@ -37,12 +37,10 @@ abstract class BaseAttribute {
     }
 
     /**
-     * @param AttributeValue $value
-     * @return static
+     * @phpstan-param AttributeValue $value
+     * @phpstan-return static
      */
-    public function newInstance(mixed $value) : static {
-        return new static($this->ID, $this->permission, $this->default, $value);
-    }
+    abstract public function createInstance(mixed $value) : static;
 
     /**
      * @param AttributeValue $value

@@ -190,7 +190,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                $flag = $newFlag = $flag->newInstance($parsedValue);
+                $flag = $newFlag = $flag->createInstance($parsedValue);
                 $oldFlag = $plot->getLocalFlagByID($flag->getID());
                 if ($oldFlag !== null) {
                     $flag = $oldFlag->merge($flag->getValue());
@@ -316,7 +316,7 @@ class FlagSubcommand extends Subcommand {
                     }
 
                     if (count($values) > 0) {
-                        $flag = $flag->newInstance($values);
+                        $flag = $flag->createInstance($values);
                         $plot->addFlag($flag);
                         yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.value.success" => [$flag->getID(), $flag->toString($removedValues)]]);
