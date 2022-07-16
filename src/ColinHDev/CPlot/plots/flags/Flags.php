@@ -8,7 +8,7 @@ use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
 use pocketmine\utils\CloningRegistryTrait;
 
 /**
- * @method static PvpFlag Pvp()
+ * @method static PvpFlag PVP()
  */
 final class Flags {
     use CloningRegistryTrait;
