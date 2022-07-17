@@ -16,4 +16,9 @@ interface Flag {
      */
     public function getValue() : mixed;
 
+    /**
+     * @phpstan-param TValue $value
+     * @phpstan-return static
+     */
+    public function createInstance(mixed $value) : static;
 }
