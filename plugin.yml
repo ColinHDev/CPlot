@@ -104,8 +104,6 @@ permissions:
     cplot.claimPlots.unlimited:
         default: op
 
-    cplot.flag.title:
-        default: true
     cplot.flag.plot_enter:
         default: true
     cplot.flag.plot_leave:
@@ -133,8 +131,6 @@ permissions:
     cplot.flag.player_interact:
         default: true
     cplot.flag.server_plot:
-        default: op
-    cplot.flag.check_offlinetime:
         default: op
     cplot.flag.place:
         default: true
