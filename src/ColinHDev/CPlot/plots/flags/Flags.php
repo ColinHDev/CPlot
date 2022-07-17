@@ -6,7 +6,9 @@ namespace ColinHDev\CPlot\plots\flags;
 
 use ColinHDev\CPlot\plots\flags\implementation\BurningFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ExplosionFlag;
+use ColinHDev\CPlot\plots\flags\implementation\FarewellFlag;
 use ColinHDev\CPlot\plots\flags\implementation\FlowingFlag;
+use ColinHDev\CPlot\plots\flags\implementation\GreetingFlag;
 use ColinHDev\CPlot\plots\flags\implementation\GrowingFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ItemDropFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ItemPickupFlag;
@@ -21,7 +23,9 @@ use pocketmine\utils\CloningRegistryTrait;
 /**
  * @method static BurningFlag BURNING()
  * @method static ExplosionFlag EXPLOSION()
+ * @method static FarewellFlag FAREWELL()
  * @method static FlowingFlag FLOWING()
+ * @method static GreetingFlag GREETING()
  * @method static GrowingFlag GROWING()
  * @method static ItemDropFlag ITEM_DROP()
  * @method static ItemPickupFlag ITEM_PICKUP()
