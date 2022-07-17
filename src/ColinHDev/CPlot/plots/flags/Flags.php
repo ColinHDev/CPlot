@@ -19,10 +19,10 @@ use pocketmine\utils\CloningRegistryTrait;
  * @method static ExplosionFlag EXPLOSION()
  * @method static FlowingFlag FLOWING()
  * @method static GrowingFlag GROWING()
- * @method static PlayerInteractFlag PLAYERINTERACT()
+ * @method static PlayerInteractFlag PLAYER_INTERACT()
  * @method static PveFlag PVE()
  * @method static PvpFlag PVP()
- * @method static ServerPlotFlag SERVERPLOT()
+ * @method static ServerPlotFlag SERVER_PLOT()
  */
 final class Flags {
     use CloningRegistryTrait;
