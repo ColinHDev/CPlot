@@ -8,6 +8,8 @@ use ColinHDev\CPlot\plots\flags\implementation\BurningFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ExplosionFlag;
 use ColinHDev\CPlot\plots\flags\implementation\FlowingFlag;
 use ColinHDev\CPlot\plots\flags\implementation\GrowingFlag;
+use ColinHDev\CPlot\plots\flags\implementation\ItemDropFlag;
+use ColinHDev\CPlot\plots\flags\implementation\ItemPickupFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlayerInteractFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlotEnterFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlotLeaveFlag;
@@ -21,6 +23,8 @@ use pocketmine\utils\CloningRegistryTrait;
  * @method static ExplosionFlag EXPLOSION()
  * @method static FlowingFlag FLOWING()
  * @method static GrowingFlag GROWING()
+ * @method static ItemDropFlag ITEM_DROP()
+ * @method static ItemPickupFlag ITEM_PICKUP()
  * @method static PlayerInteractFlag PLAYER_INTERACT()
  * @method static PlotEnterFlag PLOT_ENTER()
  * @method static PlotLeaveFlag PLOT_LEAVE()
@@ -46,6 +50,8 @@ final class Flags {
         self::register(FlagIDs::FLAG_FLOWING, $flagManager->getFlagByID(FlagIDs::FLAG_FLOWING));
         self::register(FlagIDs::FLAG_GREETING, $flagManager->getFlagByID(FlagIDs::FLAG_GREETING));
         self::register(FlagIDs::FLAG_GROWING, $flagManager->getFlagByID(FlagIDs::FLAG_GROWING));
+        self::register(FlagIDs::FLAG_ITEM_DROP, $flagManager->getFlagByID(FlagIDs::FLAG_ITEM_DROP));
+        self::register(FlagIDs::FLAG_ITEM_PICKUP, $flagManager->getFlagByID(FlagIDs::FLAG_ITEM_PICKUP));
         self::register(FlagIDs::FLAG_PLAYER_INTERACT, $flagManager->getFlagByID(FlagIDs::FLAG_PLAYER_INTERACT));
         self::register(FlagIDs::FLAG_PLOT_ENTER, $flagManager->getFlagByID(FlagIDs::FLAG_PLOT_ENTER));
         self::register(FlagIDs::FLAG_PLOT_LEAVE, $flagManager->getFlagByID(FlagIDs::FLAG_PLOT_LEAVE));
