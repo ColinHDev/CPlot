@@ -24,4 +24,11 @@ class PvpFlag extends BooleanAttribute implements Flag {
     public static function FALSE() : self {
         return new self(false);
     }
+
+    /**
+     * @phpstan-param bool $value
+     */
+    public function createInstance(mixed $value) : self {
+        return $value === true ? self::TRUE() : self::FALSE();
+    }
 }
