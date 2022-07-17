@@ -18,6 +18,7 @@ use ColinHDev\CPlot\plots\flags\implementation\PlotLeaveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
+use ColinHDev\CPlot\plots\flags\implementation\SpawnFlag;
 use pocketmine\utils\CloningRegistryTrait;
 
 /**
@@ -35,6 +36,7 @@ use pocketmine\utils\CloningRegistryTrait;
  * @method static PveFlag PVE()
  * @method static PvpFlag PVP()
  * @method static ServerPlotFlag SERVER_PLOT()
+ * @method static SpawnFlag SPAWN()
  */
 final class Flags {
     use CloningRegistryTrait;
@@ -62,5 +64,6 @@ final class Flags {
         self::register(FlagIDs::FLAG_PVE, $flagManager->getFlagByID(FlagIDs::FLAG_PVE));
         self::register(FlagIDs::FLAG_PVP, $flagManager->getFlagByID(FlagIDs::FLAG_PVP));
         self::register(FlagIDs::FLAG_SERVER_PLOT, $flagManager->getFlagByID(FlagIDs::FLAG_SERVER_PLOT));
+        self::register(FlagIDs::FLAG_SPAWN, $flagManager->getFlagByID(FlagIDs::FLAG_SPAWN));
     }
 }

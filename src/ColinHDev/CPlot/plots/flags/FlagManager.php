@@ -19,6 +19,7 @@ use ColinHDev\CPlot\plots\flags\implementation\PlotLeaveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
+use ColinHDev\CPlot\plots\flags\implementation\SpawnFlag;
 use ColinHDev\CPlot\ResourceManager;
 use InvalidArgumentException;
 use pocketmine\utils\SingletonTrait;
@@ -50,6 +51,7 @@ final class FlagManager {
         $this->register($this->getFlagFromConfig(PveFlag::FALSE()));
         $this->register($this->getFlagFromConfig(PvpFlag::FALSE()));
         $this->register($this->getFlagFromConfig(ServerPlotFlag::FALSE()));
+        $this->register($this->getFlagFromConfig(SpawnFlag::NONE()));
     }
 
     /**
