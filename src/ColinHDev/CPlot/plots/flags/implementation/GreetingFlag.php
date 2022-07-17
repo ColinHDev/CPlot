@@ -21,6 +21,9 @@ class GreetingFlag extends StringAttribute implements Flag {
         return new self("");
     }
 
+    /**
+     * @phpstan-param string $value
+     */
     public function createInstance(mixed $value) : self {
         return new self($value);
     }
