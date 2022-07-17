@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\plots\flags;
 
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
+use ColinHDev\CPlot\plots\flags\implementation\BreakFlag;
 use ColinHDev\CPlot\plots\flags\implementation\BurningFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ExplosionFlag;
 use ColinHDev\CPlot\plots\flags\implementation\FarewellFlag;
@@ -13,6 +14,7 @@ use ColinHDev\CPlot\plots\flags\implementation\GreetingFlag;
 use ColinHDev\CPlot\plots\flags\implementation\GrowingFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ItemDropFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ItemPickupFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PlaceFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlayerInteractFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlotEnterFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlotLeaveFlag;
@@ -20,6 +22,7 @@ use ColinHDev\CPlot\plots\flags\implementation\PveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
 use ColinHDev\CPlot\plots\flags\implementation\SpawnFlag;
+use ColinHDev\CPlot\plots\flags\implementation\UseFlag;
 use ColinHDev\CPlot\ResourceManager;
 use InvalidArgumentException;
 use pocketmine\utils\SingletonTrait;
@@ -37,6 +40,7 @@ final class FlagManager {
     private array $flags = [];
 
     public function __construct() {
+        $this->register($this->getFlagFromConfig(BreakFlag::NONE()));
         $this->register($this->getFlagFromConfig(BurningFlag::FALSE()));
         $this->register($this->getFlagFromConfig(ExplosionFlag::FALSE()));
         $this->register($this->getFlagFromConfig(FarewellFlag::EMPTY()));
@@ -45,6 +49,7 @@ final class FlagManager {
         $this->register($this->getFlagFromConfig(GrowingFlag::TRUE()));
         $this->register($this->getFlagFromConfig(ItemDropFlag::TRUE()));
         $this->register($this->getFlagFromConfig(ItemPickupFlag::TRUE()));
+        $this->register($this->getFlagFromConfig(PlaceFlag::NONE()));
         $this->register($this->getFlagFromConfig(PlayerInteractFlag::FALSE()));
         $this->register($this->getFlagFromConfig(PlotEnterFlag::FALSE()));
         $this->register($this->getFlagFromConfig(PlotLeaveFlag::FALSE()));
@@ -52,6 +57,7 @@ final class FlagManager {
         $this->register($this->getFlagFromConfig(PvpFlag::FALSE()));
         $this->register($this->getFlagFromConfig(ServerPlotFlag::FALSE()));
         $this->register($this->getFlagFromConfig(SpawnFlag::NONE()));
+        $this->register($this->getFlagFromConfig(UseFlag::NONE()));
     }
 
     /**
