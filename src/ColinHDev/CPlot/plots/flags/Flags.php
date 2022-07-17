@@ -42,7 +42,9 @@ final class Flags {
         $flagManager = FlagManager::getInstance();
         self::register(FlagIDs::FLAG_BURNING, $flagManager->getFlagByID(FlagIDs::FLAG_BURNING));
         self::register(FlagIDs::FLAG_EXPLOSION, $flagManager->getFlagByID(FlagIDs::FLAG_EXPLOSION));
+        self::register(FlagIDs::FLAG_FAREWELL, $flagManager->getFlagByID(FlagIDs::FLAG_FAREWELL));
         self::register(FlagIDs::FLAG_FLOWING, $flagManager->getFlagByID(FlagIDs::FLAG_FLOWING));
+        self::register(FlagIDs::FLAG_GREETING, $flagManager->getFlagByID(FlagIDs::FLAG_GREETING));
         self::register(FlagIDs::FLAG_GROWING, $flagManager->getFlagByID(FlagIDs::FLAG_GROWING));
         self::register(FlagIDs::FLAG_PLAYER_INTERACT, $flagManager->getFlagByID(FlagIDs::FLAG_PLAYER_INTERACT));
         self::register(FlagIDs::FLAG_PLOT_ENTER, $flagManager->getFlagByID(FlagIDs::FLAG_PLOT_ENTER));
