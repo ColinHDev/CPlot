@@ -37,6 +37,7 @@ abstract class BaseAttribute {
     }
 
     /**
+     * Create a new instance of the attribute with the given value.
      * @phpstan-param AttributeValue $value
      * @phpstan-return self
      */

@@ -17,6 +17,7 @@ interface Flag {
     public function getValue() : mixed;
 
     /**
+     * Create a new instance of the flag with the given value.
      * @phpstan-param TValue $value
      * @phpstan-return self
      */
