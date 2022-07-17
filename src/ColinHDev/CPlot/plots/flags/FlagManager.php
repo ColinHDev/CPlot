@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\plots\flags;
 
-use ColinHDev\CPlot\attributes\BaseAttribute;
-use ColinHDev\CPlot\attributes\BlockListAttribute;
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\attributes\LocationAttribute;
-use ColinHDev\CPlot\attributes\StringAttribute;
+use ColinHDev\CPlot\attributes\utils\AttributeParseException;
+use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
 use ColinHDev\CPlot\ResourceManager;
+use InvalidArgumentException;
 use pocketmine\utils\SingletonTrait;
-use pocketmine\utils\Utils;
+use function gettype;
+use function is_string;
 
 class FlagManager {
     use SingletonTrait;
@@ -23,50 +22,44 @@ class FlagManager {
     private array $flags = [];
 
     public function __construct() {
-        $this->register(FlagIDs::FLAG_TITLE, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_PLOT_ENTER, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_PLOT_LEAVE, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_MESSAGE, StringAttribute::class);
-
-        $this->register(FlagIDs::FLAG_SPAWN, LocationAttribute::class);
-
-        $this->register(FlagIDs::FLAG_ITEM_DROP, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_ITEM_PICKUP, BooleanAttribute::class);
-
-        $this->register(FlagIDs::FLAG_PVP, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_PVE, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_EXPLOSION, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_BURNING, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_FLOWING, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_GROWING, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_PLAYER_INTERACT, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_SERVER_PLOT, BooleanAttribute::class);
-        $this->register(FlagIDs::FLAG_CHECK_INACTIVE, BooleanAttribute::class);
-
-        $this->register(FlagIDs::FLAG_PLACE, BlockListAttribute::class);
-        $this->register(FlagIDs::FLAG_BREAK, BlockListAttribute::class);
-        $this->register(FlagIDs::FLAG_USE, BlockListAttribute::class);
+        $this->register($this->getFlagFromConfig(PvpFlag::FALSE()));
     }
 
     /**
-     * @phpstan-template TAttributeClass of Flag<mixed>
-     * @phpstan-param class-string<TAttributeClass> $className
-     * @throws \InvalidArgumentException
+     * @internal method to create a {@see Flag} instance with the default value defined in the config file.
+     * @phpstan-template TFlag of Flag
+     * @phpstan-template TFlagValue of mixed
+     * @phpstan-param TFlag<TFlagValue> $flag
+     * @phpstan-return TFlag<TFlagValue>
+     * @throws InvalidArgumentException if the given default value is not valid for the given flag.
      */
-    private function register(string $ID, string $className) : void {
-        Utils::testValidInstance($className, BaseAttribute::class);
-        // HACK
-        if ($className === LocationAttribute::class) {
-            $this->flags[$ID] = new $className(
-                $ID,
-                "0;0;0;0;0"
-            );
-        } else {
-            $this->flags[$ID] = new $className(
-                $ID,
-                ResourceManager::getInstance()->getConfig()->getNested("flag." . $ID)
+    private function getFlagFromConfig(Flag $flag) : Flag {
+        $default = ResourceManager::getInstance()->getConfig()->getNested("flag." . $flag->getID());
+        if ($default === null) {
+            return $flag;
+        }
+        if (!is_string($default)) {
+            throw new InvalidArgumentException(
+                "Expected type of default value for flag " . $flag->getID() . " to be string, " . gettype($default) . " given in config file under \"flag." . $flag->getID() . "\"."
             );
         }
+        try {
+            $parsedValue = $flag->parse($default);
+        } catch(AttributeParseException) {
+            throw new InvalidArgumentException(
+                "Failed to parse default value for flag " . $flag->getID() . ". Value \"" . $default . "\" given in config file under \"flag." . $flag->getID() . "\" was not accepted."
+            );
+        }
+        return $flag->createInstance($parsedValue);
+    }
+
+    /**
+     * Registers a {@see Flag} to the {@see FlagManager}.
+     * @param Flag $flag The flag to register.
+     * @phpstan-param Flag<mixed> $flag
+     */
+    public function register(Flag $flag) : void {
+        $this->flags[$flag->getID()] = $flag;
     }
 
     /**
