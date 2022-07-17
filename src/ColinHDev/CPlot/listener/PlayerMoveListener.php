@@ -195,8 +195,6 @@ class PlayerMoveListener implements Listener {
                     }
                 }
             }
-
-            // TODO: check_offlinetime flag && offline system
         });
     }
 

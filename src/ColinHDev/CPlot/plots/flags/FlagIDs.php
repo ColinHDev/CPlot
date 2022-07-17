@@ -24,7 +24,6 @@ interface FlagIDs {
     public const FLAG_GROWING = "growing";
     public const FLAG_PLAYER_INTERACT = "player_interact";
     public const FLAG_SERVER_PLOT = "server_plot";
-    public const FLAG_CHECK_INACTIVE = "check_inactive";
 
     public const FLAG_PLACE = "place";
     public const FLAG_BREAK = "break";

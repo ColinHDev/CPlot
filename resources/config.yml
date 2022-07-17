@@ -111,9 +111,6 @@ flag:
     # Define the default value of the server_plot flag.
     # default: "false"
     server_plot: "false"
-    # Define the default value of the check_inactive flag.
-    # default: "true"
-    check_inactive: "true"
 
     # Define the default value of the place flag.
     # default: "[]"
