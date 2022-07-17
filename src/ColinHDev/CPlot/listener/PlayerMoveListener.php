@@ -149,36 +149,31 @@ class PlayerMoveListener implements Listener {
                 }
             }
 
-            // title flag && message flag
-            $tip = "";
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_TITLE);
-            if ($flag->getValue() === true) {
+            // tip && message flag
+            $tip = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                $player,
+                ["playerMove.plotEnter.tip.coordinates" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+            );
+            if ($plot->hasPlotOwner()) {
+                $plotOwners = [];
+                foreach ($plot->getPlotOwners() as $plotOwner) {
+                    $plotOwnerData = $plotOwner->getPlayerData();
+                    $plotOwners[] = $plotOwnerData->getPlayerName() ?? "Error: " . ($plotOwnerData->getPlayerXUID() ?? $plotOwnerData->getPlayerUUID() ?? $plotOwnerData->getPlayerID());
+                }
+                $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $player,
+                    "playerMove.plotEnter.tip.owner.separator"
+                );
+                $list = implode($separator, $plotOwners);
                 $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $player,
-                    ["playerMove.plotEnter.tip.coordinates" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+                    ["playerMove.plotEnter.tip.owner" => $list]
                 );
-                if ($plot->hasPlotOwner()) {
-                    $plotOwners = [];
-                    foreach ($plot->getPlotOwners() as $plotOwner) {
-                        $plotOwnerData = $plotOwner->getPlayerData();
-                        $plotOwners[] = $plotOwnerData->getPlayerName() ?? "Error: " . ($plotOwnerData->getPlayerXUID() ?? $plotOwnerData->getPlayerUUID() ?? $plotOwnerData->getPlayerID());
-                    }
-                    $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
-                        $player,
-                        "playerMove.plotEnter.tip.owner.separator"
-                    );
-                    $list = implode($separator, $plotOwners);
-                    $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
-                        $player,
-                        ["playerMove.plotEnter.tip.owner" => $list]
-                    );
-                } else {
-                    $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
-                        $player,
-                        "playerMove.plotEnter.tip.claimable"
-                    );
-                }
+            } else {
+                $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $player,
+                    "playerMove.plotEnter.tip.claimable"
+                );
             }
             /** @var StringAttribute $flag */
             $flag = $plot->getFlagByID(FlagIDs::FLAG_MESSAGE);

@@ -67,9 +67,6 @@ worldSettings:
 
 # Define the default values of all flags.
 flag:
-    # Define the default value of the title flag.
-    # default: "true"
-    title: "true"
     # Define the default value of the plot_enter flag.
     # default: "false"
     plot_enter: "false"
