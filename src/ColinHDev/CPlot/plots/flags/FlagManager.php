@@ -5,7 +5,14 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\plots\flags;
 
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
+use ColinHDev\CPlot\plots\flags\implementation\BurningFlag;
+use ColinHDev\CPlot\plots\flags\implementation\ExplosionFlag;
+use ColinHDev\CPlot\plots\flags\implementation\FlowingFlag;
+use ColinHDev\CPlot\plots\flags\implementation\GrowingFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PlayerInteractFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
+use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
 use ColinHDev\CPlot\ResourceManager;
 use InvalidArgumentException;
 use pocketmine\utils\SingletonTrait;
@@ -23,7 +30,14 @@ final class FlagManager {
     private array $flags = [];
 
     public function __construct() {
+        $this->register($this->getFlagFromConfig(BurningFlag::FALSE()));
+        $this->register($this->getFlagFromConfig(ExplosionFlag::FALSE()));
+        $this->register($this->getFlagFromConfig(FlowingFlag::TRUE()));
+        $this->register($this->getFlagFromConfig(GrowingFlag::TRUE()));
+        $this->register($this->getFlagFromConfig(PlayerInteractFlag::FALSE()));
+        $this->register($this->getFlagFromConfig(PveFlag::FALSE()));
         $this->register($this->getFlagFromConfig(PvpFlag::FALSE()));
+        $this->register($this->getFlagFromConfig(ServerPlotFlag::FALSE()));
     }
 
     /**
