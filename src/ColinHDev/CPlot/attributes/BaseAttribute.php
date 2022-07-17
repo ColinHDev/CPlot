@@ -36,6 +36,8 @@ abstract class BaseAttribute {
         return $this->value;
     }
 
+    //abstract public function equals(BaseAttribute $other) : bool;
+
     /**
      * Create a new instance of the attribute with the given value.
      * @phpstan-param AttributeValue $value

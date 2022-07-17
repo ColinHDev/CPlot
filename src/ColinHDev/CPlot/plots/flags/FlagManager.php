@@ -34,8 +34,8 @@ final class FlagManager {
     use SingletonTrait;
 
     /**
-     * @var array<string, Flag>
-     * @phpstan-var (non-empty-array<FlagIDs::*, Flag<mixed>>)
+     * @var Flag[]
+     * @phpstan-var array<string, Flag<mixed>>
      */
     private array $flags = [];
 
@@ -62,10 +62,9 @@ final class FlagManager {
 
     /**
      * @internal method to create a {@see Flag} instance with the default value defined in the config file.
-     * @phpstan-template TFlag of Flag
      * @phpstan-template TFlagValue of mixed
-     * @phpstan-param TFlag<TFlagValue> $flag
-     * @phpstan-return TFlag<TFlagValue>
+     * @phpstan-param Flag<TFlagValue> $flag
+     * @phpstan-return Flag<TFlagValue>
      * @throws InvalidArgumentException if the given default value is not valid for the given flag.
      */
     private function getFlagFromConfig(Flag $flag) : Flag {
@@ -90,8 +89,9 @@ final class FlagManager {
 
     /**
      * Registers a {@see Flag} to the {@see FlagManager}.
-     * @param Flag $flag The flag to register.
-     * @phpstan-param Flag<mixed> $flag
+     * @param Flag $flag The flag to register
+     * @phpstan-template TFlagValue of mixed
+     * @phpstan-param Flag<TFlagValue> $flag
      */
     public function register(Flag $flag) : void {
         $this->flags[$flag->getID()] = $flag;

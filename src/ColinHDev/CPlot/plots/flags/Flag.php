@@ -19,7 +19,7 @@ interface Flag {
     /**
      * Create a new instance of the flag with the given value.
      * @phpstan-param TValue $value
-     * @phpstan-return self
+     * @phpstan-return self<TValue>
      */
     public function createInstance(mixed $value) : self;
 }

@@ -50,6 +50,9 @@ final class Flags {
     private function __construct() {
     }
 
+    /**
+     * @phpstan-param Flag<mixed> $flag
+     */
     protected static function register(string $flagID, Flag $flag) : void{
         self::_registryRegister($flagID, $flag);
     }

@@ -10,6 +10,7 @@ use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\SettingManager;
 use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\plots\MergePlot;
 use ColinHDev\CPlot\plots\Plot;
@@ -698,7 +699,7 @@ final class DataProvider {
         $mergePlots = yield $this->awaitMergePlots($worldName, $worldSettings, $x, $z);
         /** @phpstan-var PlotPlayerContainer $plotPlayerContainer */
         $plotPlayerContainer = yield $this->awaitPlotPlayers($worldName, $x, $z);
-        /** @phpstan-var array<string, BaseAttribute<mixed>> $plotFlags */
+        /** @phpstan-var array<string, Flag<mixed>> $plotFlags */
         $plotFlags = yield $this->awaitPlotFlags($worldName, $x, $z);
         /** @phpstan-var array<string, PlotRate> $plotRates */
         $plotRates = yield $this->awaitPlotRates($worldName, $x, $z);
@@ -796,9 +797,9 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the flags ({@see BaseAttribute}s) of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see Flag}s of a plot asynchronously from the database and returns a {@see \Generator}. The
      * plot flags can be get by using {@see Await}.
-     * @phpstan-return Generator<mixed, mixed, mixed, array<string, BaseAttribute<mixed>>>
+     * @phpstan-return Generator<mixed, mixed, mixed, array<string, Flag<mixed>>>
      */
     private function awaitPlotFlags(string $worldName, int $x, int $z) : Generator {
         /** @phpstan-var array<array{flag: string, value: string}> $rows */

@@ -12,6 +12,13 @@ use pocketmine\entity\Location;
  */
 abstract class LocationAttribute extends BaseAttribute {
 
+    public function equals(BaseAttribute $other) : bool {
+        if (!($other instanceof self)) {
+            return false;
+        }
+        return $this->getValue()->equals($other->getValue());
+    }
+
     /**
      * @param Location $value
      */
