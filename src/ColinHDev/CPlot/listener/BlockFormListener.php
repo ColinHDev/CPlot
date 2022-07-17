@@ -8,17 +8,17 @@ use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
-use pocketmine\event\block\BlockBurnEvent;
+use pocketmine\event\block\BlockFormEvent;
 use pocketmine\event\Listener;
 
-class BlockBurnListener implements Listener {
+class BlockFormListener implements Listener {
     use APIHolder;
 
     /**
      * @handleCancelled false
      */
-    public function onBlockBurn(BlockBurnEvent $event) : void {
-        $position = $event->getCausingBlock()->getPosition();
+    public function onBlockForm(BlockFormEvent $event) : void {
+        $position = $event->getBlock()->getPosition();
         /** @phpstan-var true|false|null $isPlotWorld */
         $isPlotWorld = $this->getAPI()->isPlotWorld($position->getWorld())->getResult();
         if ($isPlotWorld !== true) {
@@ -30,10 +30,9 @@ class BlockBurnListener implements Listener {
 
         /** @phpstan-var Plot|false|null $plot */
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
-        // We not only need to check if the causing block is on the plot but also if that applies for the changed one.
-        if ($plot instanceof Plot && $plot->isOnPlot($event->getBlock()->getPosition())) {
+        if ($plot instanceof Plot) {
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_BURNING);
+            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_FLOWING);
             if ($flag->getValue() === true) {
                 return;
             }
@@ -41,4 +40,5 @@ class BlockBurnListener implements Listener {
 
         $event->cancel();
     }
+
 }
