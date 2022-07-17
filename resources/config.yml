@@ -73,9 +73,9 @@ flag:
     # Define the default value of the plot_leave flag.
     # default: "false"
     plot_leave: "false"
-    # Define the default value of the message flag.
+    # Define the default value of the greeting flag.
     # default: ""
-    message: ""
+    greeting: ""
 
     # Define the default value of the item_drop flag.
     # default: "true"

@@ -176,11 +176,11 @@ class PlayerMoveListener implements Listener {
                 );
             }
             /** @var StringAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_MESSAGE);
+            $flag = $plot->getFlagByID(FlagIDs::FLAG_GREETING);
             if ($flag->getValue() !== "") {
                 $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $player,
-                    ["playerMove.plotEnter.tip.flag.message" => $flag->getValue()]
+                    ["playerMove.plotEnter.tip.flag.greeting" => $flag->getValue()]
                 );
             }
             $tipParts = explode(TextFormat::EOL, $tip);

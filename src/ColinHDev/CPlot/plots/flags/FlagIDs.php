@@ -8,7 +8,7 @@ interface FlagIDs {
 
     public const FLAG_PLOT_ENTER = "plot_enter";
     public const FLAG_PLOT_LEAVE = "plot_leave";
-    public const FLAG_MESSAGE = "message";
+    public const FLAG_GREETING = "greeting";
 
     public const FLAG_SPAWN = "spawn";
 
