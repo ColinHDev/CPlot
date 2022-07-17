@@ -13,7 +13,7 @@ use function array_map;
 use function gettype;
 use function is_string;
 
-class FlagManager {
+final class FlagManager {
     use SingletonTrait;
 
     /**
