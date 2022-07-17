@@ -9,6 +9,8 @@ use ColinHDev\CPlot\plots\flags\implementation\ExplosionFlag;
 use ColinHDev\CPlot\plots\flags\implementation\FlowingFlag;
 use ColinHDev\CPlot\plots\flags\implementation\GrowingFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlayerInteractFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PlotEnterFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PlotLeaveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
@@ -20,6 +22,8 @@ use pocketmine\utils\CloningRegistryTrait;
  * @method static FlowingFlag FLOWING()
  * @method static GrowingFlag GROWING()
  * @method static PlayerInteractFlag PLAYER_INTERACT()
+ * @method static PlotEnterFlag PLOT_ENTER()
+ * @method static PlotLeaveFlag PLOT_LEAVE()
  * @method static PveFlag PVE()
  * @method static PvpFlag PVP()
  * @method static ServerPlotFlag SERVER_PLOT()
@@ -41,6 +45,8 @@ final class Flags {
         self::register(FlagIDs::FLAG_FLOWING, $flagManager->getFlagByID(FlagIDs::FLAG_FLOWING));
         self::register(FlagIDs::FLAG_GROWING, $flagManager->getFlagByID(FlagIDs::FLAG_GROWING));
         self::register(FlagIDs::FLAG_PLAYER_INTERACT, $flagManager->getFlagByID(FlagIDs::FLAG_PLAYER_INTERACT));
+        self::register(FlagIDs::FLAG_PLOT_ENTER, $flagManager->getFlagByID(FlagIDs::FLAG_PLOT_ENTER));
+        self::register(FlagIDs::FLAG_PLOT_LEAVE, $flagManager->getFlagByID(FlagIDs::FLAG_PLOT_LEAVE));
         self::register(FlagIDs::FLAG_PVE, $flagManager->getFlagByID(FlagIDs::FLAG_PVE));
         self::register(FlagIDs::FLAG_PVP, $flagManager->getFlagByID(FlagIDs::FLAG_PVP));
         self::register(FlagIDs::FLAG_SERVER_PLOT, $flagManager->getFlagByID(FlagIDs::FLAG_SERVER_PLOT));

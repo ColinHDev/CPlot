@@ -10,6 +10,8 @@ use ColinHDev\CPlot\plots\flags\implementation\ExplosionFlag;
 use ColinHDev\CPlot\plots\flags\implementation\FlowingFlag;
 use ColinHDev\CPlot\plots\flags\implementation\GrowingFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlayerInteractFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PlotEnterFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PlotLeaveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
@@ -35,6 +37,8 @@ final class FlagManager {
         $this->register($this->getFlagFromConfig(FlowingFlag::TRUE()));
         $this->register($this->getFlagFromConfig(GrowingFlag::TRUE()));
         $this->register($this->getFlagFromConfig(PlayerInteractFlag::FALSE()));
+        $this->register($this->getFlagFromConfig(PlotEnterFlag::FALSE()));
+        $this->register($this->getFlagFromConfig(PlotLeaveFlag::FALSE()));
         $this->register($this->getFlagFromConfig(PveFlag::FALSE()));
         $this->register($this->getFlagFromConfig(PvpFlag::FALSE()));
         $this->register($this->getFlagFromConfig(ServerPlotFlag::FALSE()));
