@@ -65,18 +65,11 @@ worldSettings:
     # default value: "Bedrock"
     plotBottomBlock: "Bedrock"
 
-# Define the default values of all flags.
+# Define the default values for all the flags.
+# This array does only contain all the flags which are most likely to get their default value changed by server owners.
+# You can change the default value for any flag by pasting the flag ID as a key and the preferred default value as
+# string as the value in this array.
 flag:
-    # Define the default value of the plot_enter flag.
-    # default: "false"
-    plot_enter: "false"
-    # Define the default value of the plot_leave flag.
-    # default: "false"
-    plot_leave: "false"
-    # Define the default value of the greeting flag.
-    # default: ""
-    greeting: ""
-
     # Define the default value of the item_drop flag.
     # default: "true"
     item_drop: "true"
@@ -105,19 +98,6 @@ flag:
     # Define the default value of the player_interact flag.
     # default: "false"
     player_interact: "false"
-    # Define the default value of the server_plot flag.
-    # default: "false"
-    server_plot: "false"
-
-    # Define the default value of the place flag.
-    # default: "[]"
-    place: "[]"
-    # Define the default value of the break flag.
-    # default: "[]"
-    break: "[]"
-    # Define the default value of the use flag.
-    # default: "[]"
-    use: "[]"
 
 # Define the default values of all settings.
 setting:
