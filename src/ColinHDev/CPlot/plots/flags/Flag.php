@@ -18,7 +18,7 @@ interface Flag {
 
     /**
      * @phpstan-param TValue $value
-     * @phpstan-return static
+     * @phpstan-return self
      */
-    public function createInstance(mixed $value) : static;
+    public function createInstance(mixed $value) : self;
 }
