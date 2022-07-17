@@ -9,6 +9,7 @@ use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
 use ColinHDev\CPlot\ResourceManager;
 use InvalidArgumentException;
 use pocketmine\utils\SingletonTrait;
+use function array_map;
 use function gettype;
 use function is_string;
 
@@ -63,13 +64,20 @@ class FlagManager {
     }
 
     /**
-     * @return array<string, Flag<mixed>>
+     * Returns all registered {@see Flag} instances with their value being the flag's default value.
+     * @phpstan-return array<string, Flag<mixed>>
      */
     public function getFlags() : array {
-        return $this->flags;
+        return array_map(
+            static function(Flag $flag) : Flag {
+                return clone $flag;
+            },
+            $this->flags
+        );
     }
 
     /**
+     * Returns the {@see Flag} with the given ID with its value being the its default value.
      * @phpstan-param string $ID
      * @phpstan-return ($ID is FlagIDs::* ? Flag<mixed> : null)
      */
