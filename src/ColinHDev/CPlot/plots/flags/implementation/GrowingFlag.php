@@ -9,7 +9,8 @@ use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 
 /**
- * @phpstan-implements Flag<bool>
+ * @phpstan-extends BooleanAttribute<GrowingFlag>
+ * @phpstan-implements Flag<GrowingFlag, bool>
  */
 class GrowingFlag extends BooleanAttribute implements Flag {
 
@@ -25,9 +26,6 @@ class GrowingFlag extends BooleanAttribute implements Flag {
         return new self(false);
     }
 
-    /**
-     * @phpstan-param bool $value
-     */
     public function createInstance(mixed $value) : self {
         return $value === true ? self::TRUE() : self::FALSE();
     }

@@ -10,7 +10,8 @@ use ColinHDev\CPlot\plots\flags\FlagIDs;
 use pocketmine\entity\Location;
 
 /**
- * @phpstan-implements Flag<Location>
+ * @phpstan-extends LocationAttribute<SpawnFlag>
+ * @phpstan-implements Flag<SpawnFlag, Location>
  */
 class SpawnFlag extends LocationAttribute implements Flag {
 
@@ -22,9 +23,6 @@ class SpawnFlag extends LocationAttribute implements Flag {
         return new self(new Location(0.0, 0.0, 0.0, null, 0.0, 0.0));
     }
 
-    /**
-     * @phpstan-param Location $value
-     */
     public function createInstance(mixed $value) : self {
         return new self($value);
     }

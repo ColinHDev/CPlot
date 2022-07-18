@@ -5,11 +5,33 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\attributes;
 
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
+use function count;
 
 /**
- * @extends ArrayAttribute<bool[]>
+ * @phpstan-template TAttributeType of BooleanListAttribute
+ * @phpstan-extends ArrayAttribute<TAttributeType, bool[]>
  */
 abstract class BooleanListAttribute extends ArrayAttribute {
+
+    public function equals(BaseAttribute $other) : bool {
+        if (!($other instanceof static)) {
+            return false;
+        }
+        if (count($this->value) !== count($other->getValue())) {
+            return false;
+        }
+        /** @phpstan-var bool $bool */
+        foreach ($this->value as $i => $bool) {
+            if (!isset($other->getValue()[$i])) {
+                return false;
+            }
+            $otherBool = $other->getValue()[$i];
+            if ($bool !== $otherBool) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * @param bool[] | null $value

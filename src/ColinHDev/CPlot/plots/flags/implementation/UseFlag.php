@@ -10,7 +10,8 @@ use ColinHDev\CPlot\plots\flags\FlagIDs;
 use pocketmine\block\Block;
 
 /**
- * @phpstan-implements Flag<Block[]>
+ * @phpstan-extends BlockListAttribute<UseFlag>
+ * @phpstan-implements Flag<UseFlag, Block[]>
  */
 class UseFlag extends BlockListAttribute implements Flag {
 
@@ -22,9 +23,6 @@ class UseFlag extends BlockListAttribute implements Flag {
         return new self([]);
     }
 
-    /**
-     * @phpstan-param Block[] $value
-     */
     public function createInstance(mixed $value) : self {
         return new self($value);
     }

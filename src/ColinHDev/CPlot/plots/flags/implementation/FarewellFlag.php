@@ -9,7 +9,8 @@ use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 
 /**
- * @phpstan-implements Flag<string>
+ * @phpstan-extends StringAttribute<FarewellFlag>
+ * @phpstan-implements Flag<FarewellFlag, string>
  */
 class FarewellFlag extends StringAttribute implements Flag {
 
@@ -21,9 +22,6 @@ class FarewellFlag extends StringAttribute implements Flag {
         return new self("");
     }
 
-    /**
-     * @phpstan-param string $value
-     */
     public function createInstance(mixed $value) : self {
         return new self($value);
     }

@@ -7,11 +7,33 @@ namespace ColinHDev\CPlot\attributes;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\utils\ParseUtils;
 use pocketmine\block\Block;
+use function count;
 
 /**
- * @extends ArrayAttribute<Block[]>
+ * @phpstan-template TAttributeType of BlockListAttribute
+ * @phpstan-extends ArrayAttribute<TAttributeType, Block[]>
  */
 abstract class BlockListAttribute extends ArrayAttribute {
+
+    public function equals(BaseAttribute $other) : bool {
+        if (!($other instanceof static)) {
+            return false;
+        }
+        if (count($this->value) !== count($other->getValue())) {
+            return false;
+        }
+        /** @phpstan-var Block $block */
+        foreach ($this->value as $i => $block) {
+            if (!isset($other->getValue()[$i])) {
+                return false;
+            }
+            $otherBlock = $other->getValue()[$i];
+            if (!$block->isSameState($otherBlock)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * @param Block[] | null $value

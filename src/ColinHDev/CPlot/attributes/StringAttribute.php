@@ -5,14 +5,19 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\attributes;
 
 /**
- * @extends BaseAttribute<string>
+ * @phpstan-template TAttributeType of StringAttribute
+ * @phpstan-extends BaseAttribute<TAttributeType, string>
  */
 abstract class StringAttribute extends BaseAttribute {
 
-    /**
-     * @param string $value
-     */
-    public function merge(mixed $value) : StringAttribute {
+    public function equals(BaseAttribute $other) : bool {
+        if (!($other instanceof static)) {
+            return false;
+        }
+        return $this->value === $other->getValue();
+    }
+
+    public function merge(mixed $value) : BaseAttribute {
         return $this->createInstance($value);
     }
 

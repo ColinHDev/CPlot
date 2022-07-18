@@ -7,24 +7,21 @@ namespace ColinHDev\CPlot\attributes;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 
 /**
- * @template AttributeValue of array
- * @extends BaseAttribute<AttributeValue>
+ * @phpstan-template TAttributeType of ArrayAttribute
+ * @phpstan-template TAttributeValue of array
+ * @phpstan-extends BaseAttribute<TAttributeType, TAttributeValue>
  */
 abstract class ArrayAttribute extends BaseAttribute {
 
-    /**
-     * @phpstan-param AttributeValue $value
-     * @phpstan-return ArrayAttribute<AttributeValue>
-     */
-    public function merge(mixed $value) : ArrayAttribute {
+    public function merge(mixed $value) : BaseAttribute {
         $values = $this->value;
         foreach ($value as $newValue) {
-            /** @phpstan-var AttributeValue $newValueArray */
+            /** @phpstan-var TAttributeValue $newValueArray */
             $newValueArray = [$newValue];
             $newValueString = $this->toString($newValueArray);
-            /** @phpstan-var AttributeValue $values */
+            /** @phpstan-var TAttributeValue $values */
             foreach ($values as $oldValue) {
-                /** @phpstan-var AttributeValue $oldValueArray */
+                /** @phpstan-var TAttributeValue $oldValueArray */
                 $oldValueArray = [$oldValue];
                 if ($this->toString($oldValueArray) === $newValueString) {
                     continue 2;
@@ -36,7 +33,7 @@ abstract class ArrayAttribute extends BaseAttribute {
     }
 
     /**
-     * @phpstan-param AttributeValue | null $value
+     * @phpstan-param TAttributeValue | null $value
      * @throws \JsonException
      */
     public function toString(mixed $value = null) : string {
@@ -48,7 +45,7 @@ abstract class ArrayAttribute extends BaseAttribute {
 
     /**
      * @throws AttributeParseException
-     * @phpstan-return AttributeValue
+     * @phpstan-return TAttributeValue
      */
     public function parse(string $value) : array {
         try {
