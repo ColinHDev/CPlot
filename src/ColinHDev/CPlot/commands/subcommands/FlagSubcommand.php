@@ -12,8 +12,9 @@ use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\SettingIDs;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -79,7 +80,7 @@ class FlagSubcommand extends Subcommand {
                 /** @phpstan-var string $type */
                 $type = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.type." . $flag->getID());
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.type" => $type]);
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.default" => $flag->getDefault()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.default" => $flag->toString()]);
                 break;
 
             case "here":
@@ -159,18 +160,16 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                if ($flag->getID() !== FlagIDs::FLAG_SERVER_PLOT) {
-                    /** @var BooleanAttribute $serverPlotFlag */
-                    $serverPlotFlag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
-                    if ($serverPlotFlag->getValue() === true) {
+                if (!($flag instanceof ServerPlotFlag)) {
+                    $serverPlotFlag = $plot->getFlag(Flags::SERVER_PLOT());
+                    if ($serverPlotFlag->equals(ServerPlotFlag::TRUE())) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.serverPlotFlag" => $serverPlotFlag->getID()]);
                         break;
                     }
                 }
 
-                if ($flag->getID() === FlagIDs::FLAG_SPAWN) {
+                if ($flag instanceof LocationAttribute && !isset($args[2])) {
                     $location = $sender->getLocation();
-                    /** @var LocationAttribute $flag */
                     $arg = $flag->toString(
                         Location::fromObject(
                             $location->subtractVector($plot->getVector3()),
@@ -282,10 +281,9 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                if ($flag->getID() !== FlagIDs::FLAG_SERVER_PLOT) {
-                    /** @var BooleanAttribute $serverPlotFlag */
-                    $serverPlotFlag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
-                    if ($serverPlotFlag->getValue() === true) {
+                if (!($flag instanceof ServerPlotFlag)) {
+                    $serverPlotFlag = $plot->getFlag(Flags::SERVER_PLOT());
+                    if ($serverPlotFlag->equals(ServerPlotFlag::TRUE())) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.serverPlotFlag" => $serverPlotFlag->getID()]);
                         break;
                     }

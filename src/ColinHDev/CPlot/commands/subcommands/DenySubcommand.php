@@ -9,7 +9,8 @@ use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\SettingIDs;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -86,9 +87,8 @@ class DenySubcommand extends Subcommand {
             }
         }
 
-        /** @var BooleanAttribute $flag */
-        $flag = $plot->getFlagByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag->getValue() === true) {
+        $flag = $plot->getFlag(Flags::SERVER_PLOT());
+        if ($flag->equals(ServerPlotFlag::TRUE())) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.serverPlotFlag" => $flag->getID()]);
             return null;
         }
