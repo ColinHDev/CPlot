@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\plots;
 
-use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
@@ -15,8 +14,9 @@ use ColinHDev\CPlot\event\PlotResetAsyncEvent;
 use ColinHDev\CPlot\event\PlotWallChangeAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\flags\Flag;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\SpawnFlag;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
@@ -317,13 +317,14 @@ class Plot extends BasePlot {
      */
     public function teleportTo(Player $player, int $destination = TeleportDestination::PLOT_SPAWN_OR_EDGE) : bool {
         if ($destination === TeleportDestination::PLOT_SPAWN_OR_EDGE || $destination === TeleportDestination::PLOT_SPAWN_OR_CENTER) {
-            $flag = $this->getLocalFlagByID(FlagIDs::FLAG_SPAWN);
-            $relativeSpawn = $flag?->getValue();
-            if ($relativeSpawn instanceof Location) {
+            $flag = $this->getLocalFlag(Flags::SPAWN());
+            if ($flag instanceof SpawnFlag) {
                 $world = $this->getWorld();
                 if ($world === null) {
                     return false;
                 }
+                /** @var Location $relativeSpawn */
+                $relativeSpawn = $flag->getValue();
                 return $player->teleport(
                     Location::fromObject(
                         $relativeSpawn->addVector($this->getVector3()),
