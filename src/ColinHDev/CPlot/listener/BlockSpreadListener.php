@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\FlowingFlag;
+use ColinHDev\CPlot\plots\flags\implementation\GrowingFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\block\Liquid;
@@ -34,13 +35,13 @@ class BlockSpreadListener implements Listener {
         // We not only need to check if the source is on the plot but also if that applies for the changed block.
         if ($plot instanceof Plot && $plot->isOnPlot($event->getBlock()->getPosition())) {
             if ($event->getNewState() instanceof Liquid) {
-                /** @var BooleanAttribute $flag */
-                $flag = $plot->getFlagByID(FlagIDs::FLAG_FLOWING);
+                $flag = $plot->getFlag(Flags::FLOWING());
+                $flagToCompare = FlowingFlag::TRUE();
             } else {
-                /** @var BooleanAttribute $flag */
-                $flag = $plot->getFlagByID(FlagIDs::FLAG_GROWING);
+                $flag = $plot->getFlag(Flags::GROWING());
+                $flagToCompare = GrowingFlag::TRUE();
             }
-            if ($flag->getValue() === true) {
+            if ($flag->equals($flagToCompare)) {
                 return;
             }
         }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\ItemDropFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\Listener;
@@ -51,9 +51,7 @@ class PlayerDropItemListener implements Listener {
                 }
             }
 
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_ITEM_DROP);
-            if ($flag->getValue() === true) {
+            if ($plot->getFlag(Flags::ITEM_DROP())->equals(ItemDropFlag::TRUE())) {
                 return;
             }
         }

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\PveFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
@@ -43,9 +44,7 @@ class EntityDamageByEntityListener implements Listener {
                 if ($damager->hasPermission("cplot.pvp.plot")) {
                     return;
                 }
-                /** @var BooleanAttribute $flag */
-                $flag = $plot->getFlagByID(FlagIDs::FLAG_PVP);
-                if ($flag->getValue() === true) {
+                if ($plot->getFlag(Flags::PVP())->equals(PvpFlag::TRUE())) {
                     return;
                 }
 
@@ -56,14 +55,8 @@ class EntityDamageByEntityListener implements Listener {
             }
 
         // pve flag
-        } else {
-            if ($plot instanceof Plot) {
-                /** @var BooleanAttribute $flag */
-                $flag = $plot->getFlagByID(FlagIDs::FLAG_PVE);
-                if ($flag->getValue() === true) {
-                    return;
-                }
-            }
+        } else if ($plot instanceof Plot && $plot->getFlag(Flags::PVE())->equals(PveFlag::TRUE())) {
+            return;
         }
 
         $event->cancel();

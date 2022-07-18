@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BlockListAttribute;
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\PlayerInteractFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\block\Block;
@@ -57,17 +56,14 @@ class PlayerInteractListener implements Listener {
             }
 
             $block = $event->getBlock();
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_PLAYER_INTERACT);
-            if ($flag->getValue() === true) {
-                if ($block instanceof Door || $block instanceof Trapdoor || $block instanceof FenceGate) {
-                    return;
-                }
+            if (
+                ($block instanceof Door || $block instanceof Trapdoor || $block instanceof FenceGate) &&
+                $plot->getFlag(Flags::PLAYER_INTERACT())->equals(PlayerInteractFlag::TRUE())
+            ) {
+                return;
             }
-            /** @var BlockListAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_USE);
             /** @var Block $value */
-            foreach ($flag->getValue() as $value) {
+            foreach ($plot->getFlag(Flags::USE())->getValue() as $value) {
                 if ($block->isSameType($value)) {
                     return;
                 }

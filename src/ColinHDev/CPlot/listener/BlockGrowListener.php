@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\GrowingFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\block\BlockGrowEvent;
@@ -30,12 +30,8 @@ class BlockGrowListener implements Listener {
 
         /** @phpstan-var Plot|false|null $plot */
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
-        if ($plot instanceof Plot) {
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_GROWING);
-            if ($flag->getValue() === true) {
-                return;
-            }
+        if ($plot instanceof Plot && $plot->getFlag(Flags::GROWING())->equals(GrowingFlag::TRUE())) {
+            return;
         }
 
         $event->cancel();

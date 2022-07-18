@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\listener;
 
 use Closure;
-use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\attributes\BooleanListAttribute;
-use ColinHDev\CPlot\attributes\StringAttribute;
 use ColinHDev\CPlot\event\PlayerEnteredPlotEvent;
 use ColinHDev\CPlot\event\PlayerEnterPlotEvent;
 use ColinHDev\CPlot\event\PlayerLeavePlotEvent;
 use ColinHDev\CPlot\event\PlayerLeftPlotEvent;
 use ColinHDev\CPlot\player\settings\SettingIDs;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\FarewellFlag;
+use ColinHDev\CPlot\plots\flags\implementation\GreetingFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PlotEnterFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PlotLeaveFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -175,9 +177,8 @@ class PlayerMoveListener implements Listener {
                     "playerMove.plotEnter.tip.claimable"
                 );
             }
-            /** @var StringAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_GREETING);
-            if ($flag->getValue() !== "") {
+            $flag = $plot->getFlag(Flags::GREETING());
+            if (!$flag->equals(GreetingFlag::EMPTY())) {
                 $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $player,
                     ["playerMove.plotEnter.tip.flag.greeting" => $flag->getValue()]
@@ -205,9 +206,7 @@ class PlayerMoveListener implements Listener {
             $player->sendTip(implode(TextFormat::EOL, $tipParts));
 
             // plot_enter flag
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_PLOT_ENTER);
-            if ($flag->getValue() === true) {
+            if ($plot->getFlag(Flags::PLOT_ENTER())->equals(PlotEnterFlag::TRUE())) {
                 foreach ($plot->getPlotOwners() as $plotOwner) {
                     $owner = $plotOwner->getPlayerData()->getPlayer();
                     if ($owner instanceof Player) {
@@ -228,16 +227,24 @@ class PlayerMoveListener implements Listener {
      */
     public function onPlotLeave(Plot $plot, Player $player) : void {
         Await::f2c(static function() use($player, $plot) : \Generator {
+            // farewell flag
+            $flag = $plot->getFlag(Flags::FAREWELL());
+            if (!$flag->equals(FarewellFlag::EMPTY())) {
+                $tip = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $player,
+                    ["playerMove.plotLeave.tip.flag.farewell" => $flag->getValue()]
+                );
+                $player->sendTip($tip);
+            }
+
             // plot_leave flag
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_PLOT_LEAVE);
-            if ($flag->getValue() === true) {
+            if ($plot->getFlag(Flags::PLOT_LEAVE())->equals(PlotLeaveFlag::TRUE())) {
                 foreach ($plot->getPlotOwners() as $plotOwner) {
                     $owner = $plotOwner->getPlayerData()->getPlayer();
                     if ($owner instanceof Player) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                             $owner,
-                            ["playerMove.plotEnter.flag.plot_leave" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+                            ["playerMove.plotLeave.flag.plot_leave" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                         );
                     }
                 }

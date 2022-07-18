@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\BurningFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\block\BlockBurnEvent;
@@ -31,12 +31,12 @@ class BlockBurnListener implements Listener {
         /** @phpstan-var Plot|false|null $plot */
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
         // We not only need to check if the causing block is on the plot but also if that applies for the changed one.
-        if ($plot instanceof Plot && $plot->isOnPlot($event->getBlock()->getPosition())) {
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_BURNING);
-            if ($flag->getValue() === true) {
-                return;
-            }
+        if (
+            $plot instanceof Plot &&
+            $plot->isOnPlot($event->getBlock()->getPosition()) &&
+            $plot->getFlag(Flags::BURNING())->equals(BurningFlag::TRUE())
+        ) {
+            return;
         }
 
         $event->cancel();

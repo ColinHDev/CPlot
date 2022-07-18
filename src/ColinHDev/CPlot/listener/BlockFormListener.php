@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\FlowingFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\block\BlockFormEvent;
@@ -30,15 +30,10 @@ class BlockFormListener implements Listener {
 
         /** @phpstan-var Plot|false|null $plot */
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
-        if ($plot instanceof Plot) {
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_FLOWING);
-            if ($flag->getValue() === true) {
-                return;
-            }
+        if ($plot instanceof Plot && $plot->getFlag(Flags::FLOWING())->equals(FlowingFlag::TRUE())) {
+            return;
         }
 
         $event->cancel();
     }
-
 }

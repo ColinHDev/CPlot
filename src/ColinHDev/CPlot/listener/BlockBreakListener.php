@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BlockListAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\block\Block;
@@ -53,10 +52,8 @@ class BlockBreakListener implements Listener {
             }
 
             $block = $event->getBlock();
-            /** @var BlockListAttribute $flag */
-            $flag = $plot->getFlagByID(FlagIDs::FLAG_BREAK);
             /** @var Block $value */
-            foreach ($flag->getValue() as $value) {
+            foreach ($plot->getFlag(Flags::BREAK())->getValue() as $value) {
                 if ($block->isSameType($value)) {
                     return;
                 }
