@@ -216,7 +216,9 @@ class Plot extends BasePlot {
      * @phpstan-return TFlag
      */
     public function getFlag(Flag $flag) : Flag {
-        return $this->getFlagByID($flag->getID());
+        /** @phpstan-var TFlag $flag */
+        $flag = $this->getFlagByID($flag->getID());
+        return $flag;
     }
 
     /**
@@ -225,7 +227,9 @@ class Plot extends BasePlot {
      * @phpstan-return TFlag|null
      */
     public function getLocalFlag(Flag $flag) : ?Flag {
-        return $this->getLocalFlagByID($flag->getID());
+        /** @phpstan-var TFlag|null $flag */
+        $flag = $this->getLocalFlagByID($flag->getID());
+        return $flag;
     }
 
     /**

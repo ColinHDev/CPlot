@@ -23,6 +23,8 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\entity\Location;
 use pocketmine\player\Player;
+use function assert;
+use function is_array;
 
 /**
  * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
@@ -149,7 +151,6 @@ class FlagSubcommand extends Subcommand {
                     }
                 }
 
-                /** @var BaseAttribute<mixed> | null $flag */
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
                 if ($flag === null) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noFlag" => $args[1]]);
@@ -270,7 +271,6 @@ class FlagSubcommand extends Subcommand {
                     }
                 }
 
-                /** @var BaseAttribute<mixed> | null $flag */
                 $flag = $plot->getLocalFlagByID($args[1]);
                 if ($flag === null) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.flagNotSet" => $args[1]]);
@@ -290,17 +290,17 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 array_splice($args, 0, 2);
-                if (count($args) > 0 && $flag instanceof ArrayAttribute) {
+                if (count($args) > 0 && is_array($flag->getValue())) {
                     $arg = implode(" ", $args);
                     try {
                         $parsedValues = $flag->parse($arg);
+                        assert(is_array($parsedValues));
                     } catch (AttributeParseException) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.parseError" => [$arg, $flag->getID()]]);
                         break;
                     }
 
                     $values = $flag->getValue();
-                    assert(is_array($values));
                     $removedValues = [];
                     foreach ($values as $key => $value) {
                         $valueString = $flag->toString([$value]);
