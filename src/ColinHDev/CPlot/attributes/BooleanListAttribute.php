@@ -8,8 +8,7 @@ use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use function count;
 
 /**
- * @phpstan-template TAttributeType of BooleanListAttribute
- * @phpstan-extends ArrayAttribute<TAttributeType, bool[]>
+ * @phpstan-extends ArrayAttribute<bool[]>
  */
 abstract class BooleanListAttribute extends ArrayAttribute {
 

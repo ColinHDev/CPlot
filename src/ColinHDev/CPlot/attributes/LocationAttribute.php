@@ -8,8 +8,7 @@ use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use pocketmine\entity\Location;
 
 /**
- * @phpstan-template TAttributeType of LocationAttribute
- * @phpstan-extends BaseAttribute<TAttributeType, Location>
+ * @phpstan-extends BaseAttribute<Location>
  */
 abstract class LocationAttribute extends BaseAttribute {
 
@@ -20,7 +19,7 @@ abstract class LocationAttribute extends BaseAttribute {
         return $this->value->equals($other->getValue());
     }
 
-    public function merge(mixed $value) : BaseAttribute {
+    public function merge(mixed $value) : self {
         return $this->createInstance($value);
     }
 

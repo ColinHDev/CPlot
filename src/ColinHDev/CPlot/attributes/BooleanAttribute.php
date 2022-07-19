@@ -7,8 +7,7 @@ namespace ColinHDev\CPlot\attributes;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 
 /**
- * @phpstan-template TAttributeType of BooleanAttribute
- * @phpstan-extends BaseAttribute<TAttributeType, bool>
+ * @phpstan-extends BaseAttribute<bool>
  */
 abstract class BooleanAttribute extends BaseAttribute {
 
@@ -24,7 +23,7 @@ abstract class BooleanAttribute extends BaseAttribute {
         return $this->value === $other->getValue();
     }
 
-    public function merge(mixed $value) : BaseAttribute {
+    public function merge(mixed $value) : self {
         return $this->createInstance($value);
     }
 

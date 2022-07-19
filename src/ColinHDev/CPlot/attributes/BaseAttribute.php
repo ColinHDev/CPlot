@@ -9,17 +9,16 @@ use InvalidArgumentException;
 use function is_string;
 
 /**
- * @phpstan-template TAttributeType of BaseAttribute
- * @phpstan-template TAttributeValue of mixed
+ * @phpstan-template TValue of mixed
  */
 abstract class BaseAttribute {
 
     protected string $ID;
-    /** @phpstan-var TAttributeValue */
+    /** @phpstan-var TValue */
     protected mixed $value;
 
     /**
-     * @phpstan-param TAttributeValue $value
+     * @phpstan-param TValue $value
      */
     public function __construct(string $ID, mixed $value) {
         $this->ID = $ID;
@@ -31,37 +30,36 @@ abstract class BaseAttribute {
     }
 
     /**
-     * @return TAttributeValue
+     * @return TValue
      */
     public function getValue() : mixed {
         return $this->value;
     }
 
     /**
-     * @phpstan-param TAttributeType $other
+     * @phpstan-param self<TValue> $other
      */
     abstract public function equals(BaseAttribute $other) : bool;
 
     /**
      * Create a new instance of the attribute with the given value.
-     * @phpstan-param TAttributeValue $value
-     * @phpstan-return TAttributeType
+     * @phpstan-param TValue $value
      */
-    abstract public function createInstance(mixed $value) : BaseAttribute;
+    abstract public function createInstance(mixed $value) : static;
 
     /**
-     * @param TAttributeValue $value
-     * @phpstan-return TAttributeType
+     * @param TValue $value
+     * @phpstan-return self<TValue>
      */
-    abstract public function merge(mixed $value) : BaseAttribute;
+    abstract public function merge(mixed $value) : self;
 
     /**
-     * @param TAttributeValue $value
+     * @param TValue $value
      */
     abstract public function toString(mixed $value = null) : string;
 
     /**
-     * @return TAttributeValue
+     * @return TValue
      * @throws AttributeParseException
      */
     abstract public function parse(string $value) : mixed;

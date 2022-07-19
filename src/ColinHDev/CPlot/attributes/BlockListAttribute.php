@@ -10,8 +10,7 @@ use pocketmine\block\Block;
 use function count;
 
 /**
- * @phpstan-template TAttributeType of BlockListAttribute
- * @phpstan-extends ArrayAttribute<TAttributeType, Block[]>
+ * @phpstan-extends ArrayAttribute<Block[]>
  */
 abstract class BlockListAttribute extends ArrayAttribute {
 

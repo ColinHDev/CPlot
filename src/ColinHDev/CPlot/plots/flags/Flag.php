@@ -8,43 +8,42 @@ use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 
 /**
- * @phpstan-template TFlagType of Flag&BaseAttribute
- * @phpstan-template TFlagValue of mixed
+ * @phpstan-template TValue of mixed
  */
 interface Flag {
 
     public function getID() : string;
 
     /**
-     * @return TFlagValue
+     * @return TValue
      */
     public function getValue() : mixed;
 
     /**
-     * @phpstan-param TFlagType $other
+     * @phpstan-param BaseAttribute<mixed>&Flag<mixed> $other
      */
     public function equals(BaseAttribute $other) : bool;
 
     /**
      * Create a new instance of the flag with the given value.
-     * @phpstan-param TFlagValue $value
-     * @phpstan-return TFlagType<TFlagValue>
+     * @phpstan-param TValue $value
+     * @phpstan-return BaseAttribute<TValue>&Flag<TValue>
      */
     public function createInstance(mixed $value) : BaseAttribute;
 
     /**
-     * @phpstan-param TFlagValue $value
-     * @phpstan-return TFlagType<TFlagValue>
+     * @phpstan-param TValue $value
+     * @phpstan-return BaseAttribute<TValue>&Flag<TValue>
      */
     public function merge(mixed $value) : BaseAttribute;
 
     /**
-     * @phpstan-param TFlagValue $value
+     * @phpstan-param TValue $value
      */
     public function toString(mixed $value = null) : string;
 
     /**
-     * @phpstan-return TFlagValue
+     * @phpstan-return TValue
      * @throws AttributeParseException
      */
     public function parse(string $value) : mixed;

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\attributes;
 
 /**
- * @phpstan-template TAttributeType of StringAttribute
- * @phpstan-extends BaseAttribute<TAttributeType, string>
+ * @phpstan-extends BaseAttribute<string>
  */
 abstract class StringAttribute extends BaseAttribute {
 
@@ -17,7 +16,7 @@ abstract class StringAttribute extends BaseAttribute {
         return $this->value === $other->getValue();
     }
 
-    public function merge(mixed $value) : BaseAttribute {
+    public function merge(mixed $value) : self {
         return $this->createInstance($value);
     }
 

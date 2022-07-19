@@ -9,24 +9,23 @@ use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 
 /**
- * @phpstan-extends BooleanAttribute<FlowingFlag>
- * @phpstan-implements Flag<FlowingFlag, bool>
+ * @phpstan-implements Flag<bool>
  */
 class FlowingFlag extends BooleanAttribute implements Flag {
 
-    public function __construct(bool $value) {
+    final public function __construct(bool $value) {
         parent::__construct(FlagIDs::FLAG_FLOWING, $value);
     }
 
-    public static function TRUE() : self {
-        return new self(true);
+    public static function TRUE() : static {
+        return new static(true);
     }
 
-    public static function FALSE() : self {
-        return new self(false);
+    public static function FALSE() : static {
+        return new static(false);
     }
 
-    public function createInstance(mixed $value) : self {
+    public function createInstance(mixed $value) : static {
         return $value === true ? self::TRUE() : self::FALSE();
     }
 }

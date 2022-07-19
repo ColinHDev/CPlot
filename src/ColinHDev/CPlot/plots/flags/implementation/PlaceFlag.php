@@ -10,20 +10,19 @@ use ColinHDev\CPlot\plots\flags\FlagIDs;
 use pocketmine\block\Block;
 
 /**
- * @phpstan-extends BlockListAttribute<PlaceFlag>
- * @phpstan-implements Flag<PlaceFlag, Block[]>
+ * @phpstan-implements Flag<Block[]>
  */
 class PlaceFlag extends BlockListAttribute implements Flag {
 
-    public function __construct(array $value) {
+    final public function __construct(array $value) {
         parent::__construct(FlagIDs::FLAG_PLACE, $value);
     }
 
-    public static function NONE() : self {
-        return new self([]);
+    public static function NONE() : static {
+        return new static([]);
     }
 
-    public function createInstance(mixed $value) : self {
-        return new self($value);
+    public function createInstance(mixed $value) : static {
+        return new static($value);
     }
 }

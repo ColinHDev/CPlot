@@ -211,16 +211,18 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-param Flag<mixed> $flag
-     * @phpstan-return Flag<mixed>
+     * @phpstan-template TFlag of Flag<mixed>
+     * @phpstan-param TFlag $flag
+     * @phpstan-return TFlag
      */
     public function getFlag(Flag $flag) : Flag {
         return $this->getFlagByID($flag->getID());
     }
 
     /**
-     * @phpstan-param Flag<mixed> $flag
-     * @phpstan-return Flag<mixed>|null
+     * @phpstan-template TFlag of Flag<mixed>
+     * @phpstan-param TFlag $flag
+     * @phpstan-return TFlag|null
      */
     public function getLocalFlag(Flag $flag) : ?Flag {
         return $this->getLocalFlagByID($flag->getID());

@@ -7,13 +7,15 @@ namespace ColinHDev\CPlot\attributes;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 
 /**
- * @phpstan-template TAttributeType of ArrayAttribute
  * @phpstan-template TAttributeValue of array
- * @phpstan-extends BaseAttribute<TAttributeType, TAttributeValue>
+ * @phpstan-extends BaseAttribute<TAttributeValue>
  */
 abstract class ArrayAttribute extends BaseAttribute {
 
-    public function merge(mixed $value) : BaseAttribute {
+    /**
+     * @phpstan-return self<TAttributeValue>
+     */
+    public function merge(mixed $value) : self {
         $values = $this->value;
         foreach ($value as $newValue) {
             /** @phpstan-var TAttributeValue $newValueArray */

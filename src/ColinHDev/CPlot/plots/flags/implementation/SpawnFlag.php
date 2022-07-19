@@ -10,20 +10,19 @@ use ColinHDev\CPlot\plots\flags\FlagIDs;
 use pocketmine\entity\Location;
 
 /**
- * @phpstan-extends LocationAttribute<SpawnFlag>
- * @phpstan-implements Flag<SpawnFlag, Location>
+ * @phpstan-implements Flag<Location>
  */
 class SpawnFlag extends LocationAttribute implements Flag {
 
-    public function __construct(Location $value) {
+    final public function __construct(Location $value) {
         parent::__construct(FlagIDs::FLAG_SPAWN, $value);
     }
 
-    public static function NONE() : self {
-        return new self(new Location(0.0, 0.0, 0.0, null, 0.0, 0.0));
+    public static function NONE() : static {
+        return new static(new Location(0.0, 0.0, 0.0, null, 0.0, 0.0));
     }
 
-    public function createInstance(mixed $value) : self {
-        return new self($value);
+    public function createInstance(mixed $value) : static {
+        return new static($value);
     }
 }
