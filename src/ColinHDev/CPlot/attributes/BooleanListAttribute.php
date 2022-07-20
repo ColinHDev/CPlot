@@ -32,6 +32,15 @@ abstract class BooleanListAttribute extends ArrayAttribute {
         return true;
     }
 
+    public function contains(mixed $value) : bool {
+        foreach ($this->value as $currentValue) {
+            if ($currentValue === $value) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * @param bool[] | null $value
      * @throws \JsonException

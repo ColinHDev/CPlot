@@ -27,11 +27,20 @@ abstract class BlockListAttribute extends ArrayAttribute {
                 return false;
             }
             $otherBlock = $other->getValue()[$i];
-            if (!$block->isSameState($otherBlock)) {
+            if (!$block->isSameType($otherBlock)) {
                 return false;
             }
         }
         return true;
+    }
+
+    public function contains(mixed $value) : bool {
+        foreach ($this->value as $currentValue) {
+            if ($currentValue->isSameType($value)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

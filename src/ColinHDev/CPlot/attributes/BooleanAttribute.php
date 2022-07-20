@@ -23,6 +23,10 @@ abstract class BooleanAttribute extends BaseAttribute {
         return $this->value === $other->getValue();
     }
 
+    public function contains(mixed $value) : bool {
+        return $this->equals($this->createInstance($value));
+    }
+
     public function merge(mixed $value) : self {
         return $this->createInstance($value);
     }

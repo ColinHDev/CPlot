@@ -7,7 +7,6 @@ namespace ColinHDev\CPlot\listener;
 use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
-use pocketmine\block\Block;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 
@@ -51,12 +50,8 @@ class BlockBreakListener implements Listener {
                 }
             }
 
-            $block = $event->getBlock();
-            /** @var Block $value */
-            foreach ($plot->getFlag(Flags::BREAK())->getValue() as $value) {
-                if ($block->isSameType($value)) {
-                    return;
-                }
+            if ($plot->getFlag(Flags::BREAK())->contains($event->getBlock())) {
+                return;
             }
 
         } else if ($plot === false) {

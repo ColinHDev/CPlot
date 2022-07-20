@@ -42,6 +42,12 @@ abstract class BaseAttribute {
     abstract public function equals(BaseAttribute $other) : bool;
 
     /**
+     * Check if the given value is equal or part of the attribute's value.
+     * @phpstan-param TValue $value
+     */
+    abstract public function contains(mixed $value) : bool;
+
+    /**
      * Create a new instance of the attribute with the given value.
      * @phpstan-param TValue $value
      */

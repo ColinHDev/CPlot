@@ -8,7 +8,6 @@ use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\flags\implementation\PlayerInteractFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
-use pocketmine\block\Block;
 use pocketmine\block\Door;
 use pocketmine\block\FenceGate;
 use pocketmine\block\Trapdoor;
@@ -62,11 +61,8 @@ class PlayerInteractListener implements Listener {
             ) {
                 return;
             }
-            /** @var Block $value */
-            foreach ($plot->getFlag(Flags::USE())->getValue() as $value) {
-                if ($block->isSameType($value)) {
-                    return;
-                }
+            if ($plot->getFlag(Flags::USE())->contains($block)) {
+                return;
             }
 
         } else if ($plot === false) {

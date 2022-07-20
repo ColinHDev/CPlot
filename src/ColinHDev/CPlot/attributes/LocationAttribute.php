@@ -19,6 +19,10 @@ abstract class LocationAttribute extends BaseAttribute {
         return $this->value->equals($other->getValue());
     }
 
+    public function contains(mixed $value) : bool {
+        return $this->equals($this->createInstance($value));
+    }
+
     public function merge(mixed $value) : self {
         return $this->createInstance($value);
     }

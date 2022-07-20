@@ -25,6 +25,12 @@ interface Flag {
     public function equals(BaseAttribute $other) : bool;
 
     /**
+     * Check if the given value is equal or part of the attribute's value.
+     * @phpstan-param TValue $value
+     */
+    public function contains(mixed $value) : bool;
+
+    /**
      * Create a new instance of the flag with the given value.
      * @phpstan-param TValue $value
      * @phpstan-return BaseAttribute<TValue>&Flag<TValue>

@@ -7,7 +7,6 @@ namespace ColinHDev\CPlot\listener;
 use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
-use pocketmine\block\Block;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 
@@ -51,12 +50,8 @@ class BlockPlaceListener implements Listener {
                 }
             }
 
-            $block = $event->getBlock();
-            /** @var Block $value */
-            foreach ($plot->getFlag(Flags::PLACE())->getValue() as $value) {
-                if ($block->isSameType($value)) {
-                    return;
-                }
+            if ($plot->getFlag(Flags::PLACE())->contains($event->getBlock())) {
+                return;
             }
 
         } else if ($plot === false) {
