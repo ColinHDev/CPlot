@@ -16,15 +16,16 @@ abstract class BooleanListAttribute extends ArrayAttribute {
         if (!($other instanceof static)) {
             return false;
         }
-        if (count($this->value) !== count($other->getValue())) {
+        $otherValue = $other->getValue();
+        if (count($this->value) !== count($otherValue)) {
             return false;
         }
         /** @phpstan-var bool $bool */
         foreach ($this->value as $i => $bool) {
-            if (!isset($other->getValue()[$i])) {
+            if (!isset($otherValue[$i])) {
                 return false;
             }
-            $otherBool = $other->getValue()[$i];
+            $otherBool = $otherValue[$i];
             if ($bool !== $otherBool) {
                 return false;
             }

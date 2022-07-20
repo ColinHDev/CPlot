@@ -18,15 +18,16 @@ abstract class BlockListAttribute extends ArrayAttribute {
         if (!($other instanceof static)) {
             return false;
         }
-        if (count($this->value) !== count($other->getValue())) {
+        $otherValue = $other->getValue();
+        if (count($this->value) !== count($otherValue)) {
             return false;
         }
         /** @phpstan-var Block $block */
         foreach ($this->value as $i => $block) {
-            if (!isset($other->getValue()[$i])) {
+            if (!isset($otherValue[$i])) {
                 return false;
             }
-            $otherBlock = $other->getValue()[$i];
+            $otherBlock = $otherValue[$i];
             if (!$block->isSameType($otherBlock)) {
                 return false;
             }
