@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\player;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
+use ColinHDev\CPlot\player\settings\Setting;
 use ColinHDev\CPlot\player\settings\SettingManager;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\player\OfflinePlayer;
@@ -20,11 +21,11 @@ class PlayerData {
     private ?string $playerName;
     private int $lastJoin;
 
-    /** @phpstan-var array<string, BaseAttribute<mixed>> */
+    /** @phpstan-var array<string, Setting<mixed>> */
     private array $settings;
 
     /**
-     * @phpstan-param array<string, BaseAttribute<mixed>> $settings
+     * @phpstan-param array<string, Setting<mixed>> $settings
      */
     public function __construct(int $playerID, ?string $playerUUID, ?string $playerXUID, ?string $playerName, int $lastJoin, array $settings) {
         $this->playerID = $playerID;
@@ -134,16 +135,50 @@ class PlayerData {
     }
 
     /**
-     * @phpstan-return array<string, BaseAttribute<mixed>>
+     * @phpstan-return array<string, Setting<mixed>>
      */
     public function getSettings() : array {
         return $this->settings;
     }
 
     /**
-     * @phpstan-return BaseAttribute<mixed>|null
+     * @phpstan-template TSetting of Setting<mixed>
+     * @phpstan-param TSetting $setting
+     * @phpstan-return TSetting
      */
-    public function getSettingByID(string $settingID) : ?BaseAttribute {
+    public function getSetting(Setting $setting) : Setting {
+        /** @phpstan-var TSetting $setting */
+        $setting = $this->getSettingByID($setting->getID());
+        return $setting;
+    }
+
+    /**
+     * @phpstan-template TSetting of Setting<mixed>
+     * @phpstan-param TSetting $setting
+     * @phpstan-return TSetting|null
+     */
+    public function getLocalFlag(Setting $setting) : ?Setting {
+        /** @phpstan-var TSetting|null $setting */
+        $setting = $this->getLocalSettingByID($setting->getID());
+        return $setting;
+    }
+
+    /**
+     * @phpstan-return Setting<mixed>|null
+     */
+    public function getSettingByID(string $settingID) : Setting {
+        $setting = $this->getLocalSettingByID($settingID);
+        if ($setting === null) {
+            $setting = SettingManager::getInstance()->getSettingByID($settingID);
+            assert($setting instanceof Setting);
+        }
+        return $setting;
+    }
+
+    /**
+     * @phpstan-return Setting<mixed>|null
+     */
+    public function getLocalSettingByID(string $settingID) : ?Setting {
         if (!isset($this->settings[$settingID])) {
             return null;
         }
@@ -151,21 +186,9 @@ class PlayerData {
     }
 
     /**
-     * @phpstan-return BaseAttribute<mixed>|null
+     * @phpstan-param Setting<mixed> $setting
      */
-    public function getSettingNonNullByID(string $settingID) : ?BaseAttribute {
-        $setting = $this->getSettingByID($settingID);
-        if ($setting === null) {
-            $setting = SettingManager::getInstance()->getSettingByID($settingID);
-        }
-        return $setting;
-    }
-
-    /**
-     * @phpstan-template TAttributeValue
-     * @phpstan-param BaseAttribute<TAttributeValue> $setting
-     */
-    public function addSetting(BaseAttribute $setting) : void {
+    public function addSetting(Setting $setting) : void {
         $this->settings[$setting->getID()] = $setting;
     }
 

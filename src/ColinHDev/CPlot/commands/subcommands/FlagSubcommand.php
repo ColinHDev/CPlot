@@ -214,7 +214,7 @@ class FlagSubcommand extends Subcommand {
                         continue;
                     }
                     /** @var ArrayAttribute<array<mixed, mixed>> $setting */
-                    $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_CHANGE_FLAG . $newFlag->getID());
+                    $setting = $playerData->getSettingByID(SettingIDs::BASE_SETTING_WARN_CHANGE_FLAG . $newFlag->getID());
                     foreach ($setting->getValue() as $value) {
                         if ($value === $newFlag->getValue()) {
                             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
@@ -226,7 +226,7 @@ class FlagSubcommand extends Subcommand {
                     }
 
                     /** @var ArrayAttribute<array<mixed, mixed>> $setting */
-                    $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_TELEPORT_CHANGE_FLAG . $newFlag->getID());
+                    $setting = $playerData->getSettingByID(SettingIDs::BASE_SETTING_TELEPORT_CHANGE_FLAG . $newFlag->getID());
                     foreach ($setting->getValue() as $value) {
                         if ($value === $newFlag->getValue()) {
                             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(

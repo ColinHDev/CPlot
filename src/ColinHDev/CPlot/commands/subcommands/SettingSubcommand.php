@@ -142,7 +142,7 @@ class SettingSubcommand extends Subcommand {
                 }
 
                 $setting = $setting->createInstance($parsedValue);
-                $oldSetting = $playerData->getSettingByID($setting->getID());
+                $oldSetting = $playerData->getLocalSettingByID($setting->getID());
                 if ($oldSetting !== null) {
                     $setting = $oldSetting->merge($setting->getValue());
                 }
@@ -170,7 +170,7 @@ class SettingSubcommand extends Subcommand {
                 }
 
                 /** @var BaseAttribute<mixed> | null $setting */
-                $setting = $playerData->getSettingByID($args[1]);
+                $setting = $playerData->getLocalSettingByID($args[1]);
                 if ($setting === null) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.settingNotSet" => $args[1]]);
                     break;

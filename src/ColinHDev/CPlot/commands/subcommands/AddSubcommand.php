@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
-use ColinHDev\CPlot\player\settings\SettingIDs;
+use ColinHDev\CPlot\player\settings\implementation\InformAddedSetting;
+use ColinHDev\CPlot\player\settings\Settings;
 use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
 use ColinHDev\CPlot\plots\Plot;
@@ -18,7 +18,6 @@ use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use pocketmine\Server;
 
 /**
  * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
@@ -39,7 +38,7 @@ class AddSubcommand extends Subcommand {
         $player = null;
         $playerData = null;
         if ($args[0] !== "*") {
-            $player = Server::getInstance()->getPlayerByPrefix($args[0]);
+            $player = $sender->getServer()->getPlayerByPrefix($args[0]);
             if ($player instanceof Player) {
                 $playerUUID = $player->getUniqueId()->getBytes();
                 $playerXUID = $player->getXuid();
@@ -116,15 +115,11 @@ class AddSubcommand extends Subcommand {
         yield DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.success" => $playerName]);
 
-        if ($player instanceof Player) {
-            /** @var BooleanAttribute $setting */
-            $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_ADD);
-            if ($setting->getValue() === true) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                    $player,
-                    ["prefix", "add.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
-                );
-            }
+        if ($player instanceof Player && $playerData->getSetting(Settings::INFORM_ADDED())->equals(InformAddedSetting::TRUE())) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                $player,
+                ["prefix", "add.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+            );
         }
         return null;
     }
