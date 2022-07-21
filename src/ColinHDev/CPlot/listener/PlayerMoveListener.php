@@ -135,7 +135,7 @@ class PlayerMoveListener implements Listener {
             $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
             if ($playerData !== null) {
                 foreach ($plot->getFlags() as $flag) {
-                    $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_FLAG . $flag->getID());
+                    $setting = $playerData->getSettingByID(SettingIDs::BASE_SETTING_WARN_FLAG . $flag->getID());
                     if (!($setting instanceof BooleanListAttribute)) {
                         continue;
                     }

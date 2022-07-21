@@ -8,6 +8,7 @@ use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\player\PlayerData;
+use ColinHDev\CPlot\player\settings\Setting;
 use ColinHDev\CPlot\player\settings\SettingManager;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\Flag;
@@ -444,9 +445,9 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the settings ({@see BaseAttribute}s) of a player asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see Setting}s of a player asynchronously from the database and returns a {@see \Generator}. The
      * player settings can be get by using {@see Await}.
-     * @phpstan-return Generator<mixed, mixed, mixed, array<string, BaseAttribute<mixed>>>
+     * @phpstan-return Generator<mixed, mixed, mixed, array<string, Setting<mixed>>>
      */
     private function awaitPlayerSettings(int $playerID) : Generator {
         /** @phpstan-var array<array{ID: string, value: string}> $rows */

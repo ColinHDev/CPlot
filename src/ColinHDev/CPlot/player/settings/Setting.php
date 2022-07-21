@@ -26,7 +26,7 @@ interface Setting {
 
     /**
      * Check if the given value is equal or part of the attribute's value.
-     * @phpstan-param TValue $value
+     * @phpstan-param (TValue is array ? value-of<TValue> : TValue) $value
      */
     public function contains(mixed $value) : bool;
 

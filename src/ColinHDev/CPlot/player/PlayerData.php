@@ -164,7 +164,7 @@ class PlayerData {
     }
 
     /**
-     * @phpstan-return Setting<mixed>|null
+     * @phpstan-return Setting<mixed>
      */
     public function getSettingByID(string $settingID) : Setting {
         $setting = $this->getLocalSettingByID($settingID);
@@ -221,7 +221,7 @@ class PlayerData {
         $this->lastJoin = $data["lastJoin"];
         $settings = unserialize($data["settings"], ["allowed_classes" => false]);
         assert(is_array($settings));
-        /** @phpstan-var array<string, BaseAttribute<mixed>> $settings */
+        /** @phpstan-var array<string, Setting<mixed>> $settings */
         $this->settings = $settings;
     }
 }

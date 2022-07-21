@@ -9,7 +9,7 @@ use ColinHDev\CPlot\plots\flags\Flag;
 use JsonException;
 
 /**
- * @phpstan-extends ArrayAttribute<Flag[]>
+ * @phpstan-extends ArrayAttribute<Flag<mixed>[]>
  */
 abstract class FlagListAttribute extends ArrayAttribute {
 
@@ -21,7 +21,7 @@ abstract class FlagListAttribute extends ArrayAttribute {
         if (count($this->value) !== count($otherValue)) {
             return false;
         }
-        /** @phpstan-var Flag $flag */
+        /** @phpstan-var Flag<mixed> $flag */
         foreach ($this->value as $i => $flag) {
             if (!isset($otherValue[$i])) {
                 return false;
@@ -53,7 +53,10 @@ abstract class FlagListAttribute extends ArrayAttribute {
         }
         $flags = [];
         foreach ($value as $flag) {
-            $flags[] = $flag->toString();
+            if (!isset($flags[$flag->getID()])) {
+                $flags[$flag->getID()] = [];
+            }
+            $flags[$flag->getID()][] = $flag->toString();
         }
         return json_encode($flags, JSON_THROW_ON_ERROR);
     }
@@ -63,7 +66,6 @@ abstract class FlagListAttribute extends ArrayAttribute {
      * @throws AttributeParseException
      */
     public function parse(string $value) : array {
-
         $block = ParseUtils::parseBlockFromString($value);
         if ($block !== null) {
             return [$block];

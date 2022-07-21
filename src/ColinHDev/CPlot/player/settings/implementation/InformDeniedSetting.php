@@ -8,6 +8,9 @@ use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\player\settings\Setting;
 use ColinHDev\CPlot\player\settings\SettingIDs;
 
+/**
+ * @phpstan-implements Setting<bool>
+ */
 class InformDeniedSetting extends BooleanAttribute implements Setting {
 
     final public function __construct(bool $value) {
