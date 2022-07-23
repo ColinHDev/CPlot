@@ -12,6 +12,9 @@ use ColinHDev\CPlot\player\settings\implementation\InformRemovedSetting;
 use ColinHDev\CPlot\player\settings\implementation\InformTrustedSetting;
 use ColinHDev\CPlot\player\settings\implementation\InformUndeniedSetting;
 use ColinHDev\CPlot\player\settings\implementation\InformUntrustedSetting;
+use ColinHDev\CPlot\player\settings\implementation\TeleportFlagChangeSetting;
+use ColinHDev\CPlot\player\settings\implementation\WarnFlagChangeSetting;
+use ColinHDev\CPlot\player\settings\implementation\WarnFlagSetting;
 use ColinHDev\CPlot\ResourceManager;
 use InvalidArgumentException;
 use pocketmine\utils\SingletonTrait;
@@ -36,38 +39,9 @@ final class SettingManager {
         $this->register($this->getSettingFromConfig(InformTrustedSetting::TRUE()));
         $this->register($this->getSettingFromConfig(InformUndeniedSetting::TRUE()));
         $this->register($this->getSettingFromConfig(InformUntrustedSetting::TRUE()));
-        /*$this->register(SettingIDs::SETTING_INFORM_TRUSTED_ADD, BooleanAttribute::class);
-        $this->register(SettingIDs::SETTING_INFORM_TRUSTED_REMOVE, BooleanAttribute::class);
-
-        $this->register(SettingIDs::SETTING_INFORM_HELPER_ADD, BooleanAttribute::class);
-        $this->register(SettingIDs::SETTING_INFORM_HELPER_REMOVE, BooleanAttribute::class);
-
-        $this->register(SettingIDs::SETTING_INFORM_DENIED_ADD, BooleanAttribute::class);
-        $this->register(SettingIDs::SETTING_INFORM_DENIED_REMOVE, BooleanAttribute::class);
-
-        $this->register(SettingIDs::SETTING_INFORM_PLOT_INACTIVE, BooleanAttribute::class);
-
-        $this->register(SettingIDs::SETTING_INFORM_PLOT_RATE_ADD, BooleanAttribute::class);
-
-        $this->register(SettingIDs::SETTING_WARN_FLAG_ITEM_DROP, BooleanListAttribute::class);
-        $this->register(SettingIDs::SETTING_WARN_CHANGE_FLAG_ITEM_DROP, BooleanListAttribute::class);
-        $this->register(SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_ITEM_DROP, BooleanListAttribute::class);
-
-        $this->register(SettingIDs::SETTING_WARN_FLAG_ITEM_PICKUP, BooleanListAttribute::class);
-        $this->register(SettingIDs::SETTING_WARN_CHANGE_FLAG_ITEM_PICKUP, BooleanListAttribute::class);
-        $this->register(SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_ITEM_PICKUP, BooleanListAttribute::class);
-
-        $this->register(SettingIDs::SETTING_WARN_FLAG_PVP, BooleanListAttribute::class);
-        $this->register(SettingIDs::SETTING_WARN_CHANGE_FLAG_PVP, BooleanListAttribute::class);
-        $this->register(SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PVP, BooleanListAttribute::class);
-
-        $this->register(SettingIDs::SETTING_WARN_FLAG_PVE, BooleanListAttribute::class);
-        $this->register(SettingIDs::SETTING_WARN_CHANGE_FLAG_PVE, BooleanListAttribute::class);
-        $this->register(SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_PVE, BooleanListAttribute::class);
-
-        $this->register(SettingIDs::SETTING_WARN_FLAG_EXPLOSION, BooleanListAttribute::class);
-        $this->register(SettingIDs::SETTING_WARN_CHANGE_FLAG_EXPLOSION, BooleanListAttribute::class);
-        $this->register(SettingIDs::SETTING_TELEPORT_CHANGE_FLAG_EXPLOSION, BooleanListAttribute::class);*/
+        $this->register($this->getSettingFromConfig(TeleportFlagChangeSetting::NONE()));
+        $this->register($this->getSettingFromConfig(WarnFlagChangeSetting::NONE()));
+        $this->register($this->getSettingFromConfig(WarnFlagSetting::NONE()));
     }
 
     /**

@@ -9,7 +9,7 @@ use ColinHDev\CPlot\plots\flags\Flag;
 use JsonException;
 
 /**
- * @phpstan-extends ArrayAttribute<Flag<mixed>[]>
+ * @phpstan-extends ArrayAttribute<array<BaseAttribute<mixed>&Flag<mixed>>>
  */
 abstract class FlagListAttribute extends ArrayAttribute {
 
@@ -21,7 +21,7 @@ abstract class FlagListAttribute extends ArrayAttribute {
         if (count($this->value) !== count($otherValue)) {
             return false;
         }
-        /** @phpstan-var Flag<mixed> $flag */
+        /** @phpstan-var BaseAttribute<mixed>&Flag<mixed> $flag */
         foreach ($this->value as $i => $flag) {
             if (!isset($otherValue[$i])) {
                 return false;
@@ -44,7 +44,8 @@ abstract class FlagListAttribute extends ArrayAttribute {
     }
 
     /**
-     * @param Flag[] | null $value
+     * @param array<BaseAttribute&Flag> | null $value
+     * @phpstan-param array<BaseAttribute<mixed>&Flag<mixed>> | null $value
      * @throws JsonException
      */
     public function toString(mixed $value = null) : string {
@@ -53,37 +54,25 @@ abstract class FlagListAttribute extends ArrayAttribute {
         }
         $flags = [];
         foreach ($value as $flag) {
-            if (!isset($flags[$flag->getID()])) {
-                $flags[$flag->getID()] = [];
-            }
-            $flags[$flag->getID()][] = $flag->toString();
+            $flags[] = $flag->getID() . "=" . $flag->toString();
         }
         return json_encode($flags, JSON_THROW_ON_ERROR);
     }
 
     /**
-     * @return Flag[]
+     * @return array<BaseAttribute&Flag>
+     * @phpstan-return array<BaseAttribute<mixed>&Flag<mixed>>
      * @throws AttributeParseException
      */
     public function parse(string $value) : array {
-        $block = ParseUtils::parseBlockFromString($value);
-        if ($block !== null) {
-            return [$block];
-        }
-        $blocks = [];
+
+        $flags = [];
         try {
             $array = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
             assert(is_array($array));
-            /** @phpstan-var array<string> $array */
-            foreach ($array as $val) {
-                $val = ParseUtils::parseBlockFromString($val);
-                if ($val instanceof Block) {
-                    $blocks[] = $val;
-                }
-            }
         } catch (JsonException) {
             throw new AttributeParseException($this, $value);
         }
-        return $blocks;
+        return $flags;
     }
 }

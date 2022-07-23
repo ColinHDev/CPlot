@@ -11,6 +11,9 @@ use ColinHDev\CPlot\player\settings\implementation\InformRemovedSetting;
 use ColinHDev\CPlot\player\settings\implementation\InformTrustedSetting;
 use ColinHDev\CPlot\player\settings\implementation\InformUndeniedSetting;
 use ColinHDev\CPlot\player\settings\implementation\InformUntrustedSetting;
+use ColinHDev\CPlot\player\settings\implementation\TeleportFlagChangeSetting;
+use ColinHDev\CPlot\player\settings\implementation\WarnFlagChangeSetting;
+use ColinHDev\CPlot\player\settings\implementation\WarnFlagSetting;
 use pocketmine\utils\CloningRegistryTrait;
 
 /**
@@ -21,6 +24,9 @@ use pocketmine\utils\CloningRegistryTrait;
  * @method static InformTrustedSetting INFORM_TRUSTED()
  * @method static InformUndeniedSetting INFORM_UNDENIED()
  * @method static InformUntrustedSetting INFORM_UNTRUSTED()
+ * @method static TeleportFlagChangeSetting TELEPORT_FLAG_CHANGE()
+ * @method static WarnFlagChangeSetting WARN_FLAG_CHANGE()
+ * @method static WarnFlagSetting WARN_FLAG()
  */
 final class Settings {
     use CloningRegistryTrait;
@@ -44,5 +50,8 @@ final class Settings {
         self::register(SettingIDs::SETTING_INFORM_TRUSTED, $settingManager->getSettingByID(SettingIDs::SETTING_INFORM_TRUSTED));
         self::register(SettingIDs::SETTING_INFORM_UNDENIED, $settingManager->getSettingByID(SettingIDs::SETTING_INFORM_UNDENIED));
         self::register(SettingIDs::SETTING_INFORM_UNTRUSTED, $settingManager->getSettingByID(SettingIDs::SETTING_INFORM_UNTRUSTED));
+        self::register(SettingIDs::SETTING_TELEPORT_FLAG_CHANGE, $settingManager->getSettingByID(SettingIDs::SETTING_TELEPORT_FLAG_CHANGE));
+        self::register(SettingIDs::SETTING_WARN_FLAG_CHANGE, $settingManager->getSettingByID(SettingIDs::SETTING_WARN_FLAG_CHANGE));
+        self::register(SettingIDs::SETTING_WARN_FLAG, $settingManager->getSettingByID(SettingIDs::SETTING_WARN_FLAG));
     }
 }
