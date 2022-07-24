@@ -12,6 +12,7 @@ use ColinHDev\CPlot\listener\BlockGrowListener;
 use ColinHDev\CPlot\listener\BlockPlaceListener;
 use ColinHDev\CPlot\listener\BlockSpreadListener;
 use ColinHDev\CPlot\listener\BlockTeleportListener;
+use ColinHDev\CPlot\listener\BlockUpdateListener;
 use ColinHDev\CPlot\listener\ChunkPopulateListener;
 use ColinHDev\CPlot\listener\EntityDamageByEntityListener;
 use ColinHDev\CPlot\listener\EntityExplodeListener;
@@ -61,6 +62,7 @@ class CPlot extends PluginBase {
         $pluginManager->registerEvents(new BlockPlaceListener(), $this);
         $pluginManager->registerEvents(new BlockSpreadListener(), $this);
         $pluginManager->registerEvents(new BlockTeleportListener(), $this);
+        $pluginManager->registerEvents(new BlockUpdateListener(), $this);
         $pluginManager->registerEvents(new ChunkPopulateListener(), $this);
         $pluginManager->registerEvents(new EntityDamageByEntityListener(), $this);
         $pluginManager->registerEvents(new EntityExplodeListener(), $this);
