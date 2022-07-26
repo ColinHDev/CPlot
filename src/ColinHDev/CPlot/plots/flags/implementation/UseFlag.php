@@ -18,8 +18,8 @@ class UseFlag extends BlockListAttribute implements Flag {
         parent::__construct(FlagIDs::FLAG_USE, $value);
     }
 
-    public static function NONE() : self {
-        return new self([]);
+    public static function NONE() : static {
+        return new static([]);
     }
 
     public function createInstance(mixed $value) : static {

@@ -62,9 +62,9 @@ final class FlagManager {
 
     /**
      * @internal method to create a {@see Flag} instance with the default value defined in the config file.
-     * @phpstan-template TValue of mixed
-     * @phpstan-param Flag<TValue> $flag
-     * @phpstan-return Flag<TValue>
+     * @template TValue of mixed
+     * @param Flag<TValue> $flag
+     * @return Flag<TValue>
      * @throws InvalidArgumentException if the given default value is not valid for the given flag.
      */
     private function getFlagFromConfig(Flag $flag) : Flag {
@@ -89,9 +89,8 @@ final class FlagManager {
 
     /**
      * Registers a {@see Flag} to the {@see FlagManager}.
-     * @param Flag $flag The flag to register
-     * @phpstan-template TValue of mixed
-     * @phpstan-param Flag<TValue> $flag
+     * @template TValue of mixed
+     * @param Flag<TValue> $flag
      */
     public function register(Flag $flag) : void {
         $this->flags[$flag->getID()] = $flag;
@@ -99,7 +98,7 @@ final class FlagManager {
 
     /**
      * Returns all registered {@see Flag} instances with their value being the flag's default value.
-     * @phpstan-return array<string, Flag<mixed>>
+     * @return array<string, Flag<mixed>>
      */
     public function getFlags() : array {
         return array_map(
@@ -112,7 +111,7 @@ final class FlagManager {
 
     /**
      * Returns the {@see Flag} with the given ID with its value being the its default value.
-     * @phpstan-param string $ID
+     * @param string $ID
      * @phpstan-return ($ID is FlagIDs::* ? Flag<mixed> : null)
      */
     public function getFlagByID(string $ID) : ?Flag {

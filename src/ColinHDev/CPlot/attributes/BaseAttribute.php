@@ -9,16 +9,16 @@ use InvalidArgumentException;
 use function is_string;
 
 /**
- * @phpstan-template TValue of mixed
+ * @template TValue of mixed
  */
 abstract class BaseAttribute {
 
     protected string $ID;
-    /** @phpstan-var TValue */
+    /** @var TValue */
     protected mixed $value;
 
     /**
-     * @phpstan-param TValue $value
+     * @param TValue $value
      */
     public function __construct(string $ID, mixed $value) {
         $this->ID = $ID;
@@ -37,25 +37,25 @@ abstract class BaseAttribute {
     }
 
     /**
-     * @phpstan-param self<TValue> $other
+     * @param static<TValue> $other
      */
-    abstract public function equals(BaseAttribute $other) : bool;
+    abstract public function equals(object $other) : bool;
 
     /**
      * Check if the given value is equal or part of the attribute's value.
-     * @phpstan-param (TValue is array ? value-of<TValue> : TValue) $value
+     * @param (TValue is array ? value-of<TValue> : TValue) $value
      */
     abstract public function contains(mixed $value) : bool;
 
     /**
      * Create a new instance of the attribute with the given value.
-     * @phpstan-param TValue $value
+     * @param TValue $value
      */
     abstract public function createInstance(mixed $value) : static;
 
     /**
      * @param TValue $value
-     * @phpstan-return self<TValue>
+     * @return self<TValue>
      */
     abstract public function merge(mixed $value) : self;
 
@@ -71,7 +71,7 @@ abstract class BaseAttribute {
     abstract public function parse(string $value) : mixed;
 
     /**
-     * @phpstan-return array{ID: string, value: string}
+     * @return array{ID: string, value: string}
      */
     public function __serialize() : array {
         return [
@@ -81,7 +81,7 @@ abstract class BaseAttribute {
     }
 
     /**
-     * @phpstan-param array<mixed, mixed> $data
+     * @param array<array-key, mixed> $data
      * @throws InvalidArgumentException
      */
     public function __unserialize(array $data) : void {

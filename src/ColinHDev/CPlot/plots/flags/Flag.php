@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\plots\flags;
 
-use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 
 /**
- * @phpstan-template TValue of mixed
+ * @template TValue of mixed
  */
 interface Flag {
 
@@ -20,36 +19,36 @@ interface Flag {
     public function getValue() : mixed;
 
     /**
-     * @phpstan-param BaseAttribute<mixed>&Flag<mixed> $other
+     * @param static<mixed> $other
      */
-    public function equals(BaseAttribute $other) : bool;
+    public function equals(object $other) : bool;
 
     /**
      * Check if the given value is equal or part of the attribute's value.
-     * @phpstan-param (TValue is array ? value-of<TValue> : TValue) $value
+     * @param (TValue is array ? value-of<TValue> : TValue) $value
      */
     public function contains(mixed $value) : bool;
 
     /**
      * Create a new instance of the flag with the given value.
-     * @phpstan-param TValue $value
-     * @phpstan-return BaseAttribute<TValue>&Flag<TValue>
+     * @param TValue $value
+     * @return static
      */
-    public function createInstance(mixed $value) : BaseAttribute;
+    public function createInstance(mixed $value) : static;
 
     /**
-     * @phpstan-param TValue $value
-     * @phpstan-return BaseAttribute<TValue>&Flag<TValue>
+     * @param TValue $value
+     * @return static<TValue>
      */
-    public function merge(mixed $value) : BaseAttribute;
+    public function merge(mixed $value) : object;
 
     /**
-     * @phpstan-param TValue $value
+     * @param TValue $value
      */
     public function toString(mixed $value = null) : string;
 
     /**
-     * @phpstan-return TValue
+     * @return TValue
      * @throws AttributeParseException
      */
     public function parse(string $value) : mixed;

@@ -5,21 +5,27 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\attributes;
 
 /**
- * @phpstan-extends BaseAttribute<string>
+ * @extends BaseAttribute<string>
  */
 abstract class StringAttribute extends BaseAttribute {
 
-    public function equals(BaseAttribute $other) : bool {
+    public function equals(object $other) : bool {
         if (!($other instanceof static)) {
             return false;
         }
         return $this->value === $other->getValue();
     }
 
+    /**
+     * @param string $value
+     */
     public function contains(mixed $value) : bool {
         return $this->equals($this->createInstance($value));
     }
 
+    /**
+     * @param string $value
+     */
     public function merge(mixed $value) : self {
         return $this->createInstance($value);
     }

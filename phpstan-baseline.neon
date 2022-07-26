@@ -61,6 +61,21 @@ parameters:
 			path: src/ColinHDev/CPlot/listener/PlayerMoveListener.php
 
 		-
+			message: "#^Parameter \\#1 \\$setting of method ColinHDev\\\\CPlot\\\\player\\\\settings\\\\SettingManager\\:\\:getSettingFromConfig\\(\\) expects ColinHDev\\\\CPlot\\\\player\\\\settings\\\\Setting\\<array\\<ColinHDev\\\\CPlot\\\\plots\\\\flags\\\\Flag\\<mixed\\>\\>\\>, ColinHDev\\\\CPlot\\\\player\\\\settings\\\\implementation\\\\TeleportFlagChangeSetting given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/player/settings/SettingManager.php
+
+		-
+			message: "#^Parameter \\#1 \\$setting of method ColinHDev\\\\CPlot\\\\player\\\\settings\\\\SettingManager\\:\\:getSettingFromConfig\\(\\) expects ColinHDev\\\\CPlot\\\\player\\\\settings\\\\Setting\\<array\\<ColinHDev\\\\CPlot\\\\plots\\\\flags\\\\Flag\\<mixed\\>\\>\\>, ColinHDev\\\\CPlot\\\\player\\\\settings\\\\implementation\\\\WarnFlagChangeSetting given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/player/settings/SettingManager.php
+
+		-
+			message: "#^Parameter \\#1 \\$setting of method ColinHDev\\\\CPlot\\\\player\\\\settings\\\\SettingManager\\:\\:getSettingFromConfig\\(\\) expects ColinHDev\\\\CPlot\\\\player\\\\settings\\\\Setting\\<array\\<ColinHDev\\\\CPlot\\\\plots\\\\flags\\\\Flag\\<mixed\\>\\>\\>, ColinHDev\\\\CPlot\\\\player\\\\settings\\\\implementation\\\\WarnFlagSetting given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/player/settings/SettingManager.php
+
+		-
 			message: "#^Parameter \\#1 \\$data \\(array\\{worldName\\: string, worldSettings\\: string, x\\: int, z\\: int, originX\\: int, originZ\\: int\\}\\) of method ColinHDev\\\\CPlot\\\\plots\\\\MergePlot\\:\\:__unserialize\\(\\) should be compatible with parameter \\$data \\(array\\{worldName\\: string, worldSettings\\: string, x\\: int, z\\: int\\}\\) of method ColinHDev\\\\CPlot\\\\plots\\\\BasePlot\\:\\:__unserialize\\(\\)$#"
 			count: 1
 			path: src/ColinHDev/CPlot/plots/MergePlot.php

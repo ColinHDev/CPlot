@@ -6,23 +6,29 @@ namespace ColinHDev\CPlot\attributes;
 
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\utils\ParseUtils;
+use JsonException;
 use pocketmine\block\Block;
 use function count;
+use function explode;
+use function implode;
+use function is_array;
+use function is_string;
 
 /**
- * @phpstan-extends ArrayAttribute<Block[]>
+ * @extends ListAttribute<Block[]>
  */
-abstract class BlockListAttribute extends ArrayAttribute {
+abstract class BlockListAttribute extends ListAttribute {
 
-    public function equals(BaseAttribute $other) : bool {
+    public function equals(object $other) : bool {
         if (!($other instanceof static)) {
             return false;
         }
+        /** @var Block[] $otherValue */
         $otherValue = $other->getValue();
         if (count($this->value) !== count($otherValue)) {
             return false;
         }
-        /** @phpstan-var Block $block */
+        /** @var Block $block */
         foreach ($this->value as $i => $block) {
             if (!isset($otherValue[$i])) {
                 return false;
@@ -35,7 +41,11 @@ abstract class BlockListAttribute extends ArrayAttribute {
         return true;
     }
 
+    /**
+     * @param Block $value
+     */
     public function contains(mixed $value) : bool {
+        /** @var Block $currentValue */
         foreach ($this->value as $currentValue) {
             if ($currentValue->isSameType($value)) {
                 return true;
@@ -46,7 +56,7 @@ abstract class BlockListAttribute extends ArrayAttribute {
 
     /**
      * @param Block[] | null $value
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function toString(mixed $value = null) : string {
         if ($value === null) {
@@ -68,20 +78,25 @@ abstract class BlockListAttribute extends ArrayAttribute {
         if ($block !== null) {
             return [$block];
         }
-        $blocks = [];
+        $blocks = explode(",", $value);
+
         try {
-            $array = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
-            assert(is_array($array));
-            /** @phpstan-var array<string> $array */
-            foreach ($array as $val) {
-                $val = ParseUtils::parseBlockFromString($val);
-                if ($val instanceof Block) {
-                    $blocks[] = $val;
+            $blocks = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+            if (is_array($blocks)) {
+                $parsedBlocks = [];
+                foreach ($blocks as $blockIdentifier) {
+                    if (!is_string($blockIdentifier)) {
+                        throw new AttributeParseException($this, $value);
+                    }
+                    $blockIdentifier = ParseUtils::parseBlockFromString($blockIdentifier);
+                    if ($blockIdentifier instanceof Block) {
+                        $parsedBlocks[] = $blockIdentifier;
+                    }
                 }
+                return $parsedBlocks;
             }
-        } catch (\JsonException) {
-            throw new AttributeParseException($this, $value);
+        } catch(JsonException) {
         }
-        return $blocks;
+        throw new AttributeParseException($this, $value);
     }
 }

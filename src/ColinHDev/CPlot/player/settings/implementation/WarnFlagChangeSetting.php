@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\player\settings\implementation;
 
-use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\attributes\FlagListAttribute;
 use ColinHDev\CPlot\player\settings\Setting;
 use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\flags\Flag;
 
 /**
- * @phpstan-implements Setting<array<BaseAttribute<mixed>&Flag<mixed>>>
+ * @phpstan-implements Setting<array<Flag<mixed>>>
  */
 class WarnFlagChangeSetting extends FlagListAttribute implements Setting {
 
@@ -19,8 +18,8 @@ class WarnFlagChangeSetting extends FlagListAttribute implements Setting {
         parent::__construct(SettingIDs::SETTING_WARN_FLAG_CHANGE, $value);
     }
 
-    public static function NONE() : self {
-        return new self([]);
+    public static function NONE() : static {
+        return new static([]);
     }
 
     public function createInstance(mixed $value) : static {

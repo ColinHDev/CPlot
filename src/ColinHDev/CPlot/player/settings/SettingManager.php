@@ -46,9 +46,9 @@ final class SettingManager {
 
     /**
      * @internal method to create a {@see Setting} instance with the default value defined in the config file.
-     * @phpstan-template TValue of mixed
-     * @phpstan-param Setting<TValue> $setting
-     * @phpstan-return Setting<TValue>
+     * @template TValue of mixed
+     * @param Setting<TValue> $setting
+     * @return Setting<TValue>
      * @throws InvalidArgumentException if the given default value is not valid for the given setting.
      */
     private function getSettingFromConfig(Setting $setting) : Setting {
@@ -73,9 +73,8 @@ final class SettingManager {
 
     /**
      * Registers a {@see Setting} to the {@see SettingManager}.
-     * @param Setting $setting The setting to register
-     * @phpstan-template TValue of mixed
-     * @phpstan-param Setting<TValue> $setting
+     * @template TValue of mixed
+     * @param Setting<TValue> $setting
      */
     public function register(Setting $setting) : void {
         $this->settings[$setting->getID()] = $setting;
@@ -83,7 +82,7 @@ final class SettingManager {
 
     /**
      * Returns all registered {@see Setting} instances with their value being the setting's default value.
-     * @phpstan-return array<string, Setting<mixed>>
+     * @return array<string, Setting<mixed>>
      */
     public function getSettings() : array {
         return array_map(
@@ -96,7 +95,7 @@ final class SettingManager {
 
     /**
      * Returns the {@see Setting} with the given ID with its value being the its default value.
-     * @phpstan-param string $ID
+     * @param string $ID
      * @phpstan-return ($ID is SettingIDs::* ? Setting<mixed> : null)
      */
     public function getSettingByID(string $ID) : ?Setting {

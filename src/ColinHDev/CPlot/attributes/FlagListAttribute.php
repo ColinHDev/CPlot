@@ -6,22 +6,31 @@ namespace ColinHDev\CPlot\attributes;
 
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\plots\flags\Flag;
+use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\plots\flags\InternalFlag;
 use JsonException;
+use function count;
+use function explode;
+use function is_array;
+use function is_string;
+use function json_decode;
+use const JSON_THROW_ON_ERROR;
 
 /**
- * @phpstan-extends ArrayAttribute<array<BaseAttribute<mixed>&Flag<mixed>>>
+ * @phpstan-extends ListAttribute<array<Flag<mixed>>>
  */
-abstract class FlagListAttribute extends ArrayAttribute {
+abstract class FlagListAttribute extends ListAttribute {
 
-    public function equals(BaseAttribute $other) : bool {
+    public function equals(object $other) : bool {
         if (!($other instanceof static)) {
             return false;
         }
+        /** @var array<Flag<mixed>> $otherValue */
         $otherValue = $other->getValue();
         if (count($this->value) !== count($otherValue)) {
             return false;
         }
-        /** @phpstan-var BaseAttribute<mixed>&Flag<mixed> $flag */
+        /** @var Flag<mixed> $flag */
         foreach ($this->value as $i => $flag) {
             if (!isset($otherValue[$i])) {
                 return false;
@@ -34,7 +43,11 @@ abstract class FlagListAttribute extends ArrayAttribute {
         return true;
     }
 
+    /**
+     * @param Flag<mixed> $value
+     */
     public function contains(mixed $value) : bool {
+        /** @var Flag<mixed> $currentValue */
         foreach ($this->value as $currentValue) {
             if ($currentValue->equals($value)) {
                 return true;
@@ -44,8 +57,7 @@ abstract class FlagListAttribute extends ArrayAttribute {
     }
 
     /**
-     * @param array<BaseAttribute&Flag> | null $value
-     * @phpstan-param array<BaseAttribute<mixed>&Flag<mixed>> | null $value
+     * @param array<Flag<mixed>> | null $value
      * @throws JsonException
      */
     public function toString(mixed $value = null) : string {
@@ -60,19 +72,50 @@ abstract class FlagListAttribute extends ArrayAttribute {
     }
 
     /**
-     * @return array<BaseAttribute&Flag>
-     * @phpstan-return array<BaseAttribute<mixed>&Flag<mixed>>
+     * @return array<Flag<mixed>>
      * @throws AttributeParseException
      */
     public function parse(string $value) : array {
-
-        $flags = [];
-        try {
-            $array = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
-            assert(is_array($array));
-        } catch (JsonException) {
-            throw new AttributeParseException($this, $value);
+        $flagParts = explode("=", $value);
+        if (count($flagParts) === 2) {
+            [$flagID, $flagStringValue] = $flagParts;
+            $flag = FlagManager::getInstance()->getFlagByID($flagID);
+            if ($flag instanceof Flag && !($flag instanceof InternalFlag)) {
+                try {
+                    $flagValue = $flag->parse($flagStringValue);
+                } catch(AttributeParseException) {
+                    throw new AttributeParseException($this, $value);
+                }
+                return [$flag->createInstance($flagValue)];
+            }
+        } else if (count($flagParts) > 2) {
+            try {
+                $flags = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+                if (is_array($flags)) {
+                    $parsedFlags = [];
+                    foreach ($flags as $flagParts) {
+                        if (!is_string($flagParts)) {
+                            throw new AttributeParseException($this, $value);
+                        }
+                        $flagParts = explode("=", $flagParts);
+                        if (count($flagParts) === 2) {
+                            [$flagID, $flagStringValue] = $flagParts;
+                            $flag = FlagManager::getInstance()->getFlagByID($flagID);
+                            if ($flag instanceof Flag && !($flag instanceof InternalFlag)) {
+                                try {
+                                    $flagValue = $flag->parse($flagStringValue);
+                                } catch(AttributeParseException) {
+                                    throw new AttributeParseException($this, $value);
+                                }
+                                $parsedFlags[] = $flag->createInstance($flagValue);
+                            }
+                        }
+                    }
+                    return $parsedFlags;
+                }
+            } catch(JsonException) {
+            }
         }
-        return $flags;
+        throw new AttributeParseException($this, $value);
     }
 }

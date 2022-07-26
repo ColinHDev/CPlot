@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\attributes\utils;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
+use Exception;
 
-class AttributeParseException extends \Exception {
+class AttributeParseException extends Exception {
 
-    /** @phpstan-var BaseAttribute<mixed> */
+    /** @var BaseAttribute<mixed> */
     private BaseAttribute $attribute;
     private string $value;
 
     /**
-     * @phpstan-param BaseAttribute<mixed> $attribute
+     * @param BaseAttribute<mixed> $attribute
      */
     public function __construct(BaseAttribute $attribute, string $value) {
         parent::__construct("Failed to parse attribute " . $attribute::class . ". Value " . $value . " was not accepted.");
@@ -22,7 +23,7 @@ class AttributeParseException extends \Exception {
     }
 
     /**
-     * @phpstan-return BaseAttribute<mixed>
+     * @return BaseAttribute<mixed>
      */
     public function getAttribute() : BaseAttribute {
         return $this->attribute;

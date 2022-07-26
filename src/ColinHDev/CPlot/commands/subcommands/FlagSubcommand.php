@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\ArrayAttribute;
-use ColinHDev\CPlot\attributes\BaseAttribute;
-use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\attributes\LocationAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\player\PlayerData;
-use ColinHDev\CPlot\player\settings\SettingIDs;
+use ColinHDev\CPlot\player\settings\Settings;
 use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
@@ -213,29 +210,15 @@ class FlagSubcommand extends Subcommand {
                     if (!($playerData instanceof PlayerData)) {
                         continue;
                     }
-                    /** @var ArrayAttribute<array<mixed, mixed>> $setting */
-                    $setting = $playerData->getSettingByID(SettingIDs::BASE_SETTING_WARN_CHANGE_FLAG . $newFlag->getID());
-                    foreach ($setting->getValue() as $value) {
-                        if ($value === $newFlag->getValue()) {
-                            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                                $player,
-                                ["prefix", "flag.set.setting.warn_change_flag" => [$newFlag->getID(), $newFlag->toString()]]
-                            );
-                            break;
-                        }
-                    }
 
-                    /** @var ArrayAttribute<array<mixed, mixed>> $setting */
-                    $setting = $playerData->getSettingByID(SettingIDs::BASE_SETTING_TELEPORT_CHANGE_FLAG . $newFlag->getID());
-                    foreach ($setting->getValue() as $value) {
-                        if ($value === $newFlag->getValue()) {
-                            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                                $player,
-                                ["prefix", "flag.set.setting.teleport_change_flag" => [$newFlag->getID(), $newFlag->toString()]]
-                            );
-                            $plot->teleportTo($player, TeleportDestination::ROAD_EDGE);
-                            break;
-                        }
+                    if ($playerData->getSetting(Settings::WARN_FLAG_CHANGE())->contains($newFlag)) {
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                            $player,
+                            ["prefix", "flag.set.setting.warn_change_flag" => [$newFlag->getID(), $newFlag->toString()]]
+                        );
+                    }
+                    if ($playerData->getSetting(Settings::TELEPORT_FLAG_CHANGE())->contains($newFlag)) {
+                        $plot->teleportTo($player, TeleportDestination::ROAD_EDGE);
                     }
                 }
                 break;

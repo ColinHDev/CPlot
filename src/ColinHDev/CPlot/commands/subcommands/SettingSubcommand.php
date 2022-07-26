@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\ArrayAttribute;
-use ColinHDev\CPlot\attributes\BaseAttribute;
+use ColinHDev\CPlot\attributes\ListAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\player\PlayerData;
@@ -14,6 +13,8 @@ use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use function assert;
+use function is_array;
 
 /**
  * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
@@ -71,7 +72,7 @@ class SettingSubcommand extends Subcommand {
                 /** @phpstan-var string $type */
                 $type = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.type." . $setting->getID());
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.type" => $type]);
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.default" => $setting->getDefault()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.default" => $setting->toString()]);
                 break;
 
             case "my":
@@ -121,7 +122,6 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
 
-                /** @var BaseAttribute<mixed> | null $setting */
                 $setting = SettingManager::getInstance()->getSettingByID($args[1]);
                 if ($setting === null) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.noSetting" => $args[1]]);
@@ -169,7 +169,6 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
 
-                /** @var BaseAttribute<mixed> | null $setting */
                 $setting = $playerData->getLocalSettingByID($args[1]);
                 if ($setting === null) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.settingNotSet" => $args[1]]);
@@ -181,10 +180,11 @@ class SettingSubcommand extends Subcommand {
                 }
 
                 array_splice($args, 0, 2);
-                if (count($args) > 0 && $setting instanceof ArrayAttribute) {
+                if (count($args) > 0 && is_array($setting->getValue())) {
                     $arg = implode(" ", $args);
                     try {
                         $parsedValues = $setting->parse($arg);
+                        assert(is_array($parsedValues));
                     } catch (AttributeParseException) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.parseError" => [$arg, $setting->getID()]]);
                         break;

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\listener;
 
 use Closure;
-use ColinHDev\CPlot\attributes\BooleanListAttribute;
 use ColinHDev\CPlot\event\PlayerEnteredPlotEvent;
 use ColinHDev\CPlot\event\PlayerEnterPlotEvent;
 use ColinHDev\CPlot\event\PlayerLeavePlotEvent;
 use ColinHDev\CPlot\event\PlayerLeftPlotEvent;
-use ColinHDev\CPlot\player\settings\SettingIDs;
+use ColinHDev\CPlot\player\PlayerData;
+use ColinHDev\CPlot\player\settings\Settings;
 use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\flags\implementation\FarewellFlag;
 use ColinHDev\CPlot\plots\flags\implementation\GreetingFlag;
@@ -133,20 +133,14 @@ class PlayerMoveListener implements Listener {
         Await::f2c(static function() use($plot, $player) : \Generator {
             // settings on plot enter
             $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
-            if ($playerData !== null) {
+            if ($playerData instanceof PlayerData) {
+                $setting = $playerData->getSetting(Settings::WARN_FLAG());
                 foreach ($plot->getFlags() as $flag) {
-                    $setting = $playerData->getSettingByID(SettingIDs::BASE_SETTING_WARN_FLAG . $flag->getID());
-                    if (!($setting instanceof BooleanListAttribute)) {
-                        continue;
-                    }
-                    foreach ($setting->getValue() as $value) {
-                        if ($value === $flag->getValue()) {
-                            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                                $player,
-                                ["prefix", "playerMove.setting.warn_flag" => [$flag->getID(), $flag->toString()]]
-                            );
-                            continue 2;
-                        }
+                    if ($setting->contains($flag)) {
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                            $player,
+                            ["prefix", "playerMove.setting.warn_flag" => [$flag->getID(), $flag->toString()]]
+                        );
                     }
                 }
             }

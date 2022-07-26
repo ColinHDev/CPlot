@@ -6,23 +6,33 @@ namespace ColinHDev\CPlot\attributes;
 
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use pocketmine\entity\Location;
+use function explode;
+use function is_infinite;
+use function is_nan;
+use function is_numeric;
 
 /**
- * @phpstan-extends BaseAttribute<Location>
+ * @extends BaseAttribute<Location>
  */
 abstract class LocationAttribute extends BaseAttribute {
 
-    public function equals(BaseAttribute $other) : bool {
+    public function equals(object $other) : bool {
         if (!($other instanceof static)) {
             return false;
         }
         return $this->value->equals($other->getValue());
     }
 
+    /**
+     * @param Location $value
+     */
     public function contains(mixed $value) : bool {
         return $this->equals($this->createInstance($value));
     }
 
+    /**
+     * @param Location $value
+     */
     public function merge(mixed $value) : self {
         return $this->createInstance($value);
     }
@@ -41,14 +51,19 @@ abstract class LocationAttribute extends BaseAttribute {
      * @throws AttributeParseException
      */
     public function parse(string $value) : Location {
-        /** @phpstan-var string|null $x */
-        /** @phpstan-var string|null $y */
-        /** @phpstan-var string|null $z */
-        /** @phpstan-var string|null $yaw */
-        /** @phpstan-var string|null $pitch */
         [$x, $y, $z, $yaw, $pitch] = explode(";", $value);
-        if (isset($x, $y, $z, $yaw, $pitch)) {
-            return new Location((float) $x, (float) $y, (float) $z, null, (float) $yaw, (float) $pitch);
+        if (is_numeric($x) && is_numeric($y) && is_numeric($z) && is_numeric($yaw) && is_numeric($pitch)) {
+            $x = (float) $x;
+            $y = (float) $y;
+            $z = (float) $z;
+            $yaw = (float) $yaw;
+            $pitch = (float) $pitch;
+            if (
+                !is_nan($x) && !is_nan($y) && !is_nan($z) && !is_nan($yaw) && !is_nan($pitch) &&
+                !is_infinite($x) && !is_infinite($y) && !is_infinite($z) && !is_infinite($yaw) && !is_infinite($pitch)
+            ) {
+                return new Location($x, $y, $z, null, $yaw, $pitch);
+            }
         }
         throw new AttributeParseException($this, $value);
     }

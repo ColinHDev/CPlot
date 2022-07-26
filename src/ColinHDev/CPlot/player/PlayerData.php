@@ -157,7 +157,7 @@ class PlayerData {
      * @phpstan-param TSetting $setting
      * @phpstan-return TSetting|null
      */
-    public function getLocalFlag(Setting $setting) : ?Setting {
+    public function getLocalSetting(Setting $setting) : ?Setting {
         /** @phpstan-var TSetting|null $setting */
         $setting = $this->getLocalSettingByID($setting->getID());
         return $setting;

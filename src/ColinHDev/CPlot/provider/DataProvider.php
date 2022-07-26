@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\provider;
 
-use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\player\PlayerData;
@@ -509,10 +508,10 @@ final class DataProvider {
 
     /**
      * @phpstan-template TAttributeValue
-     * @phpstan-param BaseAttribute<TAttributeValue> $setting
+     * @phpstan-param Setting<TAttributeValue> $setting
      * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
-    public function savePlayerSetting(PlayerData $playerData, BaseAttribute $setting) : Generator {
+    public function savePlayerSetting(PlayerData $playerData, Setting $setting) : Generator {
         $playerID = $playerData->getPlayerID();
         yield $this->database->asyncInsert(
             self::SET_PLAYERSETTING,
