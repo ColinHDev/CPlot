@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\ListAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\player\PlayerData;
+use ColinHDev\CPlot\player\settings\InternalSetting;
+use ColinHDev\CPlot\player\settings\Setting;
 use ColinHDev\CPlot\player\settings\SettingManager;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
@@ -36,6 +37,9 @@ class SettingSubcommand extends Subcommand {
                 );
                 $settingsByCategory = [];
                 foreach (SettingManager::getInstance()->getSettings() as $setting) {
+                    if ($setting instanceof InternalSetting) {
+                        continue;
+                    }
                     $settingCategory = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         "setting.category." . $setting->getID()
@@ -57,7 +61,7 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
                 $setting = SettingManager::getInstance()->getSettingByID($args[1]);
-                if ($setting === null) {
+                if (!($setting instanceof Setting) || $setting instanceof InternalSetting) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.info.noSetting" => $args[1]]);
                     break;
                 }
@@ -92,6 +96,9 @@ class SettingSubcommand extends Subcommand {
                 }
                 $settingStrings = [];
                 foreach ($settings as $ID => $setting) {
+                    if ($setting instanceof InternalSetting) {
+                        continue;
+                    }
                     $settingStrings[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         ["setting.my.success.format" => [$ID, $setting->toString()]]
@@ -123,7 +130,7 @@ class SettingSubcommand extends Subcommand {
                 }
 
                 $setting = SettingManager::getInstance()->getSettingByID($args[1]);
-                if ($setting === null) {
+                if (!($setting instanceof Setting) || $setting instanceof InternalSetting) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.noSetting" => $args[1]]);
                     break;
                 }
@@ -170,7 +177,7 @@ class SettingSubcommand extends Subcommand {
                 }
 
                 $setting = $playerData->getLocalSettingByID($args[1]);
-                if ($setting === null) {
+                if (!($setting instanceof Setting) || $setting instanceof InternalSetting) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.settingNotSet" => $args[1]]);
                     break;
                 }

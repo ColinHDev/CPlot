@@ -7,12 +7,13 @@ namespace ColinHDev\CPlot\plots\flags\implementation;
 use ColinHDev\CPlot\attributes\LocationAttribute;
 use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\InternalFlag;
 use pocketmine\entity\Location;
 
 /**
- * @phpstan-implements Flag<Location>
+ * @implements Flag<Location>
  */
-class SpawnFlag extends LocationAttribute implements Flag {
+class SpawnFlag extends LocationAttribute implements Flag, InternalFlag {
 
     final public function __construct(Location $value) {
         parent::__construct(FlagIDs::FLAG_SPAWN, $value);

@@ -70,115 +70,24 @@ worldSettings:
 # You can change the default value for any flag by pasting the flag ID as a key and the preferred default value as
 # string as the value in this array.
 flag:
-    # Define the default value of the item_drop flag.
-    # default: "true"
     item_drop: "true"
-    # Define the default value of the item_pickup flag.
-    # default: "true"
     item_pickup: "true"
-
-    # Define the default value of the pvp flag.
-    # default: "false"
     pvp: "false"
-    # Define the default value of the pve flag.
-    # default: "false"
     pve: "false"
-    # Define the default value of the explosion flag.
-    # default: "false"
     explosion: "false"
-    # Define the default value of the burning flag.
-    # default: "false"
     burning: "false"
-    # Define the default value of the flowing flag.
-    # default: "true"
     flowing: "true"
-    # Define the default value of the growing flag.
-    # default: "true"
     growing: "true"
-    # Define the default value of the player_interact flag.
-    # default: "false"
     player_interact: "false"
 
-# Define the default values of all settings.
+# Define the default values for all the settings.
+# This array does only contain all the settings which are most likely to get their default value changed by server owners.
+# You can change the default value for any settings by pasting the settings ID as a key and the preferred default value as
+# string as the value in this array.
 setting:
-    # Define the default value of the inform_trusted_add setting.
-    # default: "true"
-    inform_trusted_add: "true"
-    # Define the default value of the inform_trusted_remove setting.
-    # default: "true"
-    inform_trusted_remove: "true"
-
-    # Define the default value of the inform_helper_add setting.
-    # default: "true"
-    inform_helper_add: "true"
-    # Define the default value of the inform_helper_remove setting.
-    # default: "true"
-    inform_helper_remove: "true"
-
-    # Define the default value of the inform_denied_add setting.
-    # default: "true"
-    inform_denied_add: "true"
-    # Define the default value of the inform_denied_remove setting.
-    # default: "true"
-    inform_denied_remove: "true"
-
-    # Define the default value of the inform_plot_inactive setting.
-    # default: "false"
-    inform_plot_inactive: "false"
-
-    # Define the default value of the inform_plot_rate_add setting.
-    # default: "true"
-    inform_plot_rate_add: "true"
-
-    # Define the default value of the warn_flag_item_drop setting.
-    # default: "[false]"
-    warn_flag_item_drop: "[false]"
-    # Define the default value of the warn_change_flag_item_drop setting.
-    # default: "[false]"
-    warn_change_flag_item_drop: "[false]"
-    # Define the default value of the teleport_change_flag_item_drop setting.
-    # default: "[]"
-    teleport_change_flag_item_drop: "[]"
-
-    # Define the default value of the warn_flag_item_pickup setting.
-    # default: "[false]"
-    warn_flag_item_pickup: "[false]"
-    # Define the default value of the warn_change_flag_item_pickup setting.
-    # default: "[false]"
-    warn_change_flag_item_pickup: "[false]"
-    # Define the default value of the teleport_change_flag_item_pickup setting.
-    # default: "[]"
-    teleport_change_flag_item_pickup: "[]"
-
-    # Define the default value of the warn_flag_pvp setting.
-    # default: "[true]"
-    warn_flag_pvp: "[true]"
-    # Define the default value of the warn_change_flag_pvp setting.
-    # default: "[true]"
-    warn_change_flag_pvp: "[true]"
-    # Define the default value of the teleport_change_flag_pvp setting.
-    # default: "[true]"
-    teleport_change_flag_pvp: "[true]"
-
-    # Define the default value of the warn_flag_pve setting.
-    # default: "[true]"
-    warn_flag_pve: "[true]"
-    # Define the default value of the warn_change_flag_pve setting.
-    # default: "[true]"
-    warn_change_flag_pve: "[true]"
-    # Define the default value of the teleport_change_flag_pve setting.
-    # default: "[true]"
-    teleport_change_flag_pve: "[true]"
-
-    # Define the default value of the warn_flag_explosion setting.
-    # default: "[true]"
-    warn_flag_explosion: "[true]"
-    # Define the default value of the warn_change_flag_explosion setting.
-    # default: "[true]"
-    warn_change_flag_explosion: "[true]"
-    # Define the default value of the teleport_change_flag_explosion setting.
-    # default: "[]"
-    teleport_change_flag_explosion: "[]"
+    warn_flag: "item_drop=false, item_pickup=false, pvp=true, pve=true, explosion=true"
+    warn_flag_change: "item_drop=false, item_pickup=false, pvp=true, pve=true, explosion=true"
+    teleport_flag_change: "pvp=true, pve=true, explosion=true"
 
 # database settings
 database:

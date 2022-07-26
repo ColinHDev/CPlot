@@ -9,7 +9,7 @@ use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 
 /**
- * @phpstan-implements Flag<bool>
+ * @implements Flag<bool>
  */
 class ItemPickupFlag extends BooleanAttribute implements Flag {
 

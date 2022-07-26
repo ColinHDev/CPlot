@@ -10,7 +10,7 @@ use ColinHDev\CPlot\player\settings\SettingIDs;
 use ColinHDev\CPlot\plots\flags\Flag;
 
 /**
- * @phpstan-implements Setting<array<Flag<mixed>>>
+ * @implements Setting<array<Flag<mixed>>>
  */
 class TeleportFlagChangeSetting extends FlagListAttribute implements Setting {
 

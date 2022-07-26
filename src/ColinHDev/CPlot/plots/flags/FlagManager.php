@@ -16,11 +16,8 @@ use ColinHDev\CPlot\plots\flags\implementation\ItemDropFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ItemPickupFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlaceFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlayerInteractFlag;
-use ColinHDev\CPlot\plots\flags\implementation\PlotEnterFlag;
-use ColinHDev\CPlot\plots\flags\implementation\PlotLeaveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
-use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
 use ColinHDev\CPlot\plots\flags\implementation\SpawnFlag;
 use ColinHDev\CPlot\plots\flags\implementation\UseFlag;
 use ColinHDev\CPlot\ResourceManager;
@@ -51,11 +48,8 @@ final class FlagManager {
         $this->register($this->getFlagFromConfig(ItemPickupFlag::TRUE()));
         $this->register($this->getFlagFromConfig(PlaceFlag::NONE()));
         $this->register($this->getFlagFromConfig(PlayerInteractFlag::FALSE()));
-        $this->register($this->getFlagFromConfig(PlotEnterFlag::FALSE()));
-        $this->register($this->getFlagFromConfig(PlotLeaveFlag::FALSE()));
         $this->register($this->getFlagFromConfig(PveFlag::FALSE()));
         $this->register($this->getFlagFromConfig(PvpFlag::FALSE()));
-        $this->register($this->getFlagFromConfig(ServerPlotFlag::FALSE()));
         $this->register($this->getFlagFromConfig(SpawnFlag::NONE()));
         $this->register($this->getFlagFromConfig(UseFlag::NONE()));
     }

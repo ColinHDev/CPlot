@@ -198,19 +198,6 @@ class PlayerMoveListener implements Listener {
                 );
             }
             $player->sendTip(implode(TextFormat::EOL, $tipParts));
-
-            // plot_enter flag
-            if ($plot->getFlag(Flags::PLOT_ENTER())->equals(PlotEnterFlag::TRUE())) {
-                foreach ($plot->getPlotOwners() as $plotOwner) {
-                    $owner = $plotOwner->getPlayerData()->getPlayer();
-                    if ($owner instanceof Player) {
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                            $owner,
-                            ["playerMove.plotEnter.flag.plot_enter" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
-                        );
-                    }
-                }
-            }
         });
     }
 
@@ -229,19 +216,6 @@ class PlayerMoveListener implements Listener {
                     ["playerMove.plotLeave.tip.flag.farewell" => $flag->getValue()]
                 );
                 $player->sendTip($tip);
-            }
-
-            // plot_leave flag
-            if ($plot->getFlag(Flags::PLOT_LEAVE())->equals(PlotLeaveFlag::TRUE())) {
-                foreach ($plot->getPlotOwners() as $plotOwner) {
-                    $owner = $plotOwner->getPlayerData()->getPlayer();
-                    if ($owner instanceof Player) {
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                            $owner,
-                            ["playerMove.plotLeave.flag.plot_leave" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
-                        );
-                    }
-                }
             }
         });
     }

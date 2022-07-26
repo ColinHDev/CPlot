@@ -15,11 +15,8 @@ use ColinHDev\CPlot\plots\flags\implementation\ItemDropFlag;
 use ColinHDev\CPlot\plots\flags\implementation\ItemPickupFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlaceFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PlayerInteractFlag;
-use ColinHDev\CPlot\plots\flags\implementation\PlotEnterFlag;
-use ColinHDev\CPlot\plots\flags\implementation\PlotLeaveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PveFlag;
 use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
-use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
 use ColinHDev\CPlot\plots\flags\implementation\SpawnFlag;
 use ColinHDev\CPlot\plots\flags\implementation\UseFlag;
 use pocketmine\utils\CloningRegistryTrait;
@@ -36,11 +33,8 @@ use pocketmine\utils\CloningRegistryTrait;
  * @method static ItemPickupFlag ITEM_PICKUP()
  * @method static PlaceFlag PLACE()
  * @method static PlayerInteractFlag PLAYER_INTERACT()
- * @method static PlotEnterFlag PLOT_ENTER()
- * @method static PlotLeaveFlag PLOT_LEAVE()
  * @method static PveFlag PVE()
  * @method static PvpFlag PVP()
- * @method static ServerPlotFlag SERVER_PLOT()
  * @method static SpawnFlag SPAWN()
  * @method static UseFlag USE()
  */
@@ -70,11 +64,8 @@ final class Flags {
         self::register(FlagIDs::FLAG_ITEM_PICKUP, $flagManager->getFlagByID(FlagIDs::FLAG_ITEM_PICKUP));
         self::register(FlagIDs::FLAG_PLACE, $flagManager->getFlagByID(FlagIDs::FLAG_PLACE));
         self::register(FlagIDs::FLAG_PLAYER_INTERACT, $flagManager->getFlagByID(FlagIDs::FLAG_PLAYER_INTERACT));
-        self::register(FlagIDs::FLAG_PLOT_ENTER, $flagManager->getFlagByID(FlagIDs::FLAG_PLOT_ENTER));
-        self::register(FlagIDs::FLAG_PLOT_LEAVE, $flagManager->getFlagByID(FlagIDs::FLAG_PLOT_LEAVE));
         self::register(FlagIDs::FLAG_PVE, $flagManager->getFlagByID(FlagIDs::FLAG_PVE));
         self::register(FlagIDs::FLAG_PVP, $flagManager->getFlagByID(FlagIDs::FLAG_PVP));
-        self::register(FlagIDs::FLAG_SERVER_PLOT, $flagManager->getFlagByID(FlagIDs::FLAG_SERVER_PLOT));
         self::register(FlagIDs::FLAG_SPAWN, $flagManager->getFlagByID(FlagIDs::FLAG_SPAWN));
         self::register(FlagIDs::FLAG_USE, $flagManager->getFlagByID(FlagIDs::FLAG_USE));
     }

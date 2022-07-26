@@ -10,9 +10,11 @@ use JsonException;
 use pocketmine\block\Block;
 use function count;
 use function explode;
-use function implode;
 use function is_array;
 use function is_string;
+use function json_decode;
+use function str_contains;
+use const JSON_THROW_ON_ERROR;
 
 /**
  * @extends ListAttribute<Block[]>
@@ -78,8 +80,6 @@ abstract class BlockListAttribute extends ListAttribute {
         if ($block !== null) {
             return [$block];
         }
-        $blocks = explode(",", $value);
-
         try {
             $blocks = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
             if (is_array($blocks)) {
@@ -96,6 +96,23 @@ abstract class BlockListAttribute extends ListAttribute {
                 return $parsedBlocks;
             }
         } catch(JsonException) {
+        }
+        if (str_contains($value, ",")) {
+            if (str_contains($value, ", ")) {
+                $blocks = explode(", ", $value);
+            } else {
+                $blocks = explode(",", $value);
+            }
+            $parsedBlocks = [];
+            foreach ($blocks as $blockIdentifier) {
+                $blockIdentifier = ParseUtils::parseBlockFromString($blockIdentifier);
+                if ($blockIdentifier instanceof Block) {
+                    $parsedBlocks[] = $blockIdentifier;
+                }
+            }
+            if (count($parsedBlocks) > 0) {
+                return $parsedBlocks;
+            }
         }
         throw new AttributeParseException($this, $value);
     }

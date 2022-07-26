@@ -9,7 +9,7 @@ use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 
 /**
- * @phpstan-implements Flag<string>
+ * @implements Flag<string>
  */
 class GreetingFlag extends StringAttribute implements Flag {
 

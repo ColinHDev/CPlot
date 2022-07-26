@@ -10,7 +10,7 @@ use ColinHDev\CPlot\plots\flags\FlagIDs;
 use pocketmine\block\Block;
 
 /**
- * @phpstan-implements Flag<Block[]>
+ * @implements Flag<Block[]>
  */
 class PlaceFlag extends BlockListAttribute implements Flag {
 

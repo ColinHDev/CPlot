@@ -9,7 +9,7 @@ use ColinHDev\CPlot\player\settings\Setting;
 use ColinHDev\CPlot\player\settings\SettingIDs;
 
 /**
- * @phpstan-implements Setting<bool>
+ * @implements Setting<bool>
  */
 class InformRemovedSetting extends BooleanAttribute implements Setting {
 
