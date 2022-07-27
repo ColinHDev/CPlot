@@ -47,8 +47,9 @@ final class SettingManager {
     /**
      * @internal method to create a {@see Setting} instance with the default value defined in the config file.
      * @template TValue of mixed
-     * @param Setting<TValue> $setting
-     * @return Setting<TValue>
+     * @template TSetting of Setting<TValue>
+     * @param TSetting $setting
+     * @return TSetting
      * @throws InvalidArgumentException if the given default value is not valid for the given setting.
      */
     private function getSettingFromConfig(Setting $setting) : Setting {
@@ -74,7 +75,8 @@ final class SettingManager {
     /**
      * Registers a {@see Setting} to the {@see SettingManager}.
      * @template TValue of mixed
-     * @param Setting<TValue> $setting
+     * @template TSetting of Setting<TValue>
+     * @param TSetting $setting
      */
     public function register(Setting $setting) : void {
         $this->settings[$setting->getID()] = $setting;

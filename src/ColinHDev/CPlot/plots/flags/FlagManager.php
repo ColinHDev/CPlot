@@ -57,8 +57,9 @@ final class FlagManager {
     /**
      * @internal method to create a {@see Flag} instance with the default value defined in the config file.
      * @template TValue of mixed
-     * @param Flag<TValue> $flag
-     * @return Flag<TValue>
+     * @template TFlag of Flag<TValue>
+     * @param TFlag $flag
+     * @return TFlag
      * @throws InvalidArgumentException if the given default value is not valid for the given flag.
      */
     private function getFlagFromConfig(Flag $flag) : Flag {
@@ -84,7 +85,8 @@ final class FlagManager {
     /**
      * Registers a {@see Flag} to the {@see FlagManager}.
      * @template TValue of mixed
-     * @param Flag<TValue> $flag
+     * @template TFlag of Flag<TValue>
+     * @param TFlag $flag
      */
     public function register(Flag $flag) : void {
         $this->flags[$flag->getID()] = $flag;
