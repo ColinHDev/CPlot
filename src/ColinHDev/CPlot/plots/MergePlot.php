@@ -31,6 +31,7 @@ class MergePlot extends BasePlot {
     }
 
     /**
+     * @deprecated
      * @phpstan-return \Generator<int, mixed, Plot|null, Plot|null>
      */
     public function toPlot() : \Generator {

@@ -12,6 +12,12 @@ class PlotPlayer {
     public const STATE_TRUSTED = "state_trusted";
     public const STATE_HELPER = "state_helper";
     public const STATE_DENIED = "state_denied";
+    public const STATES = [
+        self::STATE_OWNER => true,
+        self::STATE_TRUSTED => true,
+        self::STATE_HELPER => true,
+        self::STATE_DENIED => true
+    ];
 
     private PlayerData $playerData;
     /** @phpstan-var PlotPlayer::STATE_* */

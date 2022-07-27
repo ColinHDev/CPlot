@@ -8,21 +8,17 @@ use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
-use pocketmine\event\entity\EntityExplodeEvent;
+use pocketmine\event\block\BlockBurnEvent;
 use pocketmine\event\Listener;
 
-class EntityExplodeListener implements Listener {
+class BlockBurnListener implements Listener {
     use APIHolder;
 
     /**
      * @handleCancelled false
      */
-    public function onEntityExplode(EntityExplodeEvent $event) : void {
-        if (count($event->getBlockList()) === 0) {
-            return;
-        }
-
-        $position = $event->getPosition();
+    public function onBlockBurn(BlockBurnEvent $event) : void {
+        $position = $event->getCausingBlock()->getPosition();
         /** @phpstan-var true|false|null $isPlotWorld */
         $isPlotWorld = $this->getAPI()->isPlotWorld($position->getWorld())->getResult();
         if ($isPlotWorld !== true) {
@@ -34,17 +30,11 @@ class EntityExplodeListener implements Listener {
 
         /** @phpstan-var Plot|false|null $plot */
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
-        if ($plot instanceof Plot) {
+        // We not only need to check if the causing block is on the plot but also if that applies for the changed one.
+        if ($plot instanceof Plot && $plot->isOnPlot($event->getBlock()->getPosition())) {
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_EXPLOSION);
+            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_BURNING);
             if ($flag->getValue() === true) {
-                $affectedBlocks = [];
-                foreach ($event->getBlockList() as $hash => $block) {
-                    if ($plot->isOnPlot($block->getPosition())) {
-                        $affectedBlocks[$hash] = $block;
-                    }
-                }
-                $event->setBlockList($affectedBlocks);
                 return;
             }
         }

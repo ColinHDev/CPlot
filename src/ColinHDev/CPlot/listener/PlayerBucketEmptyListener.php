@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BlockListAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
-use pocketmine\block\Block;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerBucketEmptyEvent;
 
-class BlockPlaceListener implements Listener {
+class PlayerBucketEmptyListener implements Listener {
     use APIHolder;
 
     /**
      * @handleCancelled false
      */
-    public function onBlockPlace(BlockPlaceEvent $event) : void {
-        $position = $event->getBlock()->getPosition();
+    public function onPlayerBucketEmpty(PlayerBucketEmptyEvent $event) : void {
+        $position = $event->getBlockClicked()->getPosition();
         /** @phpstan-var true|false|null $isPlotWorld */
         $isPlotWorld = $this->getAPI()->isPlotWorld($position->getWorld())->getResult();
         if ($isPlotWorld !== true) {
@@ -33,7 +30,7 @@ class BlockPlaceListener implements Listener {
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
         if ($plot instanceof Plot) {
             $player = $event->getPlayer();
-            if ($player->hasPermission("cplot.place.plot")) {
+            if ($player->hasPermission("cplot.interact.plot")) {
                 return;
             }
 
@@ -52,18 +49,8 @@ class BlockPlaceListener implements Listener {
                 }
             }
 
-            $block = $event->getBlock();
-            /** @var BlockListAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PLACE);
-            /** @var Block $value */
-            foreach ($flag->getValue() as $value) {
-                if ($block->isSameType($value)) {
-                    return;
-                }
-            }
-
         } else if ($plot === false) {
-            if ($event->getPlayer()->hasPermission("cplot.place.road")) {
+            if ($event->getPlayer()->hasPermission("cplot.interact.road")) {
                 return;
             }
         }

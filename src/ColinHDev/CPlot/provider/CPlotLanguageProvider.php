@@ -9,6 +9,7 @@ use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\CommandSender;
 use pocketmine\lang\Language;
 use pocketmine\player\Player;
+use function strtolower;
 
 /**
  * @phpstan-type LanguageIdentifier string
@@ -21,14 +22,12 @@ class CPlotLanguageProvider extends LanguageProvider {
     private string $fallbackLanguage;
     /** @phpstan-var array<LanguageIdentifier, Language> */
     private array $languages;
-    /** @phpstan-var array<LanguageIdentifier, LanguageIdentifier> */
-    private array $languageAliases;
 
     public function __construct() {
         /** @phpstan-var array{fallback: LanguageIdentifier, aliases: array<LanguageIdentifier, LanguageIdentifier>} $languageSettings */
         $languageSettings = ResourceManager::getInstance()->getConfig()->get("language", []);
-        $this->fallbackLanguage = $languageSettings["fallback"];
-        $this->languageAliases = $languageSettings["aliases"];
+        $this->fallbackLanguage = strtolower($languageSettings["fallback"]);
+        $languageAliases = $languageSettings["aliases"];
 
         $dir = scandir(CPlot::getInstance()->getDataFolder() . "language");
         if ($dir !== false) {
@@ -38,11 +37,19 @@ class CPlotLanguageProvider extends LanguageProvider {
                 if (!isset($fileData["extension"]) || $fileData["extension"] !== "ini") {
                     continue;
                 }
-                $this->languages[$fileData["filename"]] = new Language(
-                    $fileData["filename"],
+                $languageName = strtolower($fileData["filename"]);
+                $language = new Language(
+                    $languageName,
                     CPlot::getInstance()->getDataFolder() . "language",
                     $this->fallbackLanguage
                 );
+                $this->languages[$languageName] = $language;
+                foreach ($languageAliases as $languageAlias => $alias) {
+                    if (strtolower($alias) === $languageName) {
+                        $this->languages[strtolower($languageAlias)] = $language;
+                        unset($languageAliases[$languageAlias]);
+                    }
+                }
             }
         }
     }
@@ -86,13 +93,8 @@ class CPlotLanguageProvider extends LanguageProvider {
         if (!($sender instanceof Player)) {
             $language = $this->languages[$this->fallbackLanguage];
         } else {
-            if (isset($this->languages[$sender->getLocale()])) {
-                $language = $this->languages[$sender->getLocale()];
-            } else if (isset($this->languageAliases[$sender->getLocale()])) {
-                $language = $this->languages[$this->languageAliases[$sender->getLocale()]];
-            } else {
-                $language = $this->languages[$this->fallbackLanguage];
-            }
+            $locale = strtolower($sender->getLocale());
+            $language = $this->languages[$locale] ?? $this->languages[$this->fallbackLanguage];
         }
         return $language;
     }

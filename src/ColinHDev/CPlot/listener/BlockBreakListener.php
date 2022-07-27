@@ -5,41 +5,32 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\attributes\BlockListAttribute;
-use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
-use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\block\Block;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
-use Ramsey\Uuid\Uuid;
 
 class BlockBreakListener implements Listener {
+    use APIHolder;
 
+    /**
+     * @handleCancelled false
+     */
     public function onBlockBreak(BlockBreakEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $position = $event->getBlock()->getPosition();
-        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
-        if ($worldSettings === null) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($event->getPlayer(), ["prefix", "player.break.worldNotLoaded"]);
-            $event->cancel();
-            return;
-        }
-        if (!$worldSettings instanceof WorldSettings) {
+        /** @phpstan-var true|false|null $isPlotWorld */
+        $isPlotWorld = $this->getAPI()->isPlotWorld($position->getWorld())->getResult();
+        if ($isPlotWorld !== true) {
+            if ($isPlotWorld !== false) {
+                $event->cancel();
+            }
             return;
         }
 
-        $plot = Plot::loadFromPositionIntoCache($position);
-        if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            LanguageManager::getInstance()->getProvider()->sendMessage($event->getPlayer(), ["prefix", "player.break.plotNotLoaded"]);
-            $event->cancel();
-            return;
-        }
+        /** @phpstan-var Plot|false|null $plot */
+        $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
         if ($plot instanceof Plot) {
             $player = $event->getPlayer();
             if ($player->hasPermission("cplot.break.plot")) {
@@ -71,7 +62,7 @@ class BlockBreakListener implements Listener {
                 }
             }
 
-        } else {
+        } else if ($plot === false) {
             if ($event->getPlayer()->hasPermission("cplot.break.road")) {
                 return;
             }

@@ -8,21 +8,17 @@ use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
-use pocketmine\event\entity\EntityExplodeEvent;
+use pocketmine\event\block\BlockFormEvent;
 use pocketmine\event\Listener;
 
-class EntityExplodeListener implements Listener {
+class BlockFormListener implements Listener {
     use APIHolder;
 
     /**
      * @handleCancelled false
      */
-    public function onEntityExplode(EntityExplodeEvent $event) : void {
-        if (count($event->getBlockList()) === 0) {
-            return;
-        }
-
-        $position = $event->getPosition();
+    public function onBlockForm(BlockFormEvent $event) : void {
+        $position = $event->getBlock()->getPosition();
         /** @phpstan-var true|false|null $isPlotWorld */
         $isPlotWorld = $this->getAPI()->isPlotWorld($position->getWorld())->getResult();
         if ($isPlotWorld !== true) {
@@ -36,19 +32,13 @@ class EntityExplodeListener implements Listener {
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
         if ($plot instanceof Plot) {
             /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_EXPLOSION);
+            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_FLOWING);
             if ($flag->getValue() === true) {
-                $affectedBlocks = [];
-                foreach ($event->getBlockList() as $hash => $block) {
-                    if ($plot->isOnPlot($block->getPosition())) {
-                        $affectedBlocks[$hash] = $block;
-                    }
-                }
-                $event->setBlockList($affectedBlocks);
                 return;
             }
         }
 
         $event->cancel();
     }
+
 }

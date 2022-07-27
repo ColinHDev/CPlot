@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
+use Closure;
 use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\attributes\BooleanListAttribute;
 use ColinHDev\CPlot\attributes\StringAttribute;
@@ -12,24 +13,31 @@ use ColinHDev\CPlot\event\PlayerEnterPlotEvent;
 use ColinHDev\CPlot\event\PlayerLeavePlotEvent;
 use ColinHDev\CPlot\event\PlayerLeftPlotEvent;
 use ColinHDev\CPlot\player\settings\SettingIDs;
-use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
-use pocketmine\entity\Location;
+use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\player\Player;
+use pocketmine\utils\TextFormat;
 use SOFe\AwaitGenerator\Await;
+use function array_map;
+use function implode;
+use function strlen;
 
 class PlayerMoveListener implements Listener {
+    use APIHolder;
 
+    /**
+     * @handleCancelled false
+     */
     public function onPlayerMove(PlayerMoveEvent $event) : void {
-        $plotTo = Plot::loadFromPositionIntoCache($event->getTo());
-        $plotFrom = Plot::loadFromPositionIntoCache($event->getFrom());
-        if (($plotTo instanceof BasePlot && !$plotTo instanceof Plot) || ($plotFrom instanceof BasePlot && !$plotFrom instanceof Plot)) {
+        $fromPlot = $this->getAPI()->getOrLoadPlotAtPosition($event->getFrom())->getResult();
+        $toPlot = $this->getAPI()->getOrLoadPlotAtPosition($event->getTo())->getResult();
+        if ($fromPlot === null || $toPlot === null) {
             Await::g2c(
                 $this->onPlayerAsyncMove($event)
             );
@@ -38,12 +46,12 @@ class PlayerMoveListener implements Listener {
 
         $player = $event->getPlayer();
 
-        if ($plotTo instanceof Plot) {
-            if ($plotFrom === null) {
-                $playerEnterPlotEvent = new PlayerEnterPlotEvent($plotTo, $player);
+        if ($toPlot instanceof Plot) {
+            if ($fromPlot === false) {
+                $playerEnterPlotEvent = new PlayerEnterPlotEvent($toPlot, $player);
                 if ($event->isCancelled()) {
                     $playerEnterPlotEvent->cancel();
-                } else if (!$player->hasPermission("cplot.bypass.deny") && $plotTo->isPlotDenied($player)) {
+                } else if (!$player->hasPermission("cplot.bypass.deny") && $toPlot->isPlotDenied($player)) {
                     $playerEnterPlotEvent->cancel();
                 }
                 $playerEnterPlotEvent->call();
@@ -52,23 +60,23 @@ class PlayerMoveListener implements Listener {
                     return;
                 }
                 $event->uncancel();
-                $this->onPlotEnter($plotTo, $player);
-            } else if (!$player->hasPermission("cplot.bypass.deny") && $plotTo->isPlotDenied($player)) {
-                $plotTo->teleportTo($player, TeleportDestination::ROAD_EDGE);
+                $this->onPlotEnter($toPlot, $player);
+            } else if (!$player->hasPermission("cplot.bypass.deny") && $toPlot->isPlotDenied($player)) {
+                $toPlot->teleportTo($player, TeleportDestination::ROAD_EDGE);
                 return;
             }
             return;
         }
 
-        if ($plotFrom instanceof Plot) {
-            $playerLeavePlotEvent = new PlayerLeavePlotEvent($plotFrom, $player);
+        if ($fromPlot instanceof Plot) {
+            $playerLeavePlotEvent = new PlayerLeavePlotEvent($fromPlot, $player);
             $playerLeavePlotEvent->call();
             if ($playerLeavePlotEvent->isCancelled()) {
                 $event->cancel();
                 return;
             }
             $event->uncancel();
-            $this->onPlotLeave($plotFrom, $player);
+            $this->onPlotLeave($fromPlot, $player);
         }
     }
 
@@ -80,33 +88,37 @@ class PlayerMoveListener implements Listener {
      * @phpstan-return \Generator<mixed, mixed, mixed, void>
      */
     private function onPlayerAsyncMove(PlayerMoveEvent $event) : \Generator {
-        /** @var Plot|null $plotTo */
-        $plotTo = yield from Plot::awaitFromPosition($event->getTo());
-        /** @var Plot|null $plotFrom */
-        $plotFrom = yield from Plot::awaitFromPosition($event->getFrom());
+        /** @var Plot|false $fromPlot */
+        $fromPlot = yield from Await::promise(
+            fn(Closure $resolve, Closure $reject) => $this->getAPI()->getOrLoadPlotAtPosition($event->getFrom())->onCompletion($resolve, $reject)
+        );
+        /** @var Plot|false $toPlot */
+        $toPlot = yield from Await::promise(
+            fn(Closure $resolve, Closure $reject) => $this->getAPI()->getOrLoadPlotAtPosition($event->getTo())->onCompletion($resolve, $reject)
+        );
 
         $player = $event->getPlayer();
         if (!$player->isConnected()) {
             return;
         }
 
-        if ($plotTo instanceof Plot) {
-            $playerEnterPlotEvent = new PlayerEnteredPlotEvent($plotTo, $player);
+        if ($toPlot instanceof Plot) {
+            $playerEnterPlotEvent = new PlayerEnteredPlotEvent($toPlot, $player);
             $playerEnterPlotEvent->call();
-            if (!$player->hasPermission("cplot.bypass.deny") && $plotTo->isPlotDenied($player)) {
-                $plotTo->teleportTo($player, TeleportDestination::ROAD_EDGE);
+            if (!$player->hasPermission("cplot.bypass.deny") && $toPlot->isPlotDenied($player)) {
+                $toPlot->teleportTo($player, TeleportDestination::ROAD_EDGE);
                 return;
             }
-            if ($plotFrom === null) {
-                $this->onPlotEnter($plotTo, $player);
+            if ($fromPlot === false) {
+                $this->onPlotEnter($toPlot, $player);
             }
             return;
         }
 
-        if ($plotFrom instanceof Plot) {
-            $playerLeavePlotEvent = new PlayerLeftPlotEvent($plotFrom, $player);
+        if ($fromPlot instanceof Plot) {
+            $playerLeavePlotEvent = new PlayerLeftPlotEvent($fromPlot, $player);
             $playerLeavePlotEvent->call();
-            $this->onPlotLeave($plotFrom, $player);
+            $this->onPlotLeave($fromPlot, $player);
         }
     }
 
@@ -129,7 +141,7 @@ class PlayerMoveListener implements Listener {
                         if ($value === $flag->getValue()) {
                             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                                 $player,
-                                ["prefix", "player.move.setting.warn_flag" => [$flag->getID(), $flag->toString()]]
+                                ["prefix", "playerMove.setting.warn_flag" => [$flag->getID(), $flag->toString()]]
                             );
                             continue 2;
                         }
@@ -138,13 +150,13 @@ class PlayerMoveListener implements Listener {
             }
 
             // title flag && message flag
-            $title = "";
+            $tip = "";
             /** @var BooleanAttribute $flag */
             $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_TITLE);
             if ($flag->getValue() === true) {
-                $title .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $player,
-                    ["player.move.plotEnter.title.coordinates" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+                    ["playerMove.plotEnter.tip.coordinates" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                 );
                 if ($plot->hasPlotOwner()) {
                     $plotOwners = [];
@@ -154,24 +166,48 @@ class PlayerMoveListener implements Listener {
                     }
                     $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $player,
-                        "player.move.plotEnter.title.owner.separator"
+                        "playerMove.plotEnter.tip.owner.separator"
                     );
                     $list = implode($separator, $plotOwners);
-                    $title .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $player,
-                        ["player.move.plotEnter.title.owner" => $list]
+                        ["playerMove.plotEnter.tip.owner" => $list]
+                    );
+                } else {
+                    $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                        $player,
+                        "playerMove.plotEnter.tip.claimable"
                     );
                 }
             }
             /** @var StringAttribute $flag */
             $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_MESSAGE);
             if ($flag->getValue() !== "") {
-                $title .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $player,
-                    ["player.move.plotEnter.title.flag.message" => $flag->getValue()]
+                    ["playerMove.plotEnter.tip.flag.message" => $flag->getValue()]
                 );
             }
-            $player->sendTip($title);
+            $tipParts = explode(TextFormat::EOL, $tip);
+            if (count($tipParts) > 1) {
+                $longestPartLength = max(array_map(
+                    static function(string $part) : int {
+                        return strlen(TextFormat::clean($part));
+                    },
+                    $tipParts
+                ));
+                $tipParts = array_map(
+                    static function(string $part) use($longestPartLength) : string {
+                        $paddingSize = (int) floor(($longestPartLength - strlen(TextFormat::clean($part))) / 2);
+                        if ($paddingSize <= 0) {
+                            return $part;
+                        }
+                        return str_repeat(" ", $paddingSize) . $part;
+                    },
+                    $tipParts
+                );
+            }
+            $player->sendTip(implode(TextFormat::EOL, $tipParts));
 
             // plot_enter flag
             /** @var BooleanAttribute $flag */
@@ -182,7 +218,7 @@ class PlayerMoveListener implements Listener {
                     if ($owner instanceof Player) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                             $owner,
-                            ["player.move.plotEnter.flag.plot_enter" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+                            ["playerMove.plotEnter.flag.plot_enter" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                         );
                     }
                 }
@@ -208,7 +244,7 @@ class PlayerMoveListener implements Listener {
                     if ($owner instanceof Player) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                             $owner,
-                            ["player.move.plotEnter.flag.plot_leave" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+                            ["playerMove.plotEnter.flag.plot_leave" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
                         );
                     }
                 }
