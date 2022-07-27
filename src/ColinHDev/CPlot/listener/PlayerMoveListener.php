@@ -139,7 +139,7 @@ class PlayerMoveListener implements Listener {
                     if ($setting->contains($flag)) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                             $player,
-                            ["prefix", "playerMove.setting.warn_flag" => [$flag->getID(), $flag->toString()]]
+                            ["prefix", "playerMove.setting.warn_flag" => [$flag->getID(), $flag->toReadableString()]]
                         );
                     }
                 }

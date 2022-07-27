@@ -10,6 +10,7 @@ use JsonException;
 use pocketmine\block\Block;
 use function count;
 use function explode;
+use function implode;
 use function is_array;
 use function is_string;
 use function json_decode;
@@ -56,19 +57,30 @@ abstract class BlockListAttribute extends ListAttribute {
         return false;
     }
 
+    public function getExample() : string {
+        return "grass, dirt, stone";
+    }
+
     /**
-     * @param Block[] | null $value
      * @throws JsonException
      */
-    public function toString(mixed $value = null) : string {
-        if ($value === null) {
-            $value = $this->value;
-        }
+    public function toString() : string {
         $blocks = [];
-        foreach ($value as $block) {
+        foreach ($this->value as $block) {
             $blocks[] = ParseUtils::parseStringFromBlock($block);
         }
         return json_encode($blocks, JSON_THROW_ON_ERROR);
+    }
+
+    public function toReadableString() : string {
+        return implode(", ",
+            array_map(
+                static function(Block $block) : string {
+                    return $block->getName();
+                },
+                $this->value
+            )
+        );
     }
 
     /**

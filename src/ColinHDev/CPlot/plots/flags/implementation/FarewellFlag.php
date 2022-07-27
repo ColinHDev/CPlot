@@ -24,4 +24,8 @@ class FarewellFlag extends StringAttribute implements Flag {
     public function createInstance(mixed $value) : static {
         return new static($value);
     }
+
+    public function getExample() : string {
+        return "Bye.. D:";
+    }
 }

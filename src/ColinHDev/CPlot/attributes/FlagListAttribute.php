@@ -11,9 +11,11 @@ use ColinHDev\CPlot\plots\flags\InternalFlag;
 use JsonException;
 use function count;
 use function explode;
+use function implode;
 use function is_array;
 use function is_string;
 use function json_decode;
+use function json_encode;
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -56,19 +58,30 @@ abstract class FlagListAttribute extends ListAttribute {
         return false;
     }
 
+    public function getExample() : string {
+        return "pvp=true, item_pickup=false, use=tnt";
+    }
+
     /**
-     * @param array<Flag<mixed>> | null $value
      * @throws JsonException
      */
-    public function toString(mixed $value = null) : string {
-        if ($value === null) {
-            $value = $this->value;
-        }
+    public function toString() : string {
         $flags = [];
-        foreach ($value as $flag) {
+        foreach ($this->value as $flag) {
             $flags[] = $flag->getID() . "=" . $flag->toString();
         }
         return json_encode($flags, JSON_THROW_ON_ERROR);
+    }
+
+    public function toReadableString() : string {
+        return implode(", ",
+            array_map(
+                static function(Flag $flag) : string {
+                    return $flag->getID() . "=" . $flag->toReadableString();
+                },
+                $this->value
+            )
+        );
     }
 
     /**

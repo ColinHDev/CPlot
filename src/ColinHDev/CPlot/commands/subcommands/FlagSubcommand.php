@@ -80,7 +80,8 @@ class FlagSubcommand extends Subcommand {
                 /** @phpstan-var string $type */
                 $type = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.type." . $flag->getID());
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.type" => $type]);
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.default" => $flag->toString()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.example" => $flag->getExample()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.default" => $flag->toReadableString()]);
                 break;
 
             case "here":
@@ -109,7 +110,7 @@ class FlagSubcommand extends Subcommand {
                     }
                     $flagStrings[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
-                        ["flag.here.success.format" => [$ID, $flag->toString()]]
+                        ["flag.here.success.format" => [$ID, $flag->toReadableString()]]
                     );
                 }
                 /** @phpstan-var string $separator */
@@ -176,18 +177,12 @@ class FlagSubcommand extends Subcommand {
                 if ($oldFlag !== null) {
                     $flag = $oldFlag->merge($flag->getValue());
                 }
-                $plot->addFlag(
-                    $flag
-                );
+                $plot->addFlag($flag);
 
                 yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.success" => [$flag->getID(), $flag->toString($parsedValue)]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.success" => [$flag->getID(), $newFlag->toReadableString()]]);
                 foreach ($sender->getWorld()->getPlayers() as $player) {
-                    if ($sender === $player) {
-                        continue;
-                    }
-                    $plotOfPlayer = yield Plot::awaitFromPosition($player->getPosition());
-                    if (!($plotOfPlayer instanceof Plot) || !$plotOfPlayer->isSame($plot)) {
+                    if ($sender === $player || !$plot->isOnPlot($player)) {
                         continue;
                     }
                     $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
@@ -198,7 +193,7 @@ class FlagSubcommand extends Subcommand {
                     if ($playerData->getSetting(Settings::WARN_FLAG_CHANGE())->contains($newFlag)) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
                             $player,
-                            ["prefix", "flag.set.setting.warn_change_flag" => [$newFlag->getID(), $newFlag->toString()]]
+                            ["prefix", "flag.set.setting.warn_change_flag" => [$newFlag->getID(), $newFlag->toReadableString()]]
                         );
                     }
                     if ($playerData->getSetting(Settings::TELEPORT_FLAG_CHANGE())->contains($newFlag)) {
@@ -262,9 +257,9 @@ class FlagSubcommand extends Subcommand {
                     $values = $flag->getValue();
                     $removedValues = [];
                     foreach ($values as $key => $value) {
-                        $valueString = $flag->toString([$value]);
+                        $valueString = $flag->createInstance([$value])->toString();
                         foreach ($parsedValues as $parsedValue) {
-                            if ($valueString === $flag->toString([$parsedValue])) {
+                            if ($valueString === $flag->createInstance([$parsedValue])->toString()) {
                                 $removedValues[] = $value;
                                 unset($values[$key]);
                                 continue 2;
@@ -276,7 +271,7 @@ class FlagSubcommand extends Subcommand {
                         $flag = $flag->createInstance($values);
                         $plot->addFlag($flag);
                         yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.value.success" => [$flag->getID(), $flag->toString($removedValues)]]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.value.success" => [$flag->getID(), $flag->createInstance($removedValues)->toReadableString()]]);
                         break;
                     }
                 }

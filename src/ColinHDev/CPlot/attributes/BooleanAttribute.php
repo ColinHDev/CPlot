@@ -37,14 +37,16 @@ abstract class BooleanAttribute extends BaseAttribute {
         return $this->createInstance($value);
     }
 
-    /**
-     * @param bool | null $value
-     */
-    public function toString(mixed $value = null) : string {
-        if ($value === null) {
-            $value = $this->value;
-        }
-        return $value ? "true" : "false";
+    public function getExample() : string {
+        return "true";
+    }
+
+    public function toString() : string {
+        return $this->value ? "true" : "false";
+    }
+
+    public function toReadableString() : string {
+        return $this->value ? "true" : "false";
     }
 
     /**

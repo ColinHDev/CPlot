@@ -30,11 +30,12 @@ abstract class StringAttribute extends BaseAttribute {
         return $this->createInstance($value);
     }
 
-    /**
-     * @param string | null $value
-     */
-    public function toString(mixed $value = null) : string {
-        return $value ?? $this->value;
+    public function toString() : string {
+        return $this->value;
+    }
+
+    public function toReadableString() : string {
+        return "\"" . $this->value . "\"";
     }
 
     public function parse(string $value) : string {

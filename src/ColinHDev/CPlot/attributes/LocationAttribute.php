@@ -37,14 +37,21 @@ abstract class LocationAttribute extends BaseAttribute {
         return $this->createInstance($value);
     }
 
-    /**
-     * @param Location | null $value
-     */
-    public function toString(mixed $value = null) : string {
-        if ($value === null) {
-            $value = $this->value;
-        }
-        return $value->getX() . ";" . $value->getY() . ";" . $value->getZ() . ";" . $value->getYaw() . ";" . $value->getPitch();
+    public function getExample() : string {
+        return "0;0;0;0;0";
+    }
+
+    public function toString() : string {
+        return $this->value->x . ";" . $this->value->y . ";" . $this->value->z . ";" . $this->value->yaw . ";" . $this->value->pitch;
+    }
+
+    public function toReadableString() : string {
+        return
+            "X: " . $this->value->x .
+            ", Y: " . $this->value->y .
+            ", Z: " . $this->value->z .
+            ", Yaw: " . $this->value->yaw .
+            ", Pitch: " . $this->value->pitch;
     }
 
     /**

@@ -37,6 +37,7 @@ abstract class BaseAttribute {
     }
 
     /**
+     * Checks if the given attribute is the same as this one and if so, checks if both share the same value.
      * @param static<TValue> $other
      */
     abstract public function equals(object $other) : bool;
@@ -54,19 +55,42 @@ abstract class BaseAttribute {
     abstract public function createInstance(mixed $value) : static;
 
     /**
+     * Merges this attributes's value with another value and return an instance holding the merged value.
+     *
      * @param TValue $value
      * @return self<TValue>
      */
     abstract public function merge(mixed $value) : self;
 
     /**
-     * @param TValue $value
+     * Returns an example of a string that would parse into a valid value of this instance.
      */
-    abstract public function toString(mixed $value = null) : string;
+    abstract public function getExample() : string;
 
     /**
+     * Returns a string representation of the instance, that when passed through {@see parse()} will result in
+     * an equivalent instance.
+     *
+     * @return string representation of the attribute
+     */
+    abstract public function toString() : string;
+
+    /**
+     * Returns a more easily readable string representation of the instance, that might not be parseable with
+     * {@see parse()}.
+     * This method is used for display purposes and should not be used for storage or parsing.
+     *
+     * @return string representation of the attribute
+     */
+    abstract public function toReadableString() : string;
+
+    /**
+     * Parse a string into a attribute value, and throw an exception in the case that the string does not represent a
+     * valid value.
+     * Returns the parsed value.
+     *
      * @return TValue
-     * @throws AttributeParseException
+     * @throws AttributeParseException if the value could not be parsed
      */
     abstract public function parse(string $value) : mixed;
 

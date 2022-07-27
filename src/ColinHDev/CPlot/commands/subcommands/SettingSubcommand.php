@@ -76,7 +76,8 @@ class SettingSubcommand extends Subcommand {
                 /** @phpstan-var string $type */
                 $type = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.type." . $setting->getID());
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.type" => $type]);
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.default" => $setting->toString()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.example" => $setting->getExample()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.default" => $setting->toReadableString()]);
                 break;
 
             case "my":
@@ -101,7 +102,7 @@ class SettingSubcommand extends Subcommand {
                     }
                     $settingStrings[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
-                        ["setting.my.success.format" => [$ID, $setting->toString()]]
+                        ["setting.my.success.format" => [$ID, $setting->toReadableString()]]
                     );
                 }
                 /** @phpstan-var string $separator */
@@ -148,16 +149,14 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
 
-                $setting = $setting->createInstance($parsedValue);
+                $setting = $newSetting = $setting->createInstance($parsedValue);
                 $oldSetting = $playerData->getLocalSettingByID($setting->getID());
                 if ($oldSetting !== null) {
                     $setting = $oldSetting->merge($setting->getValue());
                 }
-                $playerData->addSetting(
-                    $setting
-                );
+                $playerData->addSetting($setting);
                 yield DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.success" => [$setting->getID(), $setting->toString($parsedValue)]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.success" => [$setting->getID(), $newSetting->toReadableString()]]);
                 break;
 
             case "remove":
@@ -200,9 +199,9 @@ class SettingSubcommand extends Subcommand {
                     $values = $setting->getValue();
                     assert(is_array($values));
                     foreach ($values as $key => $value) {
-                        $valueString = $setting->toString([$value]);
+                        $valueString = $setting->createInstance([$value])->toString();
                         foreach ($parsedValues as $parsedValue) {
-                            if ($valueString === $setting->toString([$parsedValue])) {
+                            if ($valueString === $setting->createInstance([$parsedValue])->toString()) {
                                 unset($values[$key]);
                                 continue 2;
                             }
@@ -213,7 +212,7 @@ class SettingSubcommand extends Subcommand {
                         $setting = $setting->createInstance($values);
                         $playerData->addSetting($setting);
                         yield DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.value.success" => [$setting->getID(), $setting->toString()]]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.value.success" => [$setting->getID(), $setting->toReadableString()]]);
                         break;
                     }
                 }
