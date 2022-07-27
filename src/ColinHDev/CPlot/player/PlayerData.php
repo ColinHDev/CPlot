@@ -186,7 +186,8 @@ class PlayerData {
     }
 
     /**
-     * @phpstan-param Setting<mixed> $setting
+     * @template TSetting of Setting<mixed>
+     * @param TSetting $setting
      */
     public function addSetting(Setting $setting) : void {
         $this->settings[$setting->getID()] = $setting;

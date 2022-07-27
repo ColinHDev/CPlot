@@ -255,7 +255,8 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-param Flag<mixed> $flag
+     * @template TFlag of Flag<mixed>
+     * @param TFlag $flag
      */
     public function addFlag(Flag $flag) : void {
         $this->flags[$flag->getID()] = $flag;

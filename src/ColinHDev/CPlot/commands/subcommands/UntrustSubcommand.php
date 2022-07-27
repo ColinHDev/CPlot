@@ -9,8 +9,6 @@ use ColinHDev\CPlot\event\PlotPlayerRemoveAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\implementation\InformUntrustedSetting;
 use ColinHDev\CPlot\player\settings\Settings;
-use ColinHDev\CPlot\plots\flags\Flags;
-use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -73,12 +71,6 @@ class UntrustSubcommand extends Subcommand {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.notPlotOwner"]);
                 return null;
             }
-        }
-
-        $flag = $plot->getFlag(Flags::SERVER_PLOT());
-        if ($flag->equals(ServerPlotFlag::TRUE())) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.serverPlotFlag" => $flag->getID()]);
-            return null;
         }
 
         $plotPlayer = $plot->getPlotPlayerExact($player);

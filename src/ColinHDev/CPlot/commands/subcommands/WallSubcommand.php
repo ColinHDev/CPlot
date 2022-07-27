@@ -6,8 +6,6 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\plots\BasePlot;
-use ColinHDev\CPlot\plots\flags\Flags;
-use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
@@ -115,12 +113,6 @@ class WallSubcommand extends Subcommand {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.notPlotOwner"]);
                 return;
             }
-        }
-
-        $flag = $plot->getFlag(Flags::SERVER_PLOT());
-        if ($flag->equals(ServerPlotFlag::TRUE())) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.serverPlotFlag" => $flag->getID()]);
-            return;
         }
 
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.start"]);

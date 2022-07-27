@@ -52,5 +52,6 @@ class SpawnSubcommand extends Subcommand {
         $plot->addFlag($flag);
         yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "spawn.success"]);
+        return null;
     }
 }

@@ -50,7 +50,7 @@ final class FlagManager {
         $this->register($this->getFlagFromConfig(PlayerInteractFlag::FALSE()));
         $this->register($this->getFlagFromConfig(PveFlag::FALSE()));
         $this->register($this->getFlagFromConfig(PvpFlag::FALSE()));
-        $this->register($this->getFlagFromConfig(SpawnFlag::NONE()));
+        $this->register(SpawnFlag::NONE());
         $this->register($this->getFlagFromConfig(UseFlag::NONE()));
     }
 

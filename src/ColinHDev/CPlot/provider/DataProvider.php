@@ -1240,8 +1240,9 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-param Flag<mixed> $flag
-     * @phpstan-return Generator<mixed, mixed, mixed, void>
+     * @template TFlag of Flag<mixed>
+     * @param TFlag $flag
+     * @return Generator<mixed, mixed, mixed, void>
      */
     public function savePlotFlag(Plot $plot, Flag $flag) : Generator {
         yield from $this->database->asyncInsert(

@@ -9,8 +9,6 @@ use ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\implementation\InformAddedSetting;
 use ColinHDev\CPlot\player\settings\Settings;
-use ColinHDev\CPlot\plots\flags\Flags;
-use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -84,12 +82,6 @@ class AddSubcommand extends Subcommand {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.notPlotOwner"]);
                 return null;
             }
-        }
-
-        $flag = $plot->getFlag(Flags::SERVER_PLOT());
-        if ($flag->equals(ServerPlotFlag::TRUE())) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.serverPlotFlag" => $flag->getID()]);
-            return null;
         }
 
         if (!($playerData instanceof PlayerData)) {

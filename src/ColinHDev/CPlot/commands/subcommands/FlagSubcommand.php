@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\LocationAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\Settings;
+use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagManager;
-use ColinHDev\CPlot\plots\flags\Flags;
-use ColinHDev\CPlot\plots\flags\implementation\ServerPlotFlag;
+use ColinHDev\CPlot\plots\flags\InternalFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
-use pocketmine\entity\Location;
 use pocketmine\player\Player;
 use function assert;
 use function is_array;
@@ -43,6 +41,9 @@ class FlagSubcommand extends Subcommand {
                 );
                 $flagsByCategory = [];
                 foreach (FlagManager::getInstance()->getFlags() as $flag) {
+                    if ($flag instanceof InternalFlag) {
+                        continue;
+                    }
                     $flagCategory = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         "flag.category." . $flag->getID()
@@ -64,7 +65,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
-                if ($flag === null) {
+                if (!($flag instanceof Flag) || $flag instanceof InternalFlag) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.info.noFlag" => $args[1]]);
                     break;
                 }
@@ -103,6 +104,9 @@ class FlagSubcommand extends Subcommand {
                 }
                 $flagStrings = [];
                 foreach ($flags as $ID => $flag) {
+                    if ($flag instanceof InternalFlag) {
+                        continue;
+                    }
                     $flagStrings[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         ["flag.here.success.format" => [$ID, $flag->toString()]]
@@ -149,7 +153,7 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
-                if ($flag === null) {
+                if (!($flag instanceof Flag) || $flag instanceof InternalFlag) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noFlag" => $args[1]]);
                     break;
                 }
@@ -158,28 +162,8 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                if (!($flag instanceof ServerPlotFlag)) {
-                    $serverPlotFlag = $plot->getFlag(Flags::SERVER_PLOT());
-                    if ($serverPlotFlag->equals(ServerPlotFlag::TRUE())) {
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.serverPlotFlag" => $serverPlotFlag->getID()]);
-                        break;
-                    }
-                }
-
-                if ($flag instanceof LocationAttribute && !isset($args[2])) {
-                    $location = $sender->getLocation();
-                    $arg = $flag->toString(
-                        Location::fromObject(
-                            $location->subtractVector($plot->getVector3()),
-                            $location->getWorld(),
-                            $location->getYaw(),
-                            $location->getPitch()
-                        )
-                    );
-                } else {
-                    array_splice($args, 0, 2);
-                    $arg = implode(" ", $args);
-                }
+                array_splice($args, 0, 2);
+                $arg = implode(" ", $args);
                 try {
                     $parsedValue = $flag->parse($arg);
                 } catch (AttributeParseException) {
@@ -255,21 +239,13 @@ class FlagSubcommand extends Subcommand {
                 }
 
                 $flag = $plot->getLocalFlagByID($args[1]);
-                if ($flag === null) {
+                if (!($flag instanceof Flag) || $flag instanceof InternalFlag) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.flagNotSet" => $args[1]]);
                     break;
                 }
                 if (!$sender->hasPermission("cplot.flag." . $flag->getID())) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.permissionMessageForFlag" => $flag->getID()]);
                     break;
-                }
-
-                if (!($flag instanceof ServerPlotFlag)) {
-                    $serverPlotFlag = $plot->getFlag(Flags::SERVER_PLOT());
-                    if ($serverPlotFlag->equals(ServerPlotFlag::TRUE())) {
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.serverPlotFlag" => $serverPlotFlag->getID()]);
-                        break;
-                    }
                 }
 
                 array_splice($args, 0, 2);
