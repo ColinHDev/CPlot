@@ -6,12 +6,15 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\player\PlayerData;
+use ColinHDev\CPlot\plots\flags\Flag;
+use ColinHDev\CPlot\plots\flags\InternalFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use function array_filter;
 
 /**
  * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
@@ -97,7 +100,14 @@ class InfoSubcommand extends Subcommand {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["info.denied.none"]);
         }
 
-        $flagsCount = count($plot->getFlags());
+        $flagsCount = count(
+            array_filter(
+                $plot->getFlags(),
+                static function(Flag $flag) : bool {
+                    return !($flag instanceof InternalFlag);
+                }
+            )
+        );
         if ($flagsCount > 0) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["info.flags" => $flagsCount]);
         } else {

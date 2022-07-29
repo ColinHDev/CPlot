@@ -49,10 +49,8 @@ class PlayerBucketEmptyListener implements Listener {
                 }
             }
 
-        } else if ($plot === false) {
-            if ($event->getPlayer()->hasPermission("cplot.interact.road")) {
-                return;
-            }
+        } else if ($plot === false && $event->getPlayer()->hasPermission("cplot.interact.road")) {
+            return;
         }
 
         $event->cancel();

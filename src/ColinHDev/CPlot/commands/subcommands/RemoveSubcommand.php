@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\event\PlotPlayerRemoveAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
-use ColinHDev\CPlot\player\settings\SettingIDs;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\player\settings\implementation\InformRemovedSetting;
+use ColinHDev\CPlot\player\settings\Settings;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -17,7 +16,6 @@ use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use pocketmine\Server;
 
 /**
  * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
@@ -75,13 +73,6 @@ class RemoveSubcommand extends Subcommand {
             }
         }
 
-        /** @var BooleanAttribute $flag */
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag->getValue() === true) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.serverPlotFlag" => $flag->getID()]);
-            return null;
-        }
-
         $plotPlayer = $plot->getPlotPlayerExact($player);
         if (!($plotPlayer instanceof PlotPlayer) || $plotPlayer->getState() !== PlotPlayer::STATE_HELPER) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.playerNotHelper" => $playerName]);
@@ -99,15 +90,11 @@ class RemoveSubcommand extends Subcommand {
         yield DataProvider::getInstance()->deletePlotPlayer($plot, $playerData->getPlayerID());
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "remove.success" => $playerName]);
 
-        if ($player instanceof Player) {
-            /** @var BooleanAttribute $setting */
-            $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_HELPER_REMOVE);
-            if ($setting->getValue() === true) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                    $player,
-                    ["prefix", "remove.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
-                );
-            }
+        if ($player instanceof Player && $playerData->getSetting(Settings::INFORM_REMOVED())->equals(InformRemovedSetting::TRUE())) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                $player,
+                ["prefix", "remove.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+            );
         }
         return null;
     }

@@ -6,26 +6,81 @@ namespace ColinHDev\CPlot\attributes;
 
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\utils\ParseUtils;
+use JsonException;
 use pocketmine\block\Block;
+use function count;
+use function explode;
+use function implode;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function str_contains;
+use const JSON_THROW_ON_ERROR;
 
 /**
- * @extends ArrayAttribute<Block[]>
+ * @extends ListAttribute<Block[]>
  */
-class BlockListAttribute extends ArrayAttribute {
+abstract class BlockListAttribute extends ListAttribute {
+
+    public function equals(object $other) : bool {
+        if (!($other instanceof static)) {
+            return false;
+        }
+        /** @var Block[] $otherValue */
+        $otherValue = $other->getValue();
+        if (count($this->value) !== count($otherValue)) {
+            return false;
+        }
+        /** @var Block $block */
+        foreach ($this->value as $i => $block) {
+            if (!isset($otherValue[$i])) {
+                return false;
+            }
+            $otherBlock = $otherValue[$i];
+            if (!$block->isSameType($otherBlock)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
-     * @param Block[] | null $value
-     * @throws \JsonException
+     * @param Block $value
      */
-    public function toString(mixed $value = null) : string {
-        if ($value === null) {
-            $value = $this->value;
+    public function contains(mixed $value) : bool {
+        /** @var Block $currentValue */
+        foreach ($this->value as $currentValue) {
+            if ($currentValue->isSameType($value)) {
+                return true;
+            }
         }
+        return false;
+    }
+
+    public function getExample() : string {
+        return "grass, dirt, stone";
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function toString() : string {
         $blocks = [];
-        foreach ($value as $block) {
+        foreach ($this->value as $block) {
             $blocks[] = ParseUtils::parseStringFromBlock($block);
         }
         return json_encode($blocks, JSON_THROW_ON_ERROR);
+    }
+
+    public function toReadableString() : string {
+        return implode(", ",
+            array_map(
+                static function(Block $block) : string {
+                    return $block->getName();
+                },
+                $this->value
+            )
+        );
     }
 
     /**
@@ -37,20 +92,40 @@ class BlockListAttribute extends ArrayAttribute {
         if ($block !== null) {
             return [$block];
         }
-        $blocks = [];
         try {
-            $array = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
-            assert(is_array($array));
-            /** @phpstan-var array<string> $array */
-            foreach ($array as $val) {
-                $val = ParseUtils::parseBlockFromString($val);
-                if ($val instanceof Block) {
-                    $blocks[] = $val;
+            $blocks = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+            if (is_array($blocks)) {
+                $parsedBlocks = [];
+                foreach ($blocks as $blockIdentifier) {
+                    if (!is_string($blockIdentifier)) {
+                        throw new AttributeParseException($this, $value);
+                    }
+                    $blockIdentifier = ParseUtils::parseBlockFromString($blockIdentifier);
+                    if ($blockIdentifier instanceof Block) {
+                        $parsedBlocks[] = $blockIdentifier;
+                    }
+                }
+                return $parsedBlocks;
+            }
+        } catch(JsonException) {
+        }
+        if (str_contains($value, ",")) {
+            if (str_contains($value, ", ")) {
+                $blocks = explode(", ", $value);
+            } else {
+                $blocks = explode(",", $value);
+            }
+            $parsedBlocks = [];
+            foreach ($blocks as $blockIdentifier) {
+                $blockIdentifier = ParseUtils::parseBlockFromString($blockIdentifier);
+                if ($blockIdentifier instanceof Block) {
+                    $parsedBlocks[] = $blockIdentifier;
                 }
             }
-        } catch (\JsonException) {
-            throw new AttributeParseException($this, $value);
+            if (count($parsedBlocks) > 0) {
+                return $parsedBlocks;
+            }
         }
-        return $blocks;
+        throw new AttributeParseException($this, $value);
     }
 }

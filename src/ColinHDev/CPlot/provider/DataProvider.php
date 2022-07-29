@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\provider;
 
-use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\player\PlayerData;
+use ColinHDev\CPlot\player\settings\Setting;
 use ColinHDev\CPlot\player\settings\SettingManager;
 use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\plots\MergePlot;
 use ColinHDev\CPlot\plots\Plot;
@@ -443,9 +444,9 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the settings ({@see BaseAttribute}s) of a player asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see Setting}s of a player asynchronously from the database and returns a {@see \Generator}. The
      * player settings can be get by using {@see Await}.
-     * @phpstan-return Generator<mixed, mixed, mixed, array<string, BaseAttribute<mixed>>>
+     * @phpstan-return Generator<mixed, mixed, mixed, array<string, Setting<mixed>>>
      */
     private function awaitPlayerSettings(int $playerID) : Generator {
         /** @phpstan-var array<array{ID: string, value: string}> $rows */
@@ -461,7 +462,7 @@ final class DataProvider {
                 continue;
             }
             try {
-                $settings[$setting->getID()] = $setting->newInstance($setting->parse($row["value"]));
+                $settings[$setting->getID()] = $setting->createInstance($setting->parse($row["value"]));
             } catch (AttributeParseException) {
             }
         }
@@ -507,10 +508,10 @@ final class DataProvider {
 
     /**
      * @phpstan-template TAttributeValue
-     * @phpstan-param BaseAttribute<TAttributeValue> $setting
+     * @phpstan-param Setting<TAttributeValue> $setting
      * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
-    public function savePlayerSetting(PlayerData $playerData, BaseAttribute $setting) : Generator {
+    public function savePlayerSetting(PlayerData $playerData, Setting $setting) : Generator {
         $playerID = $playerData->getPlayerID();
         yield $this->database->asyncInsert(
             self::SET_PLAYERSETTING,
@@ -698,7 +699,7 @@ final class DataProvider {
         $mergePlots = yield $this->awaitMergePlots($worldName, $worldSettings, $x, $z);
         /** @phpstan-var PlotPlayerContainer $plotPlayerContainer */
         $plotPlayerContainer = yield $this->awaitPlotPlayers($worldName, $x, $z);
-        /** @phpstan-var array<string, BaseAttribute<mixed>> $plotFlags */
+        /** @phpstan-var array<string, Flag<mixed>> $plotFlags */
         $plotFlags = yield $this->awaitPlotFlags($worldName, $x, $z);
         /** @phpstan-var array<string, PlotRate> $plotRates */
         $plotRates = yield $this->awaitPlotRates($worldName, $x, $z);
@@ -796,9 +797,9 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the flags ({@see BaseAttribute}s) of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see Flag}s of a plot asynchronously from the database and returns a {@see \Generator}. The
      * plot flags can be get by using {@see Await}.
-     * @phpstan-return Generator<mixed, mixed, mixed, array<string, BaseAttribute<mixed>>>
+     * @phpstan-return Generator<mixed, mixed, mixed, array<string, Flag<mixed>>>
      */
     private function awaitPlotFlags(string $worldName, int $x, int $z) : Generator {
         /** @phpstan-var array<array{flag: string, value: string}> $rows */
@@ -818,7 +819,7 @@ final class DataProvider {
                 continue;
             }
             try {
-                $plotFlags[$plotFlag->getID()] = $plotFlag->newInstance($plotFlag->parse($row["value"]));
+                $plotFlags[$plotFlag->getID()] = $plotFlag->createInstance($plotFlag->parse($row["value"]));
             } catch (AttributeParseException) {
             }
         }
@@ -1239,10 +1240,11 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-param BaseAttribute<mixed> $flag
-     * @phpstan-return Generator<mixed, mixed, mixed, void>
+     * @template TFlag of Flag<mixed>
+     * @param TFlag $flag
+     * @return Generator<mixed, mixed, mixed, void>
      */
-    public function savePlotFlag(Plot $plot, BaseAttribute $flag) : Generator {
+    public function savePlotFlag(Plot $plot, Flag $flag) : Generator {
         yield from $this->database->asyncInsert(
             self::SET_PLOTFLAG,
             [

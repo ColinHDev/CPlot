@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\plots;
 
-use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
@@ -14,8 +13,10 @@ use ColinHDev\CPlot\event\PlotMergedAsyncEvent;
 use ColinHDev\CPlot\event\PlotResetAsyncEvent;
 use ColinHDev\CPlot\event\PlotWallChangeAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\SpawnFlag;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
@@ -42,14 +43,14 @@ class Plot extends BasePlot {
     /** @var array<string, MergePlot> */
     private array $mergePlots;
     private PlotPlayerContainer $plotPlayerContainer;
-    /** @var array<string, BaseAttribute<mixed>> */
+    /** @var array<string, Flag<mixed>> */
     private array $flags;
     /** @var array<string, PlotRate> */
     private array $plotRates;
 
     /**
      * @param array<string, MergePlot> $mergePlots
-     * @param array<string, BaseAttribute<mixed>> $flags
+     * @param array<string, Flag<mixed>> $flags
      * @param array<string, PlotRate> $plotRates
      */
     public function __construct(string $worldName, WorldSettings $worldSettings, int $x, int $z, ?string $alias = null, array $mergePlots = [], ?PlotPlayerContainer $plotPlayerContainer = null, array $flags = [], array $plotRates = []) {
@@ -203,16 +204,50 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-return array<string, BaseAttribute<mixed>>
+     * @phpstan-return array<string, Flag<mixed>>
      */
     public function getFlags() : array {
         return $this->flags;
     }
 
     /**
-     * @phpstan-return BaseAttribute<mixed>|null
+     * @phpstan-template TFlag of Flag<mixed>
+     * @phpstan-param TFlag $flag
+     * @phpstan-return TFlag
      */
-    public function getFlagByID(string $flagID) : ?BaseAttribute {
+    public function getFlag(Flag $flag) : Flag {
+        /** @phpstan-var TFlag $flag */
+        $flag = $this->getFlagByID($flag->getID());
+        return $flag;
+    }
+
+    /**
+     * @phpstan-template TFlag of Flag<mixed>
+     * @phpstan-param TFlag $flag
+     * @phpstan-return TFlag|null
+     */
+    public function getLocalFlag(Flag $flag) : ?Flag {
+        /** @phpstan-var TFlag|null $flag */
+        $flag = $this->getLocalFlagByID($flag->getID());
+        return $flag;
+    }
+
+    /**
+     * @phpstan-return Flag<mixed>
+     */
+    public function getFlagByID(string $flagID) : Flag {
+        $flag = $this->getLocalFlagByID($flagID);
+        if ($flag === null) {
+            $flag = FlagManager::getInstance()->getFlagByID($flagID);
+            assert($flag instanceof Flag);
+        }
+        return $flag;
+    }
+
+    /**
+     * @phpstan-return Flag<mixed>|null
+     */
+    public function getLocalFlagByID(string $flagID) : ?Flag {
         if (!isset($this->flags[$flagID])) {
             return null;
         }
@@ -220,21 +255,10 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-return BaseAttribute<mixed>|null
+     * @template TFlag of Flag<mixed>
+     * @param TFlag $flag
      */
-    public function getFlagNonNullByID(string $flagID) : ?BaseAttribute {
-        $flag = $this->getFlagByID($flagID);
-        if ($flag === null) {
-            $flag = FlagManager::getInstance()->getFlagByID($flagID);
-        }
-        return $flag;
-    }
-
-    /**
-     * @phpstan-template TAttributeValue
-     * @phpstan-param BaseAttribute<TAttributeValue> $flag
-     */
-    public function addFlag(BaseAttribute $flag) : void {
+    public function addFlag(Flag $flag) : void {
         $this->flags[$flag->getID()] = $flag;
     }
 
@@ -300,13 +324,14 @@ class Plot extends BasePlot {
      */
     public function teleportTo(Player $player, int $destination = TeleportDestination::PLOT_SPAWN_OR_EDGE) : bool {
         if ($destination === TeleportDestination::PLOT_SPAWN_OR_EDGE || $destination === TeleportDestination::PLOT_SPAWN_OR_CENTER) {
-            $flag = $this->getFlagByID(FlagIDs::FLAG_SPAWN);
-            $relativeSpawn = $flag?->getValue();
-            if ($relativeSpawn instanceof Location) {
+            $flag = $this->getLocalFlag(Flags::SPAWN());
+            if ($flag instanceof SpawnFlag) {
                 $world = $this->getWorld();
                 if ($world === null) {
                     return false;
                 }
+                /** @var Location $relativeSpawn */
+                $relativeSpawn = $flag->getValue();
                 return $player->teleport(
                     Location::fromObject(
                         $relativeSpawn->addVector($this->getVector3()),
@@ -474,7 +499,7 @@ class Plot extends BasePlot {
         }
 
         foreach ($plotToMerge->getFlags() as $mergeFlag) {
-            $flag = $this->getFlagByID($mergeFlag->getID());
+            $flag = $this->getLocalFlagByID($mergeFlag->getID());
             if ($flag === null) {
                 $flag = $mergeFlag;
             } else {
@@ -807,7 +832,7 @@ class Plot extends BasePlot {
         $plotPlayerContainer = unserialize($data["plotPlayers"], ["allowed_classes" => [PlotPlayerContainer::class]]);
         assert($plotPlayerContainer instanceof PlotPlayerContainer);
         $this->plotPlayerContainer = $plotPlayerContainer;
-        /** @phpstan-var array<string, BaseAttribute<mixed>> $flags */
+        /** @phpstan-var array<string, Flag<mixed>> $flags */
         $flags = unserialize($data["flags"], ["allowed_classes" => false]);
         $this->flags = $flags;
         /** @phpstan-var array<string, PlotRate> $plotRates */

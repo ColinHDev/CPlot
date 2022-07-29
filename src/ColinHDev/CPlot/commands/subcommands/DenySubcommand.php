@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
-use ColinHDev\CPlot\player\settings\SettingIDs;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\player\settings\implementation\InformDeniedSetting;
+use ColinHDev\CPlot\player\settings\Settings;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -17,7 +16,6 @@ use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use pocketmine\Server;
 
 /**
  * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
@@ -38,7 +36,7 @@ class DenySubcommand extends Subcommand {
         $player = null;
         $playerData = null;
         if ($args[0] !== "*") {
-            $player = Server::getInstance()->getPlayerByPrefix($args[0]);
+            $player = $sender->getServer()->getPlayerByPrefix($args[0]);
             if ($player instanceof Player) {
                 $playerUUID = $player->getUniqueId()->getBytes();
                 $playerXUID = $player->getXuid();
@@ -86,13 +84,6 @@ class DenySubcommand extends Subcommand {
             }
         }
 
-        /** @var BooleanAttribute $flag */
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag->getValue() === true) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.serverPlotFlag" => $flag->getID()]);
-            return null;
-        }
-
         if (!($playerData instanceof PlayerData)) {
             $playerData = yield DataProvider::getInstance()->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
             if (!($playerData instanceof PlayerData)) {
@@ -116,15 +107,11 @@ class DenySubcommand extends Subcommand {
         yield DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.success" => $playerName]);
 
-        if ($player instanceof Player) {
-            /** @var BooleanAttribute $setting */
-            $setting = $playerData->getSettingNonNullByID(SettingIDs::SETTING_INFORM_DENIED_ADD);
-            if ($setting->getValue() === true) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                    $player,
-                    ["prefix", "deny.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
-                );
-            }
+        if ($player instanceof Player && $playerData->getSetting(Settings::INFORM_DENIED())->equals(InformDeniedSetting::TRUE())) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                $player,
+                ["prefix", "deny.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+            );
         }
         return null;
     }

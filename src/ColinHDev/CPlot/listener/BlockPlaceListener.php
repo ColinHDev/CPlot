@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BlockListAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
-use pocketmine\block\Block;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 
@@ -52,14 +50,8 @@ class BlockPlaceListener implements Listener {
                 }
             }
 
-            $block = $event->getBlock();
-            /** @var BlockListAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PLACE);
-            /** @var Block $value */
-            foreach ($flag->getValue() as $value) {
-                if ($block->isSameType($value)) {
-                    return;
-                }
+            if ($plot->getFlag(Flags::PLACE())->contains($event->getBlock())) {
+                return;
             }
 
         } else if ($plot === false) {

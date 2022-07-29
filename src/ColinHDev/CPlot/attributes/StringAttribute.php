@@ -7,20 +7,35 @@ namespace ColinHDev\CPlot\attributes;
 /**
  * @extends BaseAttribute<string>
  */
-class StringAttribute extends BaseAttribute {
+abstract class StringAttribute extends BaseAttribute {
+
+    public function equals(object $other) : bool {
+        if (!($other instanceof static)) {
+            return false;
+        }
+        return $this->value === $other->getValue();
+    }
 
     /**
      * @param string $value
      */
-    public function merge(mixed $value) : StringAttribute {
-        return $this->newInstance($value);
+    public function contains(mixed $value) : bool {
+        return $this->equals($this->createInstance($value));
     }
 
     /**
-     * @param string | null $value
+     * @param string $value
      */
-    public function toString(mixed $value = null) : string {
-        return $value ?? $this->value;
+    public function merge(mixed $value) : self {
+        return $this->createInstance($value);
+    }
+
+    public function toString() : string {
+        return $this->value;
+    }
+
+    public function toReadableString() : string {
+        return "\"" . $this->value . "\"";
     }
 
     public function parse(string $value) : string {
