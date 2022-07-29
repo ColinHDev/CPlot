@@ -22,6 +22,7 @@ use ColinHDev\CPlot\commands\subcommands\RemoveSubcommand;
 use ColinHDev\CPlot\commands\subcommands\ResetSubcommand;
 use ColinHDev\CPlot\commands\subcommands\SchematicSubcommand;
 use ColinHDev\CPlot\commands\subcommands\SettingSubcommand;
+use ColinHDev\CPlot\commands\subcommands\SpawnSubcommand;
 use ColinHDev\CPlot\commands\subcommands\TrustedSubcommand;
 use ColinHDev\CPlot\commands\subcommands\TrustSubcommand;
 use ColinHDev\CPlot\commands\subcommands\UndenySubcommand;
@@ -77,6 +78,7 @@ class PlotCommand extends Command implements PluginOwned {
         $this->registerSubcommand(new ResetSubcommand("reset"));
         $this->registerSubcommand(new SchematicSubcommand("schematic"));
         $this->registerSubcommand(new SettingSubcommand("setting"));
+        $this->registerSubcommand(new SpawnSubcommand("setting"));
         $this->registerSubcommand(new TrustedSubcommand("trusted"));
         $this->registerSubcommand(new TrustSubcommand("trust"));
         $this->registerSubcommand(new UndenySubcommand("undeny"));
