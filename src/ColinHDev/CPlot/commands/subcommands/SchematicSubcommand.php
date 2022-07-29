@@ -129,12 +129,12 @@ class SchematicSubcommand extends Subcommand {
                 $worldSettings = WorldSettings::fromConfig();
                 if ($schematicType === "road") {
                     $type = SchematicTypes::TYPE_ROAD;
-                    $pos1 = new Vector3(0, 0, 0);
-                    $pos2 = new Vector3(($worldSettings->getRoadSize() + $worldSettings->getPlotSize()), 0, ($worldSettings->getRoadSize() + $worldSettings->getPlotSize()));
+                    $pos1 = new Vector3(0 + $worldSettings->getCoordinateOffset(), 0, 0 + $worldSettings->getCoordinateOffset());
+                    $pos2 = new Vector3(($worldSettings->getRoadSize() + $worldSettings->getPlotSize()) + $worldSettings->getCoordinateOffset(), 0, ($worldSettings->getRoadSize() + $worldSettings->getPlotSize()) + $worldSettings->getCoordinateOffset());
                 } else {
                     $type = SchematicTypes::TYPE_PLOT;
-                    $pos1 = new Vector3(0, 0, 0);
-                    $pos2 = new Vector3($worldSettings->getPlotSize(), 0, $worldSettings->getPlotSize());
+                    $pos1 = new Vector3(0 + $worldSettings->getCoordinateOffset(), 0, 0 + $worldSettings->getCoordinateOffset());
+                    $pos2 = new Vector3($worldSettings->getPlotSize() + $worldSettings->getCoordinateOffset(), 0, $worldSettings->getPlotSize() + $worldSettings->getCoordinateOffset());
                 }
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "schematic.save.start" => $schematicName]);
                 $world = $sender->getWorld();

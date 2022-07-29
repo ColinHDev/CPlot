@@ -13,6 +13,7 @@ use pocketmine\data\bedrock\BiomeIds;
 class WorldSettings {
 
     public const TYPE_CPLOT_DEFAULT = "cplot_default";
+    public const TYPE_MYPLOT = "myplot";
 
     private string $worldType;
     private int $biomeID;
@@ -24,6 +25,7 @@ class WorldSettings {
     private int $roadSize;
     private int $plotSize;
     private int $groundSize;
+	private int $coordinateOffset;
 
     private Block $roadBlock;
     private Block $borderBlock;
@@ -31,7 +33,7 @@ class WorldSettings {
     private Block $plotFillBlock;
     private Block $plotBottomBlock;
 
-    public function __construct(string $worldType, int $biomeID, string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, Block $roadBlock, Block $borderBlock, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
+    public function __construct(string $worldType, int $biomeID, string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, int $coordinateOffset, Block $roadBlock, Block $borderBlock, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
         $this->worldType = $worldType;
         $this->biomeID = $biomeID;
 
@@ -42,6 +44,7 @@ class WorldSettings {
         $this->roadSize = $roadSize;
         $this->plotSize = $plotSize;
         $this->groundSize = $groundSize;
+		$this->coordinateOffset = $coordinateOffset;
 
         $this->roadBlock = $roadBlock;
         $this->borderBlock = $borderBlock;
@@ -82,6 +85,10 @@ class WorldSettings {
         return $this->groundSize;
     }
 
+	public function getCoordinateOffset() : int {
+		return $this->coordinateOffset;
+	}
+
     public function getRoadBlock() : Block {
         return $this->roadBlock;
     }
@@ -117,6 +124,7 @@ class WorldSettings {
             "roadSize" => $this->roadSize,
             "plotSize" => $this->plotSize,
             "groundSize" => $this->groundSize,
+			"coordinateOffset" => $this->coordinateOffset,
 
             "roadBlock" => ParseUtils::parseStringFromBlock($this->roadBlock),
             "borderBlock" => ParseUtils::parseStringFromBlock($this->borderBlock),
@@ -153,6 +161,7 @@ class WorldSettings {
         $roadSize = ParseUtils::parseIntegerFromArray($settings, "roadSize") ?? 7;
         $plotSize = ParseUtils::parseIntegerFromArray($settings, "plotSize") ?? 32;
         $groundSize = ParseUtils::parseIntegerFromArray($settings, "groundSize") ?? 64;
+		$coordinateOffset = ParseUtils::parseIntegerFromArray($settings, "coordinateOffset") ?? ($worldType === self::TYPE_MYPLOT ? -$roadSize : 0);
 
         $roadBlock = ParseUtils::parseBlockFromArray($settings, "roadBlock") ?? VanillaBlocks::OAK_PLANKS();
         $borderBlock = ParseUtils::parseBlockFromArray($settings, "borderBlock") ?? VanillaBlocks::STONE_SLAB();
@@ -163,7 +172,7 @@ class WorldSettings {
         return new self(
             $worldType, $biomeID,
             $roadSchematic, $mergeRoadSchematic, $plotSchematic,
-            $roadSize, $plotSize, $groundSize,
+            $roadSize, $plotSize, $groundSize, $coordinateOffset,
             $roadBlock, $borderBlock, $plotFloorBlock, $plotFillBlock, $plotBottomBlock
         );
     }

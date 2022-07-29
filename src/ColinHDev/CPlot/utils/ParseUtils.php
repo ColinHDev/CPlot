@@ -66,4 +66,25 @@ class ParseUtils {
         }
         return $block;
     }
+
+	/**
+	 * This is different from CPlot because of the $blockData separator character and output keys
+	 *
+	 * @phpstan-param array<string|int, string|int> $array
+	 */
+	public static function parseMyPlotBlock(array $array, string | int $key) : ?Block {
+		if (isset($array[$key]) && is_string($array[$key])) {
+			$blockData = explode(":", $array[$key]);
+			$blockID = self::parseIntegerFromArray($blockData, 0);
+			$blockMeta = self::parseIntegerFromArray($blockData, 1) ?? 0;
+			if ($blockID !== null) {
+				$block = BlockFactory::getInstance()->get($blockID, $blockMeta);
+				if ($block instanceof UnknownBlock) {
+					$block = null;
+				}
+				return $block;
+			}
+		}
+		return null;
+	}
 }
