@@ -51,7 +51,14 @@ abstract class FlagListAttribute extends ListAttribute {
     public function contains(mixed $value) : bool {
         /** @var Flag<mixed> $currentValue */
         foreach ($this->value as $currentValue) {
-            if ($currentValue->equals($value)) {
+            $flagValue = $value->getValue();
+            if (is_array($flagValue)) {
+                foreach($flagValue as $flag) {
+                    if ($currentValue->contains($flag)) {
+                        return true;
+                    }
+                }
+            } else if ($currentValue->contains($flagValue)) {
                 return true;
             }
         }
