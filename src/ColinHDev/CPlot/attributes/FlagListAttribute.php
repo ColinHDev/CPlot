@@ -58,6 +58,32 @@ abstract class FlagListAttribute extends ListAttribute {
         return false;
     }
 
+    /**
+     * @param array<Flag<mixed>> $value
+     */
+    public function merge(mixed $value) : self {
+        /** @var array<Flag<mixed>> $values */
+        $values = $this->value;
+        /** @var Flag<mixed> $newFlag */
+        foreach ($value as $newFlag) {
+            /** @var Flag<mixed> $oldFlag */
+            foreach($values as $i => $oldFlag) {
+                if (!($oldFlag instanceof $newFlag)) {
+                    continue;
+                }
+                if (is_array($oldFlag->getValue()) && is_array($newFlag->getValue())) {
+                    $values[$i] = $oldFlag->merge($newFlag->getValue());
+                    continue 2;
+                }
+                if ($oldFlag->equals($newFlag)) {
+                    continue 2;
+                }
+            }
+            $values[] = $newFlag;
+        }
+        return $this->createInstance($values);
+    }
+
     public function getExample() : string {
         return "pvp=true, item_pickup=false, use=tnt";
     }
@@ -147,14 +173,11 @@ abstract class FlagListAttribute extends ListAttribute {
      * @throws AttributeParseException
      */
     private function parseFlagFromString(string $flagString) : ?Flag {
-        /**
-         * @var string|null $flagID
-         * @var string|null $flagStringValue
-         */
-        [$flagID, $flagStringValue] = explode("=", $flagString);
-        if (!is_string($flagID) || !is_string($flagStringValue)) {
+        $flagParts = explode("=", $flagString);
+        if (count($flagParts) !== 2) {
             return null;
         }
+        [$flagID, $flagStringValue] = $flagParts;
         $flag = FlagManager::getInstance()->getFlagByID($flagID);
         if ($flag instanceof Flag && !($flag instanceof InternalFlag)) {
             try {
