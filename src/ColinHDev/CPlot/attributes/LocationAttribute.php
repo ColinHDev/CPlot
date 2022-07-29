@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\attributes;
 
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use pocketmine\entity\Location;
+use function count;
 use function explode;
 use function is_infinite;
 use function is_nan;
@@ -58,18 +59,21 @@ abstract class LocationAttribute extends BaseAttribute {
      * @throws AttributeParseException
      */
     public function parse(string $value) : Location {
-        [$x, $y, $z, $yaw, $pitch] = explode(";", $value);
-        if (is_numeric($x) && is_numeric($y) && is_numeric($z) && is_numeric($yaw) && is_numeric($pitch)) {
-            $x = (float) $x;
-            $y = (float) $y;
-            $z = (float) $z;
-            $yaw = (float) $yaw;
-            $pitch = (float) $pitch;
-            if (
-                !is_nan($x) && !is_nan($y) && !is_nan($z) && !is_nan($yaw) && !is_nan($pitch) &&
-                !is_infinite($x) && !is_infinite($y) && !is_infinite($z) && !is_infinite($yaw) && !is_infinite($pitch)
-            ) {
-                return new Location($x, $y, $z, null, $yaw, $pitch);
+        $locationData = explode(";", $value);
+        if (count($locationData) === 5) {
+            [$x, $y, $z, $yaw, $pitch] = explode(";", $value);
+            if (is_numeric($x) && is_numeric($y) && is_numeric($z) && is_numeric($yaw) && is_numeric($pitch)) {
+                $x = (float) $x;
+                $y = (float) $y;
+                $z = (float) $z;
+                $yaw = (float) $yaw;
+                $pitch = (float) $pitch;
+                if (
+                    !is_nan($x) && !is_nan($y) && !is_nan($z) && !is_nan($yaw) && !is_nan($pitch) &&
+                    !is_infinite($x) && !is_infinite($y) && !is_infinite($z) && !is_infinite($yaw) && !is_infinite($pitch)
+                ) {
+                    return new Location($x, $y, $z, null, $yaw, $pitch);
+                }
             }
         }
         throw new AttributeParseException($this, $value);
