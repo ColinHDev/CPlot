@@ -78,7 +78,7 @@ class PlotCommand extends Command implements PluginOwned {
         $this->registerSubcommand(new ResetSubcommand("reset"));
         $this->registerSubcommand(new SchematicSubcommand("schematic"));
         $this->registerSubcommand(new SettingSubcommand("setting"));
-        $this->registerSubcommand(new SpawnSubcommand("setting"));
+        $this->registerSubcommand(new SpawnSubcommand("spawn"));
         $this->registerSubcommand(new TrustedSubcommand("trusted"));
         $this->registerSubcommand(new TrustSubcommand("trust"));
         $this->registerSubcommand(new UndenySubcommand("undeny"));
