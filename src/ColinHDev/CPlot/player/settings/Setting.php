@@ -11,9 +11,13 @@ use ColinHDev\CPlot\attributes\utils\AttributeParseException;
  */
 interface Setting {
 
+    /**
+     * Returns the ID of the attribute.
+     */
     public function getID() : string;
 
     /**
+     * Returns the value of the setting.
      * @return TValue
      */
     public function getValue() : mixed;

@@ -11,9 +11,13 @@ use ColinHDev\CPlot\attributes\utils\AttributeParseException;
  */
 interface Flag {
 
+    /**
+     * Returns the ID of the attribute.
+     */
     public function getID() : string;
 
     /**
+     * Returns the value of the flag.
      * @return TValue
      */
     public function getValue() : mixed;

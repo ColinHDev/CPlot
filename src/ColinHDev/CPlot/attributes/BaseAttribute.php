@@ -25,11 +25,15 @@ abstract class BaseAttribute {
         $this->value = $value;
     }
 
+    /**
+     * Returns the ID of the attribute.
+     */
     public function getID() : string {
         return $this->ID;
     }
 
     /**
+     * Returns the value of the attribute.
      * @return TValue
      */
     public function getValue() : mixed {
