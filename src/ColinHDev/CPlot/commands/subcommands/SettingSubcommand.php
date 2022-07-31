@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\ArrayAttribute;
-use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\player\PlayerData;
+use ColinHDev\CPlot\player\settings\InternalSetting;
+use ColinHDev\CPlot\player\settings\Setting;
 use ColinHDev\CPlot\player\settings\SettingManager;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use function assert;
+use function is_array;
 
 class SettingSubcommand extends Subcommand {
 
@@ -32,6 +34,9 @@ class SettingSubcommand extends Subcommand {
                 );
                 $settingsByCategory = [];
                 foreach (SettingManager::getInstance()->getSettings() as $setting) {
+                    if ($setting instanceof InternalSetting) {
+                        continue;
+                    }
                     $settingCategory = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         "setting.category." . $setting->getID()
@@ -53,7 +58,7 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
                 $setting = SettingManager::getInstance()->getSettingByID($args[1]);
-                if ($setting === null) {
+                if (!($setting instanceof Setting) || $setting instanceof InternalSetting) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.info.noSetting" => $args[1]]);
                     break;
                 }
@@ -68,7 +73,8 @@ class SettingSubcommand extends Subcommand {
                 /** @phpstan-var string $type */
                 $type = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "setting.type." . $setting->getID());
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.type" => $type]);
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.default" => $setting->getDefault()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.example" => $setting->getExample()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["setting.info.default" => $setting->toReadableString()]);
                 break;
 
             case "my":
@@ -88,9 +94,12 @@ class SettingSubcommand extends Subcommand {
                 }
                 $settingStrings = [];
                 foreach ($settings as $ID => $setting) {
+                    if ($setting instanceof InternalSetting) {
+                        continue;
+                    }
                     $settingStrings[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
-                        ["setting.my.success.format" => [$ID, $setting->toString()]]
+                        ["setting.my.success.format" => [$ID, $setting->toReadableString()]]
                     );
                 }
                 /** @phpstan-var string $separator */
@@ -118,13 +127,12 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
 
-                /** @var BaseAttribute<mixed> | null $setting */
                 $setting = SettingManager::getInstance()->getSettingByID($args[1]);
-                if ($setting === null) {
+                if (!($setting instanceof Setting) || $setting instanceof InternalSetting) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.noSetting" => $args[1]]);
                     break;
                 }
-                if (!$sender->hasPermission($setting->getPermission())) {
+                if (!$sender->hasPermission("cplot.setting." . $setting->getID())) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.permissionMessageForSetting" => $setting->getID()]);
                     break;
                 }
@@ -138,16 +146,14 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
 
-                $setting = $setting->newInstance($parsedValue);
-                $oldSetting = $playerData->getSettingByID($setting->getID());
+                $setting = $newSetting = $setting->createInstance($parsedValue);
+                $oldSetting = $playerData->getLocalSettingByID($setting->getID());
                 if ($oldSetting !== null) {
                     $setting = $oldSetting->merge($setting->getValue());
                 }
-                $playerData->addSetting(
-                    $setting
-                );
+                $playerData->addSetting($setting);
                 yield DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.success" => [$setting->getID(), $setting->toString($parsedValue)]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.set.success" => [$setting->getID(), $newSetting->toReadableString()]]);
                 break;
 
             case "remove":
@@ -166,22 +172,22 @@ class SettingSubcommand extends Subcommand {
                     break;
                 }
 
-                /** @var BaseAttribute<mixed> | null $setting */
-                $setting = $playerData->getSettingByID($args[1]);
-                if ($setting === null) {
+                $setting = $playerData->getLocalSettingByID($args[1]);
+                if (!($setting instanceof Setting) || $setting instanceof InternalSetting) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.settingNotSet" => $args[1]]);
                     break;
                 }
-                if (!$sender->hasPermission($setting->getPermission())) {
+                if (!$sender->hasPermission("cplot.setting." . $setting->getID())) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.permissionMessageForSetting" => $setting->getID()]);
                     break;
                 }
 
                 array_splice($args, 0, 2);
-                if (count($args) > 0 && $setting instanceof ArrayAttribute) {
+                if (count($args) > 0 && is_array($setting->getValue())) {
                     $arg = implode(" ", $args);
                     try {
                         $parsedValues = $setting->parse($arg);
+                        assert(is_array($parsedValues));
                     } catch (AttributeParseException) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.parseError" => [$arg, $setting->getID()]]);
                         break;
@@ -190,9 +196,9 @@ class SettingSubcommand extends Subcommand {
                     $values = $setting->getValue();
                     assert(is_array($values));
                     foreach ($values as $key => $value) {
-                        $valueString = $setting->toString([$value]);
+                        $valueString = $setting->createInstance([$value])->toString();
                         foreach ($parsedValues as $parsedValue) {
-                            if ($valueString === $setting->toString([$parsedValue])) {
+                            if ($valueString === $setting->createInstance([$parsedValue])->toString()) {
                                 unset($values[$key]);
                                 continue 2;
                             }
@@ -200,10 +206,10 @@ class SettingSubcommand extends Subcommand {
                     }
 
                     if (count($values) > 0) {
-                        $setting = $setting->newInstance($values);
+                        $setting = $setting->createInstance($values);
                         $playerData->addSetting($setting);
                         yield DataProvider::getInstance()->savePlayerSetting($playerData, $setting);
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.value.success" => [$setting->getID(), $setting->toString()]]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "setting.remove.value.success" => [$setting->getID(), $setting->toReadableString()]]);
                         break;
                     }
                 }

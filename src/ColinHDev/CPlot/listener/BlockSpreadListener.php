@@ -4,45 +4,44 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\BasePlot;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\FlowingFlag;
+use ColinHDev\CPlot\plots\flags\implementation\GrowingFlag;
 use ColinHDev\CPlot\plots\Plot;
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\block\Liquid;
 use pocketmine\event\block\BlockSpreadEvent;
 use pocketmine\event\Listener;
 
 class BlockSpreadListener implements Listener {
+    use APIHolder;
 
+    /**
+     * @handleCancelled false
+     */
     public function onBlockSpread(BlockSpreadEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-        if (!$event->getNewState() instanceof Liquid) {
-            return;
-        }
-
-        $position = $event->getBlock()->getPosition();
-        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
-        if ($worldSettings === null) {
-            $event->cancel();
-            return;
-        }
-        if (!$worldSettings instanceof WorldSettings) {
+        $position = $event->getSource()->getPosition();
+        /** @phpstan-var true|false|null $isPlotWorld */
+        $isPlotWorld = $this->getAPI()->isPlotWorld($position->getWorld())->getResult();
+        if ($isPlotWorld !== true) {
+            if ($isPlotWorld !== false) {
+                $event->cancel();
+            }
             return;
         }
 
-        $plot = Plot::loadFromPositionIntoCache($position);
-        if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            $event->cancel();
-            return;
-        }
-        if ($plot instanceof Plot) {
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_FLOWING);
-            if ($flag->getValue() === true) {
+        /** @phpstan-var Plot|false|null $plot */
+        $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
+        // We not only need to check if the source is on the plot but also if that applies for the changed block.
+        if ($plot instanceof Plot && $plot->isOnPlot($event->getBlock()->getPosition())) {
+            if ($event->getNewState() instanceof Liquid) {
+                $flag = $plot->getFlag(Flags::FLOWING());
+                $flagToCompare = FlowingFlag::TRUE();
+            } else {
+                $flag = $plot->getFlag(Flags::GROWING());
+                $flagToCompare = GrowingFlag::TRUE();
+            }
+            if ($flag->equals($flagToCompare)) {
                 return;
             }
         }

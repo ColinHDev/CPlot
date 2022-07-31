@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\plots\BasePlot;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
@@ -90,13 +87,6 @@ class BiomeSubcommand extends Subcommand {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.notPlotOwner"]);
                 return;
             }
-        }
-
-        /** @var BooleanAttribute $flag */
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag->getValue() === true) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.serverPlotFlag" => FlagIDs::FLAG_SERVER_PLOT]);
-            return;
         }
 
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.start"]);

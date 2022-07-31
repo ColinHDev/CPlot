@@ -17,11 +17,14 @@ use ColinHDev\CPlot\commands\subcommands\GenerateSubcommand;
 use ColinHDev\CPlot\commands\subcommands\HelpersSubcommand;
 use ColinHDev\CPlot\commands\subcommands\HelpSubcommand;
 use ColinHDev\CPlot\commands\subcommands\InfoSubcommand;
+use ColinHDev\CPlot\commands\subcommands\KickSubcommand;
 use ColinHDev\CPlot\commands\subcommands\MergeSubcommand;
+use ColinHDev\CPlot\commands\subcommands\MiddleSubcommand;
 use ColinHDev\CPlot\commands\subcommands\RemoveSubcommand;
 use ColinHDev\CPlot\commands\subcommands\ResetSubcommand;
 use ColinHDev\CPlot\commands\subcommands\SchematicSubcommand;
 use ColinHDev\CPlot\commands\subcommands\SettingSubcommand;
+use ColinHDev\CPlot\commands\subcommands\SpawnSubcommand;
 use ColinHDev\CPlot\commands\subcommands\TrustedSubcommand;
 use ColinHDev\CPlot\commands\subcommands\TrustSubcommand;
 use ColinHDev\CPlot\commands\subcommands\UndenySubcommand;
@@ -35,10 +38,12 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
+use pocketmine\utils\SingletonTrait;
 use SOFe\AwaitGenerator\Await;
 use Throwable;
 
 class PlotCommand extends Command implements PluginOwned {
+    use SingletonTrait;
 
     /** @var array<string, Subcommand> */
     private array $subcommands = [];
@@ -47,6 +52,7 @@ class PlotCommand extends Command implements PluginOwned {
      * @throws \InvalidArgumentException|\JsonException
      */
     public function __construct() {
+        self::setInstance($this);
         $languageProvider = LanguageManager::getInstance()->getProvider();
         parent::__construct(
             $languageProvider->translateString("plot.name"),
@@ -70,11 +76,14 @@ class PlotCommand extends Command implements PluginOwned {
         $this->registerSubcommand(new HelpersSubcommand("helpers"));
         $this->registerSubcommand(new HelpSubcommand("help", $this));
         $this->registerSubcommand(new InfoSubcommand("info"));
+        $this->registerSubcommand(new KickSubcommand("kick"));
         $this->registerSubcommand(new MergeSubcommand("merge"));
+        $this->registerSubcommand(new MiddleSubcommand("middle"));
         $this->registerSubcommand(new RemoveSubcommand("remove"));
         $this->registerSubcommand(new ResetSubcommand("reset"));
         $this->registerSubcommand(new SchematicSubcommand("schematic"));
         $this->registerSubcommand(new SettingSubcommand("setting"));
+        $this->registerSubcommand(new SpawnSubcommand("spawn"));
         $this->registerSubcommand(new TrustedSubcommand("trusted"));
         $this->registerSubcommand(new TrustSubcommand("trust"));
         $this->registerSubcommand(new UndenySubcommand("undeny"));

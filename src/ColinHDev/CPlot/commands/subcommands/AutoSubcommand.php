@@ -15,18 +15,26 @@ use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use function is_string;
 
 class AutoSubcommand extends Subcommand {
 
     private bool $automaticClaim;
+    private ?string $fallbackWorld;
     private PlotCommand $command;
 
     public function __construct(string $key, PlotCommand $command) {
         parent::__construct($key);
-        $this->automaticClaim = match (ResourceManager::getInstance()->getConfig()->get("auto.automaticClaim", false)) {
+        $this->automaticClaim = match(ResourceManager::getInstance()->getConfig()->get("auto.automaticClaim", false)) {
             true, "true" => true,
             default => false
         };
+        $fallbackWorld = ResourceManager::getInstance()->getConfig()->get("auto.fallbackWorld", false);
+        if ($fallbackWorld === false || $fallbackWorld === "false" || !is_string($fallbackWorld)) {
+            $this->fallbackWorld = null;
+        } else {
+            $this->fallbackWorld = $fallbackWorld;
+        }
         $this->command = $command;
     }
 
@@ -54,7 +62,11 @@ class AutoSubcommand extends Subcommand {
         }
 
         $worldName = $sender->getWorld()->getFolderName();
-        $worldSettings = yield DataProvider::getInstance()->awaitWorld($worldName);
+        $worldSettings = yield from DataProvider::getInstance()->awaitWorld($worldName);
+        if (!($worldSettings instanceof WorldSettings) && is_string($this->fallbackWorld)) {
+            $worldName = $this->fallbackWorld;
+            $worldSettings = yield from DataProvider::getInstance()->awaitWorld($worldName);
+        }
         if (!($worldSettings instanceof WorldSettings)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "auto.noPlotWorld"]);
             return;

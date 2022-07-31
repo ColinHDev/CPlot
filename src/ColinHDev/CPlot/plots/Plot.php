@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\plots;
 
-use ColinHDev\CPlot\attributes\BaseAttribute;
 use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
@@ -14,8 +13,10 @@ use ColinHDev\CPlot\event\PlotMergedAsyncEvent;
 use ColinHDev\CPlot\event\PlotResetAsyncEvent;
 use ColinHDev\CPlot\event\PlotWallChangeAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\SpawnFlag;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
@@ -23,17 +24,19 @@ use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotResetAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
-use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\Block;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
+use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
 use pocketmine\world\World;
 use SOFe\AwaitGenerator\Await;
+use function assert;
+use function unserialize;
 
 class Plot extends BasePlot {
 
@@ -41,24 +44,22 @@ class Plot extends BasePlot {
 
     /** @var array<string, MergePlot> */
     private array $mergePlots;
-    /** @var array<string, PlotPlayer> */
-    private array $plotPlayers;
-    /** @var array<string, BaseAttribute<mixed>> */
+    private PlotPlayerContainer $plotPlayerContainer;
+    /** @var array<string, Flag<mixed>> */
     private array $flags;
     /** @var array<string, PlotRate> */
     private array $plotRates;
 
     /**
      * @param array<string, MergePlot> $mergePlots
-     * @param array<string, PlotPlayer> $plotPlayers
-     * @param array<string, BaseAttribute<mixed>> $flags
+     * @param array<string, Flag<mixed>> $flags
      * @param array<string, PlotRate> $plotRates
      */
-    public function __construct(string $worldName, WorldSettings $worldSettings, int $x, int $z, ?string $alias = null, array $mergePlots = [], array $plotPlayers = [], array $flags = [], array $plotRates = []) {
+    public function __construct(string $worldName, WorldSettings $worldSettings, int $x, int $z, ?string $alias = null, array $mergePlots = [], ?PlotPlayerContainer $plotPlayerContainer = null, array $flags = [], array $plotRates = []) {
         parent::__construct($worldName, $worldSettings, $x, $z);
         $this->alias = $alias;
         $this->mergePlots = $mergePlots;
-        $this->plotPlayers = $plotPlayers;
+        $this->plotPlayerContainer = $plotPlayerContainer ?? new PlotPlayerContainer();
         $this->flags = $flags;
         $this->plotRates = $plotRates;
     }
@@ -86,30 +87,17 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @return array<string, PlotPlayer>
+     * @return array<int, PlotPlayer>
      */
     public function getPlotPlayers() : array {
-        return $this->plotPlayers;
+        return $this->plotPlayerContainer->getPlotPlayers();
     }
 
     /**
-     * @return array<string, PlotPlayer>
-     */
-    public function getPlotPlayersByState(string $state) : array {
-        $plotPlayers = [];
-        foreach ($this->getPlotPlayers() as $plotPlayer) {
-            if ($plotPlayer->getState() === $state) {
-                $plotPlayers[$plotPlayer->toString()] = $plotPlayer;
-            }
-        }
-        return $plotPlayers;
-    }
-
-    /**
-     * @return array<string, PlotPlayer>
+     * @return array<int, PlotPlayer>
      */
     public function getPlotOwners() : array {
-        return $this->getPlotPlayersByState(PlotPlayer::STATE_OWNER);
+        return $this->plotPlayerContainer->getPlotPlayersByState(PlotPlayer::STATE_OWNER);
     }
 
     public function hasPlotOwner() : bool {
@@ -117,109 +105,92 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @return array<string, PlotPlayer>
+     * @return array<int, PlotPlayer>
      */
     public function getPlotTrusted() : array {
-        return $this->getPlotPlayersByState(PlotPlayer::STATE_TRUSTED);
+        return $this->plotPlayerContainer->getPlotPlayersByState(PlotPlayer::STATE_TRUSTED);
     }
 
     /**
-     * @return array<string, PlotPlayer>
+     * @return array<int, PlotPlayer>
      */
     public function getPlotHelpers() : array {
-        return $this->getPlotPlayersByState(PlotPlayer::STATE_HELPER);
+        return $this->plotPlayerContainer->getPlotPlayersByState(PlotPlayer::STATE_HELPER);
     }
 
     /**
-     * @return array<string, PlotPlayer>
+     * @return array<int, PlotPlayer>
      */
     public function getPlotDenied() : array {
-        return $this->getPlotPlayersByState(PlotPlayer::STATE_DENIED);
+        return $this->plotPlayerContainer->getPlotPlayersByState(PlotPlayer::STATE_DENIED);
     }
 
-    public function getPlotPlayerExact(Player|PlayerData|string $player) : ?PlotPlayer {
-        if ($player instanceof Player) {
-            $identifier = PlayerData::getIdentifierFromPlayer($player);
-        } else if ($player instanceof PlayerData) {
-            $identifier = PlayerData::getIdentifierFromPlayerData($player);
-        } else {
-            $identifier = $player;
-        }
-        if (isset($this->plotPlayers[$identifier])) {
-            return $this->plotPlayers[$identifier];
-        }
-        return null;
+    public function getPlotPlayerExact(Player|PlayerData|int $player) : ?PlotPlayer {
+        return $this->plotPlayerContainer->getPlotPlayerExact($player);
     }
 
-    public function getPlotPlayer(Player|PlayerData|string $player) : ?PlotPlayer {
-        $plotPlayer = $this->getPlotPlayerExact($player);
-        if ($plotPlayer !== null) {
-            return $plotPlayer;
-        }
-        if (isset($this->plotPlayers["*"])) {
-            return $this->plotPlayers["*"];
-        }
-        return null;
+    public function getPlotPlayer(Player|PlayerData|int $player) : ?PlotPlayer {
+        return $this->plotPlayerContainer->getPlotPlayer($player);
     }
 
-    public function isPlotOwnerExact(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($player);
+    public function isPlotOwnerExact(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_OWNER;
     }
 
-    public function isPlotOwner(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayer($player);
+    public function isPlotOwner(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_OWNER;
     }
 
-    public function isPlotTrustedExact(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($player);
+    public function isPlotTrustedExact(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_TRUSTED;
     }
 
-    public function isPlotTrusted(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayer($player);
+    public function isPlotTrusted(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_TRUSTED;
     }
 
-    public function isPlotHelperExact(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($player);
+    public function isPlotHelperExact(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_HELPER;
     }
 
-    public function isPlotHelper(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayer($player);
+    public function isPlotHelper(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_HELPER;
     }
 
-    public function isPlotDeniedExact(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayerExact($player);
+    public function isPlotDeniedExact(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayerExact($player);
         if ($plotPlayer === null) {
             return false;
         }
         return $plotPlayer->getState() === PlotPlayer::STATE_DENIED;
     }
 
-    public function isPlotDenied(Player|PlayerData|string $player) : bool {
-        $plotPlayer = $this->getPlotPlayer($player);
+    public function isPlotDenied(Player|PlayerData|int $player) : bool {
+        $plotPlayer = $this->plotPlayerContainer->getPlotPlayer($player);
         if ($plotPlayer === null) {
             return false;
         }
@@ -227,24 +198,58 @@ class Plot extends BasePlot {
     }
 
     public function addPlotPlayer(PlotPlayer $plotPlayer) : void {
-        $this->plotPlayers[$plotPlayer->toString()] = $plotPlayer;
+        $this->plotPlayerContainer->addPlotPlayer($plotPlayer);
     }
 
-    public function removePlotPlayer(string $playerIdentifier) : void {
-        unset($this->plotPlayers[$playerIdentifier]);
+    public function removePlotPlayer(PlotPlayer $plotPlayer) : void {
+        $this->plotPlayerContainer->removePlotPlayer($plotPlayer);
     }
 
     /**
-     * @phpstan-return array<string, BaseAttribute<mixed>>
+     * @phpstan-return array<string, Flag<mixed>>
      */
     public function getFlags() : array {
         return $this->flags;
     }
 
     /**
-     * @phpstan-return BaseAttribute<mixed>|null
+     * @phpstan-template TFlag of Flag<mixed>
+     * @phpstan-param TFlag $flag
+     * @phpstan-return TFlag
      */
-    public function getFlagByID(string $flagID) : ?BaseAttribute {
+    public function getFlag(Flag $flag) : Flag {
+        /** @phpstan-var TFlag $flag */
+        $flag = $this->getFlagByID($flag->getID());
+        return $flag;
+    }
+
+    /**
+     * @phpstan-template TFlag of Flag<mixed>
+     * @phpstan-param TFlag $flag
+     * @phpstan-return TFlag|null
+     */
+    public function getLocalFlag(Flag $flag) : ?Flag {
+        /** @phpstan-var TFlag|null $flag */
+        $flag = $this->getLocalFlagByID($flag->getID());
+        return $flag;
+    }
+
+    /**
+     * @phpstan-return Flag<mixed>
+     */
+    public function getFlagByID(string $flagID) : Flag {
+        $flag = $this->getLocalFlagByID($flagID);
+        if ($flag === null) {
+            $flag = FlagManager::getInstance()->getFlagByID($flagID);
+            assert($flag instanceof Flag);
+        }
+        return $flag;
+    }
+
+    /**
+     * @phpstan-return Flag<mixed>|null
+     */
+    public function getLocalFlagByID(string $flagID) : ?Flag {
         if (!isset($this->flags[$flagID])) {
             return null;
         }
@@ -252,21 +257,10 @@ class Plot extends BasePlot {
     }
 
     /**
-     * @phpstan-return BaseAttribute<mixed>|null
+     * @template TFlag of Flag<mixed>
+     * @param TFlag $flag
      */
-    public function getFlagNonNullByID(string $flagID) : ?BaseAttribute {
-        $flag = $this->getFlagByID($flagID);
-        if ($flag === null) {
-            $flag = FlagManager::getInstance()->getFlagByID($flagID);
-        }
-        return $flag;
-    }
-
-    /**
-     * @phpstan-template TAttributeValue
-     * @phpstan-param BaseAttribute<TAttributeValue> $flag
-     */
-    public function addFlag(BaseAttribute $flag) : void {
+    public function addFlag(Flag $flag) : void {
         $this->flags[$flag->getID()] = $flag;
     }
 
@@ -310,13 +304,31 @@ class Plot extends BasePlot {
      */
     public function getCenterTeleportLocation() : Location {
         if (count($this->mergePlots) >= 1) {
-            $northestPlot = $this->toBasePlot();
+            $northPlot = $southPlot = $westPlot = $eastPlot = $this->toBasePlot();
             foreach ($this->mergePlots as $mergePlot) {
-                if ($northestPlot->getZ() > $mergePlot->getZ()) {
-                    $northestPlot = $mergePlot;
+                if ($northPlot->getZ() > $mergePlot->getZ()) {
+                    $northPlot = $mergePlot;
+                }
+                if ($southPlot->getZ() < $mergePlot->getZ()) {
+                    $southPlot = $mergePlot;
+                }
+                if ($westPlot->getX() > $mergePlot->getX()) {
+                    $westPlot = $mergePlot;
+                }
+                if ($eastPlot->getX() < $mergePlot->getX()) {
+                    $eastPlot = $mergePlot;
                 }
             }
-            return $northestPlot->getCenterTeleportLocation();
+            $world = $this->getWorld();
+            assert($world instanceof World);
+            return Location::fromObject(
+                $world->getSafeSpawn(new Vector3(
+                    ($westPlot->getVector3()->x + $eastPlot->getVector3()->x + $this->worldSettings->getPlotSize()) / 2,
+                    $world->getMaxY(),
+                    ($northPlot->getVector3()->z + $southPlot->getVector3()->z + $this->worldSettings->getPlotSize()) / 2
+                )),
+                $world, 0.0, 0.0
+            );
         }
         return parent::getCenterTeleportLocation();
     }
@@ -332,13 +344,14 @@ class Plot extends BasePlot {
      */
     public function teleportTo(Player $player, int $destination = TeleportDestination::PLOT_SPAWN_OR_EDGE) : bool {
         if ($destination === TeleportDestination::PLOT_SPAWN_OR_EDGE || $destination === TeleportDestination::PLOT_SPAWN_OR_CENTER) {
-            $flag = $this->getFlagByID(FlagIDs::FLAG_SPAWN);
-            $relativeSpawn = $flag?->getValue();
-            if ($relativeSpawn instanceof Location) {
+            $flag = $this->getLocalFlag(Flags::SPAWN());
+            if ($flag instanceof SpawnFlag) {
                 $world = $this->getWorld();
                 if ($world === null) {
                     return false;
                 }
+                /** @var Location $relativeSpawn */
+                $relativeSpawn = $flag->getValue();
                 return $player->teleport(
                     Location::fromObject(
                         $relativeSpawn->addVector($this->getVector3()),
@@ -506,7 +519,7 @@ class Plot extends BasePlot {
         }
 
         foreach ($plotToMerge->getFlags() as $mergeFlag) {
-            $flag = $this->getFlagByID($mergeFlag->getID());
+            $flag = $this->getLocalFlagByID($mergeFlag->getID());
             if ($flag === null) {
                 $flag = $mergeFlag;
             } else {
@@ -635,6 +648,7 @@ class Plot extends BasePlot {
     }
 
     /**
+     * @deprecated
      * Tries to load a {@see Plot} from a given {@see Position}. Returns an instance of {@see Plot} on success, an
      * instance of {@see BasePlot} if the plot could not be loaded from the cache {@see DataProvider::getPlotCache()} or
      * null if no plot is at that positon.
@@ -728,6 +742,7 @@ class Plot extends BasePlot {
     }
 
     /**
+     * @deprecated
      * @phpstan-return \Generator<mixed, mixed, mixed, Plot|null>
      */
     public static function awaitFromPosition(Position $position, bool $checkMerge = true) : \Generator {
@@ -819,7 +834,7 @@ class Plot extends BasePlot {
         $data = parent::__serialize();
         $data["alias"] = $this->alias;
         $data["mergePlots"] = serialize($this->mergePlots);
-        $data["plotPlayers"] = serialize($this->plotPlayers);
+        $data["plotPlayers"] = serialize($this->plotPlayerContainer);
         $data["flags"] = serialize($this->flags);
         $data["plotRates"] = serialize($this->plotRates);
         return $data;
@@ -834,10 +849,10 @@ class Plot extends BasePlot {
         /** @phpstan-var array<string, MergePlot> $mergePlots */
         $mergePlots = unserialize($data["mergePlots"], ["allowed_classes" => false]);
         $this->mergePlots = $mergePlots;
-        /** @phpstan-var array<string, PlotPlayer> $plotPlayers */
-        $plotPlayers = unserialize($data["plotPlayers"], ["allowed_classes" => false]);
-        $this->plotPlayers = $plotPlayers;
-        /** @phpstan-var array<string, BaseAttribute<mixed>> $flags */
+        $plotPlayerContainer = unserialize($data["plotPlayers"], ["allowed_classes" => [PlotPlayerContainer::class]]);
+        assert($plotPlayerContainer instanceof PlotPlayerContainer);
+        $this->plotPlayerContainer = $plotPlayerContainer;
+        /** @phpstan-var array<string, Flag<mixed>> $flags */
         $flags = unserialize($data["flags"], ["allowed_classes" => false]);
         $this->flags = $flags;
         /** @phpstan-var array<string, PlotRate> $plotRates */

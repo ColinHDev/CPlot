@@ -9,29 +9,44 @@ use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 /**
  * @extends BaseAttribute<bool>
  */
-class BooleanAttribute extends BaseAttribute {
+abstract class BooleanAttribute extends BaseAttribute {
 
-    /** @var array{true, string} */
-    public const TRUE_VALUES = [true, "1", "y", "yes", "allow", "true"];
-    /** @var array{false, string} */
-    public const FALSE_VALUES = [false, "0", "no", "deny", "disallow", "false"];
+    /** @var array{"1": true, "y": true, "yes": true, "allow": true, "true": true} */
+    private const TRUE_VALUES = ["1" => true, "y" => true, "yes" => true, "allow" => true, "true" => true];
+    /** @var array{"0": true, "no": true, "deny": true, "disallow": true, "false": true} */
+    private const FALSE_VALUES = ["0" => true, "no" => true, "deny" => true, "disallow" => true, "false" => true];
 
-    /**
-     * @param bool $value
-     * @return BooleanAttribute
-     */
-    public function merge(mixed $value) : BooleanAttribute {
-        return $this->newInstance($value);
+    public function equals(object $other) : bool {
+        if (!($other instanceof static)) {
+            return false;
+        }
+        return $this->value === $other->getValue();
     }
 
     /**
-     * @param bool | null $value
+     * @param bool $value
      */
-    public function toString(mixed $value = null) : string {
-        if ($value === null) {
-            $value = $this->value;
-        }
-        return $value ? "true" : "false";
+    public function contains(mixed $value) : bool {
+        return $this->equals($this->createInstance($value));
+    }
+
+    /**
+     * @param bool $value
+     */
+    public function merge(mixed $value) : self {
+        return $this->createInstance($value);
+    }
+
+    public function getExample() : string {
+        return "true";
+    }
+
+    public function toString() : string {
+        return $this->value ? "true" : "false";
+    }
+
+    public function toReadableString() : string {
+        return $this->value ? "true" : "false";
     }
 
     /**
@@ -39,10 +54,10 @@ class BooleanAttribute extends BaseAttribute {
      */
     public function parse(string $value) : bool {
         $value = strtolower($value);
-        if (in_array($value, self::TRUE_VALUES, true)) {
+        if (isset(self::TRUE_VALUES[$value])) {
             return true;
         }
-        if (in_array($value, self::FALSE_VALUES, true)) {
+        if (isset(self::FALSE_VALUES[$value])) {
             return false;
         }
         throw new AttributeParseException($this, $value);

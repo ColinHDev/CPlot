@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\plots\BasePlot;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
@@ -62,13 +60,6 @@ class MergeSubcommand extends Subcommand {
             }
         }
 
-        /** @var BooleanAttribute $flag */
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag->getValue() === true) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.serverPlotFlag" => $flag->getID()]);
-            return;
-        }
-
         $rotation = ($location->yaw - 180) % 360;
         if ($rotation < 0) $rotation += 360.0;
 
@@ -106,13 +97,6 @@ class MergeSubcommand extends Subcommand {
         }
         if (!$hasSameOwner) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.notSamePlotOwner"]);
-            return;
-        }
-
-        /** @var BooleanAttribute $flag */
-        $flag = $plotToMerge->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag->getValue() === true) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.secondPlotServerPlotFlag" => $flag->getID()]);
             return;
         }
 

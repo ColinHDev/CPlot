@@ -4,43 +4,34 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\BasePlot;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\GrowingFlag;
 use ColinHDev\CPlot\plots\Plot;
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\block\BlockGrowEvent;
 use pocketmine\event\Listener;
 
 class BlockGrowListener implements Listener {
+    use APIHolder;
 
+    /**
+     * @handleCancelled false
+     */
     public function onBlockGrow(BlockGrowEvent $event) : void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $position = $event->getBlock()->getPosition();
-        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
-        if ($worldSettings === null) {
-            $event->cancel();
-            return;
-        }
-        if (!$worldSettings instanceof WorldSettings) {
+        /** @phpstan-var true|false|null $isPlotWorld */
+        $isPlotWorld = $this->getAPI()->isPlotWorld($position->getWorld())->getResult();
+        if ($isPlotWorld !== true) {
+            if ($isPlotWorld !== false) {
+                $event->cancel();
+            }
             return;
         }
 
-        $plot = Plot::loadFromPositionIntoCache($position);
-        if ($plot instanceof BasePlot && !$plot instanceof Plot) {
-            $event->cancel();
+        /** @phpstan-var Plot|false|null $plot */
+        $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
+        if ($plot instanceof Plot && $plot->getFlag(Flags::GROWING())->equals(GrowingFlag::TRUE())) {
             return;
-        }
-        if ($plot instanceof Plot) {
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_GROWING);
-            if ($flag->getValue() === true) {
-                return;
-            }
         }
 
         $event->cancel();

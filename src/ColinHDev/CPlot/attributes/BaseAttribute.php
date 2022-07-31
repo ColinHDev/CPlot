@@ -5,105 +5,122 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\attributes;
 
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
+use InvalidArgumentException;
+use function is_string;
 
 /**
- * @template AttributeValue
+ * @template TValue of mixed
  */
 abstract class BaseAttribute {
 
     protected string $ID;
-    protected string $permission;
-    protected string $default;
-    /** @var AttributeValue */
+    /** @var TValue */
     protected mixed $value;
 
     /**
-     * @param AttributeValue $value
-     * @throws AttributeParseException
+     * @param TValue $value
      */
-    final public function __construct(string $ID, string $permission, string $default, mixed $value = null) {
+    public function __construct(string $ID, mixed $value) {
         $this->ID = $ID;
-        $this->permission = $permission;
-        $this->default = $default;
-        if ($value === null) {
-            $this->value = $this->getParsedDefault();
-        } else {
-            $this->value = $value;
-        }
+        $this->value = $value;
     }
 
+    /**
+     * Returns the ID of the attribute.
+     */
     public function getID() : string {
         return $this->ID;
     }
 
-    public function getPermission() : string {
-        return $this->permission;
-    }
-
-    public function getDefault() : string {
-        return $this->default;
-    }
-
     /**
-     * @return AttributeValue
-     * @throws AttributeParseException
-     */
-    public function getParsedDefault() : mixed {
-        return $this->parse($this->default);
-    }
-
-    /**
-     * @return AttributeValue
+     * Returns the value of the attribute.
+     * @return TValue
      */
     public function getValue() : mixed {
         return $this->value;
     }
 
     /**
-     * @param AttributeValue $value
-     * @return static
+     * Checks if the given attribute is the same as this one and if so, checks if both share the same value.
+     * @param static<TValue> $other
      */
-    public function newInstance(mixed $value) : static {
-        return new static($this->ID, $this->permission, $this->default, $value);
-    }
+    abstract public function equals(object $other) : bool;
 
     /**
-     * @param AttributeValue $value
-     * @return BaseAttribute<AttributeValue>
+     * Check if the given value is equal or part of the attribute's value.
+     * @param (TValue is array ? value-of<TValue> : TValue) $value
      */
-    abstract public function merge(mixed $value) : BaseAttribute;
+    abstract public function contains(mixed $value) : bool;
 
     /**
-     * @param AttributeValue $value
+     * Create a new instance of the attribute with the given value.
+     * @param TValue $value
      */
-    abstract public function toString(mixed $value = null) : string;
+    abstract public function createInstance(mixed $value) : static;
 
     /**
-     * @return AttributeValue
-     * @throws AttributeParseException
+     * Merges this attributes's value with another value and return an instance holding the merged value.
+     *
+     * @param TValue $value
+     * @return self<TValue>
+     */
+    abstract public function merge(mixed $value) : self;
+
+    /**
+     * Returns an example of a string that would parse into a valid value of this instance.
+     */
+    abstract public function getExample() : string;
+
+    /**
+     * Returns a string representation of the instance, that when passed through {@see parse()} will result in
+     * an equivalent instance.
+     *
+     * @return string representation of the attribute
+     */
+    abstract public function toString() : string;
+
+    /**
+     * Returns a more easily readable string representation of the instance, that might not be parseable with
+     * {@see parse()}.
+     * This method is used for display purposes and should not be used for storage or parsing.
+     *
+     * @return string representation of the attribute
+     */
+    abstract public function toReadableString() : string;
+
+    /**
+     * Parse a string into a attribute value, and throw an exception in the case that the string does not represent a
+     * valid value.
+     * Returns the parsed value.
+     *
+     * @return TValue
+     * @throws AttributeParseException if the value could not be parsed
      */
     abstract public function parse(string $value) : mixed;
 
     /**
-     * @phpstan-return array{ID: string, permission: string, default: string, value: string}
+     * @return array{ID: string, value: string}
      */
     public function __serialize() : array {
         return [
             "ID" => $this->ID,
-            "permission" => $this->permission,
-            "default" => $this->default,
             "value" => $this->toString()
         ];
     }
 
     /**
-     * @phpstan-param array{ID: string, permission: string, default: string, value: string} $data
-     * @throws AttributeParseException
+     * @param array<array-key, mixed> $data
+     * @throws InvalidArgumentException
      */
     public function __unserialize(array $data) : void {
-        $this->ID = $data["ID"];
-        $this->permission = $data["permission"];
-        $this->default = $data["default"];
-        $this->value = $this->parse($data["value"]);
+        if (isset($data["ID"], $data["value"]) && is_string($data["ID"]) && is_string($data["value"])) {
+            $this->ID = $data["ID"];
+            try {
+                $this->value = $this->parse($data["value"]);
+                return;
+            } catch(AttributeParseException) {
+            }
+        }
+        throw new InvalidArgumentException("Invalid serialized data given for " . static::class);
     }
 }

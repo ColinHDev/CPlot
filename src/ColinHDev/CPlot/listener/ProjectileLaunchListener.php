@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\PveFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
 use ColinHDev\CPlot\plots\Plot;
-use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\worlds\NonWorldSettings;
-use ColinHDev\CPlot\worlds\WorldSettings;
+use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\Snowball;
@@ -19,6 +18,7 @@ use pocketmine\event\Listener;
 use pocketmine\player\Player;
 
 class ProjectileLaunchListener implements Listener {
+    use APIHolder;
 
     /**
      * @handleCancelled false
@@ -26,15 +26,17 @@ class ProjectileLaunchListener implements Listener {
     public function onProjectileLaunch(ProjectileLaunchEvent $event) : void {
         $entity = $event->getEntity();
         $position = $entity->getPosition();
-        $worldSettings = DataProvider::getInstance()->loadWorldIntoCache($position->getWorld()->getFolderName());
-        if (!($worldSettings instanceof WorldSettings)) {
-            if (!($worldSettings instanceof NonWorldSettings)) {
+        /** @phpstan-var true|false|null $isPlotWorld */
+        $isPlotWorld = $this->getAPI()->isPlotWorld($position->getWorld())->getResult();
+        if ($isPlotWorld !== true) {
+            if ($isPlotWorld !== false) {
                 $event->cancel();
-                return;
             }
             return;
         }
-        $plot = Plot::loadFromPositionIntoCache($position);
+
+        /** @phpstan-var Plot|false|null $plot */
+        $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
         if (!($plot instanceof Plot)) {
             $event->cancel();
             return;
@@ -42,12 +44,8 @@ class ProjectileLaunchListener implements Listener {
 
         $owningEntity = $entity->getOwningEntity();
         if (!($owningEntity instanceof Player)) {
-            if ($owningEntity !== null) {
-                /** @var BooleanAttribute $flag */
-                $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVE);
-                if ($flag->getValue() === true) {
-                    return;
-                }
+            if ($owningEntity !== null && $plot->getFlag(Flags::PVE())->equals(PveFlag::TRUE())) {
+                return;
             }
             $event->cancel();
             return;
@@ -68,12 +66,16 @@ class ProjectileLaunchListener implements Listener {
             }
         }
 
-        if ($entity instanceof Arrow || $entity instanceof Egg || $entity instanceof Snowball || $entity instanceof SplashPotion) {
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVP);
-            if ($flag->getValue() === true) {
-                return;
-            }
+        if (
+            (
+                $entity instanceof Arrow ||
+                $entity instanceof Egg ||
+                $entity instanceof Snowball ||
+                $entity instanceof SplashPotion
+            ) &&
+            $plot->getFlag(Flags::PVP())->equals(PvpFlag::TRUE())
+        ) {
+            return;
         }
 
         $event->cancel();

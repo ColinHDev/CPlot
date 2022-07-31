@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\player;
 
 use ColinHDev\CPlot\attributes\BaseAttribute;
+use ColinHDev\CPlot\player\settings\Setting;
 use ColinHDev\CPlot\player\settings\SettingManager;
-use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\player\OfflinePlayer;
 use pocketmine\player\Player;
 use pocketmine\Server;
+use function is_string;
 
 class PlayerData {
 
@@ -20,11 +21,11 @@ class PlayerData {
     private ?string $playerName;
     private int $lastJoin;
 
-    /** @phpstan-var array<string, BaseAttribute<mixed>> */
+    /** @phpstan-var array<string, Setting<mixed>> */
     private array $settings;
 
     /**
-     * @phpstan-param array<string, BaseAttribute<mixed>> $settings
+     * @phpstan-param array<string, Setting<mixed>> $settings
      */
     public function __construct(int $playerID, ?string $playerUUID, ?string $playerXUID, ?string $playerName, int $lastJoin, array $settings) {
         $this->playerID = $playerID;
@@ -49,6 +50,25 @@ class PlayerData {
 
     public function getPlayerName() : ?string {
         return $this->playerName;
+    }
+
+    /**
+     * Check whether  this class instance represents the {@see PlayerData} of the given {@see Player}.
+     * @param Player $player The player to check.
+     * Returns true if the given player is the same as the player this class instance represents.
+     * @return bool
+     */
+    public function isSame(Player $player) : bool {
+        if (is_string($this->playerUUID)) {
+            return $this->playerUUID === $player->getUniqueId()->getBytes();
+        }
+        if (is_string($this->playerXUID)) {
+            return $this->playerXUID === $player->getXuid();
+        }
+        if (is_string($this->playerName)) {
+            return $this->playerName === $player->getName();
+        }
+        return false;
     }
 
     /**
@@ -115,16 +135,50 @@ class PlayerData {
     }
 
     /**
-     * @phpstan-return array<string, BaseAttribute<mixed>>
+     * @phpstan-return array<string, Setting<mixed>>
      */
     public function getSettings() : array {
         return $this->settings;
     }
 
     /**
-     * @phpstan-return BaseAttribute<mixed>|null
+     * @phpstan-template TSetting of Setting<mixed>
+     * @phpstan-param TSetting $setting
+     * @phpstan-return TSetting
      */
-    public function getSettingByID(string $settingID) : ?BaseAttribute {
+    public function getSetting(Setting $setting) : Setting {
+        /** @phpstan-var TSetting $setting */
+        $setting = $this->getSettingByID($setting->getID());
+        return $setting;
+    }
+
+    /**
+     * @phpstan-template TSetting of Setting<mixed>
+     * @phpstan-param TSetting $setting
+     * @phpstan-return TSetting|null
+     */
+    public function getLocalSetting(Setting $setting) : ?Setting {
+        /** @phpstan-var TSetting|null $setting */
+        $setting = $this->getLocalSettingByID($setting->getID());
+        return $setting;
+    }
+
+    /**
+     * @phpstan-return Setting<mixed>
+     */
+    public function getSettingByID(string $settingID) : Setting {
+        $setting = $this->getLocalSettingByID($settingID);
+        if ($setting === null) {
+            $setting = SettingManager::getInstance()->getSettingByID($settingID);
+            assert($setting instanceof Setting);
+        }
+        return $setting;
+    }
+
+    /**
+     * @phpstan-return Setting<mixed>|null
+     */
+    public function getLocalSettingByID(string $settingID) : ?Setting {
         if (!isset($this->settings[$settingID])) {
             return null;
         }
@@ -132,53 +186,15 @@ class PlayerData {
     }
 
     /**
-     * @phpstan-return BaseAttribute<mixed>|null
+     * @template TSetting of Setting<mixed>
+     * @param TSetting $setting
      */
-    public function getSettingNonNullByID(string $settingID) : ?BaseAttribute {
-        $setting = $this->getSettingByID($settingID);
-        if ($setting === null) {
-            $setting = SettingManager::getInstance()->getSettingByID($settingID);
-        }
-        return $setting;
-    }
-
-    /**
-     * @phpstan-template TAttributeValue
-     * @phpstan-param BaseAttribute<TAttributeValue> $setting
-     */
-    public function addSetting(BaseAttribute $setting) : void {
+    public function addSetting(Setting $setting) : void {
         $this->settings[$setting->getID()] = $setting;
     }
 
     public function removeSetting(string $settingID) : void {
         unset($this->settings[$settingID]);
-    }
-
-    public static function getIdentifierFromPlayer(Player $player) : string {
-        return self::getIdentifierFromData($player->getUniqueId()->getBytes(), $player->getXuid(), $player->getName());
-    }
-
-    public static function getIdentifierFromPlayerData(self $player) : string {
-        return self::getIdentifierFromData($player->getPlayerUUID(), $player->getPlayerXUID(), $player->getPlayerName());
-    }
-
-    public static function getIdentifierFromData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : string {
-        $identifier = "";
-        switch (DataProvider::getInstance()->getPlayerIdentifierType()) {
-            case "uuid":
-                assert(is_string($playerUUID));
-                $identifier = $playerUUID;
-                break;
-            case "xuid":
-                assert(is_string($playerXUID));
-                $identifier = $playerXUID;
-                break;
-            case "name":
-                assert(is_string($playerName));
-                $identifier = $playerName;
-                break;
-        }
-        return $identifier;
     }
 
     /**
@@ -206,7 +222,7 @@ class PlayerData {
         $this->lastJoin = $data["lastJoin"];
         $settings = unserialize($data["settings"], ["allowed_classes" => false]);
         assert(is_array($settings));
-        /** @phpstan-var array<string, BaseAttribute<mixed>> $settings */
+        /** @phpstan-var array<string, Setting<mixed>> $settings */
         $this->settings = $settings;
     }
 }

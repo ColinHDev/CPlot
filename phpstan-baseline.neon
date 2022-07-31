@@ -1,6 +1,36 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Parameter \\#1 \\$closure of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:f2c\\(\\) expects callable\\(\\)\\: Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Closure\\(\\)\\: Generator\\<mixed, mixed, mixed, array\\<string, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\>\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/CPlotAPI.php
+
+		-
+			message: "#^Parameter \\#1 \\.\\.\\.\\$promises of static method ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<mixed\\>\\:\\:all\\(\\) expects ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<bool\\|ColinHDev\\\\CPlot\\\\plots\\\\Plot\\>, ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|false\\> given\\.$#"
+			count: 3
+			path: src/ColinHDev/CPlot/CPlotAPI.php
+
+		-
+			message: "#^Parameter \\#2 \\$onComplete of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:f2c\\(\\) expects \\(callable\\(mixed\\)\\: void\\)\\|null, Closure\\(array\\)\\: void given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/CPlotAPI.php
+
+		-
+			message: "#^Parameter \\#2 \\.\\.\\.\\$promises of static method ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<mixed\\>\\:\\:all\\(\\) expects ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<bool\\|ColinHDev\\\\CPlot\\\\plots\\\\Plot\\>, ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|false\\> given\\.$#"
+			count: 3
+			path: src/ColinHDev/CPlot/CPlotAPI.php
+
+		-
+			message: "#^Parameter \\#3 \\.\\.\\.\\$promises of static method ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<mixed\\>\\:\\:all\\(\\) expects ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<bool\\|ColinHDev\\\\CPlot\\\\plots\\\\Plot\\>, ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|false\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/CPlotAPI.php
+
+		-
+			message: "#^Parameter \\#4 \\.\\.\\.\\$promises of static method ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<mixed\\>\\:\\:all\\(\\) expects ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<bool\\|ColinHDev\\\\CPlot\\\\plots\\\\Plot\\>, ColinHDev\\\\CPlot\\\\utils\\\\promise\\\\Promise\\<ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|false\\> given\\.$#"
+			count: 1
+			path: src/ColinHDev/CPlot/CPlotAPI.php
+
+		-
 			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, mixed, mixed\\> given\\.$#"
 			count: 1
 			path: src/ColinHDev/CPlot/commands/PlotCommand.php
@@ -14,11 +44,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, mixed, mixed\\> given\\.$#"
 			count: 1
 			path: src/ColinHDev/CPlot/commands/subcommands/WallSubcommand.php
-
-		-
-			message: "#^Parameter \\#1 \\$closure of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:f2c\\(\\) expects callable\\(\\)\\: Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Closure\\(\\)\\: Generator\\<mixed, mixed, mixed, void\\> given\\.$#"
-			count: 1
-			path: src/ColinHDev/CPlot/listener/ChunkPopulateListener.php
 
 		-
 			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, mixed, void\\> given\\.$#"
@@ -57,12 +82,12 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, mixed, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|null\\> given\\.$#"
-			count: 2
+			count: 4
 			path: src/ColinHDev/CPlot/provider/DataProvider.php
 
 		-
-			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, mixed, ColinHDev\\\\CPlot\\\\worlds\\\\NonWorldSettings\\|ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\> given\\.$#"
-			count: 1
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, mixed, ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\|false\\> given\\.$#"
+			count: 2
 			path: src/ColinHDev/CPlot/provider/DataProvider.php
 
 		-
@@ -76,6 +101,11 @@ parameters:
 			path: src/ColinHDev/CPlot/provider/DataProvider.php
 
 		-
-			message: "#^ColinHDev\\\\CPlot\\\\tasks\\\\utils\\\\DummyTile\\:\\:__construct\\(\\) does not call parent constructor from pocketmine\\\\block\\\\tile\\\\Tile\\.$#"
+			message: "#^Parameter \\#2 \\$onComplete of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects \\(callable\\(mixed\\)\\: void\\)\\|null, \\(Closure\\(ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|null\\)\\: void\\)\\|null given\\.$#"
+			count: 2
+			path: src/ColinHDev/CPlot/provider/DataProvider.php
+
+		-
+			message: "#^Parameter \\#2 \\$onComplete of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects \\(callable\\(mixed\\)\\: void\\)\\|null, \\(Closure\\(ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\|false\\)\\: void\\)\\|null given\\.$#"
 			count: 1
-			path: src/ColinHDev/CPlot/tasks/utils/DummyTile.php
+			path: src/ColinHDev/CPlot/provider/DataProvider.php
