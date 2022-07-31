@@ -36,10 +36,11 @@ use pocketmine\command\CommandSender;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use SOFe\AwaitGenerator\Await;
+use Throwable;
 
 class PlotCommand extends Command implements PluginOwned {
 
-    /** @var array<string, Subcommand<mixed, mixed, mixed, mixed>> */
+    /** @var array<string, Subcommand> */
     private array $subcommands = [];
 
     /**
@@ -84,23 +85,16 @@ class PlotCommand extends Command implements PluginOwned {
     }
 
     /**
-     * @phpstan-return array<string, Subcommand<mixed, mixed, mixed, mixed>>
+     * @phpstan-return array<string, Subcommand>
      */
     public function getSubcommands() : array {
         return $this->subcommands;
     }
 
-    /**
-     * @phpstan-return null|Subcommand<mixed, mixed, mixed, mixed>
-     */
     public function getSubcommandByName(string $name) : ?Subcommand {
         return $this->subcommands[$name] ?? null;
     }
 
-    /**
-     * @phpstan-template TSubcommand of Subcommand<mixed, mixed, mixed, mixed>
-     * @phpstan-param TSubcommand $subcommand
-     */
     public function registerSubcommand(Subcommand $subcommand) : void {
         $this->subcommands[$subcommand->getName()] = $subcommand;
         foreach ($subcommand->getAlias() as $alias) {
@@ -131,15 +125,10 @@ class PlotCommand extends Command implements PluginOwned {
         }
         Await::g2c(
             $command->execute($sender, $args),
-            static function (mixed $return = null) use ($command, $sender) : void {
-                if ($return !== null) {
-                    $command->onSuccess($sender, $return);
-                }
-            },
-            static function (?\Throwable $error = null) use ($command, $sender) : void {
-                if ($error !== null) {
-                    $command->onError($sender, $error);
-                }
+            null,
+            static function(Throwable $error) use ($sender, $commandLabel, $subcommand) : void {
+                $sender->getServer()->getLogger()->logException($error);
+                LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "plot.executionError" => [$commandLabel, $subcommand]]);
             }
         );
     }

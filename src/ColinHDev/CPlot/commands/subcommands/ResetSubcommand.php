@@ -21,37 +21,34 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class ResetSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.senderNotOnline"]);
-            return null;
+            return;
         }
 
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.noPlotWorld"]);
-            return null;
+            return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.noPlot"]);
-            return null;
+            return;
         }
 
         if (!$sender->hasPermission("cplot.admin.reset")) {
             if (!$plot->hasPlotOwner()) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.noPlotOwner"]);
-                return null;
+                return;
             }
             if (!$plot->isPlotOwner($sender)) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.notPlotOwner"]);
-                return null;
+                return;
             }
         }
 
@@ -59,7 +56,7 @@ class ResetSubcommand extends Subcommand {
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.serverPlotFlag" => $flag->getID()]);
-            return null;
+            return;
         }
 
         $economyManager = EconomyManager::getInstance();
@@ -67,7 +64,22 @@ class ResetSubcommand extends Subcommand {
         if ($economyProvider instanceof EconomyProvider) {
             $price = $economyManager->getResetPrice();
             if ($price > 0.0) {
-                yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getResetReason());
+                try {
+                    yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getResetReason());
+                } catch(EconomyException $exception) {
+                    $errorMessage = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $exception->getLanguageKey());
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                        $sender, [
+                            "prefix",
+                            "reset.chargeMoneyError" => [
+                                $economyProvider->parseMoneyToString($price),
+                                $economyProvider->getCurrency(),
+                                $errorMessage
+                            ]
+                        ]
+                    );
+                    return;
+                }
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
@@ -90,37 +102,5 @@ class ResetSubcommand extends Subcommand {
             "Resetting plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.finish" => $elapsedTimeString]);
-        return null;
-    }
-
-    public function onError(CommandSender $sender, \Throwable $error) : void {
-        if ($sender instanceof Player && !$sender->isConnected()) {
-            return;
-        }
-        if ($error instanceof EconomyException) {
-            LanguageManager::getInstance()->getProvider()->translateForCommandSender(
-                $sender,
-                $error->getLanguageKey(),
-                static function(string $errorMessage) use($sender) : void {
-                    $economyManager = EconomyManager::getInstance();
-                    $economyProvider = $economyManager->getProvider();
-                    // This exception should not be thrown if no economy provider is set.
-                    assert($economyProvider instanceof EconomyProvider);
-                    LanguageManager::getInstance()->getProvider()->sendMessage(
-                        $sender,
-                        [
-                            "prefix",
-                            "reset.chargeMoneyError" => [
-                                $economyProvider->parseMoneyToString($economyManager->getResetPrice()),
-                                $economyProvider->getCurrency(),
-                                $errorMessage
-                            ]
-                        ]
-                    );
-                }
-            );
-            return;
-        }
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "reset.deletePlotError" => $error->getMessage()]);
     }
 }

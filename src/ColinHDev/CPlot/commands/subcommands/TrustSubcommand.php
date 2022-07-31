@@ -18,21 +18,19 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
+use poggit\libasynql\SqlError;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class TrustSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.senderNotOnline"]);
-            return null;
+            return;
         }
 
         if (count($args) === 0) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.usage"]);
-            return null;
+            return;
         }
 
         $player = null;
@@ -49,14 +47,14 @@ class TrustSubcommand extends Subcommand {
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if (!($playerData instanceof PlayerData)) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.playerNotFound" => $playerName]);
-                    return null;
+                    return;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
                 $playerXUID = $playerData->getPlayerXUID();
             }
             if ($playerUUID === $sender->getUniqueId()->getBytes()) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.senderIsPlayer"]);
-                return null;
+                return;
             }
         } else {
             $playerUUID = "*";
@@ -66,23 +64,23 @@ class TrustSubcommand extends Subcommand {
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.noPlotWorld"]);
-            return null;
+            return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.noPlot"]);
-            return null;
+            return;
         }
 
         if (!$plot->hasPlotOwner()) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.noPlotOwner"]);
-            return null;
+            return;
         }
         if (!$sender->hasPermission("cplot.admin.trust")) {
             if (!$plot->isPlotOwner($sender)) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.notPlotOwner"]);
-                return null;
+                return;
             }
         }
 
@@ -90,30 +88,35 @@ class TrustSubcommand extends Subcommand {
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.serverPlotFlag" => $flag->getID()]);
-            return null;
+            return;
         }
 
         if (!($playerData instanceof PlayerData)) {
             $playerData = yield DataProvider::getInstance()->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
             if (!($playerData instanceof PlayerData)) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.playerNotFound" => $playerName]);
-                return null;
+                return;
             }
         }
         if ($plot->isPlotTrustedExact($playerData)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.playerAlreadyTrusted" => $playerName]);
-            return null;
+            return;
         }
 
         $plotPlayer = new PlotPlayer($playerData, PlotPlayer::STATE_TRUSTED);
         /** @phpstan-var PlotPlayerAddAsyncEvent $event */
         $event = yield from PlotPlayerAddAsyncEvent::create($plot, $plotPlayer, $sender);
         if ($event->isCancelled()) {
-            return null;
+            return;
         }
 
         $plot->addPlotPlayer($plotPlayer);
-        yield DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
+        try {
+            yield from DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
+        } catch (SqlError $exception) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.saveError" => $exception->getMessage()]);
+            return;
+        }
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.success" => $playerName]);
 
         if ($player instanceof Player) {
@@ -126,13 +129,5 @@ class TrustSubcommand extends Subcommand {
                 );
             }
         }
-        return null;
-    }
-
-    public function onError(CommandSender $sender, \Throwable $error) : void {
-        if ($sender instanceof Player && !$sender->isConnected()) {
-            return;
-        }
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "trust.saveError" => $error->getMessage()]);
     }
 }

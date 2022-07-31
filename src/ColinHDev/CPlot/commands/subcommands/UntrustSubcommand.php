@@ -18,21 +18,19 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
+use poggit\libasynql\SqlError;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class UntrustSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.senderNotOnline"]);
-            return null;
+            return;
         }
 
         if (count($args) === 0) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.usage"]);
-            return null;
+            return;
         }
 
         $player = null;
@@ -48,7 +46,7 @@ class UntrustSubcommand extends Subcommand {
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if (!($playerData instanceof PlayerData)) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.playerNotFound" => $playerName]);
-                    return null;
+                    return;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
                 $playerXUID = $playerData->getPlayerXUID();
@@ -61,23 +59,23 @@ class UntrustSubcommand extends Subcommand {
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.noPlotWorld"]);
-            return null;
+            return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.noPlot"]);
-            return null;
+            return;
         }
 
         if (!$plot->hasPlotOwner()) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.noPlotOwner"]);
-            return null;
+            return;
         }
         if (!$sender->hasPermission("cplot.admin.untrust")) {
             if (!$plot->isPlotOwner($sender)) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.notPlotOwner"]);
-                return null;
+                return;
             }
         }
 
@@ -85,25 +83,30 @@ class UntrustSubcommand extends Subcommand {
         $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
         if ($flag->getValue() === true) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.serverPlotFlag" => $flag->getID()]);
-            return null;
+            return;
         }
 
         $playerIdentifier = PlayerData::getIdentifierFromData($playerUUID, $playerXUID, $playerName);
         $plotPlayer = $plot->getPlotPlayerExact($playerIdentifier);
         if (!($plotPlayer instanceof PlotPlayer) || $plotPlayer->getState() !== PlotPlayer::STATE_TRUSTED) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.playerNotTrusted" => $playerName]);
-            return null;
+            return;
         }
 
         /** @phpstan-var PlotPlayerRemoveAsyncEvent $event */
         $event = yield from PlotPlayerRemoveAsyncEvent::create($plot, $plotPlayer, $sender);
         if ($event->isCancelled()) {
-            return null;
+            return;
         }
 
         $playerData = $plotPlayer->getPlayerData();
         $plot->removePlotPlayer($playerIdentifier);
-        yield DataProvider::getInstance()->deletePlotPlayer($plot, $playerData->getPlayerID());
+        try {
+            yield from DataProvider::getInstance()->deletePlotPlayer($plot, $playerData->getPlayerID());
+        } catch (SqlError $exception) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.saveError" => $exception->getMessage()]);
+            return;
+        }
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.success" => $playerName]);
 
         if ($player instanceof Player) {
@@ -116,13 +119,5 @@ class UntrustSubcommand extends Subcommand {
                 );
             }
         }
-        return null;
-    }
-
-    public function onError(CommandSender $sender, \Throwable $error) : void {
-        if ($sender instanceof Player && !$sender->isConnected()) {
-            return;
-        }
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "untrust.saveError" => $error->getMessage()]);
     }
 }

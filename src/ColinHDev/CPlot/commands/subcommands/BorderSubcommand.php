@@ -28,9 +28,6 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class BorderSubcommand extends Subcommand {
 
     private MenuForm $form;
@@ -80,15 +77,13 @@ class BorderSubcommand extends Subcommand {
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "border.senderNotOnline"]);
-            return null;
+            return;
         }
-
         $sender->sendForm($this->form);
-        return null;
     }
 
     /**
-     * @phpstan-return \Generator<mixed, mixed, WorldSettings|NonWorldSettings|Plot|null, void>
+     * @phpstan-return \Generator<mixed, mixed, mixed, mixed>
      */
     public function onFormSubmit(Player $player, int $selectedOption) : \Generator {
         if (!$player->hasPermission($this->permissions[$selectedOption])) {
