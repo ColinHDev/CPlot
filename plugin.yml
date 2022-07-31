@@ -42,7 +42,11 @@ permissions:
         default: true
     cplot.subcommand.info:
         default: true
+    cplot.subcommand.kick:
+        default: true
     cplot.subcommand.merge:
+        default: true
+    cplot.subcommand.middle:
         default: true
     cplot.subcommand.remove:
         default: true
@@ -81,13 +85,15 @@ permissions:
         default: op
     cplot.admin.flag:
         default: op
+    cplot.admin.kick:
+        default: op
     cplot.admin.merge:
         default: op
     cplot.admin.remove:
         default: op
     cplot.admin.reset:
         default: op
-    plot.admin.spawn:
+    cplot.admin.spawn:
         default: op
     cplot.admin.trust:
         default: op
@@ -101,6 +107,8 @@ permissions:
         default: op
 
     cplot.bypass.deny:
+        default: op
+    cplot.bypass.kick:
         default: op
 
     cplot.claimPlots.4:

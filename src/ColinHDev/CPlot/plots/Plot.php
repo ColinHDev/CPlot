@@ -29,9 +29,11 @@ use pocketmine\block\Block;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
 use pocketmine\math\Facing;
+use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
+use pocketmine\world\World;
 use SOFe\AwaitGenerator\Await;
 use function assert;
 use function unserialize;
@@ -302,13 +304,31 @@ class Plot extends BasePlot {
      */
     public function getCenterTeleportLocation() : Location {
         if (count($this->mergePlots) >= 1) {
-            $northestPlot = $this->toBasePlot();
+            $northPlot = $southPlot = $westPlot = $eastPlot = $this->toBasePlot();
             foreach ($this->mergePlots as $mergePlot) {
-                if ($northestPlot->getZ() > $mergePlot->getZ()) {
-                    $northestPlot = $mergePlot;
+                if ($northPlot->getZ() > $mergePlot->getZ()) {
+                    $northPlot = $mergePlot;
+                }
+                if ($southPlot->getZ() < $mergePlot->getZ()) {
+                    $southPlot = $mergePlot;
+                }
+                if ($westPlot->getX() > $mergePlot->getX()) {
+                    $westPlot = $mergePlot;
+                }
+                if ($eastPlot->getX() < $mergePlot->getX()) {
+                    $eastPlot = $mergePlot;
                 }
             }
-            return $northestPlot->getCenterTeleportLocation();
+            $world = $this->getWorld();
+            assert($world instanceof World);
+            return Location::fromObject(
+                $world->getSafeSpawn(new Vector3(
+                    ($westPlot->getVector3()->x + $eastPlot->getVector3()->x + $this->worldSettings->getPlotSize()) / 2,
+                    $world->getMaxY(),
+                    ($northPlot->getVector3()->z + $southPlot->getVector3()->z + $this->worldSettings->getPlotSize()) / 2
+                )),
+                $world, 0.0, 0.0
+            );
         }
         return parent::getCenterTeleportLocation();
     }
