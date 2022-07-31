@@ -83,7 +83,7 @@ class KickSubcommand extends Subcommand {
                     continue;
                 }
                 if ($target === $sender) {
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.senderIsPlayer"]);
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.senderIsTarget"]);
                     continue;
                 }
                 if (!$plot->isOnPlot($target->getPosition())) {
