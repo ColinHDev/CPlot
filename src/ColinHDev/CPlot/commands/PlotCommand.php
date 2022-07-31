@@ -19,6 +19,7 @@ use ColinHDev\CPlot\commands\subcommands\HelpSubcommand;
 use ColinHDev\CPlot\commands\subcommands\InfoSubcommand;
 use ColinHDev\CPlot\commands\subcommands\KickSubcommand;
 use ColinHDev\CPlot\commands\subcommands\MergeSubcommand;
+use ColinHDev\CPlot\commands\subcommands\MiddleSubcommand;
 use ColinHDev\CPlot\commands\subcommands\RemoveSubcommand;
 use ColinHDev\CPlot\commands\subcommands\ResetSubcommand;
 use ColinHDev\CPlot\commands\subcommands\SchematicSubcommand;
@@ -76,6 +77,7 @@ class PlotCommand extends Command implements PluginOwned {
         $this->registerSubcommand(new InfoSubcommand("info"));
         $this->registerSubcommand(new KickSubcommand("kick"));
         $this->registerSubcommand(new MergeSubcommand("merge"));
+        $this->registerSubcommand(new MiddleSubcommand("middle"));
         $this->registerSubcommand(new RemoveSubcommand("remove"));
         $this->registerSubcommand(new ResetSubcommand("reset"));
         $this->registerSubcommand(new SchematicSubcommand("schematic"));

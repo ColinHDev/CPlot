@@ -46,6 +46,8 @@ permissions:
         default: true
     cplot.subcommand.merge:
         default: true
+    cplot.subcommand.middle:
+        default: true
     cplot.subcommand.remove:
         default: true
     cplot.subcommand.reset:
