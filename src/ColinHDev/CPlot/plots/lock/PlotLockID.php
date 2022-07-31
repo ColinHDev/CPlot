@@ -12,16 +12,12 @@ use pocketmine\utils\NotSerializable;
  * @see PlotLockManager::lockPlot()
  * @see PlotLockManager::unlockPlot()
  */
-final class PlotLockID {
+abstract class PlotLockID {
     use NotCloneable;
     use NotSerializable;
 
     /** @phpstan-var array array<class-string<PlotLockID>, true> */
     protected static array $compatibleLocks = [];
-
-    public function __construct(string $lockIdentifier) {
-
-    }
 
     final public function isCompatible(PlotLockID $other) : bool {
         return isset(static::$compatibleLocks[$other::class]);
