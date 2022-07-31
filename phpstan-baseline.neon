@@ -6,12 +6,12 @@ parameters:
 			path: src/ColinHDev/CPlot/commands/PlotCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|ColinHDev\\\\CPlot\\\\worlds\\\\NonWorldSettings\\|ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\|null, void\\> given\\.$#"
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, mixed, mixed\\> given\\.$#"
 			count: 1
 			path: src/ColinHDev/CPlot/commands/subcommands/BorderSubcommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, ColinHDev\\\\CPlot\\\\plots\\\\Plot\\|ColinHDev\\\\CPlot\\\\worlds\\\\NonWorldSettings\\|ColinHDev\\\\CPlot\\\\worlds\\\\WorldSettings\\|null, void\\> given\\.$#"
+			message: "#^Parameter \\#1 \\$generator of static method SOFe\\\\AwaitGenerator\\\\Await\\<mixed\\>\\:\\:g2c\\(\\) expects Generator\\<mixed, 'all'\\|'once'\\|'race'\\|'reject'\\|'resolve'\\|array\\{'resolve'\\}\\|Generator\\|null, mixed, mixed\\>, Generator\\<mixed, mixed, mixed, mixed\\> given\\.$#"
 			count: 1
 			path: src/ColinHDev/CPlot/commands/subcommands/WallSubcommand.php
 
