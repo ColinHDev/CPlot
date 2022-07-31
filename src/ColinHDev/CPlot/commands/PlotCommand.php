@@ -38,9 +38,11 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
+use pocketmine\utils\SingletonTrait;
 use SOFe\AwaitGenerator\Await;
 
 class PlotCommand extends Command implements PluginOwned {
+    use SingletonTrait;
 
     /** @var array<string, Subcommand<mixed, mixed, mixed, mixed>> */
     private array $subcommands = [];
@@ -52,6 +54,7 @@ class PlotCommand extends Command implements PluginOwned {
      * @throws \InvalidArgumentException|\JsonException
      */
     public function __construct() {
+        self::setInstance($this);
         $languageProvider = LanguageManager::getInstance()->getProvider();
         parent::__construct(
             $languageProvider->translateString("plot.name"),
