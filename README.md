@@ -26,6 +26,7 @@ CPlot provides a number of events that can be used to hook into the plugin's cod
 Currently, the following events can be used:
 - [ColinHDev\CPlot\event\PlayerEnteredPlotEvent](src/ColinHDev/CPlot/event/PlayerEnteredPlotEvent.php): **Always** called when a player *entered* a plot.
 - [ColinHDev\CPlot\event\PlayerEnterPlotEvent](src/ColinHDev/CPlot/event/PlayerEnterPlotEvent.php): **Sometimes** called when a player *enters* a plot.
+- [ColinHDev\CPlot\event\PlotKickFromPlotEvent](src/ColinHDev/CPlot/event/PlotKickFromPlotEvent.php): Called when a player is kicked from a plot by another player.
 - [ColinHDev\CPlot\event\PlayerLeavePlotEvent](src/ColinHDev/CPlot/event/PlayerLeavePlotEvent.php): **Sometimes** called when a player *leaves* a plot.
 - [ColinHDev\CPlot\event\PlayerLeftPlotEvent](src/ColinHDev/CPlot/event/PlayerLeftPlotEvent.php): **Always** called when a player *left* a plot.
 - [ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent](src/ColinHDev/CPlot/event/PlotBiomeChangeAsyncEvent.php): Called when the biome of a plot is changed.
