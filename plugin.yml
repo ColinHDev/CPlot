@@ -83,7 +83,7 @@ permissions:
         default: op
     cplot.admin.flag:
         default: op
-    plot.admin.kick:
+    cplot.admin.kick:
         default: op
     cplot.admin.merge:
         default: op
@@ -91,7 +91,7 @@ permissions:
         default: op
     cplot.admin.reset:
         default: op
-    plot.admin.spawn:
+    cplot.admin.spawn:
         default: op
     cplot.admin.trust:
         default: op
