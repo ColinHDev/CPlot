@@ -9,13 +9,7 @@ namespace ColinHDev\CPlot\plots\lock;
  */
 class ClearLockID extends PlotLockID {
 
-    /** @phpstan-var array array<class-string<PlotLockID>, true> */
-    protected static array $compatibleLocks = [
-        PlotAddDeniedLockID::class => true,
-        PlotAddHelperLockID::class => true,
-        PlotAddTrustedLockID::class => true,
-        PlotRemoveDeniedLockID::class => true,
-        PlotRemoveHelperLockID::class => true,
-        PlotRemoveTrustedLockID::class => true
-    ];
+    public function isCompatible(PlotLockID $other) : bool {
+        return $other instanceof AddPlotPlayerLockID || $other instanceof RemovePlotPlayerLockID;
+    }
 }

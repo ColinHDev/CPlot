@@ -8,4 +8,8 @@ namespace ColinHDev\CPlot\plots\lock;
  * This {@see PlotLockID} is used to lock a {@see Plot}, while clearing its area and resetting its data.
  */
 class ResetLockID extends PlotLockID {
+
+    public function isCompatible(PlotLockID $other) : bool {
+        return false;
+    }
 }

@@ -16,10 +16,5 @@ abstract class PlotLockID {
     use NotCloneable;
     use NotSerializable;
 
-    /** @phpstan-var array array<class-string<PlotLockID>, true> */
-    protected static array $compatibleLocks = [];
-
-    final public function isCompatible(PlotLockID $other) : bool {
-        return isset(static::$compatibleLocks[$other::class]);
-    }
+    abstract public function isCompatible(PlotLockID $other) : bool;
 }

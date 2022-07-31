@@ -14,4 +14,14 @@ class RemovePlotPlayerLockID extends PlotLockID {
     public function __construct(int $playerID) {
         $this->playerID = $playerID;
     }
+
+    public function isCompatible(PlotLockID $other) : bool {
+        if ($other instanceof ClearLockID) {
+            return true;
+        }
+        if ($other instanceof self || $other instanceof AddPlotPlayerLockID) {
+            return $this->playerID !== $other->playerID;
+        }
+        return false;
+    }
 }
