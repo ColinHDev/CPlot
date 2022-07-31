@@ -7,7 +7,7 @@ namespace ColinHDev\CPlot\plots\lock;
 /**
  * This {@see PlotLockID} is used to lock a {@see Plot}, while clearing its area.
  */
-class PlotClearLockID extends PlotLockID {
+class ClearLockID extends PlotLockID {
 
     /** @phpstan-var array array<class-string<PlotLockID>, true> */
     protected static array $compatibleLocks = [
