@@ -6,6 +6,8 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\lock\BiomeChangeLockID;
+use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
@@ -89,6 +91,12 @@ class BiomeSubcommand extends Subcommand {
             }
         }
 
+        $lock = new BiomeChangeLockID();
+        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock)) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.plotLocked"]);
+            return;
+        }
+
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.start"]);
         /** @phpstan-var PlotBiomeChangeAsyncTask $task */
         $task = yield from Await::promise(
@@ -108,6 +116,7 @@ class BiomeSubcommand extends Subcommand {
             "Changing plot biome to " . $biomeName . "(ID: " . $biomeID . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "biome.finish" => [$elapsedTimeString, $biomeName]]);
+        PlotLockManager::getInstance()->unlockPlot($plot, $lock);
     }
 
     /**

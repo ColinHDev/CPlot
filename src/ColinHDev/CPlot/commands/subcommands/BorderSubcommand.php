@@ -6,6 +6,8 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\lock\BorderChangeLockID;
+use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
@@ -110,6 +112,12 @@ class BorderSubcommand extends Subcommand {
             }
         }
 
+        $lock = new BorderChangeLockID();
+        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock)) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.plotLocked"]);
+            return;
+        }
+
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.start"]);
         $block = $this->blocks[$selectedOption];
         /** @phpstan-var PlotBorderChangeAsyncTask $task */
@@ -129,5 +137,6 @@ class BorderSubcommand extends Subcommand {
             "Changing plot border to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $player->getUniqueId()->getBytes() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.finish" => [$elapsedTimeString, $block->getName()]]);
+        PlotLockManager::getInstance()->unlockPlot($plot, $lock);
     }
 }
