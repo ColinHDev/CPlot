@@ -9,6 +9,8 @@ use ColinHDev\CPlot\event\PlotPlayerRemoveAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\implementation\InformUntrustedSetting;
 use ColinHDev\CPlot\player\settings\Settings;
+use ColinHDev\CPlot\plots\lock\PlotLockManager;
+use ColinHDev\CPlot\plots\lock\RemovePlotPlayerLockID;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -77,19 +79,28 @@ class UntrustSubcommand extends Subcommand {
             return;
         }
 
+        $playerData = $plotPlayer->getPlayerData();
+        $lock = new RemovePlotPlayerLockID($playerData->getPlayerID());
+        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock)) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.plotLocked"]);
+            return;
+        }
+
         /** @phpstan-var PlotPlayerRemoveAsyncEvent $event */
         $event = yield from PlotPlayerRemoveAsyncEvent::create($plot, $plotPlayer, $sender);
         if ($event->isCancelled()) {
+            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
             return;
         }
 
         $plot->removePlotPlayer($plotPlayer);
-        $playerData = $plotPlayer->getPlayerData();
         try {
             yield from DataProvider::getInstance()->deletePlotPlayer($plot, $playerData->getPlayerID());
         } catch (SqlError $exception) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.saveError" => $exception->getMessage()]);
             return;
+        } finally {
+            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
         }
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.success" => $playerName]);
 

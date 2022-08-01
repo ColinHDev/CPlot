@@ -9,6 +9,8 @@ use ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\implementation\InformTrustedSetting;
 use ColinHDev\CPlot\player\settings\Settings;
+use ColinHDev\CPlot\plots\lock\AddPlotPlayerLockID;
+use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -94,10 +96,17 @@ class TrustSubcommand extends Subcommand {
             return;
         }
 
+        $lock = new AddPlotPlayerLockID($playerData->getPlayerID());
+        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock)) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.plotLocked"]);
+            return;
+        }
+
         $plotPlayer = new PlotPlayer($playerData, PlotPlayer::STATE_TRUSTED);
         /** @phpstan-var PlotPlayerAddAsyncEvent $event */
         $event = yield from PlotPlayerAddAsyncEvent::create($plot, $plotPlayer, $sender);
         if ($event->isCancelled()) {
+            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
             return;
         }
 
@@ -107,6 +116,8 @@ class TrustSubcommand extends Subcommand {
         } catch (SqlError $exception) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.saveError" => $exception->getMessage()]);
             return;
+        } finally {
+            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
         }
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.success" => $playerName]);
 

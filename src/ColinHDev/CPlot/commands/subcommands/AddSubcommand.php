@@ -9,7 +9,7 @@ use ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\implementation\InformAddedSetting;
 use ColinHDev\CPlot\player\settings\Settings;
-use ColinHDev\CPlot\plots\lock\PlotAddHelperLockID;
+use ColinHDev\CPlot\plots\lock\AddPlotPlayerLockID;
 use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
@@ -96,8 +96,8 @@ class AddSubcommand extends Subcommand {
             return;
         }
 
-        $plotLockID = new PlotAddHelperLockID();
-        if (!PlotLockManager::getInstance()->isPlotLocked($plot) && PlotLockManager::getInstance()->lockPlotSilent($plot, $plotLockID)) {
+        $lock = new AddPlotPlayerLockID($playerData->getPlayerID());
+        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.plotLocked"]);
             return;
         }
@@ -106,6 +106,7 @@ class AddSubcommand extends Subcommand {
         /** @phpstan-var PlotPlayerAddAsyncEvent $event */
         $event = yield from PlotPlayerAddAsyncEvent::create($plot, $plotPlayer, $sender);
         if ($event->isCancelled()) {
+            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
             return;
         }
 
@@ -115,6 +116,8 @@ class AddSubcommand extends Subcommand {
         } catch (SqlError $exception) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.saveError" => $exception->getMessage()]);
             return;
+        } finally {
+            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
         }
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.success" => $playerName]);
 
