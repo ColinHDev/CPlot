@@ -7,7 +7,12 @@ namespace ColinHDev\CPlot\plots\lock;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\MergePlot;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\tasks\utils\PlotAreaCalculationTrait;
+use ColinHDev\CPlot\tasks\utils\PlotBorderAreaCalculationTrait;
+use ColinHDev\CPlot\tasks\utils\RoadAreaCalculationTrait;
 use pocketmine\utils\SingletonTrait;
+use pocketmine\world\ChunkLockId;
+use pocketmine\world\World;
 use function array_merge;
 use function count;
 use function spl_object_id;
@@ -17,6 +22,9 @@ use function spl_object_id;
  */
 final class PlotLockManager {
     use SingletonTrait;
+    use PlotAreaCalculationTrait;
+    use PlotBorderAreaCalculationTrait;
+    use RoadAreaCalculationTrait;
 
     /** @phpstan-var array<PlotIdentifier, PlotLockID[]>  */
     private array $plotLocks = [];
@@ -81,6 +89,31 @@ final class PlotLockManager {
             $this->unlockPlot($plot, $lockID);
             throw $exception;
         }
+        $chunkLockId = $lockID->getChunkLockId();
+        if (!($chunkLockId instanceof ChunkLockId)) {
+            return;
+        }
+        $world = $plot->getWorld();
+        if (!($world instanceof World)) {
+            return;
+        }
+        $chunks = [];
+        $this->getChunksFromAreas("plot", $this->calculateBasePlotAreas($plot->getWorldSettings(), $plot), $chunks);
+        $this->getChunksFromAreas("road", $this->calculateMergeRoadAreas($plot->getWorldSettings(), $plot), $chunks);
+        $this->getChunksFromAreas("border", $this->calculatePlotBorderAreas($plot->getWorldSettings(), $plot), $chunks);
+        try {
+            foreach($chunks as $chunkHash => $chunkData) {
+                World::getXZ($chunkHash, $chunkX, $chunkZ);
+                $world->lockChunk($chunkX, $chunkZ, $chunkLockId);
+            }
+        } catch(\InvalidArgumentException $exception) {
+            foreach($chunks as $chunkHash => $chunkData) {
+                World::getXZ($chunkHash, $chunkX, $chunkZ);
+                $world->unlockChunk($chunkX, $chunkZ, $chunkLockId);
+            }
+            $this->unlockPlot($plot, $lockID);
+            throw $exception;
+        }
     }
 
     /**
@@ -136,6 +169,20 @@ final class PlotLockManager {
         $success = $this->unlockBasePlot($plot, $lockID);
         foreach ($plot->getMergePlots() as $mergePlot) {
             $success = $this->unlockBasePlot($mergePlot, $lockID) && $success;
+        }
+        $chunkLockId = $lockID?->getChunkLockId();
+        if ($lockID === null || $chunkLockId instanceof ChunkLockId) {
+            $world = $plot->getWorld();
+            if ($world instanceof World) {
+                $chunks = [];
+                $this->getChunksFromAreas("plot", $this->calculateBasePlotAreas($plot->getWorldSettings(), $plot), $chunks);
+                $this->getChunksFromAreas("road", $this->calculateMergeRoadAreas($plot->getWorldSettings(), $plot), $chunks);
+                $this->getChunksFromAreas("border", $this->calculatePlotBorderAreas($plot->getWorldSettings(), $plot), $chunks);
+                foreach($chunks as $chunkHash => $chunkData) {
+                    World::getXZ($chunkHash, $chunkX, $chunkZ);
+                    $success = $world->unlockChunk($chunkX, $chunkZ, $chunkLockId) && $success;
+                }
+            }
         }
         return $success;
     }
