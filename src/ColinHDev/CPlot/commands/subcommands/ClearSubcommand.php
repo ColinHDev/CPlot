@@ -6,7 +6,7 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\plots\BasePlot;
-use ColinHDev\CPlot\plots\lock\PlotClearLockID;
+use ColinHDev\CPlot\plots\lock\ClearLockID;
 use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -52,9 +52,9 @@ class ClearSubcommand extends Subcommand {
             }
         }
 
-        $lockID = new PlotClearLockID();
-        if (PlotLockManager::getInstance()->isPlotLockedForOperation($plot, $lockID) || !PlotLockManager::getInstance()->lockPlotSilent($plot, $lockID)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.serverPlotFlag" => $flag->getID()]);
+        $lock = new ClearLockID();
+        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock)) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.plotLocked"]);
             return;
         }
 
@@ -77,6 +77,7 @@ class ClearSubcommand extends Subcommand {
                             ]
                         ]
                     );
+                    PlotLockManager::getInstance()->unlockPlot($plot, $lock);
                     return;
                 }
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
@@ -101,5 +102,6 @@ class ClearSubcommand extends Subcommand {
             "Clearing plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.finish" => $elapsedTimeString]);
+        PlotLockManager::getInstance()->unlockPlot($plot, $lock);
     }
 }
