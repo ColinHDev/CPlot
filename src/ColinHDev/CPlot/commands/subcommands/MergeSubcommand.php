@@ -6,6 +6,8 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\lock\MergeLockID;
+use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
@@ -100,6 +102,13 @@ class MergeSubcommand extends Subcommand {
             return;
         }
 
+        $lock = new MergeLockID();
+        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock) || !PlotLockManager::getInstance()->lockPlotSilent($plotToMerge, $lock)) {
+            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.plotLocked"]);
+            return;
+        }
+
         $economyManager = EconomyManager::getInstance();
         $economyProvider = $economyManager->getProvider();
         if ($economyProvider instanceof EconomyProvider) {
@@ -119,6 +128,8 @@ class MergeSubcommand extends Subcommand {
                             ]
                         ]
                     );
+                    PlotLockManager::getInstance()->unlockPlot($plot, $lock);
+                    PlotLockManager::getInstance()->unlockPlot($plotToMerge, $lock);
                     return;
                 }
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
@@ -143,5 +154,6 @@ class MergeSubcommand extends Subcommand {
             "Merging plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.finish" => $elapsedTimeString]);
+        PlotLockManager::getInstance()->unlockPlot($plot, $lock);
     }
 }

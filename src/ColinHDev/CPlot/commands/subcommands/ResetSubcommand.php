@@ -6,6 +6,8 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\plots\BasePlot;
+use ColinHDev\CPlot\plots\lock\PlotLockManager;
+use ColinHDev\CPlot\plots\lock\ResetLockID;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
@@ -50,6 +52,12 @@ class ResetSubcommand extends Subcommand {
             }
         }
 
+        $lock = new ResetLockID();
+        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock)) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.plotLocked"]);
+            return;
+        }
+
         $economyManager = EconomyManager::getInstance();
         $economyProvider = $economyManager->getProvider();
         if ($economyProvider instanceof EconomyProvider) {
@@ -69,6 +77,7 @@ class ResetSubcommand extends Subcommand {
                             ]
                         ]
                     );
+                    PlotLockManager::getInstance()->unlockPlot($plot, $lock);
                     return;
                 }
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
@@ -93,5 +102,6 @@ class ResetSubcommand extends Subcommand {
             "Resetting plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.finish" => $elapsedTimeString]);
+        PlotLockManager::getInstance()->unlockPlot($plot, $lock);
     }
 }
