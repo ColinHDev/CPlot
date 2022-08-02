@@ -14,30 +14,27 @@ use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class MiddleSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "middle.senderNotOnline"]);
-            return null;
+            return;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "middle.noPlotWorld"]);
-            return null;
+            return;
         }
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "middle.noPlot"]);
-            return null;
+            return;
         }
 
         if (!$plot->teleportTo($sender, TeleportDestination::PLOT_CENTER)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "middle.couldNotTeleport"]);
-            return null;
+            return;
         }
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "middle.success"]);
     }

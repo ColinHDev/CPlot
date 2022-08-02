@@ -13,15 +13,12 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class WarpSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "warp.senderNotOnline"]);
-            return null;
+            return;
         }
 
         switch (count($args)) {
@@ -37,7 +34,7 @@ class WarpSubcommand extends Subcommand {
                         break;
                     default:
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "warp.usage"]);
-                        return null;
+                        return;
                 }
                 break;
             case 2:
@@ -49,41 +46,40 @@ class WarpSubcommand extends Subcommand {
                 break;
             default:
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "warp.usage"]);
-                return null;
+                return;
         }
 
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($worldName);
         if (!($worldSettings instanceof WorldSettings)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "warp.invalidPlotWorld" => $worldName]);
-            return null;
+            return;
         }
         if (!is_numeric($x)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "warp.invalidXCoordinate" => $x]);
-            return null;
+            return;
         }
         if (!is_numeric($z)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "warp.invalidZCoordinate" => $z]);
-            return null;
+            return;
         }
 
         $plot = yield (new BasePlot($worldName, $worldSettings, (int) $x, (int) $z))->toAsyncPlot();
         if (!($plot instanceof Plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "warp.loadPlotError"]);
-            return null;
+            return;
         }
 
         if (!$sender->hasPermission("cplot.admin.warp")) {
             if (!$plot->hasPlotOwner()) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "warp.noPlotOwner"]);
-                return null;
+                return;
             }
         }
 
         if (!($plot->teleportTo($sender))) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "warp.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
-            return null;
+            return;
         }
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "warp.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
-        return null;
     }
 }

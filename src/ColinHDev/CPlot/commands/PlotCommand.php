@@ -40,15 +40,13 @@ use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use pocketmine\utils\SingletonTrait;
 use SOFe\AwaitGenerator\Await;
+use Throwable;
 
 class PlotCommand extends Command implements PluginOwned {
     use SingletonTrait;
 
-    /** @var array<string, Subcommand<mixed, mixed, mixed, mixed>> */
+    /** @var array<string, Subcommand> */
     private array $subcommands = [];
-
-    /** @var array<string, string> */
-    private array $executingSubcommands = [];
 
     /**
      * @throws \InvalidArgumentException|\JsonException
@@ -96,23 +94,16 @@ class PlotCommand extends Command implements PluginOwned {
     }
 
     /**
-     * @phpstan-return array<string, Subcommand<mixed, mixed, mixed, mixed>>
+     * @phpstan-return array<string, Subcommand>
      */
     public function getSubcommands() : array {
         return $this->subcommands;
     }
 
-    /**
-     * @phpstan-return null|Subcommand<mixed, mixed, mixed, mixed>
-     */
     public function getSubcommandByName(string $name) : ?Subcommand {
         return $this->subcommands[$name] ?? null;
     }
 
-    /**
-     * @phpstan-template TSubcommand of Subcommand<mixed, mixed, mixed, mixed>
-     * @phpstan-param TSubcommand $subcommand
-     */
     public function registerSubcommand(Subcommand $subcommand) : void {
         $this->subcommands[$subcommand->getName()] = $subcommand;
         foreach ($subcommand->getAlias() as $alias) {
@@ -141,40 +132,12 @@ class PlotCommand extends Command implements PluginOwned {
         if (!$command->testPermission($sender)) {
             return;
         }
-        // Since subcommands may not finish executing directly, e.g. when they await a result from the database, the
-        // command executor should not be able to execute another subcommand. Because of that, the previously typed
-        // subcommand is stored and checked until that subcommand is finished executing.
-        if (isset($this->executingSubcommands[$sender->getName()])) {
-            LanguageManager::getInstance()->getProvider()->sendMessage(
-                $sender,
-                [
-                    "prefix",
-                    "plot.subcommandExecuting" => [
-                        "/" . $commandLabel . " " . $subcommand,
-                        "/" . $commandLabel . " " . $this->executingSubcommands[$sender->getName()]
-                    ]
-                ]
-            );
-            return;
-        }
-        $this->executingSubcommands[$sender->getName()] = $subcommand;
         Await::g2c(
             $command->execute($sender, $args),
-            function (mixed $return = null) use ($command, $sender) : void {
-                // If the subcommand finished executing, the entry needs to be removed from the array, so the command
-                // executor is able to perform another subcommand again.
-                unset($this->executingSubcommands[$sender->getName()]);
-                if ($return !== null) {
-                    $command->onSuccess($sender, $return);
-                }
-            },
-            function (?\Throwable $error = null) use ($command, $sender) : void {
-                // That also needs to be done in case of an error. Otherwise, the command executor would not be able to
-                // perform another subcommand until the server restarts.
-                unset($this->executingSubcommands[$sender->getName()]);
-                if ($error !== null) {
-                    $command->onError($sender, $error);
-                }
+            null,
+            static function(Throwable $error) use ($sender, $commandLabel, $subcommand) : void {
+                $sender->getServer()->getLogger()->logException($error);
+                LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "plot.executionError" => [$commandLabel, $subcommand]]);
             }
         );
     }

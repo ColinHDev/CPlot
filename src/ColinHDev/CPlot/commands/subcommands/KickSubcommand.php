@@ -15,36 +15,33 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use function count;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class KickSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.senderNotOnline"]);
-            return null;
+            return;
         }
 
         if (count($args) === 0) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.usage"]);
-            return null;
+            return;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.noPlotWorld"]);
-            return null;
+            return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.noPlot"]);
-            return null;
+            return;
         }
 
         if (!$sender->hasPermission("cplot.admin.kick") && !$plot->isPlotOwner($sender)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.notPlotOwner"]);
-            return null;
+            return;
         }
 
         if ($args[0] === "*") {
@@ -107,6 +104,5 @@ class KickSubcommand extends Subcommand {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($target, ["prefix", "kick.targetMessage" => $sender->getName()]);
             }
         }
-        return null;
     }
 }

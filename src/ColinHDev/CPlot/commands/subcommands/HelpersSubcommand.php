@@ -13,25 +13,22 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class HelpersSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.senderNotOnline"]);
-            return null;
+            return;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.noPlotWorld"]);
-            return null;
+            return;
         }
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.noPlot"]);
-            return null;
+            return;
         }
 
         $helperData = [];
@@ -52,7 +49,7 @@ class HelpersSubcommand extends Subcommand {
         }
         if (count($helperData) === 0) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "helpers.noHelpers"]);
-            return null;
+            return;
         }
 
         /** @phpstan-var string $separator */
@@ -65,6 +62,5 @@ class HelpersSubcommand extends Subcommand {
                 "helpers.success" => $list
             ]
         );
-        return null;
     }
 }

@@ -15,10 +15,8 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
+use poggit\libasynql\SqlError;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, string>
- */
 class GenerateSubcommand extends Subcommand {
 
     /**
@@ -27,12 +25,12 @@ class GenerateSubcommand extends Subcommand {
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.usage"]);
-            return null;
+            return;
         }
         $worldName = $args[0];
         if ($sender->getServer()->getWorldManager()->isWorldGenerated($worldName)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.worldExists" => $worldName]);
-            return null;
+            return;
         }
 
         $options = new WorldCreationOptions();
@@ -46,32 +44,20 @@ class GenerateSubcommand extends Subcommand {
         /** @phpstan-var PlotWorldGenerateAsyncEvent $event */
         $event = yield from PlotWorldGenerateAsyncEvent::create($worldName, $worldSettings, $options);
         if ($event->isCancelled()) {
-            return null;
+            return;
         }
         $worldName = $event->getWorldName();
 
         if (!Server::getInstance()->getWorldManager()->generateWorld($worldName, $event->getWorldCreationOptions())) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.generateError"]);
-            return null;
-        }
-        yield DataProvider::getInstance()->addWorld($worldName, $event->getWorldSettings());
-        return $worldName;
-    }
-
-    /**
-     * @phpstan-param string $return
-     */
-    public function onSuccess(CommandSender $sender, mixed $return) : void {
-        if ($sender instanceof Player && !$sender->isConnected()) {
             return;
         }
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "generate.success" => $return]);
-    }
-
-    public function onError(CommandSender $sender, \Throwable $error) : void {
-        if ($sender instanceof Player && !$sender->isConnected()) {
+        try {
+            yield from DataProvider::getInstance()->addWorld($worldName, $event->getWorldSettings());
+        } catch(SqlError $exception) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.saveError" => $exception->getMessage()]);
             return;
         }
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "generate.saveError" => $error->getMessage()]);
+        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.success" => $worldName]);
     }
 }

@@ -15,31 +15,28 @@ use pocketmine\command\CommandSender;
 use pocketmine\entity\Location;
 use pocketmine\player\Player;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class SpawnSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "spawn.senderNotOnline"]);
-            return null;
+            return;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "spawn.noPlotWorld"]);
-            return null;
+            return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "spawn.noPlot"]);
-            return null;
+            return;
         }
 
         if (!$sender->hasPermission("cplot.admin.spawn") && !$plot->isPlotOwner($sender)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "spawn.notPlotOwner"]);
-            return null;
+            return;
         }
 
         $location = $sender->getLocation();
@@ -52,6 +49,5 @@ class SpawnSubcommand extends Subcommand {
         $plot->addFlag($flag);
         yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "spawn.success"]);
-        return null;
     }
 }

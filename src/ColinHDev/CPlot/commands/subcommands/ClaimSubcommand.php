@@ -18,41 +18,39 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\Permission;
 use pocketmine\player\Player;
+use poggit\libasynql\SqlError;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class ClaimSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.senderNotOnline"]);
-            return null;
+            return;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.noPlotWorld"]);
-            return null;
+            return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition(), false);
         if (!($plot instanceof Plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.noPlot"]);
-            return null;
+            return;
         }
 
         if ($plot->hasPlotOwner()) {
             if ($plot->isPlotOwner($sender)) {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotAlreadyClaimedBySender"]);
-                return null;
+                return;
             }
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotAlreadyClaimed"]);
-            return null;
+            return;
         }
 
         $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($sender);
         if (!($playerData instanceof PlayerData)) {
-            return null;
+            return;
         }
         /** @phpstan-var array<string, Plot> $claimedPlots */
         $claimedPlots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
@@ -60,7 +58,7 @@ class ClaimSubcommand extends Subcommand {
         $maxPlots = $this->getMaxPlotsOfPlayer($sender);
         if ($claimedPlotsCount > $maxPlots) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotLimitReached" => [$claimedPlotsCount, $maxPlots]]);
-            return null;
+            return;
         }
 
         $economyManager = EconomyManager::getInstance();
@@ -68,7 +66,22 @@ class ClaimSubcommand extends Subcommand {
         if ($economyProvider instanceof EconomyProvider) {
             $price = $economyManager->getClaimPrice();
             if ($price > 0.0) {
-                yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getClaimReason());
+                try {
+                    yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getClaimReason());
+                } catch(EconomyException $exception) {
+                    $errorMessage = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $exception->getLanguageKey());
+                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                        $sender, [
+                            "prefix",
+                            "claim.chargeMoneyError" => [
+                                $economyProvider->parseMoneyToString($price),
+                                $economyProvider->getCurrency(),
+                                $errorMessage
+                            ]
+                        ]
+                    );
+                    return;
+                }
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
@@ -76,46 +89,18 @@ class ClaimSubcommand extends Subcommand {
         /** @phpstan-var PlotClaimAsyncEvent $event */
         $event = yield from PlotClaimAsyncEvent::create($plot, $sender);
         if ($event->isCancelled()) {
-            return null;
+            return;
         }
 
         $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
         $plot->addPlotPlayer($senderData);
-        yield DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
-
+        try {
+            yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+        } catch (SqlError $exception) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.saveError" => $exception->getMessage()]);
+            return;
+        }
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.success" => [$plot->toString(), $plot->toSmallString()]]);
-        return null;
-    }
-
-    public function onError(CommandSender $sender, \Throwable $error) : void {
-        if ($sender instanceof Player && !$sender->isConnected()) {
-            return;
-        }
-        if ($error instanceof EconomyException) {
-            LanguageManager::getInstance()->getProvider()->translateForCommandSender(
-                $sender,
-                $error->getLanguageKey(),
-                static function(string $errorMessage) use($sender) : void {
-                    $economyManager = EconomyManager::getInstance();
-                    $economyProvider = $economyManager->getProvider();
-                    // This exception should not be thrown if no economy provider is set.
-                    assert($economyProvider instanceof EconomyProvider);
-                    LanguageManager::getInstance()->getProvider()->sendMessage(
-                        $sender,
-                        [
-                            "prefix",
-                            "claim.chargeMoneyError" => [
-                                $economyProvider->parseMoneyToString($economyManager->getClaimPrice()),
-                                $economyProvider->getCurrency(),
-                                $errorMessage
-                            ]
-                        ]
-                    );
-                }
-            );
-            return;
-        }
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "claim.saveError" => $error->getMessage()]);
     }
 
     public function getMaxPlotsOfPlayer(Player $player) : int {
