@@ -252,9 +252,9 @@ VALUES (:playerUUID, :playerXUID, :playerName, :lastJoin);
 -- #    }
 -- #    { playerData
 -- #      :playerID int
--- #      :playerUUID string
--- #      :playerXUID string
--- #      :playerName string
+-- #      :playerUUID ?string
+-- #      :playerXUID ?string
+-- #      :playerName ?string
 -- #      :lastJoin string
 UPDATE playerData
 SET playerUUID = :playerUUID, playerXUID = :playerXUID, playerName = :playerName, lastJoin = :lastJoin
