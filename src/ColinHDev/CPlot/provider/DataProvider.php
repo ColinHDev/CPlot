@@ -189,6 +189,9 @@ final class DataProvider {
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : Generator {
+        $playerUUID = ($playerUUID === "" ? null : $playerUUID);
+        $playerXUID = ($playerXUID === "" ? null : $playerXUID);
+        $playerName = ($playerName === "" ? null : $playerName);
         $cachedPlayerID = null;
         if (is_string($playerUUID)) {
             $cachedPlayerID = $this->caches[CacheIDs::CACHE_PLAYER_UUID]->getObjectFromCache($playerUUID);
@@ -472,7 +475,10 @@ final class DataProvider {
     /**
      * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
-    public function updatePlayerData(string $playerUUID, string $playerXUID, string $playerName) : Generator {
+    public function updatePlayerData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : Generator {
+        $playerUUID = ($playerUUID === "" ? null : $playerUUID);
+        $playerXUID = ($playerXUID === "" ? null : $playerXUID);
+        $playerName = ($playerName === "" ? null : $playerName);
         $playerData = yield $this->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
         if (!($playerData instanceof PlayerData)) {
             yield $this->database->asyncInsert(
