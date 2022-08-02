@@ -120,40 +120,24 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                     World::getXZ($blockHash, $xInChunk, $zInChunk);
                     $x = CoordinateUtils::getCoordinateFromChunk($chunkX, $xInChunk);
                     $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
-                    if ($schematicRoad !== null) {
-                        $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
-                        $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
-                        for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            $explorer->moveTo($x, $y, $z);
-                            if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $explorer->currentSubChunk->setFullBlock(
-                                    $xInChunk,
-                                    $y & 0x0f,
-                                    $zInChunk,
-                                    $schematicRoad->getFullBlock($xRaster, $y, $zRaster)
-                                );
-                            }
+                    for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
+                        if ($y === $world->getMinY()) {
+                            $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
+                        } else if ($y === $worldSettings->getGroundSize() + 1) {
+                            $fullBlock = $worldSettings->getBorderBlock()->getFullId();
+                        } else if ($y <= $worldSettings->getGroundSize()) {
+                            $fullBlock = $worldSettings->getRoadBlock()->getFullId();
+                        } else {
+                            $fullBlock = 0;
                         }
-                    } else {
-                        for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            if ($y === $world->getMinY()) {
-                                $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
-                            } else if ($y === $worldSettings->getGroundSize() + 1) {
-                                $fullBlock = $worldSettings->getBorderBlock()->getFullId();
-                            } else if ($y <= $worldSettings->getGroundSize()) {
-                                $fullBlock = $worldSettings->getRoadBlock()->getFullId();
-                            } else {
-                                $fullBlock = 0;
-                            }
-                            $explorer->moveTo($x, $y, $z);
-                            if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $explorer->currentSubChunk->setFullBlock(
-                                    $xInChunk,
-                                    $y & 0x0f,
-                                    $zInChunk,
-                                    $fullBlock
-                                );
-                            }
+                        $explorer->moveTo($x, $y, $z);
+                        if ($explorer->currentSubChunk instanceof SubChunk) {
+                            $explorer->currentSubChunk->setFullBlock(
+                                $xInChunk,
+                                $y & 0x0f,
+                                $zInChunk,
+                                $fullBlock
+                            );
                         }
                     }
                 }
