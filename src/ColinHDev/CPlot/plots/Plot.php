@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\plots;
 
+use Closure;
 use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
@@ -24,7 +25,12 @@ use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotResetAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
+use ColinHDev\CPlot\tasks\utils\AsyncTaskResult;
+use ColinHDev\CPlot\utils\exception\AsyncTaskException;
+use ColinHDev\CPlot\utils\exception\EventException;
+use ColinHDev\CPlot\utils\exception\PlotModificationException;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
@@ -34,7 +40,9 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
 use pocketmine\world\World;
+use RuntimeException;
 use SOFe\AwaitGenerator\Await;
+use Throwable;
 use function assert;
 use function unserialize;
 
@@ -282,7 +290,7 @@ class Plot extends BasePlot {
     /**
      * Returns a {@see Location} at the edge of the plot where a player could be teleported to. If the plot is merged
      * with other plots, the edge of a most northern plot is used.
-     * @throws \RuntimeException when called outside of main thread.
+     * @throws RuntimeException when called outside of main thread.
      */
     public function getTeleportLocation() : Location {
         if (count($this->mergePlots) >= 1) {
@@ -300,7 +308,7 @@ class Plot extends BasePlot {
     /**
      * Returns a {@see Location} at the center of the plot where a player could be teleported to. If the plot is merged
      * with other plots, the center of a most northern plot is used.
-     * @throws \RuntimeException when called outside of main thread.
+     * @throws RuntimeException when called outside of main thread.
      */
     public function getCenterTeleportLocation() : Location {
         if (count($this->mergePlots) >= 1) {
@@ -340,7 +348,7 @@ class Plot extends BasePlot {
      *                         found in {@see PlotTeleportDestination}.
      * @phpstan-param TeleportDestination::* $destination
      * @return bool Returns TRUE if the player was successfully teleported or FALSE if not.
-     * @throws \RuntimeException when called outside of main thread.
+     * @throws RuntimeException when called outside of main thread.
      */
     public function teleportTo(Player $player, int $destination = TeleportDestination::PLOT_SPAWN_OR_EDGE) : bool {
         if ($destination === TeleportDestination::PLOT_SPAWN_OR_EDGE || $destination === TeleportDestination::PLOT_SPAWN_OR_CENTER) {
@@ -380,26 +388,40 @@ class Plot extends BasePlot {
      * This method can be called to change the biome of a plot. By this, the biome of the entire plot area is changed.
      * @param int $biomeID The ID of the biome the plot will be changed to.
      * @phpstan-param BiomeIds::* $biomeID
-     * @param callable|null $onSuccess Callback to be called when the plot biome was changed successfully.
-     * @phpstan-param (callable(): void)|(callable(PlotBiomeChangeAsyncTask): void)|null $onSuccess
-     * @param callable|null $onError Callback to be called when the plot biome could not be changed.
-     * @phpstan-param (callable(): void)|(callable(PlotBiomeChangeAsyncTask|null=): void)|null $onError
-     * @throws \RuntimeException when called outside of main thread.
+     * Callback to be called when the plot biome was changed successfully.
+     * @param null|callable(AsyncTaskResult): void $onSuccess
+     * Callback to be called when the plot biome could not be changed.
+     * @param null|callable(Throwable): void $onError
      */
     public function setBiome(int $biomeID, ?callable $onSuccess = null, ?callable $onError = null) : void {
         Await::f2c(
-            function () use ($biomeID, $onSuccess, $onError) {
-                /** @phpstan-var PlotBiomeChangeAsyncEvent $event */
+            function() use($biomeID) : Generator {
+                /** @var PlotBiomeChangeAsyncEvent $event */
                 $event = yield from PlotBiomeChangeAsyncEvent::create($this, $biomeID);
                 if ($event->isCancelled()) {
-                    if ($onError !== null) {
-                        $onError();
-                    }
-                    return;
+                    throw new EventException($event, $event->getEventName() . " got cancelled.");
                 }
-                $task = new PlotBiomeChangeAsyncTask($this, $event->getBiomeID());
-                $task->setCallback($onSuccess, $onError);
-                Server::getInstance()->getAsyncPool()->submitTask($task);
+                $biomeID = $event->getBiomeID();
+                /** @var AsyncTaskResult $result */
+                $result = yield from Await::promise(
+                    function(Closure $onSuccess) use($biomeID) : void {
+                        $task = new PlotBiomeChangeAsyncTask($this, $biomeID);
+                        $task->setCallback(
+                            $onSuccess,
+                            static function() : void {
+                                throw new RuntimeException("PlotMergeAsyncTask failed to execute.");
+                            }
+                        );
+                        Server::getInstance()->getAsyncPool()->submitTask($task);
+                    }
+                );
+                return $result;
+            },
+            $onSuccess,
+            static function(Throwable $exception) use($onError) : void {
+                if ($onError !== null) {
+                    $onError($exception);
+                }
             }
         );
     }
@@ -407,26 +429,40 @@ class Plot extends BasePlot {
     /**
      * This method can be called to change the block the border of a plot is made of.
      * @param Block $block The block the plot border will be changed to.
-     * @param callable|null $onSuccess Callback to be called when the plot border was changed successfully.
-     * @phpstan-param (callable(): void)|(callable(PlotBorderChangeAsyncTask): void)|null $onSuccess
-     * @param callable|null $onError Callback to be called when the plot border could not be changed.
-     * @phpstan-param (callable(): void)|(callable(PlotBorderChangeAsyncTask|null=): void)|null $onError
-     * @throws \RuntimeException when called outside of main thread.
+     * Callback to be called when the plot border was changed successfully.
+     * @param null|callable(AsyncTaskResult): void $onSuccess
+     * Callback to be called when the plot border could not be changed.
+     * @param null|callable(Throwable): void $onError
      */
     public function setBorderBlock(Block $block, ?callable $onSuccess = null, ?callable $onError = null) : void {
         Await::f2c(
-            function () use ($block, $onSuccess, $onError) {
-                /** @phpstan-var PlotBorderChangeAsyncEvent $event */
+            function() use($block) : Generator {
+                /** @var PlotBorderChangeAsyncEvent $event */
                 $event = yield from PlotBorderChangeAsyncEvent::create($this, $block);
                 if ($event->isCancelled()) {
-                    if ($onError !== null) {
-                        $onError();
-                    }
-                    return;
+                    throw new EventException($event, $event->getEventName() . " got cancelled.");
                 }
-                $task = new PlotBorderChangeAsyncTask($this, $event->getBlock());
-                $task->setCallback($onSuccess, $onError);
-                Server::getInstance()->getAsyncPool()->submitTask($task);
+                $block = $event->getBlock();
+                /** @var AsyncTaskResult $result */
+                $result = yield from Await::promise(
+                    function(Closure $onSuccess) use($block) : void {
+                        $task = new PlotBorderChangeAsyncTask($this, $block);
+                        $task->setCallback(
+                            $onSuccess,
+                            static function() : void {
+                                throw new RuntimeException("PlotMergeAsyncTask failed to execute.");
+                            }
+                        );
+                        Server::getInstance()->getAsyncPool()->submitTask($task);
+                    }
+                );
+                return $result;
+            },
+            $onSuccess,
+            static function(Throwable $exception) use($onError) : void {
+                if ($onError !== null) {
+                    $onError($exception);
+                }
             }
         );
     }
@@ -434,26 +470,40 @@ class Plot extends BasePlot {
     /**
      * This method can be called to change the block the wall of a plot is made of.
      * @param Block $block The block the plot wall will be changed to.
-     * @param callable|null $onSuccess Callback to be called when the plot wall was changed successfully.
-     * @phpstan-param (callable(): void)|(callable(PlotWallChangeAsyncTask): void)|null $onSuccess
-     * @param callable|null $onError Callback to be called when the plot wall could not be changed.
-     * @phpstan-param (callable(): void)|(callable(PlotWallChangeAsyncTask|null=): void)|null $onError
-     * @throws \RuntimeException when called outside of main thread.
+     * Callback to be called when the plot wall was changed successfully.
+     * @param null|callable(AsyncTaskResult): void $onSuccess
+     * Callback to be called when the plot wall could not be changed.
+     * @param null|callable(Throwable): void $onError
      */
     public function setWallBlock(Block $block, ?callable $onSuccess = null, ?callable $onError = null) : void {
         Await::f2c(
-            function () use ($block, $onSuccess, $onError) {
-                /** @phpstan-var PlotWallChangeAsyncEvent $event */
+            function() use($block) : Generator {
+                /** @var PlotWallChangeAsyncEvent $event */
                 $event = yield from PlotWallChangeAsyncEvent::create($this, $block);
                 if ($event->isCancelled()) {
-                    if ($onError !== null) {
-                        $onError();
-                    }
-                    return;
+                    throw new EventException($event, $event->getEventName() . " got cancelled.");
                 }
-                $task = new PlotWallChangeAsyncTask($this, $event->getBlock());
-                $task->setCallback($onSuccess, $onError);
-                Server::getInstance()->getAsyncPool()->submitTask($task);
+                $block = $event->getBlock();
+                /** @var AsyncTaskResult $result */
+                $result = yield from Await::promise(
+                    function(Closure $onSuccess) use($block) : void {
+                        $task = new PlotWallChangeAsyncTask($this, $block);
+                        $task->setCallback(
+                            $onSuccess,
+                            static function() : void {
+                                throw new RuntimeException("PlotMergeAsyncTask failed to execute.");
+                            }
+                        );
+                        Server::getInstance()->getAsyncPool()->submitTask($task);
+                    }
+                );
+                return $result;
+            },
+            $onSuccess,
+            static function(Throwable $exception) use($onError) : void {
+                if ($onError !== null) {
+                    $onError($exception);
+                }
             }
         );
     }
@@ -462,37 +512,42 @@ class Plot extends BasePlot {
      * This method can be called to merge this plot with another one. By this, both plots' areas and data are merged together.
      * @param Plot $plotToMerge The plot this plot will be merged with. If there are any conflicts in both plots' data,
      *                          the data of the plot, which was provided as a parameter, will be discarded.
-     * @param callable|null $onSuccess Callback to be called when the plot was reset successfully.
-     * @phpstan-param (callable(): void)|(callable(PlotMergeAsyncTask): void)|null $onSuccess
-     * @param callable|null $onError Callback to be called when the plot could not be reset.
-     * @phpstan-param (callable(): void)|(callable(PlotMergeAsyncTask|null=): void)|null $onError
-     * @throws \RuntimeException when called outside of main thread.
+     * Callback to be called when the plot was reset successfully.
+     * @param null|callable(AsyncTaskResult): void $onSuccess
+     * Callback to be called when the plot could not be reset.
+     * @param null|callable(Throwable): void $onError
      */
     public function merge(self $plotToMerge, ?callable $onSuccess = null, ?callable $onError = null) : void {
         Await::f2c(
-            function () use ($plotToMerge, $onSuccess, $onError) {
-                /** @phpstan-var PlotMergeAsyncEvent $event */
+            function() use($plotToMerge) : Generator {
+                /** @var PlotMergeAsyncEvent $event */
                 $event = yield from PlotMergeAsyncEvent::create($this, $plotToMerge);
                 if ($event->isCancelled()) {
-                    if ($onError !== null) {
-                        $onError();
-                    }
-                    return;
+                    throw new EventException($event, $event->getEventName() . " got cancelled.");
                 }
                 $oldPlot = clone $this;
                 yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
                 yield from $this->mergeData($plotToMerge);
-                /** @phpstan-var PlotMergeAsyncTask $task */
-                $task = yield from Await::promise(
-                    static function(\Closure $onSuccess) use($oldPlot, $plotToMerge, $onError) : void {
+                /** @var AsyncTaskResult $result */
+                $result = yield from Await::promise(
+                    static function(Closure $onSuccess) use($oldPlot, $plotToMerge) : void {
                         $task = new PlotMergeAsyncTask($oldPlot, $plotToMerge);
-                        $task->setCallback($onSuccess, $onError);
+                        $task->setCallback(
+                            $onSuccess,
+                            static function() : void {
+                                throw new RuntimeException("PlotMergeAsyncTask failed to execute.");
+                            }
+                        );
                         Server::getInstance()->getAsyncPool()->submitTask($task);
                     }
                 );
                 yield from PlotMergedAsyncEvent::create($this);
-                if ($onSuccess !== null) {
-                    $onSuccess($task);
+                return $result;
+            },
+            $onSuccess,
+            static function(Throwable $exception) use($onError) : void {
+                if ($onError !== null) {
+                    $onError($exception);
                 }
             }
         );
@@ -502,9 +557,9 @@ class Plot extends BasePlot {
      * @internal method to merge the data of this plot with the provided one.
      * @param Plot $plotToMerge The plot this plot will be merged with. If there are any conflicts in both plots' data,
      *                          the data of the plot, which was provided as a parameter, will be discarded.
-     * @phpstan-return \Generator<mixed, mixed, mixed, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
-    private function mergeData(self $plotToMerge) : \Generator {
+    private function mergeData(self $plotToMerge) : Generator {
         foreach (array_merge([$plotToMerge], $plotToMerge->getMergePlots()) as $mergePlot) {
             $mergePlot = MergePlot::fromBasePlot($mergePlot->toBasePlot(), $this->x, $this->z);
             $this->addMergePlot($mergePlot);
@@ -537,34 +592,43 @@ class Plot extends BasePlot {
 
     /**
      * This method can be called to clear a plot. By this, the plot area is completely reset while all data is kept.
-     * @param callable|null $onSuccess Callback to be called when the plot was cleared successfully.
-     * @phpstan-param (callable(): void)|(callable(PlotClearAsyncTask): void)|null $onSuccess
-     * @param callable|null $onError Callback to be called when the plot could not be cleared.
-     * @phpstan-param (callable(): void)|(callable(PlotClearAsyncTask|null=): void)|null $onError
-     * @throws \RuntimeException when called outside of main thread.
+     * Callback to be called when the plot was cleared successfully.
+     * @param null|callable(AsyncTaskResult): void $onSuccess
+     * Callback to be called when the plot could not be cleared.
+     * @param null|callable(Throwable): void $onError
      */
     public function clear(?callable $onSuccess = null, ?callable $onError = null) : void {
         Await::f2c(
-            function () use ($onSuccess, $onError) {
-                /** @phpstan-var PlotClearAsyncEvent $event */
+            function() : Generator {
+                /** @var PlotClearAsyncEvent $event */
                 $event = yield from PlotClearAsyncEvent::create($this);
                 if ($event->isCancelled()) {
-                    if ($onError !== null) {
-                        $onError();
-                    }
-                    return;
+                    throw new EventException($event, $event->getEventName() . " got cancelled.");
                 }
-                /** @phpstan-var PlotClearAsyncTask $task */
-                $task = yield from Await::promise(
-                    function(\Closure $onSuccess) use($onError) : void {
+                /** @var AsyncTaskResult $result */
+                $result = yield from Await::promise(
+                    function(Closure $onSuccess) : void {
                         $task = new PlotClearAsyncTask($this);
-                        $task->setCallback($onSuccess, $onError);
+                        $task->setCallback(
+                            $onSuccess,
+                            static function() : void {
+                                throw new RuntimeException("PlotClearAsyncTask failed to execute.");
+                            }
+                        );
                         Server::getInstance()->getAsyncPool()->submitTask($task);
                     }
                 );
                 yield from PlotClearedAsyncEvent::create($this);
-                if ($onSuccess !== null) {
-                    $onSuccess($task);
+                return $result;
+            },
+            $onSuccess,
+            static function(Throwable $exception) use($onError) : void {
+                if ($onError !== null) {
+                    if ($exception instanceof EventException || $exception instanceof AsyncTaskException) {
+                        $onError(new PlotModificationException());
+                    } else {
+                        $onError($exception);
+                    }
                 }
             }
         );
@@ -572,27 +636,40 @@ class Plot extends BasePlot {
 
     /**
      * This method can be called to reset a plot. By this, both the plot's area and all data are completely reset.
-     * @param callable|null $onSuccess Callback to be called when the plot was reset successfully.
-     * @phpstan-param (callable(): void)|(callable(PlotResetAsyncTask): void)|null $onSuccess
-     * @param callable|null $onError Callback to be called when the plot could not be reset.
-     * @phpstan-param (callable(): void)|(callable(PlotResetAsyncTask|null=): void)|null $onError
-     * @throws \RuntimeException when called outside of main thread.
+     * Callback to be called when the plot was reset successfully.
+     * @param null|callable(AsyncTaskResult): void $onSuccess
+     * Callback to be called when the plot could not be reset.
+     * @param null|callable(Throwable): void $onError
      */
     public function reset(?callable $onSuccess = null, ?callable $onError = null) : void {
         Await::f2c(
-            function () use ($onSuccess, $onError) {
+            function() : Generator {
                 /** @phpstan-var PlotResetAsyncEvent $event */
                 $event = yield from PlotResetAsyncEvent::create($this);
                 if ($event->isCancelled()) {
-                    if ($onError !== null) {
-                        $onError();
-                    }
-                    return;
+                    throw new EventException($event, $event->getEventName() . " got cancelled.");
                 }
                 yield from DataProvider::getInstance()->awaitPlotDeletion($this);
-                $task = new PlotResetAsyncTask($this);
-                $task->setCallback($onSuccess, $onError);
-                Server::getInstance()->getAsyncPool()->submitTask($task);
+                /** @var AsyncTaskResult $result */
+                $result = yield from Await::promise(
+                    function(Closure $onSuccess) : void {
+                        $task = new PlotResetAsyncTask($this);
+                        $task->setCallback(
+                            $onSuccess,
+                            static function() : void {
+                                throw new RuntimeException("PlotResetAsyncTask failed to execute.");
+                            }
+                        );
+                        Server::getInstance()->getAsyncPool()->submitTask($task);
+                    }
+                );
+                return $result;
+            },
+            $onSuccess,
+            static function(Throwable $exception) use($onError) : void {
+                if ($onError !== null) {
+                    $onError($exception);
+                }
             }
         );
     }
@@ -743,9 +820,9 @@ class Plot extends BasePlot {
 
     /**
      * @deprecated
-     * @phpstan-return \Generator<mixed, mixed, mixed, Plot|null>
+     * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
      */
-    public static function awaitFromPosition(Position $position, bool $checkMerge = true) : \Generator {
+    public static function awaitFromPosition(Position $position, bool $checkMerge = true) : Generator {
         $worldName = $position->getWorld()->getFolderName();
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($position->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {

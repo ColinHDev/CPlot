@@ -7,6 +7,7 @@ namespace ColinHDev\CPlot\tasks\async;
 use pocketmine\Server;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
+use RuntimeException;
 
 abstract class ChunkModifyingAsyncTask extends ChunkFetchingAsyncTask {
 
@@ -26,13 +27,16 @@ abstract class ChunkModifyingAsyncTask extends ChunkFetchingAsyncTask {
             $worldManager->loadWorld($this->worldName);
             $world = $worldManager->getWorldByName($this->worldName);
         }
-        if ($world !== null) {
-            /** @phpstan-var array<int, string> $chunks */
-            $chunks = unserialize($this->chunks, ["allowed_classes" => false]);
-            foreach ($chunks as $hash => $chunk) {
-                World::getXZ($hash, $chunkX, $chunkZ);
-                $world->setChunk($chunkX, $chunkZ, FastChunkSerializer::deserializeTerrain($chunk));
-            }
+        if ($world === null) {
+            // We throw an exception here, since we can't let the task continue as being successful, because it
+            // certainly is not if the world could not be loaded to update the chunks.
+            throw new RuntimeException("Could not load world \"" . $this->worldName . "\" after completion of " . static::class . " for setting back the modified chunks.");
+        }
+        /** @phpstan-var array<int, string> $chunks */
+        $chunks = unserialize($this->chunks, ["allowed_classes" => false]);
+        foreach ($chunks as $hash => $chunk) {
+            World::getXZ($hash, $chunkX, $chunkZ);
+            $world->setChunk($chunkX, $chunkZ, FastChunkSerializer::deserializeTerrain($chunk));
         }
         parent::onCompletion();
     }

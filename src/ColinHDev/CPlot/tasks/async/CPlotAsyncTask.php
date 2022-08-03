@@ -4,44 +4,23 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\tasks\async;
 
+use ColinHDev\CPlot\tasks\utils\AsyncTaskResult;
+use ColinHDev\CPlot\utils\exception\AsyncTaskException;
+use InvalidArgumentException;
 use pocketmine\scheduler\AsyncTask;
+use Throwable;
+use function microtime;
+use function round;
 
 abstract class CPlotAsyncTask extends AsyncTask {
 
-    private int $startTime;
-
     public function __construct() {
-        $this->startTime = (int) (round(microtime(true) * 1000));
-    }
-
-    public function getElapsedTime() : int {
-        return ((int) (round(microtime(true) * 1000))) - $this->startTime;
-    }
-
-    public function getElapsedTimeString() : string {
-        $ms = $this->getElapsedTime();
-        $min = floor($ms / 60000);
-        $ms -= $min * 60000;
-        $s = floor($ms / 1000);
-        $ms -= $s * 1000;
-        $time = "";
-        if ($min > 0) {
-            $time .= $min . "min";
-        }
-        if ($s > 0) {
-            if ($time !== "") $time .= ", ";
-            $time .= $s . "s";
-        }
-        if ($ms > 0) {
-            if ($time !== "") $time .= ", ";
-            $time .= $ms . "ms";
-        }
-        return $time;
+        $this->storeLocal("startTime", ((int) (round(microtime(true) * 1000))));
     }
 
     /**
-     * @phpstan-param (callable(static): void)|null $onSuccess
-     * @phpstan-param (callable(static): void)|null $onError
+     * @param null|callable(AsyncTaskResult): void) $onSuccess
+     * @param null|callable(Throwable): void $onError
      */
     public function setCallback(?callable $onSuccess, ?callable $onError) : void {
         if ($onSuccess !== null) {
@@ -54,19 +33,30 @@ abstract class CPlotAsyncTask extends AsyncTask {
 
     public function onCompletion() : void {
         try {
-            /** @phpstan-var callable(static): void $callback */
+            /** @var callable(AsyncTaskResult): void $callback */
             $callback = $this->fetchLocal("onSuccess");
-            $callback($this);
-        } catch (\InvalidArgumentException) {
+            /** @var int $startTime */
+            $startTime = $this->fetchLocal("startTime");
+            $callback(
+                new AsyncTaskResult(
+                    ((int) (round(microtime(true) * 1000))) - $startTime,
+                    $this->getResult()
+                )
+            );
+        } catch (InvalidArgumentException) {
         }
     }
 
     public function onError() : void {
         try {
-            /** @phpstan-var callable(static): void $callback */
+            /** @var callable(Throwable): void $callback */
             $callback = $this->fetchLocal("onError");
-            $callback($this);
-        } catch (\InvalidArgumentException) {
+            $callback(
+                new AsyncTaskException(
+                    "An error occurred while executing the async task."
+                )
+            );
+        } catch (InvalidArgumentException) {
         }
     }
 }
