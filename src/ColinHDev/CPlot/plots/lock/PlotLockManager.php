@@ -79,40 +79,43 @@ final class PlotLockManager {
      * @throws \InvalidArgumentException if the {@see Plot} or any of its {@see MergePlot}s is already locked and its
      * locks are not compatible with the given one.
      */
-    public function lockPlot(Plot $plot, PlotLockID $lockID) : void {
-        try {
-            $this->lockBasePlot($plot, $lockID);
-            foreach ($plot->getMergePlots() as $mergePlot) {
-                $this->lockBasePlot($mergePlot, $lockID);
+    public function lockPlots(PlotLockID $lockID, Plot ...$plots) : void {
+        $lockedChunks = [];
+        foreach($plots as $plot) {
+            try {
+                $this->lockBasePlot($plot, $lockID);
+                foreach ($plot->getMergePlots() as $mergePlot) {
+                    $this->lockBasePlot($mergePlot, $lockID);
+                }
+            } catch (\InvalidArgumentException $exception) {
+                $this->unlockPlots($lockID, ...$plots);
+                throw $exception;
             }
-        } catch (\InvalidArgumentException $exception) {
-            $this->unlockPlot($plot, $lockID);
-            throw $exception;
-        }
-        $chunkLockId = $lockID->getChunkLockId();
-        if (!($chunkLockId instanceof ChunkLockId)) {
-            return;
-        }
-        $world = $plot->getWorld();
-        if (!($world instanceof World)) {
-            return;
-        }
-        $chunks = [];
-        $this->getChunksFromAreas("plot", $this->calculateBasePlotAreas($plot->getWorldSettings(), $plot), $chunks);
-        $this->getChunksFromAreas("road", $this->calculateMergeRoadAreas($plot->getWorldSettings(), $plot), $chunks);
-        $this->getChunksFromAreas("border", $this->calculatePlotBorderAreas($plot->getWorldSettings(), $plot), $chunks);
-        try {
-            foreach($chunks as $chunkHash => $chunkData) {
-                World::getXZ($chunkHash, $chunkX, $chunkZ);
-                $world->lockChunk($chunkX, $chunkZ, $chunkLockId);
+            $chunkLockId = $lockID->getChunkLockId();
+            if (!($chunkLockId instanceof ChunkLockId)) {
+                continue;
             }
-        } catch(\InvalidArgumentException $exception) {
-            foreach($chunks as $chunkHash => $chunkData) {
-                World::getXZ($chunkHash, $chunkX, $chunkZ);
-                $world->unlockChunk($chunkX, $chunkZ, $chunkLockId);
+            $world = $plot->getWorld();
+            if (!($world instanceof World)) {
+                continue;
             }
-            $this->unlockPlot($plot, $lockID);
-            throw $exception;
+            $chunks = [];
+            $this->getChunksFromAreas("plot", $this->calculateBasePlotAreas($plot->getWorldSettings(), $plot), $chunks);
+            $this->getChunksFromAreas("road", $this->calculateMergeRoadAreas($plot->getWorldSettings(), $plot), $chunks);
+            $this->getChunksFromAreas("border", $this->calculatePlotBorderAreas($plot->getWorldSettings(), $plot), $chunks);
+            try {
+                foreach($chunks as $chunkHash => $chunkData) {
+                    if (isset($lockedChunks[$chunkHash])) {
+                        continue;
+                    }
+                    World::getXZ($chunkHash, $chunkX, $chunkZ);
+                    $world->lockChunk($chunkX, $chunkZ, $chunkLockId);
+                    $lockedChunks[$chunkHash] = true;
+                }
+            } catch(\InvalidArgumentException $exception) {
+                $this->unlockPlots($lockID, ...$plots);
+                throw $exception;
+            }
         }
     }
 
@@ -131,9 +134,9 @@ final class PlotLockManager {
      * Returns false if the {@see Plot} or any of its {@see MergePlot}s is already locked and its locks are not
      * compatible with the given one.
      */
-    public function lockPlotSilent(Plot $plot, PlotLockID $lockID) : bool {
+    public function lockPlotsSilent(PlotLockID $lockID, Plot ...$plots) : bool {
         try {
-            $this->lockPlot($plot, $lockID);
+            $this->lockPlots($lockID, ...$plots);
         } catch (\InvalidArgumentException) {
             return false;
         }
@@ -141,8 +144,8 @@ final class PlotLockManager {
     }
 
     /**
-     * @internal method which is used by {@see PlotLockManager::lockPlot()} to lock a simple {@see BasePlot} instance.
      * @throws \InvalidArgumentException if the {@see BasePlot} is already locked and its locks are not compatible with the given one.
+     *@internal method which is used by {@see PlotLockManager::lockPlots()} to lock a simple {@see BasePlot} instance.
      */
     private function lockBasePlot(BasePlot $plot, PlotLockID $lockID) : void {
         if (isset($this->plotLocks[$plot->toString()])) {
@@ -158,29 +161,40 @@ final class PlotLockManager {
     }
 
     /**
-     * Unlocks a {@see Plot} and its {@see MergePlot}s who were previously locked by {@see PlotLockManager::lockPlot()}.
+     * Unlocks a {@see Plot} and its {@see MergePlot}s who were previously locked by {@see PlotLockManager::lockPlots()}.
      *
      * You must provide the same lockID class instance as provided to lockPlot().
      * If a null lockID is given, any existing lock will be removed from the chunk, regardless of who owns it.
      *
      * Returns true if unlocking was successful, false otherwise.
      */
-    public function unlockPlot(Plot $plot, ?PlotLockID $lockID) : bool {
-        $success = $this->unlockBasePlot($plot, $lockID);
-        foreach ($plot->getMergePlots() as $mergePlot) {
-            $success = $this->unlockBasePlot($mergePlot, $lockID) && $success;
-        }
+    public function unlockPlots(?PlotLockID $lockID, Plot ...$plots) : bool {
         $chunkLockId = $lockID?->getChunkLockId();
-        if ($lockID === null || $chunkLockId instanceof ChunkLockId) {
-            $world = $plot->getWorld();
-            if ($world instanceof World) {
-                $chunks = [];
-                $this->getChunksFromAreas("plot", $this->calculateBasePlotAreas($plot->getWorldSettings(), $plot), $chunks);
-                $this->getChunksFromAreas("road", $this->calculateMergeRoadAreas($plot->getWorldSettings(), $plot), $chunks);
-                $this->getChunksFromAreas("border", $this->calculatePlotBorderAreas($plot->getWorldSettings(), $plot), $chunks);
-                foreach($chunks as $chunkHash => $chunkData) {
-                    World::getXZ($chunkHash, $chunkX, $chunkZ);
-                    $success = $world->unlockChunk($chunkX, $chunkZ, $chunkLockId) && $success;
+        $unlockedChunks = [];
+        $success = true;
+        foreach ($plots as $plot) {
+            $success = $this->unlockBasePlot($plot, $lockID) && $success;
+            foreach ($plot->getMergePlots() as $mergePlot) {
+                $success = $this->unlockBasePlot($mergePlot, $lockID) && $success;
+            }
+            if ($lockID === null || $chunkLockId instanceof ChunkLockId) {
+                $world = $plot->getWorld();
+                if ($world instanceof World) {
+                    $chunks = [];
+                    $this->getChunksFromAreas("plot", $this->calculateBasePlotAreas($plot->getWorldSettings(), $plot), $chunks);
+                    $this->getChunksFromAreas("road", $this->calculateMergeRoadAreas($plot->getWorldSettings(), $plot), $chunks);
+                    $this->getChunksFromAreas("border", $this->calculatePlotBorderAreas($plot->getWorldSettings(), $plot), $chunks);
+                    foreach($chunks as $chunkHash => $chunkData) {
+                        if (isset($unlockedChunks[$chunkHash])) {
+                            continue;
+                        }
+                        World::getXZ($chunkHash, $chunkX, $chunkZ);
+                        if ($world->unlockChunk($chunkX, $chunkZ, $chunkLockId)) {
+                            $unlockedChunks[$chunkHash] = true;
+                        } else {
+                            $success = false;
+                        }
+                    }
                 }
             }
         }
@@ -188,7 +202,7 @@ final class PlotLockManager {
     }
 
     /**
-     * @internal method which is used by {@see PlotLockManager::unlockPlot()} to unlock a simple {@see BasePlot} instance.
+     * @internal method which is used by {@see PlotLockManager::unlockPlots()} to unlock a simple {@see BasePlot} instance.
      */
     private function unlockBasePlot(BasePlot $plot, ?PlotLockID $lockID) : bool {
         $plotIdentifier = $plot->toString();

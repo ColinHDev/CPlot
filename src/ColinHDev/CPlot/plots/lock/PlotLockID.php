@@ -10,8 +10,8 @@ use pocketmine\world\ChunkLockId;
 
 /**
  * Represents a unique lock ID for use with plot locking.
- * @see PlotLockManager::lockPlot()
- * @see PlotLockManager::unlockPlot()
+ * @see PlotLockManager::lockPlots()
+ * @see PlotLockManager::unlockPlots()
  */
 abstract class PlotLockID {
     use NotCloneable;
@@ -25,7 +25,7 @@ abstract class PlotLockID {
     /**
      * This should return a {@see ChunkLockId} if the chunks of the plot should be locked as well, while it is locked.
      * The chunks get automatically locked and unlocked when calling
-     * {@see PlotLockManager::lockPlot()} and {@see PlotLockManager::unlockPlot()}.
+     * {@see PlotLockManager::lockPlots()} and {@see PlotLockManager::unlockPlots()}.
      */
     public function getChunkLockId() : ?ChunkLockId {
         return null;

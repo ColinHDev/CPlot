@@ -97,7 +97,7 @@ class TrustSubcommand extends Subcommand {
         }
 
         $lock = new AddPlotPlayerLockID($playerData->getPlayerID());
-        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock)) {
+        if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.plotLocked"]);
             return;
         }
@@ -106,7 +106,7 @@ class TrustSubcommand extends Subcommand {
         /** @phpstan-var PlotPlayerAddAsyncEvent $event */
         $event = yield from PlotPlayerAddAsyncEvent::create($plot, $plotPlayer, $sender);
         if ($event->isCancelled()) {
-            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
+            PlotLockManager::getInstance()->unlockPlots($lock, $plot);
             return;
         }
 
@@ -117,7 +117,7 @@ class TrustSubcommand extends Subcommand {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.saveError" => $exception->getMessage()]);
             return;
         } finally {
-            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
+            PlotLockManager::getInstance()->unlockPlots($lock, $plot);
         }
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trust.success" => $playerName]);
 

@@ -113,7 +113,7 @@ class WallSubcommand extends Subcommand {
         }
 
         $lock = new WallChangeLockID();
-        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock)) {
+        if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.plotLocked"]);
             return;
         }
@@ -137,6 +137,6 @@ class WallSubcommand extends Subcommand {
             "Changing plot wall to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $player->getUniqueId()->getBytes() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         LanguageManager::getInstance()->getProvider()->sendMessage($player, ["prefix", "wall.finish" => [$elapsedTimeString, $block->getName()]]);
-        PlotLockManager::getInstance()->unlockPlot($plot, $lock);
+        PlotLockManager::getInstance()->unlockPlots($lock, $plot);
     }
 }

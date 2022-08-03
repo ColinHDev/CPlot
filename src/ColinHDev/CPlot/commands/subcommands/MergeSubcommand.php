@@ -103,8 +103,8 @@ class MergeSubcommand extends Subcommand {
         }
 
         $lock = new MergeLockID();
-        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock) || !PlotLockManager::getInstance()->lockPlotSilent($plotToMerge, $lock)) {
-            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
+        if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot, $plotToMerge)) {
+            PlotLockManager::getInstance()->unlockPlots($lock, $plot, $plotToMerge);
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.plotLocked"]);
             return;
         }
@@ -128,8 +128,8 @@ class MergeSubcommand extends Subcommand {
                             ]
                         ]
                     );
-                    PlotLockManager::getInstance()->unlockPlot($plot, $lock);
-                    PlotLockManager::getInstance()->unlockPlot($plotToMerge, $lock);
+                    PlotLockManager::getInstance()->unlockPlots($lock, $plot);
+                    PlotLockManager::getInstance()->unlockPlots($lock, $plotToMerge);
                     return;
                 }
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
@@ -154,6 +154,6 @@ class MergeSubcommand extends Subcommand {
             "Merging plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "merge.finish" => $elapsedTimeString]);
-        PlotLockManager::getInstance()->unlockPlot($plot, $lock);
+        PlotLockManager::getInstance()->unlockPlots($lock, $plot);
     }
 }

@@ -81,7 +81,7 @@ class UntrustSubcommand extends Subcommand {
 
         $playerData = $plotPlayer->getPlayerData();
         $lock = new RemovePlotPlayerLockID($playerData->getPlayerID());
-        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock)) {
+        if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.plotLocked"]);
             return;
         }
@@ -89,7 +89,7 @@ class UntrustSubcommand extends Subcommand {
         /** @phpstan-var PlotPlayerRemoveAsyncEvent $event */
         $event = yield from PlotPlayerRemoveAsyncEvent::create($plot, $plotPlayer, $sender);
         if ($event->isCancelled()) {
-            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
+            PlotLockManager::getInstance()->unlockPlots($lock, $plot);
             return;
         }
 
@@ -100,7 +100,7 @@ class UntrustSubcommand extends Subcommand {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.saveError" => $exception->getMessage()]);
             return;
         } finally {
-            PlotLockManager::getInstance()->unlockPlot($plot, $lock);
+            PlotLockManager::getInstance()->unlockPlots($lock, $plot);
         }
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "untrust.success" => $playerName]);
 

@@ -53,7 +53,7 @@ class ClearSubcommand extends Subcommand {
         }
 
         $lock = new ClearLockID();
-        if (!PlotLockManager::getInstance()->lockPlotSilent($plot, $lock)) {
+        if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.plotLocked"]);
             return;
         }
@@ -77,7 +77,7 @@ class ClearSubcommand extends Subcommand {
                             ]
                         ]
                     );
-                    PlotLockManager::getInstance()->unlockPlot($plot, $lock);
+                    PlotLockManager::getInstance()->unlockPlots($lock, $plot);
                     return;
                 }
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
@@ -102,6 +102,6 @@ class ClearSubcommand extends Subcommand {
             "Clearing plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.finish" => $elapsedTimeString]);
-        PlotLockManager::getInstance()->unlockPlot($plot, $lock);
+        PlotLockManager::getInstance()->unlockPlots($lock, $plot);
     }
 }
