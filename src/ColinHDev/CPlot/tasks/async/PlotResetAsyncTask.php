@@ -33,8 +33,8 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
         $chunks = [];
         $this->getChunksFromAreas("plot", $this->calculateBasePlotAreas($worldSettings, $plot), $chunks);
         $this->getChunksFromAreas("road", $this->calculateMergeRoadAreas($worldSettings, $plot), $chunks);
-        $this->getChunksFromAreas("borderChange", $this->calculateIndividualPlotBorderAreas($worldSettings, $plot), $chunks);
-        $this->getChunksFromAreas("borderReset", $this->calculateIndividualPlotBorderExtensionAreas($worldSettings, $plot), $chunks);
+        $this->getChunksFromAreas("border", $this->calculatePlotBorderAreas($worldSettings, $plot), $chunks);
+        $this->getChunksFromAreas("border", $this->calculateIndividualPlotBorderAreas($worldSettings, $plot), $chunks);
 
         $world = $plot->getWorld();
         assert($world instanceof World);
@@ -168,36 +168,8 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                 }
             }
 
-            if (isset($blockHashs["borderChange"])) {
-                foreach ($blockHashs["borderChange"] as $blockHash) {
-                    World::getXZ($blockHash, $xInChunk, $zInChunk);
-                    $x = CoordinateUtils::getCoordinateFromChunk($chunkX, $xInChunk);
-                    $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
-                    for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                        if ($y === $world->getMinY()) {
-                            $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
-                        } else if ($y === $worldSettings->getGroundSize() + 1) {
-                            $fullBlock = $worldSettings->getBorderBlock()->getFullId();
-                        } else if ($y <= $worldSettings->getGroundSize()) {
-                            $fullBlock = $worldSettings->getRoadBlock()->getFullId();
-                        } else {
-                            $fullBlock = 0;
-                        }
-                        $explorer->moveTo($x, $y, $z);
-                        if ($explorer->currentSubChunk instanceof SubChunk) {
-                            $explorer->currentSubChunk->setFullBlock(
-                                $xInChunk,
-                                $y & 0x0f,
-                                $zInChunk,
-                                $fullBlock
-                            );
-                        }
-                    }
-                }
-            }
-
-            if (isset($blockHashs["borderReset"])) {
-                foreach ($blockHashs["borderReset"] as $blockHash) {
+            if (isset($blockHashs["border"])) {
+                foreach ($blockHashs["border"] as $blockHash) {
                     World::getXZ($blockHash, $xInChunk, $zInChunk);
                     $x = CoordinateUtils::getCoordinateFromChunk($chunkX, $xInChunk);
                     $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
@@ -219,6 +191,14 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             if ($y === $world->getMinY()) {
                                 $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
+                            } else if ($y === $worldSettings->getGroundSize() + 1) {
+                                $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
+                                $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
+                                if (CoordinateUtils::isRasterPositionOnBorder($xRaster, $zRaster, $worldSettings->getRoadSize())) {
+                                    $fullBlock = $worldSettings->getBorderBlock()->getFullId();
+                                } else {
+                                    $fullBlock = 0;
+                                }
                             } else if ($y <= $worldSettings->getGroundSize()) {
                                 $fullBlock = $worldSettings->getRoadBlock()->getFullId();
                             } else {
