@@ -4,39 +4,30 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\tasks\async;
 
+use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\SimpleChunkManager;
 use pocketmine\world\World;
 
-/**
- * @phpstan-type ChunkHash int
- */
 abstract class ChunkFetchingAsyncTask extends CPlotAsyncTask {
 
     private int $minY;
     private int $maxY;
 
     protected string $chunks;
-    protected string $chunkAreas;
 
     /**
-     * @phpstan-param array<ChunkHash, mixed> $chunkAreas
+     * @phpstan-param array<int, Chunk> $chunks
      */
-    public function __construct(World $world, array $chunkAreas) {
+    public function __construct(World $world, array $chunks) {
         parent::__construct();
         $this->minY = $world->getMinY();
         $this->maxY = $world->getMaxY();
-        $chunks = [];
-        foreach ($chunkAreas as $chunkHash => $data) {
-            World::getXZ($chunkHash, $chunkX, $chunkZ);
-            $chunk = $world->loadChunk($chunkX, $chunkZ);
-            if ($chunk === null) {
-                continue;
-            }
-            $chunks[$chunkHash] = FastChunkSerializer::serializeTerrain($chunk);
+        $serializedChunks = [];
+        foreach ($chunks as $hash => $chunk) {
+            $serializedChunks[$hash] = FastChunkSerializer::serializeTerrain($chunk);
         }
-        $this->chunks = serialize($chunks);
-        $this->chunkAreas = serialize($chunkAreas);
+        $this->chunks = serialize($serializedChunks);
     }
 
     protected function getChunkManager() : SimpleChunkManager {

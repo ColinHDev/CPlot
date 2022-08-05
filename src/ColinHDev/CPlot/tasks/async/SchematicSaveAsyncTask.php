@@ -40,11 +40,11 @@ class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
         $maxChunkZ = max($pos1->z, $pos2->z) >> Chunk::COORD_BIT_SIZE;
         for ($chunkX = $minChunkX; $chunkX <= $maxChunkX; ++$chunkX) {
             for ($chunkZ = $minChunkZ; $chunkZ <= $maxChunkZ; ++$chunkZ) {
-                $chunks[World::chunkHash($chunkX, $chunkZ)] = true;
                 $chunk = $world->loadChunk($chunkX, $chunkZ);
                 if (!($chunk instanceof Chunk)) {
                     continue;
                 }
+                $chunks[World::chunkHash($chunkX, $chunkZ)] = $chunk;
                 foreach ($chunk->getTiles() as $coordinateHash => $tile) {
                     $tileTreeRoots[] = new TreeRoot($tile->saveNBT(), (string) $coordinateHash);
                 }
