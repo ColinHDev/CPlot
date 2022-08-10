@@ -35,8 +35,8 @@ class BorderSubcommand extends Subcommand {
     /** @var array<int, string> */
     private array $permissions = [];
 
-    public function __construct(string $key) {
-        parent::__construct($key);
+    public function __construct(string $identifier) {
+        parent::__construct($identifier);
 
         $options = [];
         $permissionManager = PermissionManager::getInstance();

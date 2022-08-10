@@ -25,8 +25,8 @@ class BiomeSubcommand extends Subcommand {
     /** @phpstan-var array<string, BiomeIds::*> */
     private array $biomes;
 
-    public function __construct(string $key) {
-        parent::__construct($key);
+    public function __construct(string $identifier) {
+        parent::__construct($identifier);
         /** @phpstan-var array<string, BiomeIds::*> $biomes */
         $biomes = (new \ReflectionClass(BiomeIds::class))->getConstants();
         $this->biomes = $biomes;

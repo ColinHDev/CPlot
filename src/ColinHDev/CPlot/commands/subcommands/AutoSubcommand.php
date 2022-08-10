@@ -23,8 +23,8 @@ class AutoSubcommand extends Subcommand {
     private ?string $fallbackWorld;
     private PlotCommand $command;
 
-    public function __construct(string $key, PlotCommand $command) {
-        parent::__construct($key);
+    public function __construct(string $identifier, PlotCommand $command) {
+        parent::__construct($identifier);
         $this->automaticClaim = match(ResourceManager::getInstance()->getConfig()->get("auto.automaticClaim", false)) {
             true, "true" => true,
             default => false

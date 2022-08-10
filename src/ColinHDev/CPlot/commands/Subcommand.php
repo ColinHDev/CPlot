@@ -7,11 +7,10 @@ namespace ColinHDev\CPlot\commands;
 use ColinHDev\CPlot\provider\LanguageManager;
 use Generator;
 use pocketmine\command\CommandSender;
-use poggit\libasynql\SqlError;
 
 abstract class Subcommand {
 
-    private string $key;
+    private string $identifier;
     private string $name;
     /** @var array<string> */
     private array $alias;
@@ -20,15 +19,22 @@ abstract class Subcommand {
     /**
      * @throws \JsonException
      */
-    public function __construct(string $key) {
-        $this->key = $key;
+    public function __construct(string $identifier) {
+        $this->identifier = $identifier;
         $languageProvider = LanguageManager::getInstance()->getProvider();
-        $this->name = $languageProvider->translateString($key . ".name");
-        $alias = json_decode($languageProvider->translateString($key . ".alias"), true, 512, JSON_THROW_ON_ERROR);
+        $this->name = $languageProvider->translateString($identifier . ".name");
+        $alias = json_decode($languageProvider->translateString($identifier . ".alias"), true, 512, JSON_THROW_ON_ERROR);
         assert(is_array($alias));
         /** @phpstan-var array<string> $alias */
         $this->alias = $alias;
-        $this->permission = "cplot.subcommand." . $key;
+        $this->permission = "cplot.subcommand." . $identifier;
+    }
+
+    /**
+     * Returns the unique and never-changing identifier of this {@see Subcommand}.
+     */
+    public function getIdentifier() : string {
+        return $this->identifier;
     }
 
     public function getName() : string {
@@ -50,7 +56,7 @@ abstract class Subcommand {
         if ($sender->hasPermission($this->permission)) {
             return true;
         }
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", $this->key . ".permissionMessage"]);
+        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", $this->identifier . ".permissionMessage"]);
         return false;
     }
 
