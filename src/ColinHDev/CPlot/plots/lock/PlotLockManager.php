@@ -11,8 +11,6 @@ use ColinHDev\CPlot\tasks\utils\PlotAreaCalculationTrait;
 use ColinHDev\CPlot\tasks\utils\PlotBorderAreaCalculationTrait;
 use ColinHDev\CPlot\tasks\utils\RoadAreaCalculationTrait;
 use pocketmine\utils\SingletonTrait;
-use pocketmine\world\ChunkLockId;
-use pocketmine\world\World;
 use function array_merge;
 use function count;
 use function spl_object_id;
@@ -67,10 +65,6 @@ final class PlotLockManager {
     /**
      * Flags a {@see Plot} as locked, usually for async modification.
      *
-     * This is an **advisory lock**. This means that the lock does **not** prevent the chunk from being modified on the
-     * main thread, such as by setBlock() or setBiomeId(). However, you can use it to detect when such modifications
-     * have taken place - unlockChunk() with the same lockID will fail and return false if this happens.
-     *
      * This is used internally during async modification, like plot merging, to ensure that no conflicting data is
      * created or the road is not correctly changed.
      *
@@ -80,7 +74,6 @@ final class PlotLockManager {
      * locks are not compatible with the given one.
      */
     public function lockPlots(PlotLockID $lockID, Plot ...$plots) : void {
-        $lockedChunks = [];
         foreach($plots as $plot) {
             try {
                 $this->lockBasePlot($plot, $lockID);
@@ -91,40 +84,11 @@ final class PlotLockManager {
                 $this->unlockPlots($lockID, ...$plots);
                 throw $exception;
             }
-            $chunkLockId = $lockID->getChunkLockId();
-            if (!($chunkLockId instanceof ChunkLockId)) {
-                continue;
-            }
-            $world = $plot->getWorld();
-            if (!($world instanceof World)) {
-                continue;
-            }
-            $chunks = [];
-            $this->getChunksFromAreas("plot", $this->calculateBasePlotAreas($plot->getWorldSettings(), $plot), $chunks);
-            $this->getChunksFromAreas("road", $this->calculateMergeRoadAreas($plot->getWorldSettings(), $plot), $chunks);
-            $this->getChunksFromAreas("border", $this->calculatePlotBorderAreas($plot->getWorldSettings(), $plot), $chunks);
-            try {
-                foreach($chunks as $chunkHash => $chunkData) {
-                    if (isset($lockedChunks[$chunkHash])) {
-                        continue;
-                    }
-                    World::getXZ($chunkHash, $chunkX, $chunkZ);
-                    $world->lockChunk($chunkX, $chunkZ, $chunkLockId);
-                    $lockedChunks[$chunkHash] = true;
-                }
-            } catch(\InvalidArgumentException $exception) {
-                $this->unlockPlots($lockID, ...$plots);
-                throw $exception;
-            }
         }
     }
 
     /**
      * Flags a {@see Plot} as locked, usually for async modification.
-     *
-     * This is an **advisory lock**. This means that the lock does **not** prevent the chunk from being modified on the
-     * main thread, such as by setBlock() or setBiomeId(). However, you can use it to detect when such modifications
-     * have taken place - unlockChunk() with the same lockID will fail and return false if this happens.
      *
      * This is used internally during async modification, like plot merging, to ensure that no conflicting data is
      * created or the road is not correctly changed.
@@ -164,38 +128,16 @@ final class PlotLockManager {
      * Unlocks a {@see Plot} and its {@see MergePlot}s who were previously locked by {@see PlotLockManager::lockPlots()}.
      *
      * You must provide the same lockID class instance as provided to lockPlot().
-     * If a null lockID is given, any existing lock will be removed from the chunk, regardless of who owns it.
+     * If a null lockID is given, any existing lock will be removed from the plot, regardless of who owns it.
      *
      * Returns true if unlocking was successful, false otherwise.
      */
     public function unlockPlots(?PlotLockID $lockID, Plot ...$plots) : bool {
-        $chunkLockId = $lockID?->getChunkLockId();
-        $unlockedChunks = [];
         $success = true;
         foreach ($plots as $plot) {
             $success = $this->unlockBasePlot($plot, $lockID) && $success;
             foreach ($plot->getMergePlots() as $mergePlot) {
                 $success = $this->unlockBasePlot($mergePlot, $lockID) && $success;
-            }
-            if ($lockID === null || $chunkLockId instanceof ChunkLockId) {
-                $world = $plot->getWorld();
-                if ($world instanceof World) {
-                    $chunks = [];
-                    $this->getChunksFromAreas("plot", $this->calculateBasePlotAreas($plot->getWorldSettings(), $plot), $chunks);
-                    $this->getChunksFromAreas("road", $this->calculateMergeRoadAreas($plot->getWorldSettings(), $plot), $chunks);
-                    $this->getChunksFromAreas("border", $this->calculatePlotBorderAreas($plot->getWorldSettings(), $plot), $chunks);
-                    foreach($chunks as $chunkHash => $chunkData) {
-                        if (isset($unlockedChunks[$chunkHash])) {
-                            continue;
-                        }
-                        World::getXZ($chunkHash, $chunkX, $chunkZ);
-                        if ($world->unlockChunk($chunkX, $chunkZ, $chunkLockId)) {
-                            $unlockedChunks[$chunkHash] = true;
-                        } else {
-                            $success = false;
-                        }
-                    }
-                }
             }
         }
         return $success;
