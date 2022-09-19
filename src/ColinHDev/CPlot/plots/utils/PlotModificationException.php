@@ -9,12 +9,13 @@ use Throwable;
 
 class PlotModificationException extends Exception {
 
-    public const EVENT_CANCELLED = 1;
-    public const CHUNK_LOCKED = 2;
-    public const ASYNC_TASK_FAILED = 3;
-    public const DATABASE_ERROR = 4;
-    public const WORLD_NOT_LOADABLE = 5;
-    public const CHUNK_LOCK_CHANGED = 6;
+    public const PLOT_LOCKED = 1;
+    public const EVENT_CANCELLED = 2;
+    public const CHUNK_LOCKED = 3;
+    public const ASYNC_TASK_FAILED = 4;
+    public const DATABASE_ERROR = 5;
+    public const WORLD_NOT_LOADABLE = 6;
+    public const CHUNK_LOCK_CHANGED = 7;
 
     /**
      * @phpstan-param self::* $code
