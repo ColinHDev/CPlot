@@ -16,6 +16,9 @@ class PlotModificationException extends Exception {
     public const WORLD_NOT_LOADABLE = 5;
     public const CHUNK_LOCK_CHANGED = 6;
 
+    /**
+     * @phpstan-param self::* $code
+     */
     public function __construct(int $code, string $message = "", ?Throwable $previous = null) {
         parent::__construct($message, $code, $previous);
     }
