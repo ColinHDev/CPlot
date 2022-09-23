@@ -56,7 +56,7 @@ class ClaimSubcommand extends Subcommand {
         $claimedPlots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
         $claimedPlotsCount = count($claimedPlots);
         $maxPlots = $this->getMaxPlotsOfPlayer($sender);
-        if ($claimedPlotsCount > $maxPlots) {
+        if ($claimedPlotsCount >= $maxPlots) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "claim.plotLimitReached" => [$claimedPlotsCount, $maxPlots]]);
             return;
         }
