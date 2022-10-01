@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\worlds\schematic;
 
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
 use pocketmine\block\tile\Tile;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\nbt\BigEndianNbtSerializer;
@@ -187,7 +187,7 @@ class Schematic implements SchematicTypes {
                     try {
                         $ID = $blockNBT->getInt("ID");
                     } catch (UnexpectedTagTypeException|NoSuchTagException) {
-                        $ID = BlockLegacyIds::AIR;
+                        $ID = BlockTypeIds::AIR;
                     }
                     $this->blockIDs[$coordinateHash] = $ID;
                     try {
@@ -259,11 +259,11 @@ class Schematic implements SchematicTypes {
                             $coordinateHash = World::blockHash($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {
                                 $blockFullID = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & SubChunk::COORD_MASK, $zInChunk);
-                                $blockID = $blockFullID >> Block::INTERNAL_METADATA_BITS;
-                                if ($blockID !== BlockLegacyIds::AIR) {
+                                $blockID = $blockFullID >> Block::INTERNAL_STATE_DATA_BITS;
+                                if ($blockID !== BlockTypeIds::AIR) {
                                     $this->blockIDs[$coordinateHash] = $blockID;
                                 }
-                                $blockMeta = $blockFullID & Block::INTERNAL_METADATA_MASK;
+                                $blockMeta = $blockFullID & Block::INTERNAL_STATE_DATA_MASK;
                                 if ($blockMeta !== 0) {
                                     $this->blockMetas[$coordinateHash] = $blockMeta;
                                 }
@@ -294,11 +294,11 @@ class Schematic implements SchematicTypes {
                             $coordinateHash = World::blockHash($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {
                                 $blockFullID = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & SubChunk::COORD_MASK, $zInChunk);
-                                $blockID = $blockFullID >> Block::INTERNAL_METADATA_BITS;
-                                if ($blockID !== BlockLegacyIds::AIR) {
+                                $blockID = $blockFullID >> Block::INTERNAL_STATE_DATA_BITS;
+                                if ($blockID !== BlockTypeIds::AIR) {
                                     $this->blockIDs[$coordinateHash] = $blockID;
                                 }
-                                $blockMeta = $blockFullID & Block::INTERNAL_METADATA_MASK;
+                                $blockMeta = $blockFullID & Block::INTERNAL_STATE_DATA_MASK;
                                 if ($blockMeta !== 0) {
                                     $this->blockMetas[$coordinateHash] = $blockMeta;
                                 }
@@ -362,20 +362,20 @@ class Schematic implements SchematicTypes {
         switch ($this->version) {
             case 1:
                 if (!isset($this->blockIDs[$coordinateHash])) {
-                    $fullID = BlockLegacyIds::AIR << Block::INTERNAL_METADATA_BITS;
+                    $fullID = BlockTypeIds::AIR << Block::INTERNAL_STATE_DATA_BITS;
                     break;
                 }
-                $fullID = ($this->blockIDs[$coordinateHash] << Block::INTERNAL_METADATA_BITS) | $this->blockMetas[$coordinateHash];
+                $fullID = ($this->blockIDs[$coordinateHash] << Block::INTERNAL_STATE_DATA_BITS) | $this->blockMetas[$coordinateHash];
                 break;
 
             case 2:
-                $ID = $this->blockIDs[$coordinateHash] ?? BlockLegacyIds::AIR;
+                $ID = $this->blockIDs[$coordinateHash] ?? BlockTypeIds::AIR;
                 $meta = $this->blockMetas[$coordinateHash] ?? 0;
-                $fullID = $ID << Block::INTERNAL_METADATA_BITS | $meta;
+                $fullID = $ID << Block::INTERNAL_STATE_DATA_BITS | $meta;
                 break;
 
             default:
-                $fullID = BlockLegacyIds::AIR << Block::INTERNAL_METADATA_BITS | 0;
+                $fullID = BlockTypeIds::AIR << Block::INTERNAL_STATE_DATA_BITS | 0;
                 break;
         }
         return $fullID;
