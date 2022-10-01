@@ -76,15 +76,15 @@ class PlotGenerator extends Generator {
         $this->groundSize = ParseUtils::parseIntegerFromArray($generatorOptions, "groundSize") ?? 64;
 
         $roadBlock = ParseUtils::parseBlockFromArray($generatorOptions, "roadBlock") ?? VanillaBlocks::OAK_PLANKS();
-        $this->roadBlockFullID = $roadBlock->getFullId();
+        $this->roadBlockFullID = $roadBlock->getStateId();
         $borderBlock = ParseUtils::parseBlockFromArray($generatorOptions, "borderBlock") ?? VanillaBlocks::STONE_SLAB();
-        $this->borderBlockFullID = $borderBlock->getFullId();
+        $this->borderBlockFullID = $borderBlock->getStateId();
         $plotFloorBlock = ParseUtils::parseBlockFromArray($generatorOptions, "plotFloorBlock") ?? VanillaBlocks::GRASS();
-        $this->plotFloorBlockFullID = $plotFloorBlock->getFullId();
+        $this->plotFloorBlockFullID = $plotFloorBlock->getStateId();
         $plotFillBlock = ParseUtils::parseBlockFromArray($generatorOptions, "plotFillBlock") ?? VanillaBlocks::DIRT();
-        $this->plotFillBlockFullID = $plotFillBlock->getFullId();
+        $this->plotFillBlockFullID = $plotFillBlock->getStateId();
         $plotBottomBlock = ParseUtils::parseBlockFromArray($generatorOptions, "plotBottomBlock") ?? VanillaBlocks::BEDROCK();
-        $this->plotBottomBlockFullID = $plotBottomBlock->getFullId();
+        $this->plotBottomBlockFullID = $plotBottomBlock->getStateId();
     }
 
     public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
