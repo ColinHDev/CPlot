@@ -57,7 +57,7 @@ class Schematic implements SchematicTypes {
         $this->file = $file;
     }
 
-    public function save() : bool {
+    public function save() : void {
         $nbt = new CompoundTag();
 
         // Schematic versions indicate how the schematic file's contained data should be parsed. By calling the save()
@@ -117,7 +117,6 @@ class Schematic implements SchematicTypes {
             );
         }
         file_put_contents($this->file, zlib_encode((new BigEndianNbtSerializer())->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));
-        return true;
     }
 
     public function loadFromFile() : bool {
