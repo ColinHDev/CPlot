@@ -94,6 +94,9 @@ database:
     # The database type. "sqlite" and "mysql" are supported.
     type: sqlite
 
+    # Enables importing data from supported databases. Currently supported: MyPlot
+    import: false
+
     # Edit these settings only if you choose "sqlite".
     sqlite:
         # The file name of the database in the plugin data folder.

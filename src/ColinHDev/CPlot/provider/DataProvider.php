@@ -23,12 +23,18 @@ use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\utils\ParseUtils;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use Generator;
+use pocketmine\entity\Entity;
 use pocketmine\player\Player;
+use pocketmine\Server;
+use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
+use Ramsey\Uuid\Uuid;
 use SOFe\AwaitGenerator\Await;
+use Webmozart\PathUtil\Path;
+use function file_exists;
 use function is_int;
 use function is_string;
 use function time;
@@ -90,6 +96,9 @@ final class DataProvider {
     private const DELETE_PLOTFLAGS = "cplot.delete.plotFlags";
     private const DELETE_PLOTFLAG = "cplot.delete.plotFlag";
     private const DELETE_PLOTRATES = "cplot.delete.plotRates";
+
+	private const EXPORT_MYPLOT_PLOTS = "myplot.get.Plots";
+	private const EXPORT_MYPLOT_MERGES = "myplot.get.Merges";
 
     private DataConnector $database;
     private bool $isInitialized = false;
@@ -165,6 +174,10 @@ final class DataProvider {
         yield from Await::all($generators);
         yield from $this->database->asyncGeneric(self::INIT_ASTERISK_PLAYER, ["lastJoin" => date("d.m.Y H:i:s")]);
         $this->isInitialized = true;
+
+        if(ResourceManager::getInstance()->getConfig()->getNested("database.import", false) === true) {
+            yield from $this->importData();
+        }
     }
 
     public function isInitialized() : bool {
@@ -1299,4 +1312,216 @@ final class DataProvider {
     public function close() : void {
         $this->database->close();
     }
+
+	/**
+	 * @phpstan-return Generator<mixed, mixed, mixed, void>
+	 */
+	private function importData() : Generator {
+		if(file_exists(Path::join(Server::getInstance()->getPluginPath(), "MyPlot")) &&
+			file_exists(Path::join(Server::getInstance()->getPluginPath(), "MyPlot", "config.yml"))) {
+			/** @var string[][] $settings */
+			$settings = yaml_parse_file(Path::join(Server::getInstance()->getPluginPath(), "MyPlot", "config.yml"));
+			switch(mb_strtolower($settings["DataProvider"])) {
+				case 'sqlite':
+					$myplotDatabase = libasynql::create(CPlot::getInstance(), [
+						"type" => "sqlite",
+						"sqlite" => [
+							"file" => Path::join(Server::getInstance()->getPluginPath(), "MyPlot", "plots.db")
+						]
+					], [
+						"mysql" => "sql" . DIRECTORY_SEPARATOR . "myplot_sqlite.sql"
+					]);
+				case 'mysql':
+					$sqlSettings = $settings["MySQLSettings"];
+					$myplotDatabase = $myplotDatabase ?? libasynql::create(CPlot::getInstance(), [
+						"type" => "mysql",
+						"mysql" => [
+							"host" => $sqlSettings["Host"],
+							"user" => $sqlSettings["Username"],
+							"password" => $sqlSettings["Password"],
+							"schema" => $sqlSettings["DatabaseName"],
+							"port" => $sqlSettings["Port"]
+						],
+						"worker-limit" => ResourceManager::getInstance()->getConfig()->getNested("database.worker-limit", 1)
+					], [
+						"mysql" => "sql" . DIRECTORY_SEPARATOR . "myplot_mysql.sql"
+					]);
+					$records = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_PLOTS);
+					$mergeRecords = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_MERGES);
+					break;
+				case 'yaml':
+					$filename = "plots.yml";
+				case 'json':
+					$data = new Config(Path::join(Server::getInstance()->getPluginPath(), "MyPlot", "Data", $filename ?? "plots.json"), Config::DETECT);
+					$records = array_values($data->get("plots"));
+					$unparsedMergeRecords = $data->get("merges");
+					$mergeRecords = [];
+					foreach($unparsedMergeRecords as $origin => $merges) {
+						$originData = explode(";", $origin);
+						foreach($merges as $merge) {
+							$mergeData = explode(";", $merge);
+							$mergeRecords[] = [
+								"worldName" => $originData[0],
+								"originX" => $originData[1],
+								"originZ" => $originData[2],
+								"mergedX" => $mergeData[0],
+								"mergedZ" => $mergeData[1]
+							];
+						}
+					}
+					break;
+				default:
+					return; // don't import anything due to invalid data provider
+			}
+			foreach($records as $record) {
+				// validate offline player data
+				$offlineData = Server::getInstance()->getOfflinePlayerData($record["playerName"]);
+				$UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
+				if($UUID === "") {
+					$skinTag = $offlineData->getCompoundTag("Skin");
+					$skinData = $skinTag->getByteArray("Data");
+					$UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $record["playerName"]);
+				}
+
+				// register player data
+				yield from $this->updatePlayerData(
+					$UUID->getBytes(),
+					$XUID,
+					$record["playerName"]
+				);
+
+				$playerData = yield $this->awaitPlayerDataByData(
+					$UUID->getBytes(),
+					$XUID,
+					$record["playerName"]
+				);
+				if (!($playerData instanceof PlayerData)) {
+					return null;
+				}
+
+				// load world
+				/** @var Plot|false $world */
+				$world = yield $this->awaitWorld($record["worldName"]);
+				if($world === false)
+					continue;
+
+				// load plot
+				/** @var Plot|null $plot */
+				$plot = yield $this->awaitPlot($record["worldName"], $record["x"], $record["z"]);
+
+				// claim plot
+				$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
+				$plot->addPlotPlayer($senderData);
+				yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+			}
+			foreach($mergeRecords as $mergeRecord) {
+				/** @var Plot|null $plot */
+				$plot = yield $this->awaitPlot($mergeRecord["worldName"], $mergeRecord["originX"], $mergeRecord["originZ"]);
+				/** @var Plot|null $plotToMerge */
+				$plotToMerge = yield $this->awaitPlot($mergeRecord["worldName"], $mergeRecord["mergedX"], $mergeRecord["mergedZ"]);
+
+				// load merges
+				yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
+				foreach($plotToMerge->getMergePlots() as $mergePlot){
+					$plot->addMergePlot($mergePlot);
+					yield from $this->addMergePlot($plot, $mergePlot);
+				}
+				foreach($plotToMerge->getPlotPlayers() as $mergePlotPlayer) {
+					$plot->addPlotPlayer($mergePlotPlayer);
+					yield from $this->savePlotPlayer($plot, $mergePlotPlayer);
+				}
+				foreach ($plotToMerge->getFlags() as $mergeFlag) {
+					$flag = $plot->getFlagByID($mergeFlag->getID());
+					if ($flag === null) {
+						$flag = $mergeFlag;
+					} else {
+						$flag = $flag->merge($mergeFlag->getValue());
+					}
+					$plot->addFlag($flag);
+					yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
+				}
+				foreach ($plotToMerge->getPlotRates() as $mergePlotRate) {
+					$plot->addPlotRate($mergePlotRate);
+					yield from DataProvider::getInstance()->savePlotRate($plot, $mergePlotRate);
+				}
+			}
+			foreach($records as $record) {
+				// load plot
+				/** @var Plot|null $plot */
+				$plot = yield $this->awaitPlot($record["worldName"], $record["x"], $record["z"]);
+
+				// load helpers
+				$helpers = explode(",", $record["helpers"]);
+				foreach($helpers as $playerName) {
+					// validate offline player data
+					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
+					$UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
+					if($UUID === "") {
+						$skinTag = $offlineData->getCompoundTag("Skin");
+						$skinData = $skinTag->getByteArray("Data");
+						$UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $playerName);
+					}
+
+					// register player data
+					yield from $this->updatePlayerData(
+						$UUID->getBytes(),
+						$XUID,
+						$playerName
+					);
+
+					$playerData = yield $this->awaitPlayerDataByData(
+						$UUID->getBytes(),
+						$XUID,
+						$playerName
+					);
+					if (!($playerData instanceof PlayerData)) {
+						return null;
+					}
+
+					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_HELPER);
+					$plot->addPlotPlayer($senderData);
+					yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+				}
+
+				// load denied
+				$denied = explode(",", $record["denied"]);
+				foreach($denied as $playerName) {
+					// validate offline player data
+					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
+					$UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
+					if($UUID === "") {
+						$skinTag = $offlineData->getCompoundTag("Skin");
+						$skinData = $skinTag->getByteArray("Data");
+						$UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $playerName);
+					}
+
+					// register player data
+					yield from $this->updatePlayerData(
+						$UUID->getBytes(),
+						$XUID,
+						$playerName
+					);
+
+					$playerData = yield $this->awaitPlayerDataByData(
+						$UUID->getBytes(),
+						$XUID,
+						$playerName
+					);
+					if (!($playerData instanceof PlayerData)) {
+						return null;
+					}
+
+					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_DENIED);
+					$plot->addPlotPlayer($senderData);
+					yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+				}
+
+				//load flags
+				/** @var BaseAttribute<mixed> | null $flag */
+				$flag = FlagManager::getInstance()->getFlagByID("pvp")->newInstance($record["pvp"]);
+				$plot->addFlag($flag);
+				$this->savePlotFlag($plot, $flag);
+			}
+		}
+	}
 }
