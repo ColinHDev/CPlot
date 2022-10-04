@@ -24,6 +24,9 @@ use pocketmine\world\format\io\GlobalBlockStateHandlers;
 use pocketmine\world\format\SubChunk;
 use pocketmine\world\utils\SubChunkExplorer;
 use pocketmine\world\World;
+use function file_exists;
+use function pathinfo;
+use const DIRECTORY_SEPARATOR;
 
 class Schematic implements SchematicTypes {
 
@@ -57,6 +60,10 @@ class Schematic implements SchematicTypes {
     public function save() : bool {
         $nbt = new CompoundTag();
 
+        // Schematic versions indicate how the schematic file's contained data should be parsed. By calling the save()
+        // method, the schematic file is always written according to the current version, basically upgrading it.
+        // Because of that, we need to update its version, in case someone calls this on an old schematic.
+        $this->version = self::SCHEMATIC_VERSION;
         $nbt->setShort("Version", $this->version);
         $nbt->setLong("CreationTime", $this->creationTime);
         $nbt->setString("Type", $this->type);
@@ -102,6 +109,13 @@ class Schematic implements SchematicTypes {
         assert(is_string($tileTreeRootsEncoded));
         $nbt->setByteArray("TileEntities", $tileTreeRootsEncoded);
 
+        if (file_exists($this->file)) {
+            $pathInfo = pathinfo($this->file);
+            rename(
+                $this->file,
+                $pathInfo["dirname"] . DIRECTORY_SEPARATOR . $pathInfo["filename"] . "_old." . $pathInfo["extension"]
+            );
+        }
         file_put_contents($this->file, zlib_encode((new BigEndianNbtSerializer())->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));
         return true;
     }
