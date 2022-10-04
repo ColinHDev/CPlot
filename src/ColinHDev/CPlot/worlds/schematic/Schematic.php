@@ -362,7 +362,7 @@ class Schematic implements SchematicTypes {
         return $this->biomeIDs[World::chunkHash($x, $z)] ?? BiomeIds::PLAINS;
     }
 
-    public function getFullBlock(int $x, int $y, int $z) : int {
+    public function getBlockStateID(int $x, int $y, int $z) : int {
         $coordinateHash = World::blockHash($x, $y, $z);
         if (isset($this->blockStateIDs[$coordinateHash])) {
             return $this->blockStateIDs[$coordinateHash];

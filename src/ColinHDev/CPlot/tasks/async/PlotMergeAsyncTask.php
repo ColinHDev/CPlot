@@ -85,7 +85,7 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                                     $xInChunk,
                                     $y & 0x0f,
                                     $zInChunk,
-                                    $schematicMergeRoad->getFullBlock($xRaster, $y, $zRaster)
+                                    $schematicMergeRoad->getBlockStateID($xRaster, $y, $zRaster)
                                 );
                             }
                         }

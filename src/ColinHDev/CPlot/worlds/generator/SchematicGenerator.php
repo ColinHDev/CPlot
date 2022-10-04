@@ -95,7 +95,7 @@ class SchematicGenerator extends Generator {
                 for ($Z = 0, $z = $chunkZ * 16; $Z < 16; $Z++, $z++) {
                     $chunk->setBiomeId($X, $Z, $this->schematic->getBiomeID($X, $Z));
                     for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                        $chunk->setFullBlock($X, $y, $Z, $this->schematic->getFullBlock($x, $y, $z));
+                        $chunk->setFullBlock($X, $y, $Z, $this->schematic->getBlockStateID($x, $y, $z));
                         $tileNBT = $this->schematic->getTileCompoundTag($x, $y, $z);
                         if ($tileNBT instanceof CompoundTag) {
                             $tileNBT->setInt(Tile::TAG_X, $chunkX * 16 + $X);

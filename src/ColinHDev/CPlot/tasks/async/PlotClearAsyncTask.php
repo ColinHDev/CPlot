@@ -96,7 +96,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
                                     $xInChunk,
                                     $y & 0x0f,
                                     $zInChunk,
-                                    $schematicPlot->getFullBlock($xRaster, $y, $zRaster)
+                                    $schematicPlot->getBlockStateID($xRaster, $y, $zRaster)
                                 );
                             }
                         }
@@ -140,7 +140,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
                                     $xInChunk,
                                     $y & 0x0f,
                                     $zInChunk,
-                                    $schematicRoad->getFullBlock($xRaster, $y, $zRaster)
+                                    $schematicRoad->getBlockStateID($xRaster, $y, $zRaster)
                                 );
                             }
                         }

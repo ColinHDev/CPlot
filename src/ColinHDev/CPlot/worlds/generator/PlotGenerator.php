@@ -107,7 +107,7 @@ class PlotGenerator extends Generator {
                     if ($this->roadSchematic !== null) {
                         $chunk->setBiomeId($X, $Z, $this->roadSchematic->getBiomeID($x, $z));
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            $chunk->setFullBlock($X, $y, $Z, $this->roadSchematic->getFullBlock($x, $y, $z));
+                            $chunk->setFullBlock($X, $y, $Z, $this->roadSchematic->getBlockStateID($x, $y, $z));
                             $tileNBT = $this->roadSchematic->getTileCompoundTag($x, $y, $z);
                             if ($tileNBT instanceof CompoundTag) {
                                 $tileNBT->setInt(Tile::TAG_X, $chunkX * 16 + $X);
@@ -134,7 +134,7 @@ class PlotGenerator extends Generator {
                     if ($this->plotSchematic !== null) {
                         $chunk->setBiomeId($X, $Z, $this->plotSchematic->getBiomeID($xPlot, $zPlot));
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            $chunk->setFullBlock($X, $y, $Z, $this->plotSchematic->getFullBlock($xPlot, $y, $zPlot));
+                            $chunk->setFullBlock($X, $y, $Z, $this->plotSchematic->getBlockStateID($xPlot, $y, $zPlot));
                             $tileNBT = $this->plotSchematic->getTileCompoundTag($xPlot, $y, $zPlot);
                             if ($tileNBT instanceof CompoundTag) {
                                 $tileNBT->setInt(Tile::TAG_X, $chunkX * 16 + $X);
