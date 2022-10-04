@@ -6,7 +6,6 @@ namespace ColinHDev\CPlot\listener;
 
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\utils\ParseUtils;
-use ColinHDev\CPlot\worlds\NonWorldSettings;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\data\bedrock\BiomeIds;
@@ -23,7 +22,7 @@ class MyPlotConversionListener implements Listener{
 				$worldName = $world->getFolderName();
 				$worldData = $world->getProvider()->getWorldData();
 				$worldSettings = yield from DataProvider::getInstance()->awaitWorld($worldName);
-				if (!($worldSettings instanceof NonWorldSettings)) {
+				if ($worldSettings !== false) {
 					return;
 				}
 				if($worldData->getGenerator() !== "myplot"){
