@@ -58,14 +58,14 @@ class PlotGenerator extends Generator {
 
         $roadSchematicName = ParseUtils::parseStringFromArray($generatorOptions, "roadSchematic") ?? "default";
         if ($roadSchematicName !== "default") {
-            $roadSchematic = new Schematic($roadSchematicName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $roadSchematicName . "." . Schematic::FILE_EXTENSION);
+            $roadSchematic = new Schematic("plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $roadSchematicName . "." . Schematic::FILE_EXTENSION);
             if ($roadSchematic->loadFromFile()) {
                 $this->roadSchematic = $roadSchematic;
             }
         }
         $plotSchematicName = ParseUtils::parseStringFromArray($generatorOptions, "plotSchematic") ?? "default";
         if ($plotSchematicName !== "default") {
-            $plotSchematic = new Schematic($plotSchematicName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $plotSchematicName . "." . Schematic::FILE_EXTENSION);
+            $plotSchematic = new Schematic("plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $plotSchematicName . "." . Schematic::FILE_EXTENSION);
             if ($plotSchematic->loadFromFile()) {
                 $this->plotSchematic = $plotSchematic;
             }

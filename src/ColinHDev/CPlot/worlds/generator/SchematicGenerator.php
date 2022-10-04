@@ -60,7 +60,7 @@ class SchematicGenerator extends Generator {
         $this->schematicType = ParseUtils::parseStringFromArray($generatorOptions, "schematicType") ?? SchematicTypes::TYPE_ROAD;
         $schematicName = ParseUtils::parseStringFromArray($generatorOptions, "schematicName") ?? "default";
         if ($schematicName !== "default" && $this->schematic === null) {
-            $schematic = new Schematic($schematicName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $schematicName . "." . Schematic::FILE_EXTENSION);
+            $schematic = new Schematic("plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $schematicName . "." . Schematic::FILE_EXTENSION);
             if ($schematic->loadFromFile()) {
                 $this->schematic = $schematic;
             }

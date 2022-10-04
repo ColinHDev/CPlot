@@ -58,7 +58,7 @@ class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
     }
 
     public function onRun() : void {
-        $schematic = new Schematic($this->name, $this->file);
+        $schematic = new Schematic($this->file);
         $schematic->loadFromWorld($this->getChunkManager(), $this->type, $this->sizeRoad, $this->sizePlot);
         $schematic->save();
 

@@ -71,7 +71,7 @@ class SchematicSubcommand extends Subcommand {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "schematic.info.schematicNotFound" => $args[1]]);
                     break;
                 }
-                $schematic = new Schematic($args[1], $file);
+                $schematic = new Schematic($file);
                 if (!$schematic->loadFromFile()) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "schematic.info.loadSchematicError" => $args[1]]);
                     break;
@@ -174,7 +174,7 @@ class SchematicSubcommand extends Subcommand {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "schematic.generate.schematicNotFound" => $args[2]]);
                         break;
                     }
-                    $schematic = new Schematic($args[2], $file);
+                    $schematic = new Schematic($file);
                     if (!$schematic->loadFromFile()) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "schematic.generate.loadSchematicError" => $args[2]]);
                         break;

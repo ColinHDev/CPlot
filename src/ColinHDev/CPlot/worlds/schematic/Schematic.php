@@ -34,7 +34,6 @@ class Schematic implements SchematicTypes {
 
     public const SCHEMATIC_VERSION = 3;
 
-    private string $name;
     private string $file;
     private int $version;
     private int $creationTime;
@@ -52,8 +51,7 @@ class Schematic implements SchematicTypes {
     /** @phpstan-var array<int, CompoundTag> */
     private array $tiles = [];
 
-    public function __construct(string $name, string $file) {
-        $this->name = $name;
+    public function __construct(string $file) {
         $this->file = $file;
     }
 
@@ -343,8 +341,11 @@ class Schematic implements SchematicTypes {
         $this->biomeIDs[World::chunkHash($x, $z)] = $biomeID;
     }
 
+    /**
+     * Returns the name of this schematic. The schematic name matches the name of the schematic file and is solely based on it.
+     */
     public function getName() : string {
-        return $this->name;
+        return pathinfo($this->file, PATHINFO_FILENAME);
     }
 
     public function getFile() : string {
