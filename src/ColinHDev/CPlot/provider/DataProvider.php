@@ -1400,7 +1400,7 @@ final class DataProvider {
 				}
 
 				// load world
-				/** @var Plot|false $world */
+				/** @var WorldSettings|false $world */
 				$world = yield $this->awaitWorld($record["worldName"]);
 				if($world === false)
 					continue;
