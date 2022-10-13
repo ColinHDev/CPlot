@@ -1390,6 +1390,7 @@ final class DataProvider {
 					$record["playerName"]
 				);
 
+				/** @var PlayerData|null $playerData */
 				$playerData = yield $this->awaitPlayerDataByData(
 					$UUID->getBytes(),
 					$XUID,
@@ -1408,6 +1409,8 @@ final class DataProvider {
 				// load plot
 				/** @var Plot|null $plot */
 				$plot = yield $this->awaitPlot($record["worldName"], $record["x"], $record["z"]);
+				if($plot === null)
+					continue;
 
 				// claim plot
 				$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
@@ -1417,8 +1420,13 @@ final class DataProvider {
 			foreach($mergeRecords as $mergeRecord) {
 				/** @var Plot|null $plot */
 				$plot = yield $this->awaitPlot($mergeRecord["worldName"], $mergeRecord["originX"], $mergeRecord["originZ"]);
+				if($plot === null)
+					continue;
+
 				/** @var Plot|null $plotToMerge */
 				$plotToMerge = yield $this->awaitPlot($mergeRecord["worldName"], $mergeRecord["mergedX"], $mergeRecord["mergedZ"]);
+				if($plotToMerge === null)
+					continue;
 
 				// load merges
 				yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
@@ -1449,6 +1457,8 @@ final class DataProvider {
 				// load plot
 				/** @var Plot|null $plot */
 				$plot = yield $this->awaitPlot($record["worldName"], $record["x"], $record["z"]);
+				if($plot === null)
+					continue;
 
 				// load helpers
 				$helpers = explode(",", $record["helpers"]);
@@ -1474,16 +1484,15 @@ final class DataProvider {
 						$XUID,
 						$playerName
 					);
-					if (!($playerData instanceof PlayerData)) {
+					if (!($playerData instanceof PlayerData))
 						return null;
-					}
 
 					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_HELPER);
 					$plot->addPlotPlayer($senderData);
 					yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
 				}
 
-				// load denied
+				// load denied with priority over helpers
 				$denied = explode(",", $record["denied"]);
 				foreach($denied as $playerName) {
 					// validate offline player data
@@ -1507,17 +1516,16 @@ final class DataProvider {
 						$XUID,
 						$playerName
 					);
-					if (!($playerData instanceof PlayerData)) {
+					if (!($playerData instanceof PlayerData))
 						return null;
-					}
 
 					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_DENIED);
 					$plot->addPlotPlayer($senderData);
 					yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
 				}
 
-				//load flags
-				/** @var BaseAttribute<mixed> | null $flag */
+				//load common flags
+				/** @var BaseAttribute<bool> | null $flag */
 				$flag = FlagManager::getInstance()->getFlagByID("pvp")->newInstance($record["pvp"]);
 				$plot->addFlag($flag);
 				$this->savePlotFlag($plot, $flag);
