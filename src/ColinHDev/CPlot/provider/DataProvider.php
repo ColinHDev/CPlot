@@ -1317,16 +1317,16 @@ final class DataProvider {
 	 * @phpstan-return Generator<mixed, mixed, mixed, void>
 	 */
 	private function importData() : Generator {
-		if(file_exists(Path::join(Server::getInstance()->getPluginPath(), "MyPlot")) &&
-			file_exists(Path::join(Server::getInstance()->getPluginPath(), "MyPlot", "config.yml"))) {
+		if(is_dir(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot")) &&
+			file_exists(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml"))) {
 			/** @var string[][] $settings */
-			$settings = yaml_parse_file(Path::join(Server::getInstance()->getPluginPath(), "MyPlot", "config.yml"));
+			$settings = yaml_parse_file(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml"));
 			switch(mb_strtolower($settings["DataProvider"])) {
 				case 'sqlite':
 					$myplotDatabase = libasynql::create(CPlot::getInstance(), [
 						"type" => "sqlite",
 						"sqlite" => [
-							"file" => Path::join(Server::getInstance()->getPluginPath(), "MyPlot", "plots.db")
+							"file" => Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "plots.db")
 						]
 					], [
 						"mysql" => "sql" . DIRECTORY_SEPARATOR . "myplot_sqlite.sql"
@@ -1352,7 +1352,7 @@ final class DataProvider {
 				case 'yaml':
 					$filename = "plots.yml";
 				case 'json':
-					$data = new Config(Path::join(Server::getInstance()->getPluginPath(), "MyPlot", "Data", $filename ?? "plots.json"), Config::DETECT);
+					$data = new Config(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "Data", $filename ?? "plots.json"), Config::DETECT);
 					$records = array_values($data->get("plots"));
 					$unparsedMergeRecords = $data->get("merges");
 					$mergeRecords = [];
