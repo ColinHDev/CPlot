@@ -1361,7 +1361,7 @@ final class DataProvider {
 						foreach($merges as $merge) {
 							$mergeData = explode(";", $merge);
 							$mergeRecords[] = [
-								"worldName" => $originData[0],
+								"level" => $originData[0],
 								"originX" => $originData[1],
 								"originZ" => $originData[2],
 								"mergedX" => $mergeData[0],
@@ -1394,7 +1394,7 @@ final class DataProvider {
 				$playerData = yield $this->awaitPlayerDataByData(
 					$UUID->getBytes(),
 					$XUID,
-					$record["playerName"]
+					$record["owner"]
 				);
 				if (!($playerData instanceof PlayerData)) {
 					return null;
@@ -1402,13 +1402,13 @@ final class DataProvider {
 
 				// load world
 				/** @var WorldSettings|false $world */
-				$world = yield $this->awaitWorld($record["worldName"]);
+				$world = yield $this->awaitWorld($record["level"]);
 				if($world === false)
 					continue;
 
 				// load plot
 				/** @var Plot|null $plot */
-				$plot = yield $this->awaitPlot($record["worldName"], $record["x"], $record["z"]);
+				$plot = yield $this->awaitPlot($record["level"], (int)$record["x"], (int)$record["z"]);
 				if($plot === null)
 					continue;
 
@@ -1419,12 +1419,12 @@ final class DataProvider {
 			}
 			foreach($mergeRecords as $mergeRecord) {
 				/** @var Plot|null $plot */
-				$plot = yield $this->awaitPlot($mergeRecord["worldName"], $mergeRecord["originX"], $mergeRecord["originZ"]);
+				$plot = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["originX"], (int)$mergeRecord["originZ"]);
 				if($plot === null)
 					continue;
 
 				/** @var Plot|null $plotToMerge */
-				$plotToMerge = yield $this->awaitPlot($mergeRecord["worldName"], $mergeRecord["mergedX"], $mergeRecord["mergedZ"]);
+				$plotToMerge = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["mergedX"], (int)$mergeRecord["mergedZ"]);
 				if($plotToMerge === null)
 					continue;
 
@@ -1456,13 +1456,12 @@ final class DataProvider {
 			foreach($records as $record) {
 				// load plot
 				/** @var Plot|null $plot */
-				$plot = yield $this->awaitPlot($record["worldName"], $record["x"], $record["z"]);
+				$plot = yield $this->awaitPlot($record["level"], (int) $record["x"], (int) $record["z"]);
 				if($plot === null)
 					continue;
 
 				// load helpers
-				$helpers = explode(",", $record["helpers"]);
-				foreach($helpers as $playerName) {
+				foreach($record["helpers"] as $playerName) { // TODO: why is helpers already an array here?
 					// validate offline player data
 					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
 					$UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
@@ -1493,8 +1492,7 @@ final class DataProvider {
 				}
 
 				// load denied with priority over helpers
-				$denied = explode(",", $record["denied"]);
-				foreach($denied as $playerName) {
+				foreach($record["denied"] as $playerName) { // TODO: why is denied already an array here?
 					// validate offline player data
 					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
 					$UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
