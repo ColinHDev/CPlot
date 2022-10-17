@@ -1329,7 +1329,7 @@ final class DataProvider {
 							"file" => Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "plots.db")
 						]
 					], [
-						"mysql" => "sql" . DIRECTORY_SEPARATOR . "myplot_sqlite.sql"
+						"sqlite" => "sql" . DIRECTORY_SEPARATOR . "myplot_sqlite.sql"
 					]);
 				case 'mysql':
 					$sqlSettings = $settings["MySQLSettings"];
