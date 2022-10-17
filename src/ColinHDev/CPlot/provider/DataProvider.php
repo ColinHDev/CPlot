@@ -1543,6 +1543,10 @@ final class DataProvider {
 				$plot->addFlag($flag);
 				$this->savePlotFlag($plot, $flag);
 			}
+			rename( // rename config file to prevent re-import without losing data
+				Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml"),
+				Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config_old.yml")
+			);
 		}
 	}
 }
