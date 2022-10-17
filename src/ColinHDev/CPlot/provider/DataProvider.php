@@ -1389,7 +1389,7 @@ final class DataProvider {
 
 					// register player data
 					yield from $this->updatePlayerData(
-						$UUID->getBytes(),
+						$UUID->getBytes(), // doesn't matter what is input at this point. will overwrite on login
 						$XUID,
 						$record["owner"]
 					);
@@ -1423,17 +1423,25 @@ final class DataProvider {
 				yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
 			}
 			foreach($mergeRecords as $mergeRecord) {
+				// load world
+				/** @var WorldSettings|false $world */
+				$world = yield $this->awaitWorld($mergeRecord["level"]);
+				if($world === false)
+					continue;
+
+				// load merge plot 1
 				/** @var Plot|null $plot */
 				$plot = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["originX"], (int)$mergeRecord["originZ"]);
 				if($plot === null)
 					continue;
 
+				// load merge plot 2
 				/** @var Plot|null $plotToMerge */
 				$plotToMerge = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["mergedX"], (int)$mergeRecord["mergedZ"]);
 				if($plotToMerge === null)
 					continue;
 
-				// load merges
+				// complete merge logic
 				yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
 				foreach($plotToMerge->getMergePlots() as $mergePlot){
 					$plot->addMergePlot($mergePlot);
@@ -1459,6 +1467,12 @@ final class DataProvider {
 				}
 			}
 			foreach($records as $record) {
+				// load world
+				/** @var WorldSettings|false $world */
+				$world = yield $this->awaitWorld($record["level"]);
+				if($world === false)
+					continue;
+
 				// load plot
 				/** @var Plot|null $plot */
 				$plot = yield $this->awaitPlot($record["level"], (int) $record["x"], (int) $record["z"]);
@@ -1482,7 +1496,7 @@ final class DataProvider {
 
 						// register player data
 						yield from $this->updatePlayerData(
-							$UUID->getBytes(),
+							$UUID->getBytes(), // doesn't matter what is input at this point. will overwrite on login
 							$XUID,
 							$playerName
 						);
@@ -1518,7 +1532,7 @@ final class DataProvider {
 
 						// register player data
 						yield from $this->updatePlayerData(
-							$UUID->getBytes(),
+							$UUID->getBytes(), // doesn't matter what is input at this point. will overwrite on login
 							$XUID,
 							$playerName
 						);
