@@ -25,6 +25,7 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use Generator;
 use pocketmine\entity\Entity;
 use pocketmine\player\Player;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
@@ -37,6 +38,7 @@ use Webmozart\PathUtil\Path;
 use function file_exists;
 use function is_int;
 use function is_string;
+use function rename;
 use function time;
 
 /**
