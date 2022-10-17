@@ -1466,7 +1466,7 @@ final class DataProvider {
 					continue;
 
 				// load helpers
-				foreach($record["helpers"] as $playerName) { // TODO: why is helpers already an array here?
+				foreach($record["helpers"] as $playerName) {
 					// validate offline player data
 					$UUID = $XUID = null;
 					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
@@ -1502,7 +1502,7 @@ final class DataProvider {
 				}
 
 				// load denied with priority over helpers
-				foreach($record["denied"] as $playerName) { // TODO: why is denied already an array here?
+				foreach($record["denied"] as $playerName) {
 					// validate offline player data
 					$UUID = $XUID = null;
 					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
