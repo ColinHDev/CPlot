@@ -1402,7 +1402,7 @@ final class DataProvider {
 					$record["owner"]
 				);
 				if (!($playerData instanceof PlayerData)) {
-					return null;
+					continue;
 				}
 
 				// load world
@@ -1494,7 +1494,7 @@ final class DataProvider {
 						$playerName
 					);
 					if (!($playerData instanceof PlayerData))
-						return null;
+						continue;
 
 					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_HELPER);
 					$plot->addPlotPlayer($senderData);
@@ -1530,7 +1530,7 @@ final class DataProvider {
 						$playerName
 					);
 					if (!($playerData instanceof PlayerData))
-						return null;
+						continue;
 
 					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_DENIED);
 					$plot->addPlotPlayer($senderData);
