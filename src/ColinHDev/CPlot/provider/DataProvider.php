@@ -1375,24 +1375,29 @@ final class DataProvider {
 			}
 			foreach($records as $record) {
 				// validate offline player data
-				$offlineData = Server::getInstance()->getOfflinePlayerData($record["playerName"]);
-				$UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
-				if($UUID === "") {
-					$skinTag = $offlineData->getCompoundTag("Skin");
-					$skinData = $skinTag->getByteArray("Data");
-					$UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $record["playerName"]);
-				}
+				$UUID = $XUID = null;
+				$offlineData = Server::getInstance()->getOfflinePlayerData($record["owner"]);
+				if($offlineData !== null) {
+					$UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
+					if($UUID === "") {
+						$skinTag = $offlineData->getCompoundTag("Skin");
+						$skinData = $skinTag->getByteArray("Data");
+						$UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $record["owner"]);
+					}else{
+						$UUID = Uuid::fromInteger($UUID);
+					}
 
-				// register player data
-				yield from $this->updatePlayerData(
-					$UUID->getBytes(),
-					$XUID,
-					$record["playerName"]
-				);
+					// register player data
+					yield from $this->updatePlayerData(
+						$UUID->getBytes(),
+						$XUID,
+						$record["owner"]
+					);
+				}
 
 				/** @var PlayerData|null $playerData */
 				$playerData = yield $this->awaitPlayerDataByData(
-					$UUID->getBytes(),
+					$UUID?->getBytes(),
 					$XUID,
 					$record["owner"]
 				);
@@ -1463,23 +1468,28 @@ final class DataProvider {
 				// load helpers
 				foreach($record["helpers"] as $playerName) { // TODO: why is helpers already an array here?
 					// validate offline player data
+					$UUID = $XUID = null;
 					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
-					$UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
-					if($UUID === "") {
-						$skinTag = $offlineData->getCompoundTag("Skin");
-						$skinData = $skinTag->getByteArray("Data");
-						$UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $playerName);
+					if($offlineData !== null) {
+						$UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
+						if($UUID === "") {
+							$skinTag = $offlineData->getCompoundTag("Skin");
+							$skinData = $skinTag->getByteArray("Data");
+							$UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $playerName);
+						}else{
+							$UUID = Uuid::fromInteger($UUID);
+						}
+
+						// register player data
+						yield from $this->updatePlayerData(
+							$UUID->getBytes(),
+							$XUID,
+							$playerName
+						);
 					}
 
-					// register player data
-					yield from $this->updatePlayerData(
-						$UUID->getBytes(),
-						$XUID,
-						$playerName
-					);
-
 					$playerData = yield $this->awaitPlayerDataByData(
-						$UUID->getBytes(),
+						$UUID?->getBytes(),
 						$XUID,
 						$playerName
 					);
@@ -1494,23 +1504,28 @@ final class DataProvider {
 				// load denied with priority over helpers
 				foreach($record["denied"] as $playerName) { // TODO: why is denied already an array here?
 					// validate offline player data
+					$UUID = $XUID = null;
 					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
-					$UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
-					if($UUID === "") {
-						$skinTag = $offlineData->getCompoundTag("Skin");
-						$skinData = $skinTag->getByteArray("Data");
-						$UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $playerName);
+					if($offlineData !== null) {
+						$UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
+						if($UUID === "") {
+							$skinTag = $offlineData->getCompoundTag("Skin");
+							$skinData = $skinTag->getByteArray("Data");
+							$UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $playerName);
+						}else{
+							$UUID = Uuid::fromInteger($UUID);
+						}
+
+						// register player data
+						yield from $this->updatePlayerData(
+							$UUID->getBytes(),
+							$XUID,
+							$playerName
+						);
 					}
 
-					// register player data
-					yield from $this->updatePlayerData(
-						$UUID->getBytes(),
-						$XUID,
-						$playerName
-					);
-
 					$playerData = yield $this->awaitPlayerDataByData(
-						$UUID->getBytes(),
+						$UUID?->getBytes(),
 						$XUID,
 						$playerName
 					);
