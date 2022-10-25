@@ -37,6 +37,7 @@ class Schematic implements SchematicTypes {
     private string $file;
     private int $version;
     private int $creationTime;
+    /** @phpstan-var SchematicTypes::* */
     private string $type;
 
     private int $roadSize;
@@ -48,13 +49,21 @@ class Schematic implements SchematicTypes {
     /** @var array<int, int> */
     private array $blockStateIDs = [];
 
-    /** @phpstan-var array<int, CompoundTag> */
+    /** @var array<int, CompoundTag> */
     private array $tiles = [];
 
+    /**
+     * @param string $file The file this schematic can be loaded from and /or will be saved to.
+     */
     public function __construct(string $file) {
         $this->file = $file;
     }
 
+    /**
+     * Saves the schematic to the given file.
+     * If the file already exists, it won't be overwritten but instead, the old file will be renamed for backup reasons,
+     * e.g. "road.cplot_schematic" will be renamed to "road_old.cplot_schematic".
+     */
     public function save() : void {
         $nbt = new CompoundTag();
 
@@ -117,6 +126,10 @@ class Schematic implements SchematicTypes {
         file_put_contents($this->file, zlib_encode((new BigEndianNbtSerializer())->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));
     }
 
+    /**
+     * Tries to load the schematic from the given file.
+     * @return bool Returns true if the schematic was loaded successfully.
+     */
     public function loadFromFile() : bool {
         if (!file_exists($this->file)) {
             return false;
