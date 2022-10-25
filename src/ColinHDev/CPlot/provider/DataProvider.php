@@ -1389,7 +1389,7 @@ final class DataProvider {
                         $UUID = Uuid::fromInteger($UUID);
                     }
 
-                    // register player data
+                    // register filler player data
                     yield from $this->updatePlayerData(
                         $UUID->getBytes(), // doesn't matter what is input at this point. will overwrite on login
                         $XUID ?? "",
