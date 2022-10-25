@@ -269,6 +269,10 @@ class Schematic implements SchematicTypes {
                 }
                 break;
         }
+        // To ensure that all schematics use the best available format, we always upgrade them to the latest version.
+        if ($this->version !== self::SCHEMATIC_VERSION) {
+            $this->save();
+        }
         return true;
     }
 
