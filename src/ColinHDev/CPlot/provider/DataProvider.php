@@ -1380,8 +1380,8 @@ final class DataProvider {
                 $XUID = null;
                 $offlineData = Server::getInstance()->getOfflinePlayerData($record["owner"]);
                 if($offlineData !== null) {
-                    $UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
-                    if($UUID === "") {
+                    $UUID = $XUID = $offlineData->getString("LastKnownXUID", null);
+                    if($UUID === null) {
                         $skinTag = $offlineData->getCompoundTag("Skin");
                         $skinData = $skinTag->getByteArray("Data");
                         $UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $record["owner"]);
@@ -1392,7 +1392,7 @@ final class DataProvider {
                     // register player data
                     yield from $this->updatePlayerData(
                         $UUID->getBytes(), // doesn't matter what is input at this point. will overwrite on login
-                        $XUID,
+                        $XUID ?? "",
                         $record["owner"]
                     );
                 }
