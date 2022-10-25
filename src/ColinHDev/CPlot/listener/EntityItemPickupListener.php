@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\ItemPickupFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\entity\EntityItemPickupEvent;
@@ -56,9 +56,7 @@ class EntityItemPickupListener implements Listener {
                 }
             }
 
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_ITEM_PICKUP);
-            if ($flag->getValue() === true) {
+            if ($plot->getFlag(Flags::ITEM_PICKUP())->equals(ItemPickupFlag::TRUE())) {
                 return;
             }
 

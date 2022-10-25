@@ -57,10 +57,8 @@ class EntityTrampleFarmlandListener implements Listener {
                 }
             }
 
-        } else if ($plot === false) {
-            if ($entity instanceof Player && $entity->hasPermission("cplot.interact.road")) {
-                return;
-            }
+        } else if ($plot === false && $entity instanceof Player && $entity->hasPermission("cplot.interact.road")) {
+            return;
         }
 
         $event->cancel();

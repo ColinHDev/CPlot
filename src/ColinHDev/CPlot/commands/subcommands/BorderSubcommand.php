@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\plots\BasePlot;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\lock\BorderChangeLockID;
+use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
@@ -27,9 +27,6 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class BorderSubcommand extends Subcommand {
 
     private MenuForm $form;
@@ -79,15 +76,13 @@ class BorderSubcommand extends Subcommand {
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "border.senderNotOnline"]);
-            return null;
+            return;
         }
-
         $sender->sendForm($this->form);
-        return null;
     }
 
     /**
-     * @phpstan-return \Generator<mixed, mixed, mixed, void>
+     * @phpstan-return \Generator<mixed, mixed, mixed, mixed>
      */
     public function onFormSubmit(Player $player, int $selectedOption) : \Generator {
         if (!$player->hasPermission($this->permissions[$selectedOption])) {
@@ -117,10 +112,9 @@ class BorderSubcommand extends Subcommand {
             }
         }
 
-        /** @var BooleanAttribute $flag */
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-        if ($flag->getValue() === true) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.serverPlotFlag" => $flag->getID()]);
+        $lock = new BorderChangeLockID();
+        if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.plotLocked"]);
             return;
         }
 
@@ -143,5 +137,6 @@ class BorderSubcommand extends Subcommand {
             "Changing plot border to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $player->getUniqueId()->getBytes() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "border.finish" => [$elapsedTimeString, $block->getName()]]);
+        PlotLockManager::getInstance()->unlockPlots($lock, $plot);
     }
 }

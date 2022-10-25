@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\GrowingFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\block\StructureGrowEvent;
@@ -32,18 +32,14 @@ class StructureGrowListener implements Listener {
 
         /** @phpstan-var Plot|false|null $plot */
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
-        if ($plot instanceof Plot) {
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_GROWING);
-            if ($flag->getValue() === true) {
-                $transaction = $event->getTransaction();
-                foreach ($transaction->getBlocks() as [$x, $y, $z, $block]) {
-                    if (!$plot->isOnPlot(new Position($x, $y, $z, $world))) {
-                        $transaction->addBlockAt($x, $y, $z, $world->getBlockAt($x, $y, $z));
-                    }
+        if ($plot instanceof Plot && $plot->getFlag(Flags::GROWING())->equals(GrowingFlag::TRUE())) {
+            $transaction = $event->getTransaction();
+            foreach ($transaction->getBlocks() as [$x, $y, $z, $block]) {
+                if (!$plot->isOnPlot(new Position($x, $y, $z, $world))) {
+                    $transaction->addBlockAt($x, $y, $z, $world->getBlockAt($x, $y, $z));
                 }
-                return;
             }
+            return;
         }
 
         $event->cancel();

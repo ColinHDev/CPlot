@@ -42,7 +42,11 @@ permissions:
         default: true
     cplot.subcommand.info:
         default: true
+    cplot.subcommand.kick:
+        default: true
     cplot.subcommand.merge:
+        default: true
+    cplot.subcommand.middle:
         default: true
     cplot.subcommand.remove:
         default: true
@@ -51,6 +55,8 @@ permissions:
     cplot.subcommand.schematic:
         default: op
     cplot.subcommand.setting:
+        default: true
+    cplot.subcommand.spawn:
         default: true
     cplot.subcommand.trusted:
         default: true
@@ -79,11 +85,15 @@ permissions:
         default: op
     cplot.admin.flag:
         default: op
+    cplot.admin.kick:
+        default: op
     cplot.admin.merge:
         default: op
     cplot.admin.remove:
         default: op
     cplot.admin.reset:
+        default: op
+    cplot.admin.spawn:
         default: op
     cplot.admin.trust:
         default: op
@@ -98,21 +108,21 @@ permissions:
 
     cplot.bypass.deny:
         default: op
+    cplot.bypass.kick:
+        default: op
 
     cplot.claimPlots.4:
         default: true
     cplot.claimPlots.unlimited:
         default: op
 
-    cplot.flag.title:
-        default: true
     cplot.flag.plot_enter:
         default: true
     cplot.flag.plot_leave:
         default: true
-    cplot.flag.message:
+    cplot.flag.greeting:
         default: true
-    cplot.flag.spawn:
+    cplot.flag.farewell:
         default: true
     cplot.flag.item_drop:
         default: true
@@ -134,8 +144,6 @@ permissions:
         default: true
     cplot.flag.server_plot:
         default: op
-    cplot.flag.check_offlinetime:
-        default: op
     cplot.flag.place:
         default: true
     cplot.flag.break:
@@ -143,51 +151,25 @@ permissions:
     cplot.flag.use:
         default: true
 
-    cplot.setting.inform_trusted_add:
+    cplot.setting.inform_trusted:
         default: true
-    cplot.setting.inform_trusted_remove:
+    cplot.setting.inform_untrusted:
         default: true
-    cplot.setting.inform_helper_add:
+    cplot.setting.inform_added:
         default: true
-    cplot.setting.inform_helper_remove:
+    cplot.setting.inform_removed:
         default: true
-    cplot.setting.inform_denied_add:
+    cplot.setting.inform_denied:
         default: true
-    cplot.setting.inform_denied_remove:
+    cplot.setting.inform_undenied:
         default: true
-    cplot.setting.inform_plot_inactive:
-        default: op
-    cplot.setting.inform_plot_rate_add:
+    cplot.setting.inform_rate_add:
         default: true
-    cplot.setting.warn_flag_item_drop:
+    cplot.setting.warn_flag:
         default: true
-    cplot.setting.warn_change_flag_item_drop:
+    cplot.setting.warn_flag_change:
         default: true
-    cplot.setting.teleport_change_flag_item_drop:
-        default: true
-    cplot.setting.warn_flag_item_pickup:
-        default: true
-    cplot.setting.warn_change_flag_item_pickup:
-        default: true
-    cplot.setting.teleport_change_flag_item_pickup:
-        default: true
-    cplot.setting.warn_flag_pvp:
-        default: true
-    cplot.setting.warn_change_flag_pvp:
-        default: true
-    cplot.setting.teleport_change_flag_pvp:
-        default: true
-    cplot.setting.warn_flag_pve:
-        default: true
-    cplot.setting.warn_change_flag_pve:
-        default: true
-    cplot.setting.teleport_change_flag_pve:
-        default: true
-    cplot.setting.warn_flag_explosion:
-        default: true
-    cplot.setting.warn_change_flag_explosion:
-        default: true
-    cplot.setting.teleport_change_flag_explosion:
+    cplot.setting.teleport_flag_change:
         default: true
 
     cplot.interact.road:

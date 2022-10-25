@@ -4,34 +4,29 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\attributes\ArrayAttribute;
-use ColinHDev\CPlot\attributes\BaseAttribute;
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\attributes\LocationAttribute;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\player\PlayerData;
-use ColinHDev\CPlot\player\settings\SettingIDs;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\player\settings\Settings;
+use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\plots\flags\InternalFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
-use pocketmine\entity\Location;
 use pocketmine\player\Player;
+use function assert;
+use function is_array;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class FlagSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.usage"]);
-            return null;
+            return;
         }
 
         switch ($args[0]) {
@@ -43,6 +38,9 @@ class FlagSubcommand extends Subcommand {
                 );
                 $flagsByCategory = [];
                 foreach (FlagManager::getInstance()->getFlags() as $flag) {
+                    if ($flag instanceof InternalFlag) {
+                        continue;
+                    }
                     $flagCategory = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
                         "flag.category." . $flag->getID()
@@ -64,7 +62,7 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
-                if ($flag === null) {
+                if (!($flag instanceof Flag) || $flag instanceof InternalFlag) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.info.noFlag" => $args[1]]);
                     break;
                 }
@@ -79,7 +77,8 @@ class FlagSubcommand extends Subcommand {
                 /** @phpstan-var string $type */
                 $type = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "flag.type." . $flag->getID());
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.type" => $type]);
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.default" => $flag->getDefault()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.example" => $flag->getExample()]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["flag.info.default" => $flag->toReadableString()]);
                 break;
 
             case "here":
@@ -103,9 +102,12 @@ class FlagSubcommand extends Subcommand {
                 }
                 $flagStrings = [];
                 foreach ($flags as $ID => $flag) {
+                    if ($flag instanceof InternalFlag) {
+                        continue;
+                    }
                     $flagStrings[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                         $sender,
-                        ["flag.here.success.format" => [$ID, $flag->toString()]]
+                        ["flag.here.success.format" => [$ID, $flag->toReadableString()]]
                     );
                 }
                 /** @phpstan-var string $separator */
@@ -148,41 +150,18 @@ class FlagSubcommand extends Subcommand {
                     }
                 }
 
-                /** @var BaseAttribute<mixed> | null $flag */
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
-                if ($flag === null) {
+                if (!($flag instanceof Flag) || $flag instanceof InternalFlag) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.noFlag" => $args[1]]);
                     break;
                 }
-                if (!$sender->hasPermission($flag->getPermission())) {
+                if (!$sender->hasPermission("cplot.flag." . $flag->getID())) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.permissionMessageForFlag" => $flag->getID()]);
                     break;
                 }
 
-                if ($flag->getID() !== FlagIDs::FLAG_SERVER_PLOT) {
-                    /** @var BooleanAttribute $serverPlotFlag */
-                    $serverPlotFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-                    if ($serverPlotFlag->getValue() === true) {
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.serverPlotFlag" => $serverPlotFlag->getID()]);
-                        break;
-                    }
-                }
-
-                if ($flag->getID() === FlagIDs::FLAG_SPAWN) {
-                    $location = $sender->getLocation();
-                    /** @var LocationAttribute $flag */
-                    $arg = $flag->toString(
-                        Location::fromObject(
-                            $location->subtractVector($plot->getVector3()),
-                            $location->getWorld(),
-                            $location->getYaw(),
-                            $location->getPitch()
-                        )
-                    );
-                } else {
-                    array_splice($args, 0, 2);
-                    $arg = implode(" ", $args);
-                }
+                array_splice($args, 0, 2);
+                $arg = implode(" ", $args);
                 try {
                     $parsedValue = $flag->parse($arg);
                 } catch (AttributeParseException) {
@@ -190,52 +169,32 @@ class FlagSubcommand extends Subcommand {
                     break;
                 }
 
-                $flag = $newFlag = $flag->newInstance($parsedValue);
-                $oldFlag = $plot->getFlagByID($flag->getID());
+                $flag = $newFlag = $flag->createInstance($parsedValue);
+                $oldFlag = $plot->getLocalFlagByID($flag->getID());
                 if ($oldFlag !== null) {
                     $flag = $oldFlag->merge($flag->getValue());
                 }
-                $plot->addFlag(
-                    $flag
-                );
+                $plot->addFlag($flag);
 
                 yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.success" => [$flag->getID(), $flag->toString($parsedValue)]]);
+                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.set.success" => [$flag->getID(), $newFlag->toReadableString()]]);
                 foreach ($sender->getWorld()->getPlayers() as $player) {
-                    if ($sender === $player) {
-                        continue;
-                    }
-                    $plotOfPlayer = yield Plot::awaitFromPosition($player->getPosition());
-                    if (!($plotOfPlayer instanceof Plot) || !$plotOfPlayer->isSame($plot)) {
+                    if ($sender === $player || !$plot->isOnPlot($player->getPosition())) {
                         continue;
                     }
                     $playerData = yield DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
                     if (!($playerData instanceof PlayerData)) {
                         continue;
                     }
-                    /** @var ArrayAttribute<array<mixed, mixed>> $setting */
-                    $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_CHANGE_FLAG . $newFlag->getID());
-                    foreach ($setting->getValue() as $value) {
-                        if ($value === $newFlag->getValue()) {
-                            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                                $player,
-                                ["prefix", "flag.set.setting.warn_change_flag" => [$newFlag->getID(), $newFlag->toString()]]
-                            );
-                            break;
-                        }
-                    }
 
-                    /** @var ArrayAttribute<array<mixed, mixed>> $setting */
-                    $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_TELEPORT_CHANGE_FLAG . $newFlag->getID());
-                    foreach ($setting->getValue() as $value) {
-                        if ($value === $newFlag->getValue()) {
-                            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                                $player,
-                                ["prefix", "flag.set.setting.teleport_change_flag" => [$newFlag->getID(), $newFlag->toString()]]
-                            );
-                            $plot->teleportTo($player, TeleportDestination::ROAD_EDGE);
-                            break;
-                        }
+                    if ($playerData->getSetting(Settings::WARN_FLAG_CHANGE())->contains($newFlag)) {
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                            $player,
+                            ["prefix", "flag.set.setting.warn_change_flag" => [$newFlag->getID(), $newFlag->toReadableString()]]
+                        );
+                    }
+                    if ($playerData->getSetting(Settings::TELEPORT_FLAG_CHANGE())->contains($newFlag)) {
+                        $plot->teleportTo($player, TeleportDestination::ROAD_EDGE);
                     }
                 }
                 break;
@@ -271,43 +230,33 @@ class FlagSubcommand extends Subcommand {
                     }
                 }
 
-                /** @var BaseAttribute<mixed> | null $flag */
-                $flag = $plot->getFlagByID($args[1]);
-                if ($flag === null) {
+                $flag = $plot->getLocalFlagByID($args[1]);
+                if (!($flag instanceof Flag) || $flag instanceof InternalFlag) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.flagNotSet" => $args[1]]);
                     break;
                 }
-                if (!$sender->hasPermission($flag->getPermission())) {
+                if (!$sender->hasPermission("cplot.flag." . $flag->getID())) {
                     yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.permissionMessageForFlag" => $flag->getID()]);
                     break;
                 }
 
-                if ($flag->getID() !== FlagIDs::FLAG_SERVER_PLOT) {
-                    /** @var BooleanAttribute $serverPlotFlag */
-                    $serverPlotFlag = $plot->getFlagNonNullByID(FlagIDs::FLAG_SERVER_PLOT);
-                    if ($serverPlotFlag->getValue() === true) {
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.serverPlotFlag" => $serverPlotFlag->getID()]);
-                        break;
-                    }
-                }
-
                 array_splice($args, 0, 2);
-                if (count($args) > 0 && $flag instanceof ArrayAttribute) {
+                if (count($args) > 0 && is_array($flag->getValue())) {
                     $arg = implode(" ", $args);
                     try {
                         $parsedValues = $flag->parse($arg);
+                        assert(is_array($parsedValues));
                     } catch (AttributeParseException) {
                         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.parseError" => [$arg, $flag->getID()]]);
                         break;
                     }
 
                     $values = $flag->getValue();
-                    assert(is_array($values));
                     $removedValues = [];
                     foreach ($values as $key => $value) {
-                        $valueString = $flag->toString([$value]);
+                        $valueString = $flag->createInstance([$value])->toString();
                         foreach ($parsedValues as $parsedValue) {
-                            if ($valueString === $flag->toString([$parsedValue])) {
+                            if ($valueString === $flag->createInstance([$parsedValue])->toString()) {
                                 $removedValues[] = $value;
                                 unset($values[$key]);
                                 continue 2;
@@ -316,10 +265,10 @@ class FlagSubcommand extends Subcommand {
                     }
 
                     if (count($values) > 0) {
-                        $flag = $flag->newInstance($values);
+                        $flag = $flag->createInstance($values);
                         $plot->addFlag($flag);
                         yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.value.success" => [$flag->getID(), $flag->toString($removedValues)]]);
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.remove.value.success" => [$flag->getID(), $flag->createInstance($removedValues)->toReadableString()]]);
                         break;
                     }
                 }
@@ -333,13 +282,5 @@ class FlagSubcommand extends Subcommand {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "flag.usage"]);
                 break;
         }
-        return null;
-    }
-
-    public function onError(CommandSender $sender, \Throwable $error) : void {
-        if ($sender instanceof Player && !$sender->isConnected()) {
-            return;
-        }
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "flag.saveError" => $error->getMessage()]);
     }
 }

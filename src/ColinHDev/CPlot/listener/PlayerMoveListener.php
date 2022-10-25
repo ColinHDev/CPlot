@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\listener;
 
 use Closure;
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\attributes\BooleanListAttribute;
-use ColinHDev\CPlot\attributes\StringAttribute;
 use ColinHDev\CPlot\event\PlayerEnteredPlotEvent;
 use ColinHDev\CPlot\event\PlayerEnterPlotEvent;
 use ColinHDev\CPlot\event\PlayerLeavePlotEvent;
 use ColinHDev\CPlot\event\PlayerLeftPlotEvent;
-use ColinHDev\CPlot\player\settings\SettingIDs;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\player\PlayerData;
+use ColinHDev\CPlot\player\settings\Settings;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\FarewellFlag;
+use ColinHDev\CPlot\plots\flags\implementation\GreetingFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PlotEnterFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PlotLeaveFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -131,61 +133,49 @@ class PlayerMoveListener implements Listener {
         Await::f2c(static function() use($plot, $player) : \Generator {
             // settings on plot enter
             $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
-            if ($playerData !== null) {
+            if ($playerData instanceof PlayerData) {
+                $setting = $playerData->getSetting(Settings::WARN_FLAG());
                 foreach ($plot->getFlags() as $flag) {
-                    $setting = $playerData->getSettingNonNullByID(SettingIDs::BASE_SETTING_WARN_FLAG . $flag->getID());
-                    if (!($setting instanceof BooleanListAttribute)) {
-                        continue;
-                    }
-                    foreach ($setting->getValue() as $value) {
-                        if ($value === $flag->getValue()) {
-                            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                                $player,
-                                ["prefix", "playerMove.setting.warn_flag" => [$flag->getID(), $flag->toString()]]
-                            );
-                            continue 2;
-                        }
+                    if ($setting->contains($flag)) {
+                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                            $player,
+                            ["prefix", "playerMove.setting.warn_flag" => [$flag->getID(), $flag->toReadableString()]]
+                        );
                     }
                 }
             }
 
-            // title flag && message flag
-            $tip = "";
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_TITLE);
-            if ($flag->getValue() === true) {
-                $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
-                    $player,
-                    ["playerMove.plotEnter.tip.coordinates" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]
-                );
-                if ($plot->hasPlotOwner()) {
-                    $plotOwners = [];
-                    foreach ($plot->getPlotOwners() as $plotOwner) {
-                        $plotOwnerData = $plotOwner->getPlayerData();
-                        $plotOwners[] = $plotOwnerData->getPlayerName() ?? "Error: " . ($plotOwnerData->getPlayerXUID() ?? $plotOwnerData->getPlayerUUID() ?? $plotOwnerData->getPlayerID());
-                    }
-                    $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
-                        $player,
-                        "playerMove.plotEnter.tip.owner.separator"
-                    );
-                    $list = implode($separator, $plotOwners);
-                    $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
-                        $player,
-                        ["playerMove.plotEnter.tip.owner" => $list]
-                    );
-                } else {
-                    $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
-                        $player,
-                        "playerMove.plotEnter.tip.claimable"
-                    );
+            // tip && message flag
+            $tip = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                $player,
+                ["playerMove.plotEnter.tip.coordinates" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]
+            );
+            if ($plot->hasPlotOwner()) {
+                $plotOwners = [];
+                foreach ($plot->getPlotOwners() as $plotOwner) {
+                    $plotOwnerData = $plotOwner->getPlayerData();
+                    $plotOwners[] = $plotOwnerData->getPlayerName() ?? "Error: " . ($plotOwnerData->getPlayerXUID() ?? $plotOwnerData->getPlayerUUID() ?? $plotOwnerData->getPlayerID());
                 }
-            }
-            /** @var StringAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_MESSAGE);
-            if ($flag->getValue() !== "") {
+                $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $player,
+                    "playerMove.plotEnter.tip.owner.separator"
+                );
+                $list = implode($separator, $plotOwners);
                 $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
                     $player,
-                    ["playerMove.plotEnter.tip.flag.message" => $flag->getValue()]
+                    ["playerMove.plotEnter.tip.owner" => $list]
+                );
+            } else {
+                $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $player,
+                    "playerMove.plotEnter.tip.claimable"
+                );
+            }
+            $flag = $plot->getFlag(Flags::GREETING());
+            if (!$flag->equals(GreetingFlag::EMPTY())) {
+                $tip .= yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $player,
+                    ["playerMove.plotEnter.tip.flag.greeting" => $flag->getValue()]
                 );
             }
             $tipParts = explode(TextFormat::EOL, $tip);
@@ -208,23 +198,6 @@ class PlayerMoveListener implements Listener {
                 );
             }
             $player->sendTip(implode(TextFormat::EOL, $tipParts));
-
-            // plot_enter flag
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PLOT_ENTER);
-            if ($flag->getValue() === true) {
-                foreach ($plot->getPlotOwners() as $plotOwner) {
-                    $owner = $plotOwner->getPlayerData()->getPlayer();
-                    if ($owner instanceof Player) {
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                            $owner,
-                            ["playerMove.plotEnter.flag.plot_enter" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
-                        );
-                    }
-                }
-            }
-
-            // TODO: check_offlinetime flag && offline system
         });
     }
 
@@ -235,19 +208,14 @@ class PlayerMoveListener implements Listener {
      */
     public function onPlotLeave(Plot $plot, Player $player) : void {
         Await::f2c(static function() use($player, $plot) : \Generator {
-            // plot_leave flag
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PLOT_LEAVE);
-            if ($flag->getValue() === true) {
-                foreach ($plot->getPlotOwners() as $plotOwner) {
-                    $owner = $plotOwner->getPlayerData()->getPlayer();
-                    if ($owner instanceof Player) {
-                        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
-                            $owner,
-                            ["playerMove.plotEnter.flag.plot_leave" => [$player->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
-                        );
-                    }
-                }
+            // farewell flag
+            $flag = $plot->getFlag(Flags::FAREWELL());
+            if (!$flag->equals(FarewellFlag::EMPTY())) {
+                $tip = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                    $player,
+                    ["playerMove.plotLeave.tip.flag.farewell" => $flag->getValue()]
+                );
+                $player->sendTip($tip);
             }
         });
     }

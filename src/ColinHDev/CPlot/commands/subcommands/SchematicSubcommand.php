@@ -18,9 +18,6 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class SchematicSubcommand extends Subcommand {
 
     /**
@@ -29,7 +26,7 @@ class SchematicSubcommand extends Subcommand {
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "schematic.usage"]);
-            return null;
+            return;
         }
         switch ($args[0]) {
             case "list":
@@ -207,6 +204,5 @@ class SchematicSubcommand extends Subcommand {
                 yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "schematic.usage"]);
                 break;
         }
-        return null;
     }
 }

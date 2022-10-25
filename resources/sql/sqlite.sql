@@ -251,9 +251,9 @@ VALUES (:playerUUID, :playerXUID, :playerName, :lastJoin);
 -- #    }
 -- #    { playerData
 -- #      :playerID int
--- #      :playerUUID string
--- #      :playerXUID string
--- #      :playerName string
+-- #      :playerUUID ?string
+-- #      :playerXUID ?string
+-- #      :playerName ?string
 -- #      :lastJoin string
 UPDATE playerData
 SET playerUUID = :playerUUID, playerXUID = :playerXUID, playerName = :playerName, lastJoin = :lastJoin
@@ -319,9 +319,8 @@ VALUES (:worldName, :originX, :originZ, :mergeX, :mergeZ);
 -- #      :playerID int
 -- #      :state string
 -- #      :addTime string
-INSERT INTO plotPlayers (worldName, x, z, playerID, state, addTime)
-VALUES (:worldName, :x, :z, :playerID, :state, :addTime)
-ON CONFLICT DO UPDATE SET state = excluded.state, addTime = excluded.addTime;
+INSERT OR REPLACE INTO plotPlayers (worldName, x, z, playerID, state, addTime)
+VALUES (:worldName, :x, :z, :playerID, :state, :addTime);
 -- #    }
 -- #    { plotFlag
 -- #      :worldName string
@@ -340,9 +339,8 @@ VALUES (:worldName, :x, :z, :ID, :value);
 -- #      :playerID int
 -- #      :rateTime string
 -- #      :comment ?string
-INSERT INTO plotRates (worldName, x, z, rate, playerID, rateTime, comment)
-VALUES (:worldName, :x, :z, :rate, :playerID, :rateTime, :comment)
-ON CONFLICT DO UPDATE SET rate = excluded.rate, comment = excluded.comment;
+INSERT OR REPLACE INTO plotRates (worldName, x, z, rate, playerID, rateTime, comment)
+VALUES (:worldName, :x, :z, :rate, :playerID, :rateTime, :comment);
 -- #    }
 -- #  }
 

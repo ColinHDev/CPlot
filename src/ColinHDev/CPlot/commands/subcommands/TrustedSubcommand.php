@@ -13,25 +13,22 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class TrustedSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.senderNotOnline"]);
-            return null;
+            return;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.noPlotWorld"]);
-            return null;
+            return;
         }
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.noPlot"]);
-            return null;
+            return;
         }
 
         $trustedPlayerData = [];
@@ -52,7 +49,7 @@ class TrustedSubcommand extends Subcommand {
         }
         if (count($trustedPlayerData) === 0) {
             yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "trusted.noTrustedPlayers"]);
-            return null;
+            return;
         }
 
         /** @phpstan-var string $separator */
@@ -65,6 +62,5 @@ class TrustedSubcommand extends Subcommand {
                 "trusted.success" => $list
             ]
         );
-        return null;
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\ExplosionFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\entity\EntityExplodeEvent;
@@ -34,19 +34,15 @@ class EntityExplodeListener implements Listener {
 
         /** @phpstan-var Plot|false|null $plot */
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
-        if ($plot instanceof Plot) {
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_EXPLOSION);
-            if ($flag->getValue() === true) {
-                $affectedBlocks = [];
-                foreach ($event->getBlockList() as $hash => $block) {
-                    if ($plot->isOnPlot($block->getPosition())) {
-                        $affectedBlocks[$hash] = $block;
-                    }
+        if ($plot instanceof Plot && $plot->getFlag(Flags::EXPLOSION())->equals(ExplosionFlag::TRUE())) {
+            $affectedBlocks = [];
+            foreach ($event->getBlockList() as $hash => $block) {
+                if ($plot->isOnPlot($block->getPosition())) {
+                    $affectedBlocks[$hash] = $block;
                 }
-                $event->setBlockList($affectedBlocks);
-                return;
             }
+            $event->setBlockList($affectedBlocks);
+            return;
         }
 
         $event->cancel();

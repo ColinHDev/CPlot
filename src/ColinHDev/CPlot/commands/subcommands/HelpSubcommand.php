@@ -10,9 +10,6 @@ use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\CommandSender;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
 class HelpSubcommand extends Subcommand {
 
     private PlotCommand $command;
@@ -52,7 +49,7 @@ class HelpSubcommand extends Subcommand {
         ksort($subcommands, SORT_NATURAL | SORT_FLAG_CASE);
         $screenLineHeight = $sender->getScreenLineHeight();
         assert($screenLineHeight >= 1);
-        /** @var array<int, array<string, Subcommand<mixed, mixed, mixed, mixed>>> $subcommands */
+        /** @var array<int, array<string, Subcommand>> $subcommands */
         $subcommands = array_chunk($subcommands, $screenLineHeight);
         /** @var int $page */
         $page = min(count($subcommands), $page);
@@ -77,6 +74,5 @@ class HelpSubcommand extends Subcommand {
                 "help.success" => [$page, count($subcommands), $list]
             ]
         );
-        return null;
     }
 }

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\attributes\BooleanAttribute;
-use ColinHDev\CPlot\plots\flags\FlagIDs;
+use ColinHDev\CPlot\plots\flags\Flags;
+use ColinHDev\CPlot\plots\flags\implementation\PveFlag;
+use ColinHDev\CPlot\plots\flags\implementation\PvpFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\event\entity\EntityShootBowEvent;
@@ -38,9 +39,7 @@ class EntityShootBowListener implements Listener {
         }
 
         if (!($entity instanceof Player)) {
-            /** @var BooleanAttribute $flag */
-            $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVE);
-            if ($flag->getValue() === true) {
+            if ($plot->getFlag(Flags::PVE())->equals(PveFlag::TRUE())) {
                 return;
             }
             $event->cancel();
@@ -62,9 +61,7 @@ class EntityShootBowListener implements Listener {
             }
         }
 
-        /** @var BooleanAttribute $flag */
-        $flag = $plot->getFlagNonNullByID(FlagIDs::FLAG_PVP);
-        if ($flag->getValue() === true) {
+        if ($plot->getFlag(Flags::PVP())->equals(PvpFlag::TRUE())) {
             return;
         }
 
