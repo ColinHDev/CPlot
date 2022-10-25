@@ -1377,7 +1377,7 @@ final class DataProvider {
             }
             foreach($records as $record) {
                 // validate offline player data
-                $UUID = $XUID = null;
+                $XUID = null;
                 $offlineData = Server::getInstance()->getOfflinePlayerData($record["owner"]);
                 if($offlineData !== null) {
                     $UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
@@ -1399,7 +1399,7 @@ final class DataProvider {
 
                 /** @var PlayerData|null $playerData */
                 $playerData = yield $this->awaitPlayerDataByData(
-                    $UUID?->getBytes(),
+                    null,
                     $XUID,
                     $record["owner"]
                 );
