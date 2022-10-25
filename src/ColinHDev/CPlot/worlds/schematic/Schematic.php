@@ -160,7 +160,7 @@ class Schematic implements SchematicTypes {
             // Biome data was not stored in schematic version 1
             case 2:
             case 3:
-                foreach ($this->readTreeRoots($nbt, "Biomes") as $biomeTreeRoots) {
+                foreach (self::readTreeRoots($nbt, "Biomes") as $biomeTreeRoots) {
                     try {
                         $biomeNBT = $biomeTreeRoots->mustGetCompoundTag();
                         $coordinateHash = World::chunkHash($biomeNBT->getShort("X"), $biomeNBT->getShort("Z"));
@@ -179,7 +179,7 @@ class Schematic implements SchematicTypes {
         $blockStateDeserializer = GlobalBlockStateHandlers::getDeserializer();
         switch ($this->version) {
             case 1:
-                foreach ($this->readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
+                foreach (self::readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
                     try {
                         $blockNBT = $blockTreeRoot->mustGetCompoundTag();
                         $coordinateHash = World::blockHash($blockNBT->getShort("X"), $blockNBT->getShort("Y"), $blockNBT->getShort("Z"));
@@ -201,7 +201,7 @@ class Schematic implements SchematicTypes {
                 break;
 
             case 2:
-                foreach ($this->readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
+                foreach (self::readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
                     try {
                         $blockNBT = $blockTreeRoot->mustGetCompoundTag();
                         $coordinateHash = World::blockHash($blockNBT->getShort("X"), $blockNBT->getShort("Y"), $blockNBT->getShort("Z"));
@@ -232,7 +232,7 @@ class Schematic implements SchematicTypes {
                 break;
 
             case 3:
-                foreach ($this->readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
+                foreach (self::readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
                     try {
                         $blockNBT = $blockTreeRoot->mustGetCompoundTag();
                         $coordinateHash = World::blockHash($blockNBT->getShort("X"), $blockNBT->getShort("Y"), $blockNBT->getShort("Z"));
@@ -258,7 +258,7 @@ class Schematic implements SchematicTypes {
             // Tile data was not stored in schematic version 1
             case 2:
             case 3:
-                foreach ($this->readTreeRoots($nbt, "TileEntities") as $tileTreeRoot) {
+                foreach (self::readTreeRoots($nbt, "TileEntities") as $tileTreeRoot) {
                     try {
                         $tileNBT = $tileTreeRoot->mustGetCompoundTag();
                         $coordinateHash = World::blockHash($tileNBT->getInt(Tile::TAG_X), $tileNBT->getInt(Tile::TAG_Y), $tileNBT->getInt(Tile::TAG_Z));
@@ -275,7 +275,7 @@ class Schematic implements SchematicTypes {
     /**
      * @phpstan-return array<int, TreeRoot>
      */
-    private function readTreeRoots(CompoundTag $nbt, string $key) : array {
+    private static function readTreeRoots(CompoundTag $nbt, string $key) : array {
         try {
             $compressed = $nbt->getByteArray($key);
         } catch (UnexpectedTagTypeException|NoSuchTagException) {
