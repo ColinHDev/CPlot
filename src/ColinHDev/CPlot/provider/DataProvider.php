@@ -1414,6 +1414,71 @@ final class DataProvider {
                 $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
                 $plot->addPlotPlayer($senderData);
                 yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+
+				// load helpers
+				foreach($record["helpers"] as $playerName) {
+					// validate offline player data
+					$XUID = null;
+					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
+					if($offlineData !== null) {
+						$XUID = $offlineData->getString("LastKnownXUID", "");
+
+						// register player data
+						yield from $this->updatePlayerData(
+							null, // doesn't matter what is input at this point. will overwrite on login
+							$XUID,
+							$playerName
+						);
+					}
+
+					$playerData = yield $this->awaitPlayerDataByData(
+						null,
+						$XUID,
+						$playerName
+					);
+					if (!($playerData instanceof PlayerData))
+						continue;
+
+					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_HELPER);
+					$plot->addPlotPlayer($senderData);
+					yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+				}
+
+				// load denied with priority over helpers
+				foreach($record["denied"] as $playerName) {
+					// validate offline player data
+					$XUID = null;
+					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
+					if($offlineData !== null) {
+						$XUID = $offlineData->getString("LastKnownXUID", "");
+
+						// register player data
+						yield from $this->updatePlayerData(
+							null, // doesn't matter what is input at this point. will overwrite on login
+							$XUID,
+							$playerName
+						);
+					}
+
+					$playerData = yield $this->awaitPlayerDataByData(
+						null,
+						$XUID,
+						$playerName
+					);
+					if (!($playerData instanceof PlayerData))
+						continue;
+
+					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_DENIED);
+					$plot->addPlotPlayer($senderData);
+					yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+				}
+
+				//load common flags
+				$flag = FlagManager::getInstance()->getFlagByID("pvp");
+				$flag = $flag->createInstance($flag->parse($record["pvp"]));
+				$flag = $plot->getLocalFlagByID($flag->getID())?->merge($flag->getValue()) ?? $flag;
+				$plot->addFlag($flag);
+				$this->savePlotFlag($plot, $flag);
             }
             foreach($mergeRecords as $mergeRecord) {
                 // load world
@@ -1458,84 +1523,6 @@ final class DataProvider {
                     $plot->addPlotRate($mergePlotRate);
                     yield from DataProvider::getInstance()->savePlotRate($plot, $mergePlotRate);
                 }
-            }
-            foreach($records as $record) {
-                // load world
-                /** @var WorldSettings|false $world */
-                $world = yield $this->awaitWorld($record["level"]);
-                if($world === false)
-                    continue;
-
-                // load plot
-                /** @var Plot|null $plot */
-                $plot = yield $this->awaitPlot($record["level"], (int) $record["x"], (int) $record["z"]);
-                if($plot === null)
-                    continue;
-
-                // load helpers
-                foreach($record["helpers"] as $playerName) {
-                    // validate offline player data
-                    $XUID = null;
-                    $offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
-                    if($offlineData !== null) {
-                        $XUID = $offlineData->getString("LastKnownXUID", "");
-
-                        // register player data
-                        yield from $this->updatePlayerData(
-                            null, // doesn't matter what is input at this point. will overwrite on login
-                            $XUID,
-                            $playerName
-                        );
-                    }
-
-                    $playerData = yield $this->awaitPlayerDataByData(
-                        null,
-                        $XUID,
-                        $playerName
-                    );
-                    if (!($playerData instanceof PlayerData))
-                        continue;
-
-                    $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_HELPER);
-                    $plot->addPlotPlayer($senderData);
-                    yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
-                }
-
-                // load denied with priority over helpers
-                foreach($record["denied"] as $playerName) {
-                    // validate offline player data
-                    $XUID = null;
-                    $offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
-                    if($offlineData !== null) {
-                        $XUID = $offlineData->getString("LastKnownXUID", "");
-
-                        // register player data
-                        yield from $this->updatePlayerData(
-                            null, // doesn't matter what is input at this point. will overwrite on login
-                            $XUID,
-                            $playerName
-                        );
-                    }
-
-                    $playerData = yield $this->awaitPlayerDataByData(
-                        null,
-                        $XUID,
-                        $playerName
-                    );
-                    if (!($playerData instanceof PlayerData))
-                        continue;
-
-                    $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_DENIED);
-                    $plot->addPlotPlayer($senderData);
-                    yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
-                }
-
-                //load common flags
-				$flag = FlagManager::getInstance()->getFlagByID("pvp");
-				$flag = $flag->createInstance($flag->parse($record["pvp"]));
-				$flag = $plot->getLocalFlagByID($flag->getID())?->merge($flag->getValue()) ?? $flag;
-                $plot->addFlag($flag);
-                $this->savePlotFlag($plot, $flag);
             }
             rename( // rename config file to prevent re-import without losing data
                 Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml"),
