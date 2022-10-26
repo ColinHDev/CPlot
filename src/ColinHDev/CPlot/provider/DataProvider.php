@@ -1554,8 +1554,9 @@ final class DataProvider {
                 }
 
                 //load common flags
-                /** @var BaseAttribute<bool> | null $flag */
-                $flag = FlagManager::getInstance()->getFlagByID("pvp")->newInstance($record["pvp"]);
+				$flag = FlagManager::getInstance()->getFlagByID("pvp");
+				$flag = $flag->createInstance($flag->parse($record["pvp"]));
+				$flag = $plot->getLocalFlagByID($flag->getID())?->merge($flag->getValue()) ?? $flag;
                 $plot->addFlag($flag);
                 $this->savePlotFlag($plot, $flag);
             }
