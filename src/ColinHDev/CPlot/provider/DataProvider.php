@@ -23,7 +23,6 @@ use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\utils\ParseUtils;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use Generator;
-use pocketmine\entity\Entity;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -32,7 +31,6 @@ use pocketmine\utils\SingletonTrait;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
-use Ramsey\Uuid\Uuid;
 use SOFe\AwaitGenerator\Await;
 use Webmozart\PathUtil\Path;
 use function file_exists;
@@ -1380,19 +1378,12 @@ final class DataProvider {
                 $XUID = null;
                 $offlineData = Server::getInstance()->getOfflinePlayerData($record["owner"]);
                 if($offlineData !== null) {
-                    $UUID = $XUID = $offlineData->getString("LastKnownXUID", null);
-                    if($UUID === null) {
-                        $skinTag = $offlineData->getCompoundTag("Skin");
-                        $skinData = $skinTag->getByteArray("Data");
-                        $UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $record["owner"]);
-                    }else{
-                        $UUID = Uuid::fromInteger($UUID);
-                    }
+                    $XUID = $offlineData->getString("LastKnownXUID", null);
 
                     // register filler player data
                     yield from $this->updatePlayerData(
-                        $UUID->getBytes(), // doesn't matter what is input at this point. will overwrite on login
-                        $XUID ?? "",
+                        null, // doesn't matter what is input at this point. will overwrite on login
+                        $XUID,
                         $record["owner"]
                     );
                 }
@@ -1484,28 +1475,21 @@ final class DataProvider {
                 // load helpers
                 foreach($record["helpers"] as $playerName) {
                     // validate offline player data
-                    $UUID = $XUID = null;
+                    $XUID = null;
                     $offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
                     if($offlineData !== null) {
-                        $UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
-                        if($UUID === "") {
-                            $skinTag = $offlineData->getCompoundTag("Skin");
-                            $skinData = $skinTag->getByteArray("Data");
-                            $UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $playerName);
-                        }else{
-                            $UUID = Uuid::fromInteger($UUID);
-                        }
+                        $XUID = $offlineData->getString("LastKnownXUID", "");
 
                         // register player data
                         yield from $this->updatePlayerData(
-                            $UUID->getBytes(), // doesn't matter what is input at this point. will overwrite on login
+                            null, // doesn't matter what is input at this point. will overwrite on login
                             $XUID,
                             $playerName
                         );
                     }
 
                     $playerData = yield $this->awaitPlayerDataByData(
-                        $UUID?->getBytes(),
+                        null,
                         $XUID,
                         $playerName
                     );
@@ -1520,28 +1504,21 @@ final class DataProvider {
                 // load denied with priority over helpers
                 foreach($record["denied"] as $playerName) {
                     // validate offline player data
-                    $UUID = $XUID = null;
+                    $XUID = null;
                     $offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
                     if($offlineData !== null) {
-                        $UUID = $XUID = $offlineData->getString("LastKnownXUID", "");
-                        if($UUID === "") {
-                            $skinTag = $offlineData->getCompoundTag("Skin");
-                            $skinData = $skinTag->getByteArray("Data");
-                            $UUID = Uuid::uuid3(Uuid::NIL, ((string)Entity::nextRuntimeId()) . $skinData . $playerName);
-                        }else{
-                            $UUID = Uuid::fromInteger($UUID);
-                        }
+                        $XUID = $offlineData->getString("LastKnownXUID", "");
 
                         // register player data
                         yield from $this->updatePlayerData(
-                            $UUID->getBytes(), // doesn't matter what is input at this point. will overwrite on login
+                            null, // doesn't matter what is input at this point. will overwrite on login
                             $XUID,
                             $playerName
                         );
                     }
 
                     $playerData = yield $this->awaitPlayerDataByData(
-                        $UUID?->getBytes(),
+                        null,
                         $XUID,
                         $playerName
                     );
