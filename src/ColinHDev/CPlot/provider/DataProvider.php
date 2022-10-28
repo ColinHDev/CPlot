@@ -1376,27 +1376,23 @@ final class DataProvider {
             }
             foreach($records as $record) {
                 // validate offline player data
-                $XUID = null;
                 $offlineData = Server::getInstance()->getOfflinePlayerData($record["owner"]);
-                if($offlineData !== null) {
-                    $XUID = $offlineData->getString("LastKnownXUID", null);
+				$XUID = $offlineData?->getString("LastKnownXUID", null);
 
-                    // register filler player data
-                    yield from $this->updatePlayerData(
-                        null, // doesn't matter what is input at this point. will overwrite on login
-                        $XUID,
-                        $record["owner"]
-                    );
-                }
-
+				// register filler player data
                 /** @var PlayerData|null $playerData */
-                $playerData = yield $this->awaitPlayerDataByData(
-                    null,
-                    $XUID,
-                    $record["owner"]
-                );
+                $playerData = yield $this->updatePlayerData(
+					null, // doesn't matter what is input at this point. will overwrite on login
+					$XUID,
+					$record["owner"]
+				);
                 if (!($playerData instanceof PlayerData)) {
-                    continue;
+					// retry now that player data updated
+					$playerData = yield $this->awaitPlayerDataByData(
+						null,
+						$XUID,
+						$record["owner"]
+					);
                 }
 
                 // load world
@@ -1419,26 +1415,24 @@ final class DataProvider {
 				// load helpers
 				foreach($record["helpers"] as $playerName) {
 					// validate offline player data
-					$XUID = null;
 					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
-					if($offlineData !== null) {
-						$XUID = $offlineData->getString("LastKnownXUID", "");
+					$XUID = $offlineData?->getString("LastKnownXUID", null);
 
-						// register player data
-						yield from $this->updatePlayerData(
-							null, // doesn't matter what is input at this point. will overwrite on login
+					// register filler player data
+					/** @var PlayerData|null $playerData */
+					$playerData = yield $this->updatePlayerData(
+						null, // doesn't matter what is input at this point. will overwrite on login
+						$XUID,
+						$playerName
+					);
+					if (!($playerData instanceof PlayerData)) {
+						// retry now that player data updated
+						$playerData = yield $this->awaitPlayerDataByData(
+							null,
 							$XUID,
 							$playerName
 						);
 					}
-
-					$playerData = yield $this->awaitPlayerDataByData(
-						null,
-						$XUID,
-						$playerName
-					);
-					if (!($playerData instanceof PlayerData))
-						continue;
 
 					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_TRUSTED);
 					$plot->addPlotPlayer($senderData);
@@ -1448,26 +1442,24 @@ final class DataProvider {
 				// load denied with priority over helpers
 				foreach($record["denied"] as $playerName) {
 					// validate offline player data
-					$XUID = null;
 					$offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
-					if($offlineData !== null) {
-						$XUID = $offlineData->getString("LastKnownXUID", "");
+					$XUID = $offlineData?->getString("LastKnownXUID", null);
 
-						// register player data
-						yield from $this->updatePlayerData(
-							null, // doesn't matter what is input at this point. will overwrite on login
+					// register filler player data
+					/** @var PlayerData|null $playerData */
+					$playerData = yield $this->updatePlayerData(
+						null, // doesn't matter what is input at this point. will overwrite on login
+						$XUID,
+						$playerName
+					);
+					if (!($playerData instanceof PlayerData)) {
+						// retry now that player data updated
+						$playerData = yield $this->awaitPlayerDataByData(
+							null,
 							$XUID,
 							$playerName
 						);
 					}
-
-					$playerData = yield $this->awaitPlayerDataByData(
-						null,
-						$XUID,
-						$playerName
-					);
-					if (!($playerData instanceof PlayerData))
-						continue;
 
 					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_DENIED);
 					$plot->addPlotPlayer($senderData);
