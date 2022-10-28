@@ -12,6 +12,7 @@ use ColinHDev\CPlot\player\settings\SettingManager;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\MergePlot;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
@@ -1474,8 +1475,7 @@ final class DataProvider {
 				}
 
 				//load common flags
-				$flag = FlagManager::getInstance()->getFlagByID("pvp");
-				$flag = $flag->createInstance($flag->parse($record["pvp"]));
+				$flag = Flags::PVP()->createInstance($record["pvp"]);
 				$flag = $plot->getLocalFlagByID($flag->getID())?->merge($flag->getValue()) ?? $flag;
 				$plot->addFlag($flag);
 				$this->savePlotFlag($plot, $flag);
