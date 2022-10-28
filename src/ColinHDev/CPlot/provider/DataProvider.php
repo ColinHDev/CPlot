@@ -1440,7 +1440,7 @@ final class DataProvider {
 					if (!($playerData instanceof PlayerData))
 						continue;
 
-					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_HELPER);
+					$senderData = new PlotPlayer($playerData, PlotPlayer::STATE_TRUSTED);
 					$plot->addPlotPlayer($senderData);
 					yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
 				}
