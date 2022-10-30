@@ -1468,9 +1468,8 @@ final class DataProvider {
 
                 //load common flags
                 $flag = Flags::PVP()->createInstance($record["pvp"]);
-                $flag = $plot->getLocalFlagByID($flag->getID())?->merge($flag->getValue()) ?? $flag;
                 $plot->addFlag($flag);
-                $this->savePlotFlag($plot, $flag);
+                yield from $this->savePlotFlag($plot, $flag);
             }
             foreach($mergeRecords as $mergeRecord) {
                 // load world
