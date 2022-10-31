@@ -1343,6 +1343,7 @@ final class DataProvider {
                     ]);
                     $records = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_PLOTS, ["worldName" => $worldName]);
                     $mergeRecords = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_MERGES, ["worldName" => $worldName]);
+					$myplotDatabase->close();
                     break;
                 case 'yaml':
                     $filename = "plots.yml";
