@@ -1313,10 +1313,12 @@ final class DataProvider {
      */
     public function importMyPlotData(string $worldName) : Generator {
         if(!is_dir(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot")) ||
-            !file_exists(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml")))
+            !file_exists(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml")) ||
+			!file_exists(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "worlds", $worldName . ".yml")))
             return;
         /** @var string[][] $settings */
         $settings = yaml_parse_file(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml"));
+        $worldSettings = yaml_parse_file(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "worlds", $worldName . ".yml"));
         switch(mb_strtolower($settings["DataProvider"])) {
             case 'sqlite':
                 $myplotDatabase = libasynql::create(CPlot::getInstance(), [
@@ -1498,6 +1500,14 @@ final class DataProvider {
 
             //load common flags
             $flag = Flags::PVP()->createInstance($record["pvp"]);
+            $plot->addFlag($flag);
+            yield from $this->savePlotFlag($plot, $flag);
+
+            $flag = Flags::FLOWING()->createInstance($worldSettings["UpdatePlotLiquids"]);
+            $plot->addFlag($flag);
+            yield from $this->savePlotFlag($plot, $flag);
+
+            $flag = Flags::BURNING()->createInstance($worldSettings["AllowFireTicking"]);
             $plot->addFlag($flag);
             yield from $this->savePlotFlag($plot, $flag);
         }
