@@ -177,7 +177,7 @@ final class DataProvider {
         $this->isInitialized = true;
 
         if(ResourceManager::getInstance()->getConfig()->getNested("database.import", false) === true) {
-            CPlot::getInstance()->getScheduler()->scheduleTask(new ClosureTask(\Closure::fromCallable(fn() => Await::f2c(\Closure::fromCallable([$this, "importData"]))))); // 1 tick delay to ensure worlds are all loaded
+            CPlot::getInstance()->getScheduler()->scheduleTask(new ClosureTask(fn() => Await::g2c($this->importData()))); // 1 tick delay to ensure worlds are all loaded
         }
     }
 
