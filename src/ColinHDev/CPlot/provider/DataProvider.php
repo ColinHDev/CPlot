@@ -1343,7 +1343,7 @@ final class DataProvider {
                     ]);
                     $records = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_PLOTS, ["worldName" => $worldName]);
                     $mergeRecords = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_MERGES, ["worldName" => $worldName]);
-					$myplotDatabase->close();
+                    $myplotDatabase->close();
                     break;
                 case 'yaml':
                     $filename = "plots.yml";
@@ -1354,8 +1354,8 @@ final class DataProvider {
                     $mergeRecords = [];
                     foreach($unparsedMergeRecords as $origin => $merges) {
                         $originData = explode(";", $origin);
-						if($originData[0] !== $worldName)
-							continue;
+                        if($originData[0] !== $worldName)
+                            continue;
                         foreach($merges as $merge) {
                             $mergeData = explode(";", $merge);
                             $mergeRecords[] = [
@@ -1371,44 +1371,44 @@ final class DataProvider {
                 default:
                     return; // don't import anything due to invalid data provider
             }
-			foreach($mergeRecords as $mergeRecord) {
-				// load merge plot 1
-				/** @var Plot|null $plot */
-				$plot = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["originX"], (int)$mergeRecord["originZ"]);
-				if($plot === null)
-					continue;
+            foreach($mergeRecords as $mergeRecord) {
+                // load merge plot 1
+                /** @var Plot|null $plot */
+                $plot = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["originX"], (int)$mergeRecord["originZ"]);
+                if($plot === null)
+                    continue;
 
-				// load merge plot 2
-				/** @var Plot|null $plotToMerge */
-				$plotToMerge = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["mergedX"], (int)$mergeRecord["mergedZ"]);
-				if($plotToMerge === null)
-					continue;
+                // load merge plot 2
+                /** @var Plot|null $plotToMerge */
+                $plotToMerge = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["mergedX"], (int)$mergeRecord["mergedZ"]);
+                if($plotToMerge === null)
+                    continue;
 
-				// complete merge logic
-				yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
-				foreach($plotToMerge->getMergePlots() as $mergePlot){
-					$plot->addMergePlot($mergePlot);
-					yield from $this->addMergePlot($plot, $mergePlot);
-				}
-				foreach($plotToMerge->getPlotPlayers() as $mergePlotPlayer) {
-					$plot->addPlotPlayer($mergePlotPlayer);
-					yield from $this->savePlotPlayer($plot, $mergePlotPlayer);
-				}
-				foreach ($plotToMerge->getFlags() as $mergeFlag) {
-					$flag = $plot->getLocalFlagByID($mergeFlag->getID());
-					if ($flag === null) {
-						$flag = $mergeFlag;
-					} else {
-						$flag = $flag->merge($mergeFlag->getValue());
-					}
-					$plot->addFlag($flag);
-					yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
-				}
-				foreach ($plotToMerge->getPlotRates() as $mergePlotRate) {
-					$plot->addPlotRate($mergePlotRate);
-					yield from DataProvider::getInstance()->savePlotRate($plot, $mergePlotRate);
-				}
-			}
+                // complete merge logic
+                yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
+                foreach($plotToMerge->getMergePlots() as $mergePlot){
+                    $plot->addMergePlot($mergePlot);
+                    yield from $this->addMergePlot($plot, $mergePlot);
+                }
+                foreach($plotToMerge->getPlotPlayers() as $mergePlotPlayer) {
+                    $plot->addPlotPlayer($mergePlotPlayer);
+                    yield from $this->savePlotPlayer($plot, $mergePlotPlayer);
+                }
+                foreach ($plotToMerge->getFlags() as $mergeFlag) {
+                    $flag = $plot->getLocalFlagByID($mergeFlag->getID());
+                    if ($flag === null) {
+                        $flag = $mergeFlag;
+                    } else {
+                        $flag = $flag->merge($mergeFlag->getValue());
+                    }
+                    $plot->addFlag($flag);
+                    yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
+                }
+                foreach ($plotToMerge->getPlotRates() as $mergePlotRate) {
+                    $plot->addPlotRate($mergePlotRate);
+                    yield from DataProvider::getInstance()->savePlotRate($plot, $mergePlotRate);
+                }
+            }
             foreach($records as $record) {
                 // validate offline player data
                 $offlineData = Server::getInstance()->getOfflinePlayerData($record["owner"]);
