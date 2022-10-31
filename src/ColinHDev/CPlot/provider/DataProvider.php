@@ -25,7 +25,6 @@ use ColinHDev\CPlot\utils\ParseUtils;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use Generator;
 use pocketmine\player\Player;
-use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
@@ -37,7 +36,6 @@ use Webmozart\PathUtil\Path;
 use function file_exists;
 use function is_int;
 use function is_string;
-use function rename;
 use function time;
 
 /**
@@ -175,10 +173,6 @@ final class DataProvider {
         yield from Await::all($generators);
         yield from $this->database->asyncGeneric(self::INIT_ASTERISK_PLAYER, ["lastJoin" => date("d.m.Y H:i:s")]);
         $this->isInitialized = true;
-
-        if(ResourceManager::getInstance()->getConfig()->getNested("database.import", false) === true) {
-            CPlot::getInstance()->getScheduler()->scheduleTask(new ClosureTask(fn() => Await::g2c($this->importData()))); // 1 tick delay to ensure worlds are all loaded
-        }
     }
 
     public function isInitialized() : bool {
@@ -1317,7 +1311,7 @@ final class DataProvider {
     /**
      * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
-    private function importData() : Generator {
+    public function importMyPlotData(string $worldName) : Generator {
         if(is_dir(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot")) &&
             file_exists(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml"))) {
             /** @var string[][] $settings */
@@ -1347,8 +1341,8 @@ final class DataProvider {
                     ], [
                         "mysql" => "sql" . DIRECTORY_SEPARATOR . "myplot_mysql.sql"
                     ]);
-                    $records = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_PLOTS);
-                    $mergeRecords = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_MERGES);
+                    $records = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_PLOTS, ["worldName" => $worldName]);
+                    $mergeRecords = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_MERGES, ["worldName" => $worldName]);
                     break;
                 case 'yaml':
                     $filename = "plots.yml";
@@ -1359,6 +1353,8 @@ final class DataProvider {
                     $mergeRecords = [];
                     foreach($unparsedMergeRecords as $origin => $merges) {
                         $originData = explode(";", $origin);
+						if($originData[0] !== $worldName)
+							continue;
                         foreach($merges as $merge) {
                             $mergeData = explode(";", $merge);
                             $mergeRecords[] = [
@@ -1375,12 +1371,6 @@ final class DataProvider {
                     return; // don't import anything due to invalid data provider
             }
 			foreach($mergeRecords as $mergeRecord) {
-				// load world
-				/** @var WorldSettings|false $world */
-				$world = yield $this->awaitWorld($mergeRecord["level"]);
-				if($world === false)
-					continue;
-
 				// load merge plot 1
 				/** @var Plot|null $plot */
 				$plot = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["originX"], (int)$mergeRecord["originZ"]);
@@ -1438,12 +1428,6 @@ final class DataProvider {
                         $record["owner"]
                     );
                 }
-
-                // load world
-                /** @var WorldSettings|false $world */
-                $world = yield $this->awaitWorld($record["level"]);
-                if($world === false)
-                    continue;
 
                 // load plot
                 /** @var Plot|null $plot */
@@ -1515,10 +1499,6 @@ final class DataProvider {
                 $plot->addFlag($flag);
                 yield from $this->savePlotFlag($plot, $flag);
             }
-            rename( // rename config file to prevent re-import without losing data
-                Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml"),
-                Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config_old.yml")
-            );
         }
     }
 }

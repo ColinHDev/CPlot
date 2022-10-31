@@ -51,6 +51,7 @@ class MyPlotConversionListener implements Listener{
 					ParseUtils::parseMyPlotBlock($worldOptions, "BottomBlock") ?? VanillaBlocks::BEDROCK(),
 				);
 				yield from DataProvider::getInstance()->addWorld($worldName, $worldSettings);
+				yield from DataProvider::getInstance()->importMyPlotData($worldName);
 			}
 		);
     }
