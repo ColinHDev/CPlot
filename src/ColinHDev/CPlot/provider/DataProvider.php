@@ -1374,6 +1374,50 @@ final class DataProvider {
                 default:
                     return; // don't import anything due to invalid data provider
             }
+			foreach($mergeRecords as $mergeRecord) {
+				// load world
+				/** @var WorldSettings|false $world */
+				$world = yield $this->awaitWorld($mergeRecord["level"]);
+				if($world === false)
+					continue;
+
+				// load merge plot 1
+				/** @var Plot|null $plot */
+				$plot = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["originX"], (int)$mergeRecord["originZ"]);
+				if($plot === null)
+					continue;
+
+				// load merge plot 2
+				/** @var Plot|null $plotToMerge */
+				$plotToMerge = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["mergedX"], (int)$mergeRecord["mergedZ"]);
+				if($plotToMerge === null)
+					continue;
+
+				// complete merge logic
+				yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
+				foreach($plotToMerge->getMergePlots() as $mergePlot){
+					$plot->addMergePlot($mergePlot);
+					yield from $this->addMergePlot($plot, $mergePlot);
+				}
+				foreach($plotToMerge->getPlotPlayers() as $mergePlotPlayer) {
+					$plot->addPlotPlayer($mergePlotPlayer);
+					yield from $this->savePlotPlayer($plot, $mergePlotPlayer);
+				}
+				foreach ($plotToMerge->getFlags() as $mergeFlag) {
+					$flag = $plot->getLocalFlagByID($mergeFlag->getID());
+					if ($flag === null) {
+						$flag = $mergeFlag;
+					} else {
+						$flag = $flag->merge($mergeFlag->getValue());
+					}
+					$plot->addFlag($flag);
+					yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
+				}
+				foreach ($plotToMerge->getPlotRates() as $mergePlotRate) {
+					$plot->addPlotRate($mergePlotRate);
+					yield from DataProvider::getInstance()->savePlotRate($plot, $mergePlotRate);
+				}
+			}
             foreach($records as $record) {
                 // validate offline player data
                 $offlineData = Server::getInstance()->getOfflinePlayerData($record["owner"]);
@@ -1470,50 +1514,6 @@ final class DataProvider {
                 $flag = Flags::PVP()->createInstance($record["pvp"]);
                 $plot->addFlag($flag);
                 yield from $this->savePlotFlag($plot, $flag);
-            }
-            foreach($mergeRecords as $mergeRecord) {
-                // load world
-                /** @var WorldSettings|false $world */
-                $world = yield $this->awaitWorld($mergeRecord["level"]);
-                if($world === false)
-                    continue;
-
-                // load merge plot 1
-                /** @var Plot|null $plot */
-                $plot = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["originX"], (int)$mergeRecord["originZ"]);
-                if($plot === null)
-                    continue;
-
-                // load merge plot 2
-                /** @var Plot|null $plotToMerge */
-                $plotToMerge = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["mergedX"], (int)$mergeRecord["mergedZ"]);
-                if($plotToMerge === null)
-                    continue;
-
-                // complete merge logic
-                yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
-                foreach($plotToMerge->getMergePlots() as $mergePlot){
-                    $plot->addMergePlot($mergePlot);
-                    yield from $this->addMergePlot($plot, $mergePlot);
-                }
-                foreach($plotToMerge->getPlotPlayers() as $mergePlotPlayer) {
-                    $plot->addPlotPlayer($mergePlotPlayer);
-                    yield from $this->savePlotPlayer($plot, $mergePlotPlayer);
-                }
-                foreach ($plotToMerge->getFlags() as $mergeFlag) {
-                    $flag = $plot->getFlagByID($mergeFlag->getID());
-                    if ($flag === null) {
-                        $flag = $mergeFlag;
-                    } else {
-                        $flag = $flag->merge($mergeFlag->getValue());
-                    }
-                    $plot->addFlag($flag);
-                    yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
-                }
-                foreach ($plotToMerge->getPlotRates() as $mergePlotRate) {
-                    $plot->addPlotRate($mergePlotRate);
-                    yield from DataProvider::getInstance()->savePlotRate($plot, $mergePlotRate);
-                }
             }
             rename( // rename config file to prevent re-import without losing data
                 Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml"),
