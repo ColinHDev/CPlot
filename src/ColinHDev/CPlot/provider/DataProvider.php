@@ -12,6 +12,7 @@ use ColinHDev\CPlot\player\settings\SettingManager;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\MergePlot;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
@@ -24,11 +25,15 @@ use ColinHDev\CPlot\utils\ParseUtils;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use Generator;
 use pocketmine\player\Player;
+use pocketmine\Server;
+use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
 use SOFe\AwaitGenerator\Await;
+use Webmozart\PathUtil\Path;
+use function file_exists;
 use function is_int;
 use function is_string;
 use function time;
@@ -90,6 +95,9 @@ final class DataProvider {
     private const DELETE_PLOTFLAGS = "cplot.delete.plotFlags";
     private const DELETE_PLOTFLAG = "cplot.delete.plotFlag";
     private const DELETE_PLOTRATES = "cplot.delete.plotRates";
+
+    private const EXPORT_MYPLOT_PLOTS = "myplot.get.Plots";
+    private const EXPORT_MYPLOT_MERGES = "myplot.get.Merges";
 
     private DataConnector $database;
     private bool $isInitialized = false;
@@ -628,7 +636,7 @@ final class DataProvider {
                 "roadSize" => $worldSettings->getRoadSize(),
                 "plotSize" => $worldSettings->getPlotSize(),
                 "groundSize" => $worldSettings->getGroundSize(),
-				"coordinateOffset" => $worldSettings->getCoordinateOffset(),
+                "coordinateOffset" => $worldSettings->getCoordinateOffset(),
                 "roadBlock" => ParseUtils::parseStringFromBlock($worldSettings->getRoadBlock()),
                 "borderBlock" => ParseUtils::parseStringFromBlock($worldSettings->getBorderBlock()),
                 "plotFloorBlock" => ParseUtils::parseStringFromBlock($worldSettings->getPlotFloorBlock()),
@@ -1298,5 +1306,210 @@ final class DataProvider {
 
     public function close() : void {
         $this->database->close();
+    }
+
+    /**
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
+     */
+    public function importMyPlotData(string $worldName) : Generator {
+        if(!is_dir(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot")) ||
+            !file_exists(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml")) ||
+			!file_exists(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "worlds", $worldName . ".yml")))
+            return;
+        /** @var string[][] $settings */
+        $settings = yaml_parse_file(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml"));
+        $worldSettings = yaml_parse_file(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "worlds", $worldName . ".yml"));
+        switch(mb_strtolower($settings["DataProvider"])) {
+            case 'sqlite':
+                $myplotDatabase = libasynql::create(CPlot::getInstance(), [
+                    "type" => "sqlite",
+                    "sqlite" => [
+                        "file" => Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "plots.db")
+                    ]
+                ], [
+                    "sqlite" => "sql" . DIRECTORY_SEPARATOR . "myplot_sqlite.sql"
+                ]);
+            case 'mysql':
+                $sqlSettings = $settings["MySQLSettings"];
+                $myplotDatabase = $myplotDatabase ?? libasynql::create(CPlot::getInstance(), [
+                    "type" => "mysql",
+                    "mysql" => [
+                        "host" => $sqlSettings["Host"],
+                        "user" => $sqlSettings["Username"],
+                        "password" => $sqlSettings["Password"],
+                        "schema" => $sqlSettings["DatabaseName"],
+                        "port" => $sqlSettings["Port"]
+                    ],
+                    "worker-limit" => ResourceManager::getInstance()->getConfig()->getNested("database.worker-limit", 1)
+                ], [
+                    "mysql" => "sql" . DIRECTORY_SEPARATOR . "myplot_mysql.sql"
+                ]);
+                $records = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_PLOTS, ["worldName" => $worldName]);
+                $mergeRecords = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_MERGES, ["worldName" => $worldName]);
+                $myplotDatabase->close();
+                break;
+            case 'yaml':
+                $filename = "plots.yml";
+            case 'json':
+                $data = new Config(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "Data", $filename ?? "plots.json"), Config::DETECT);
+                $records = array_values($data->get("plots"));
+                $unparsedMergeRecords = $data->get("merges");
+                $mergeRecords = [];
+                foreach($unparsedMergeRecords as $origin => $merges) {
+                    $originData = explode(";", $origin);
+                    if($originData[0] !== $worldName)
+                        continue;
+                    foreach($merges as $merge) {
+                        $mergeData = explode(";", $merge);
+                        $mergeRecords[] = [
+                            "level" => $originData[0],
+                            "originX" => $originData[1],
+                            "originZ" => $originData[2],
+                            "mergedX" => $mergeData[0],
+                            "mergedZ" => $mergeData[1]
+                        ];
+                    }
+                }
+                break;
+            default:
+                return; // don't import anything due to invalid data provider
+        }
+        foreach($mergeRecords as $mergeRecord) {
+            // load merge plot 1
+            /** @var Plot|null $plot */
+            $plot = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["originX"], (int)$mergeRecord["originZ"]);
+            if($plot === null)
+                continue;
+
+            // load merge plot 2
+            /** @var Plot|null $plotToMerge */
+            $plotToMerge = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["mergedX"], (int)$mergeRecord["mergedZ"]);
+            if($plotToMerge === null)
+                continue;
+
+            // complete merge logic
+            yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
+            foreach($plotToMerge->getMergePlots() as $mergePlot){
+                $plot->addMergePlot($mergePlot);
+                yield from $this->addMergePlot($plot, $mergePlot);
+            }
+            foreach($plotToMerge->getPlotPlayers() as $mergePlotPlayer) {
+                $plot->addPlotPlayer($mergePlotPlayer);
+                yield from $this->savePlotPlayer($plot, $mergePlotPlayer);
+            }
+            foreach ($plotToMerge->getFlags() as $mergeFlag) {
+                $flag = $plot->getLocalFlagByID($mergeFlag->getID());
+                if ($flag === null) {
+                    $flag = $mergeFlag;
+                } else {
+                    $flag = $flag->merge($mergeFlag->getValue());
+                }
+                $plot->addFlag($flag);
+                yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
+            }
+            foreach ($plotToMerge->getPlotRates() as $mergePlotRate) {
+                $plot->addPlotRate($mergePlotRate);
+                yield from DataProvider::getInstance()->savePlotRate($plot, $mergePlotRate);
+            }
+        }
+        foreach($records as $record) {
+            // validate offline player data
+            $offlineData = Server::getInstance()->getOfflinePlayerData($record["owner"]);
+            $XUID = $offlineData?->getString("LastKnownXUID", null);
+
+            // register filler player data
+            /** @var PlayerData|null $playerData */
+            $playerData = yield $this->updatePlayerData(
+                null, // doesn't matter what is input at this point. will overwrite on login
+                $XUID,
+                $record["owner"]
+            );
+            if (!($playerData instanceof PlayerData)) {
+                // retry now that player data updated
+                $playerData = yield $this->awaitPlayerDataByData(
+                    null,
+                    $XUID,
+                    $record["owner"]
+                );
+            }
+
+            // load plot
+            /** @var Plot|null $plot */
+            $plot = yield $this->awaitPlot($record["level"], (int)$record["x"], (int)$record["z"]);
+            if($plot === null)
+                continue;
+
+            // claim plot
+            $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
+            $plot->addPlotPlayer($senderData);
+            yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+
+            // load helpers
+            foreach($record["helpers"] as $playerName) {
+                // validate offline player data
+                $offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
+                $XUID = $offlineData?->getString("LastKnownXUID", null);
+
+                // register filler player data
+                /** @var PlayerData|null $playerData */
+                $playerData = yield $this->updatePlayerData(
+                    null, // doesn't matter what is input at this point. will overwrite on login
+                    $XUID,
+                    $playerName
+                );
+                if (!($playerData instanceof PlayerData)) {
+                    // retry now that player data updated
+                    $playerData = yield $this->awaitPlayerDataByData(
+                        null,
+                        $XUID,
+                        $playerName
+                    );
+                }
+
+                $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_TRUSTED);
+                $plot->addPlotPlayer($senderData);
+                yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+            }
+
+            // load denied with priority over helpers
+            foreach($record["denied"] as $playerName) {
+                // validate offline player data
+                $offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
+                $XUID = $offlineData?->getString("LastKnownXUID", null);
+
+                // register filler player data
+                /** @var PlayerData|null $playerData */
+                $playerData = yield $this->updatePlayerData(
+                    null, // doesn't matter what is input at this point. will overwrite on login
+                    $XUID,
+                    $playerName
+                );
+                if (!($playerData instanceof PlayerData)) {
+                    // retry now that player data updated
+                    $playerData = yield $this->awaitPlayerDataByData(
+                        null,
+                        $XUID,
+                        $playerName
+                    );
+                }
+
+                $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_DENIED);
+                $plot->addPlotPlayer($senderData);
+                yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+            }
+
+            //load common flags
+            $flag = Flags::PVP()->createInstance($record["pvp"]);
+            $plot->addFlag($flag);
+            yield from $this->savePlotFlag($plot, $flag);
+
+            $flag = Flags::FLOWING()->createInstance($worldSettings["UpdatePlotLiquids"]);
+            $plot->addFlag($flag);
+            yield from $this->savePlotFlag($plot, $flag);
+
+            $flag = Flags::BURNING()->createInstance($worldSettings["AllowFireTicking"]);
+            $plot->addFlag($flag);
+            yield from $this->savePlotFlag($plot, $flag);
+        }
     }
 }
