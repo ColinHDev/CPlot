@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
+use Closure;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\lock\BiomeChangeLockID;
 use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
+use ColinHDev\CPlot\plots\utils\PlotModificationException;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
+use ColinHDev\CPlot\tasks\utils\TimeHandler;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\data\bedrock\BiomeIds;
@@ -98,10 +101,16 @@ class BiomeSubcommand extends Subcommand {
         }
 
         yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.start"]);
-        /** @phpstan-var PlotBiomeChangeAsyncTask $task */
-        $task = yield from Await::promise(
-            static fn($resolve) => $plot->setBiome($biomeID, $resolve)
-        );
+        $timeHandler = new TimeHandler();
+        try {
+            /** @var int $biomeID */
+            $biomeID = yield from Await::promise(
+                static fn(Closure $onSuccess, Closure $onError) => $plot->setBiome($biomeID, $onSuccess, $onError)
+            );
+        } catch(PlotModificationException $exception) {
+            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.start"]);
+            return;
+        }
         $plotCount = count($plot->getMergePlots()) + 1;
         $plots = array_map(
             static function (BasePlot $plot) : string {
@@ -109,11 +118,11 @@ class BiomeSubcommand extends Subcommand {
             },
             array_merge([$plot], $plot->getMergePlots())
         );
-        $biomeID = $task->getBiomeID();
         $biomeName = $this->getBiomeNameByID($biomeID);
-        $elapsedTimeString = $task->getElapsedTimeString();
+        $elapsedTime = $timeHandler->getElapsedTime();
+        $elapsedTimeString = TimeHandler::formatMilliseconds($elapsedTime);
         Server::getInstance()->getLogger()->debug(
-            "Changing plot biome to " . $biomeName . "(ID: " . $biomeID . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
+            "Changing plot biome to " . $biomeName . "(ID: " . $biomeID . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $elapsedTime . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "biome.finish" => [$elapsedTimeString, $biomeName]]);
         PlotLockManager::getInstance()->unlockPlots($lock, $plot);

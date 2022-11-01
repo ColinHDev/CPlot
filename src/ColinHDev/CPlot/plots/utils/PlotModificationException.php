@@ -24,4 +24,16 @@ class PlotModificationException extends Exception {
         parent::__construct($message, $code, $previous);
     }
 
+    public function getLanguageKey() : string {
+        return match ($this->code) {
+            self::PLOT_LOCKED => "plotModification.error.plotLocked",
+            self::EVENT_CANCELLED => "plotModification.error.eventCancelled",
+            self::CHUNK_LOCKED => "plotModification.error.chunkLocked",
+            self::ASYNC_TASK_FAILED => "plotModification.error.asyncTaskFailed",
+            self::DATABASE_ERROR => "plotModification.error.databaseError",
+            self::WORLD_NOT_LOADABLE => "plotModification.error.worldNotLoadable",
+            self::CHUNK_LOCK_CHANGED => "plotModification.error.chunkLockChanged",
+            default => $this->message
+        };
+    }
 }

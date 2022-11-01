@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\plots;
 
+use Closure;
 use ColinHDev\CPlot\event\PlotBiomeChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotBorderChangeAsyncEvent;
 use ColinHDev\CPlot\event\PlotClearAsyncEvent;
@@ -17,6 +18,9 @@ use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagManager;
 use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\flags\implementation\SpawnFlag;
+use ColinHDev\CPlot\plots\lock\BiomeChangeLockID;
+use ColinHDev\CPlot\plots\lock\PlotLockManager;
+use ColinHDev\CPlot\plots\utils\PlotModificationException;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotBorderChangeAsyncTask;
@@ -25,6 +29,7 @@ use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotResetAsyncTask;
 use ColinHDev\CPlot\tasks\async\PlotWallChangeAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\entity\Location;
@@ -381,26 +386,51 @@ class Plot extends BasePlot {
      * @param int $biomeID The ID of the biome the plot will be changed to.
      * @phpstan-param BiomeIds::* $biomeID
      * @param callable|null $onSuccess Callback to be called when the plot biome was changed successfully.
-     * @phpstan-param (callable(): void)|(callable(PlotBiomeChangeAsyncTask): void)|null $onSuccess
+     * @phpstan-param (callable(int): void)|null $onSuccess
      * @param callable|null $onError Callback to be called when the plot biome could not be changed.
-     * @phpstan-param (callable(): void)|(callable(PlotBiomeChangeAsyncTask|null=): void)|null $onError
-     * @throws \RuntimeException when called outside of main thread.
+     * @phpstan-param (callable(Exception): void)|null $onError
      */
     public function setBiome(int $biomeID, ?callable $onSuccess = null, ?callable $onError = null) : void {
         Await::f2c(
-            function () use ($biomeID, $onSuccess, $onError) {
-                /** @phpstan-var PlotBiomeChangeAsyncEvent $event */
+            function() use ($biomeID) {
+                $plotLockID = new BiomeChangeLockID();
+                try {
+                    PlotLockManager::getInstance()->lockPlots($plotLockID, $this);
+                } catch(InvalidArgumentException $e) {
+                    throw new PlotModificationException(
+                        PlotModificationException::PLOT_LOCKED,
+                        $e->getMessage(),
+                        $e
+                    );
+                }
+                /** @var PlotBiomeChangeAsyncEvent $event */
                 $event = yield from PlotBiomeChangeAsyncEvent::create($this, $biomeID);
                 if ($event->isCancelled()) {
-                    if ($onError !== null) {
-                        $onError();
-                    }
-                    return;
+                    throw new PlotModificationException(
+                        PlotModificationException::EVENT_CANCELLED,
+                        "The biome of the plot could not be changed due to the \"" . $event::class . "\" event getting cancelled."
+                    );
                 }
-                $task = new PlotBiomeChangeAsyncTask($this, $event->getBiomeID());
-                $task->setCallback($onSuccess, $onError);
-                Server::getInstance()->getAsyncPool()->submitTask($task);
-            }
+                $biomeID = $event->getBiomeID();
+                /** @var PlotBiomeChangeAsyncTask $task */
+                $task = yield from Await::promise(
+                    function(Closure $onSuccess, Closure $onError) use($biomeID) : void {
+                        $task = new PlotBiomeChangeAsyncTask($this, $biomeID);
+                        $task->setCallback(
+                            $onSuccess,
+                            fn() => $onError(new PlotModificationException(
+                                PlotModificationException::ASYNC_TASK_FAILED,
+                                "An error occurred during the execution of the " . PlotBiomeChangeAsyncTask::class . "."
+                            ))
+                        );
+                        Server::getInstance()->getAsyncPool()->submitTask($task);
+                    }
+                );
+                $task->applyModfiedChunksToWorld();
+                return $task->getBiomeID();
+            },
+            $onSuccess,
+            $onError
         );
     }
 
