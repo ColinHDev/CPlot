@@ -9,7 +9,6 @@ use ColinHDev\CPlot\event\PlayerKickFromPlotEvent;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -19,28 +18,28 @@ class KickSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.senderNotOnline"]);
+            self::sendMessage($sender, ["prefix", "kick.senderNotOnline"]);
             return;
         }
 
         if (count($args) === 0) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.usage"]);
+            self::sendMessage($sender, ["prefix", "kick.usage"]);
             return;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.noPlotWorld"]);
+            self::sendMessage($sender, ["prefix", "kick.noPlotWorld"]);
             return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.noPlot"]);
+            self::sendMessage($sender, ["prefix", "kick.noPlot"]);
             return;
         }
 
         if (!$sender->hasPermission("cplot.admin.kick") && !$plot->isPlotOwner($sender)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.notPlotOwner"]);
+            self::sendMessage($sender, ["prefix", "kick.notPlotOwner"]);
             return;
         }
 
@@ -51,7 +50,7 @@ class KickSubcommand extends Subcommand {
                     continue;
                 }
                 if ($target->hasPermission("cplot.bypass.kick")) {
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.hasBypassPermission" => $target->getName()]);
+                    self::sendMessage($sender, ["prefix", "kick.hasBypassPermission" => $target->getName()]);
                     continue;
                 }
                 $event = new PlayerKickFromPlotEvent($plot, $sender, $target);
@@ -60,35 +59,35 @@ class KickSubcommand extends Subcommand {
                     continue;
                 }
                 if (!$plot->teleportTo($target, TeleportDestination::ROAD_EDGE)) {
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.couldNotTeleport" => $target->getName()]);
+                    self::sendMessage($sender, ["prefix", "kick.couldNotTeleport" => $target->getName()]);
                     continue;
                 }
                 $kickedPlayers++;
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($target, ["prefix", "kick.targetMessage" => $sender->getName()]);
+                self::sendMessage($target, ["prefix", "kick.targetMessage" => $sender->getName()]);
             }
             if ($kickedPlayers === 0) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.noneToKick"]);
+                self::sendMessage($sender, ["prefix", "kick.noneToKick"]);
             } else {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.success.playerCount" => $kickedPlayers]);
+                self::sendMessage($sender, ["prefix", "kick.success.playerCount" => $kickedPlayers]);
             }
 
         } else {
             foreach($args as $arg) {
                 $target = $sender->getServer()->getPlayerByPrefix($arg);
                 if (!($target instanceof Player)) {
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.playerNotOnline" => $arg]);
+                    self::sendMessage($sender, ["prefix", "kick.playerNotOnline" => $arg]);
                     continue;
                 }
                 if ($target === $sender) {
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.senderIsTarget"]);
+                    self::sendMessage($sender, ["prefix", "kick.senderIsTarget"]);
                     continue;
                 }
                 if (!$plot->isOnPlot($target->getPosition())) {
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.playerNotOnPlot" => $target->getName()]);
+                    self::sendMessage($sender, ["prefix", "kick.playerNotOnPlot" => $target->getName()]);
                     continue;
                 }
                 if ($target->hasPermission("cplot.bypass.kick")) {
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.hasBypassPermission" => $target->getName()]);
+                    self::sendMessage($sender, ["prefix", "kick.hasBypassPermission" => $target->getName()]);
                     continue;
                 }
                 $event = new PlayerKickFromPlotEvent($plot, $sender, $target);
@@ -97,11 +96,11 @@ class KickSubcommand extends Subcommand {
                     continue;
                 }
                 if (!$plot->teleportTo($target, TeleportDestination::ROAD_EDGE)) {
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.couldNotTeleport" => $target->getName()]);
+                    self::sendMessage($sender, ["prefix", "kick.couldNotTeleport" => $target->getName()]);
                     continue;
                 }
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "kick.success.playerNames" => $target->getName()]);
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($target, ["prefix", "kick.targetMessage" => $sender->getName()]);
+                self::sendMessage($sender, ["prefix", "kick.success.playerNames" => $target->getName()]);
+                self::sendMessage($target, ["prefix", "kick.targetMessage" => $sender->getName()]);
             }
         }
     }

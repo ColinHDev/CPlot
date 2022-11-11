@@ -10,7 +10,6 @@ use ColinHDev\CPlot\plots\lock\BiomeChangeLockID;
 use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
@@ -34,7 +33,7 @@ class BiomeSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!($sender instanceof Player)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.senderNotOnline"]);
+            self::sendMessage($sender, ["prefix", "biome.senderNotOnline"]);
             return;
         }
 
@@ -42,28 +41,28 @@ class BiomeSubcommand extends Subcommand {
         $world = $position->world;
         assert($world instanceof World);
         if (!((yield DataProvider::getInstance()->awaitWorld($world->getFolderName())) instanceof WorldSettings)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.noPlotWorld"]);
+            self::sendMessage($sender, ["prefix", "biome.noPlotWorld"]);
             return;
         }
 
         if (count($args) === 0) {
             $biomeName = $this->getBiomeNameByID($world->getBiomeId($position->getFloorX(), $position->getFloorZ()));
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.plotBiome" => $biomeName]);
+            self::sendMessage($sender, ["prefix", "biome.plotBiome" => $biomeName]);
             return;
         }
         $biomeName = strtoupper(implode("_", $args));
         if (!isset($this->biomes[$biomeName])) {
             $biomes = [];
             foreach ($this->biomes as $name => $ID) {
-                $biomes[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+                $biomes[] = self::translateForCommandSender(
                     $sender,
                     ["biome.list" => $name]
                 );
             }
             /** @phpstan-var string $separator */
-            $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "biome.list.separator");
+            $separator = self::translateForCommandSender($sender, "biome.list.separator");
             $list = implode($separator, $biomes);
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+            self::sendMessage(
                 $sender,
                 [
                     "prefix",
@@ -76,28 +75,28 @@ class BiomeSubcommand extends Subcommand {
 
         $plot = yield Plot::awaitFromPosition($position);
         if (!($plot instanceof Plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.noPlot"]);
+            self::sendMessage($sender, ["prefix", "biome.noPlot"]);
             return;
         }
 
         if (!$sender->hasPermission("cplot.admin.biome")) {
             if (!$plot->hasPlotOwner()) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.noPlotOwner"]);
+                self::sendMessage($sender, ["prefix", "biome.noPlotOwner"]);
                 return;
             }
             if (!$plot->isPlotOwner($sender)) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.notPlotOwner"]);
+                self::sendMessage($sender, ["prefix", "biome.notPlotOwner"]);
                 return;
             }
         }
 
         $lock = new BiomeChangeLockID();
         if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.plotLocked"]);
+            self::sendMessage($sender, ["prefix", "biome.plotLocked"]);
             return;
         }
 
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "biome.start"]);
+        self::sendMessage($sender, ["prefix", "biome.start"]);
         /** @phpstan-var PlotBiomeChangeAsyncTask $task */
         $task = yield from Await::promise(
             static fn($resolve) => $plot->setBiome($biomeID, $resolve)
@@ -115,7 +114,7 @@ class BiomeSubcommand extends Subcommand {
         Server::getInstance()->getLogger()->debug(
             "Changing plot biome to " . $biomeName . "(ID: " . $biomeID . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "biome.finish" => [$elapsedTimeString, $biomeName]]);
+        self::sendMessage($sender, ["prefix", "biome.finish" => [$elapsedTimeString, $biomeName]]);
         PlotLockManager::getInstance()->unlockPlots($lock, $plot);
     }
 

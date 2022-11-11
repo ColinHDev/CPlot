@@ -10,7 +10,6 @@ use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
@@ -40,7 +39,7 @@ class AutoSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "auto.senderNotOnline"]);
+            self::sendMessage($sender, ["prefix", "auto.senderNotOnline"]);
             return;
         }
 
@@ -56,7 +55,7 @@ class AutoSubcommand extends Subcommand {
             $claimedPlotsCount = count($claimedPlots);
             $maxPlots = $claimSubcommand->getMaxPlotsOfPlayer($sender);
             if ($claimedPlotsCount > $maxPlots) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "auto.plotLimitReached" => [$claimedPlotsCount, $maxPlots]]);
+                self::sendMessage($sender, ["prefix", "auto.plotLimitReached" => [$claimedPlotsCount, $maxPlots]]);
                 return;
             }
         }
@@ -68,23 +67,23 @@ class AutoSubcommand extends Subcommand {
             $worldSettings = yield from DataProvider::getInstance()->awaitWorld($worldName);
         }
         if (!($worldSettings instanceof WorldSettings)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "auto.noPlotWorld"]);
+            self::sendMessage($sender, ["prefix", "auto.noPlotWorld"]);
             return;
         }
 
         /** @var Plot|null $plot */
         $plot = yield DataProvider::getInstance()->awaitNextFreePlot($worldName, $worldSettings);
         if ($plot === null) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "auto.noPlotFound"]);
+            self::sendMessage($sender, ["prefix", "auto.noPlotFound"]);
             return;
         }
 
         if (!($plot->teleportTo($sender))) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "auto.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
+            self::sendMessage($sender, ["prefix", "auto.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
             return;
         }
 
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "auto.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
+        self::sendMessage($sender, ["prefix", "auto.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
         if ($this->automaticClaim) {
             yield from $claimSubcommand->execute($sender, []);
         }

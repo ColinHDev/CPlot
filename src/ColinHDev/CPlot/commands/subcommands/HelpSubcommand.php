@@ -6,7 +6,6 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\PlotCommand;
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\CommandSender;
 
@@ -23,6 +22,7 @@ class HelpSubcommand extends Subcommand {
     }
 
     public function execute(CommandSender $sender, array $args) : \Generator {
+        0 && yield;
         if (count($args) === 0) {
             $page = 1;
         } else if (is_numeric($args[0])) {
@@ -57,17 +57,17 @@ class HelpSubcommand extends Subcommand {
         $subcommandsOnPage = [];
         foreach ($subcommands[$page - 1] as $subcommand) {
             /** @phpstan-var string $description */
-            $description = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $subcommand->getName() . ".description");
-            $subcommandsOnPage[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+            $description = self::translateForCommandSender($sender, $subcommand->getName() . ".description");
+            $subcommandsOnPage[] = self::translateForCommandSender(
                 $sender,
                 ["help.success.list" => [$subcommand->getName(), $description]]
             );
         }
 
         /** @phpstan-var string $separator */
-        $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "help.success.list.separator");
+        $separator = self::translateForCommandSender($sender, "help.success.list.separator");
         $list = implode($separator, $subcommandsOnPage);
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+        self::sendMessage(
             $sender,
             [
                 "prefix",

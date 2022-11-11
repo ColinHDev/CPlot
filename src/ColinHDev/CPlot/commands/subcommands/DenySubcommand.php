@@ -14,7 +14,6 @@ use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -24,12 +23,12 @@ class DenySubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.senderNotOnline"]);
+            self::sendMessage($sender, ["prefix", "deny.senderNotOnline"]);
             return;
         }
 
         if (count($args) === 0) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.usage"]);
+            self::sendMessage($sender, ["prefix", "deny.usage"]);
             return;
         }
 
@@ -42,18 +41,18 @@ class DenySubcommand extends Subcommand {
                 $playerXUID = $player->getXuid();
                 $playerName = $player->getName();
             } else {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.playerNotOnline" => $args[0]]);
+                self::sendMessage($sender, ["prefix", "deny.playerNotOnline" => $args[0]]);
                 $playerName = $args[0];
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if (!($playerData instanceof PlayerData)) {
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.playerNotFound" => $playerName]);
+                    self::sendMessage($sender, ["prefix", "deny.playerNotFound" => $playerName]);
                     return;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
                 $playerXUID = $playerData->getPlayerXUID();
             }
             if ($playerUUID === $sender->getUniqueId()->getBytes()) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.senderIsPlayer"]);
+                self::sendMessage($sender, ["prefix", "deny.senderIsPlayer"]);
                 return;
             }
         } else {
@@ -63,23 +62,23 @@ class DenySubcommand extends Subcommand {
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.noPlotWorld"]);
+            self::sendMessage($sender, ["prefix", "deny.noPlotWorld"]);
             return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.noPlot"]);
+            self::sendMessage($sender, ["prefix", "deny.noPlot"]);
             return;
         }
 
         if (!$plot->hasPlotOwner()) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.noPlotOwner"]);
+            self::sendMessage($sender, ["prefix", "deny.noPlotOwner"]);
             return;
         }
         if (!$sender->hasPermission("cplot.admin.deny")) {
             if (!$plot->isPlotOwner($sender)) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.notPlotOwner"]);
+                self::sendMessage($sender, ["prefix", "deny.notPlotOwner"]);
                 return;
             }
         }
@@ -87,18 +86,18 @@ class DenySubcommand extends Subcommand {
         if (!($playerData instanceof PlayerData)) {
             $playerData = yield DataProvider::getInstance()->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
             if (!($playerData instanceof PlayerData)) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.playerNotFound" => $playerName]);
+                self::sendMessage($sender, ["prefix", "deny.playerNotFound" => $playerName]);
                 return;
             }
         }
         if ($plot->isPlotDeniedExact($playerData)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.playerAlreadyDenied" => $playerName]);
+            self::sendMessage($sender, ["prefix", "deny.playerAlreadyDenied" => $playerName]);
             return;
         }
 
         $lock = new AddPlotPlayerLockID($playerData->getPlayerID());
         if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.plotLocked"]);
+            self::sendMessage($sender, ["prefix", "deny.plotLocked"]);
             return;
         }
 
@@ -114,15 +113,15 @@ class DenySubcommand extends Subcommand {
         try {
             yield from DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
         } catch (SqlError $exception) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.saveError" => $exception->getMessage()]);
+            self::sendMessage($sender, ["prefix", "deny.saveError" => $exception->getMessage()]);
             return;
         } finally {
             PlotLockManager::getInstance()->unlockPlots($lock, $plot);
         }
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "deny.success" => $playerName]);
+        self::sendMessage($sender, ["prefix", "deny.success" => $playerName]);
 
         if ($player instanceof Player && $playerData->getSetting(Settings::INFORM_DENIED())->equals(InformDeniedSetting::TRUE())) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+            self::sendMessage(
                 $player,
                 ["prefix", "deny.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
             );
