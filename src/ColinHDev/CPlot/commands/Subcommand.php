@@ -6,6 +6,7 @@ namespace ColinHDev\CPlot\commands;
 
 use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\provider\LanguageProvider;
+use ColinHDev\CPlot\utils\APIHolder;
 use Generator;
 use pocketmine\command\CommandSender;
 
@@ -14,6 +15,7 @@ use pocketmine\command\CommandSender;
  * @phpstan-import-type MessageParam from LanguageProvider
  */
 abstract class Subcommand {
+    use APIHolder;
 
     private string $key;
     private string $name;
