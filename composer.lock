@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0038da0eabe658487e9d5ff0ec5c84ce",
+    "content-hash": "8e5fb04fd466b260689d78f7595c34de",
     "packages": [
         {
             "name": "adhocore/json-comment",
-            "version": "1.2.0",
+            "version": "1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/adhocore/php-json-comment.git",
-                "reference": "f6cd2243f0b37f88b6d0099ee4491c895c9359f4"
+                "reference": "651023f9fe52e9efa2198cbaf6e481d1968e2377"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/adhocore/php-json-comment/zipball/f6cd2243f0b37f88b6d0099ee4491c895c9359f4",
-                "reference": "f6cd2243f0b37f88b6d0099ee4491c895c9359f4",
+                "url": "https://api.github.com/repos/adhocore/php-json-comment/zipball/651023f9fe52e9efa2198cbaf6e481d1968e2377",
+                "reference": "651023f9fe52e9efa2198cbaf6e481d1968e2377",
                 "shasum": ""
             },
             "require": {
@@ -51,7 +51,7 @@
             ],
             "support": {
                 "issues": "https://github.com/adhocore/php-json-comment/issues",
-                "source": "https://github.com/adhocore/php-json-comment/tree/1.2.0"
+                "source": "https://github.com/adhocore/php-json-comment/tree/1.2.1"
             },
             "funding": [
                 {
@@ -63,7 +63,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-10-01T07:17:48+00:00"
+            "time": "2022-10-02T11:22:07+00:00"
         },
         {
             "name": "brick/math",
@@ -294,16 +294,16 @@
         },
         {
             "name": "pocketmine/bedrock-data",
-            "version": "1.11.1+bedrock-1.19.30",
+            "version": "1.12.0+bedrock-1.19.40",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockData.git",
-                "reference": "9ec9a9645ba19f04dd4e39d6d9bd30b562dfe90c"
+                "reference": "32690f1dac05608b558fe7c40b6d634772c8e416"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockData/zipball/9ec9a9645ba19f04dd4e39d6d9bd30b562dfe90c",
-                "reference": "9ec9a9645ba19f04dd4e39d6d9bd30b562dfe90c",
+                "url": "https://api.github.com/repos/pmmp/BedrockData/zipball/32690f1dac05608b558fe7c40b6d634772c8e416",
+                "reference": "32690f1dac05608b558fe7c40b6d634772c8e416",
                 "shasum": ""
             },
             "type": "library",
@@ -314,9 +314,9 @@
             "description": "Blobs of data generated from Minecraft: Bedrock Edition, used by PocketMine-MP",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockData/issues",
-                "source": "https://github.com/pmmp/BedrockData/tree/1.11.1+bedrock-1.19.30"
+                "source": "https://github.com/pmmp/BedrockData/tree/bedrock-1.19.40"
             },
-            "time": "2022-09-27T22:00:01+00:00"
+            "time": "2022-10-25T21:45:24+00:00"
         },
         {
             "name": "pocketmine/bedrock-protocol",
@@ -580,16 +580,16 @@
         },
         {
             "name": "pocketmine/locale-data",
-            "version": "2.8.9",
+            "version": "2.10.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/Language.git",
-                "reference": "27637272e5230511e3b6568192d0422e5e97a571"
+                "reference": "c2b8b63a85269304409406922181dd5438bcaff2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/Language/zipball/27637272e5230511e3b6568192d0422e5e97a571",
-                "reference": "27637272e5230511e3b6568192d0422e5e97a571",
+                "url": "https://api.github.com/repos/pmmp/Language/zipball/c2b8b63a85269304409406922181dd5438bcaff2",
+                "reference": "c2b8b63a85269304409406922181dd5438bcaff2",
                 "shasum": ""
             },
             "type": "library",
@@ -597,9 +597,9 @@
             "description": "Language resources used by PocketMine-MP",
             "support": {
                 "issues": "https://github.com/pmmp/Language/issues",
-                "source": "https://github.com/pmmp/Language/tree/2.8.9"
+                "source": "https://github.com/pmmp/Language/tree/2.10.2"
             },
-            "time": "2022-08-25T18:54:39+00:00"
+            "time": "2022-11-15T13:55:05+00:00"
         },
         {
             "name": "pocketmine/log",
@@ -1077,12 +1077,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ramsey/uuid.git",
-                "reference": "8b5d869d84c7a99400bf314e78289028fcae5456"
+                "reference": "ad63bc700e7d021039e30ce464eba384c4a1d40f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ramsey/uuid/zipball/8b5d869d84c7a99400bf314e78289028fcae5456",
-                "reference": "8b5d869d84c7a99400bf314e78289028fcae5456",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/ad63bc700e7d021039e30ce464eba384c4a1d40f",
+                "reference": "ad63bc700e7d021039e30ce464eba384c4a1d40f",
                 "shasum": ""
             },
             "require": {
@@ -1150,7 +1150,7 @@
             ],
             "support": {
                 "issues": "https://github.com/ramsey/uuid/issues",
-                "source": "https://github.com/ramsey/uuid/tree/4.x"
+                "source": "https://github.com/ramsey/uuid/tree/4.6.0"
             },
             "funding": [
                 {
@@ -1162,20 +1162,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-09-26T21:25:27+00:00"
+            "time": "2022-11-05T23:03:38+00:00"
         },
         {
             "name": "sof3/await-generator",
-            "version": "3.4.2",
+            "version": "3.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/SOF3/await-generator.git",
-                "reference": "05f14d8d5122edb2e0e4058770f7f36756062b9c"
+                "reference": "89d67144a12b856f912d36fa4bf0a513236c68c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SOF3/await-generator/zipball/05f14d8d5122edb2e0e4058770f7f36756062b9c",
-                "reference": "05f14d8d5122edb2e0e4058770f7f36756062b9c",
+                "url": "https://api.github.com/repos/SOF3/await-generator/zipball/89d67144a12b856f912d36fa4bf0a513236c68c6",
+                "reference": "89d67144a12b856f912d36fa4bf0a513236c68c6",
                 "shasum": ""
             },
             "require": {
@@ -1206,9 +1206,9 @@
             "description": "Use async/await in PHP using generators",
             "support": {
                 "issues": "https://github.com/SOF3/await-generator/issues",
-                "source": "https://github.com/SOF3/await-generator/tree/3.4.2"
+                "source": "https://github.com/SOF3/await-generator/tree/3.4.3"
             },
-            "time": "2022-06-12T03:06:57+00:00"
+            "time": "2022-11-14T15:00:42+00:00"
         },
         {
             "name": "sof3/await-std",
@@ -1377,7 +1377,7 @@
             "version": "0.1.2",
             "source": {
                 "type": "git",
-                "url": "git@github.com:SOF3/Capital.git",
+                "url": "https://github.com/SOF3/Capital.git",
                 "reference": "8003da9e594f759d20c711a1aef4ceda514212ad"
             },
             "dist": {
@@ -1414,6 +1414,10 @@
                     "email": "sofe2038@gmail.com"
                 }
             ],
+            "support": {
+                "source": "https://github.com/SOF3/Capital/tree/0.1.2",
+                "issues": "https://github.com/SOF3/Capital/issues"
+            },
             "time": "2022-03-05T10:12:13+00:00"
         },
         {
@@ -1422,12 +1426,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php81.git",
-                "reference": "13f6d1271c663dc5ae9fb843a8f16521db7687a1"
+                "reference": "707403074c8ea6e2edaf8794b0157a0bfa52157a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php81/zipball/13f6d1271c663dc5ae9fb843a8f16521db7687a1",
-                "reference": "13f6d1271c663dc5ae9fb843a8f16521db7687a1",
+                "url": "https://api.github.com/repos/symfony/polyfill-php81/zipball/707403074c8ea6e2edaf8794b0157a0bfa52157a",
+                "reference": "707403074c8ea6e2edaf8794b0157a0bfa52157a",
                 "shasum": ""
             },
             "require": {
@@ -1437,7 +1441,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "1.26-dev"
+                    "dev-main": "1.27-dev"
                 },
                 "thanks": {
                     "name": "symfony/polyfill",
@@ -1478,7 +1482,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php81/tree/v1.26.0"
+                "source": "https://github.com/symfony/polyfill-php81/tree/v1.27.0"
             },
             "funding": [
                 {
@@ -1494,7 +1498,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-05-24T11:49:31+00:00"
+            "time": "2022-11-03T14:55:06+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -1613,12 +1617,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/extension-installer.git",
-                "reference": "673018e33fe6e8348c8b28c72fd3136b7b4711ba"
+                "reference": "f06dbb052ddc394e7896fcd1cfcd533f9f6ace40"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/extension-installer/zipball/673018e33fe6e8348c8b28c72fd3136b7b4711ba",
-                "reference": "673018e33fe6e8348c8b28c72fd3136b7b4711ba",
+                "url": "https://api.github.com/repos/phpstan/extension-installer/zipball/f06dbb052ddc394e7896fcd1cfcd533f9f6ace40",
+                "reference": "f06dbb052ddc394e7896fcd1cfcd533f9f6ace40",
                 "shasum": ""
             },
             "require": {
@@ -1648,9 +1652,9 @@
             "description": "Composer plugin for automatic installation of PHPStan extensions",
             "support": {
                 "issues": "https://github.com/phpstan/extension-installer/issues",
-                "source": "https://github.com/phpstan/extension-installer/tree/1.2.x"
+                "source": "https://github.com/phpstan/extension-installer/tree/1.2.0"
             },
-            "time": "2022-07-19T11:25:50+00:00"
+            "time": "2022-10-17T12:59:16+00:00"
         },
         {
             "name": "phpstan/phpstan",
@@ -1658,12 +1662,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "49d85a11ec06e13491b24bae6b7ecebffa8eb188"
+                "reference": "2e25fd090ca8d01d5078ed0714fe3617769ffa08"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/49d85a11ec06e13491b24bae6b7ecebffa8eb188",
-                "reference": "49d85a11ec06e13491b24bae6b7ecebffa8eb188",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/2e25fd090ca8d01d5078ed0714fe3617769ffa08",
+                "reference": "2e25fd090ca8d01d5078ed0714fe3617769ffa08",
                 "shasum": ""
             },
             "require": {
@@ -1710,7 +1714,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-10-01T06:15:20+00:00"
+            "time": "2022-11-16T16:57:11+00:00"
         },
         {
             "name": "phpstan/phpstan-strict-rules",
@@ -1718,17 +1722,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-                "reference": "23e5f377ee6395a1a04842d3d6ed4bd25e7b44a6"
+                "reference": "caf80fc819ba62b54dbdcd60e4ae1288ae2e46af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/23e5f377ee6395a1a04842d3d6ed4bd25e7b44a6",
-                "reference": "23e5f377ee6395a1a04842d3d6ed4bd25e7b44a6",
+                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/caf80fc819ba62b54dbdcd60e4ae1288ae2e46af",
+                "reference": "caf80fc819ba62b54dbdcd60e4ae1288ae2e46af",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.2 || ^8.0",
-                "phpstan/phpstan": "^1.8.6"
+                "phpstan/phpstan": "^1.9.0"
             },
             "require-dev": {
                 "nikic/php-parser": "^4.13.0",
@@ -1757,9 +1761,9 @@
             "description": "Extra strict and opinionated rules for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
-                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/1.4.4"
+                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/1.4.x"
             },
-            "time": "2022-09-21T11:38:17+00:00"
+            "time": "2022-11-14T07:50:42+00:00"
         }
     ],
     "aliases": [],
