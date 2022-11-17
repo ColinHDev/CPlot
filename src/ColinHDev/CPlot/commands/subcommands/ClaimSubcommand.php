@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
+use Closure;
 use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\event\PlotClaimAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
@@ -18,6 +19,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\permission\Permission;
 use pocketmine\player\Player;
 use poggit\libasynql\SqlError;
+use SOFe\AwaitGenerator\Await;
 
 class ClaimSubcommand extends Subcommand {
 
@@ -52,7 +54,9 @@ class ClaimSubcommand extends Subcommand {
             return;
         }
         /** @phpstan-var array<string, Plot> $claimedPlots */
-        $claimedPlots = yield DataProvider::getInstance()->awaitPlotsByPlotPlayer($playerData->getPlayerID(), PlotPlayer::STATE_OWNER);
+        $claimedPlots = yield from Await::promise(
+            fn(Closure $onResolve, Closure $onError) => $this->getAPI()->loadPlotsOfPlayer($sender)->onCompletion($onResolve, $onError)
+        );
         $claimedPlotsCount = count($claimedPlots);
         foreach ($claimedPlots as $playerPlot) $claimedPlotsCount += count($playerPlot->getMergePlots());
         $maxPlots = $this->getMaxPlotsOfPlayer($sender);
