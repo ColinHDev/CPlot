@@ -3,17 +3,18 @@
   "minimum-stability": "dev",
   "require": {
     "pocketmine/pocketmine-mp": "dev-next-major as 4.0.0",
-    "sof3/await-generator": "^3.4.1",
-    "sof3/libasynql": "^4.0.1",
+    "sof3/await-generator": "^3.4.3",
+    "sof3/libasynql": "^4.1.1",
     "sofe/capital": "^0.1.2",
     "cooldogedev/bedrockeconomy": "^2.0.8",
     "colinhdev/libasyncevent": "^1.0.0",
+    "dktapps/pmforms": "^2.0.0",
     "ext-zlib": "*"
   },
   "require-dev": {
-    "phpstan/phpstan": "^1.8.1",
-    "phpstan/phpstan-strict-rules": "^1.3.0",
-    "phpstan/extension-installer": "^1.1.0"
+    "phpstan/phpstan": "^1.10.x-dev",
+    "phpstan/phpstan-strict-rules": "^1.5.x-dev",
+    "phpstan/extension-installer": "^1.2.0"
   },
   "repositories": {
     "capital": {
@@ -29,6 +30,18 @@
           "type": "git",
           "url": "https://github.com/cooldogedev/BedrockEconomy",
           "reference": "main"
+        }
+      }
+    },
+    "pmforms": {
+      "type": "package",
+      "package": {
+        "name": "dktapps/pmforms",
+        "version": "2.0.0",
+        "source": {
+          "type": "git",
+          "url": "https://github.com/dktapps-pm-pl/pmforms",
+          "reference": "master"
         }
       }
     }
