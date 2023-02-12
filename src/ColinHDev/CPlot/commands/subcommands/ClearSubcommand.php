@@ -12,7 +12,6 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\provider\utils\EconomyException;
 use ColinHDev\CPlot\tasks\async\PlotClearAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -25,36 +24,36 @@ class ClearSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.senderNotOnline"]);
+            self::sendMessage($sender, ["prefix", "clear.senderNotOnline"]);
             return;
         }
 
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlotWorld"]);
+            self::sendMessage($sender, ["prefix", "clear.noPlotWorld"]);
             return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlot"]);
+            self::sendMessage($sender, ["prefix", "clear.noPlot"]);
             return;
         }
 
         if (!$sender->hasPermission("cplot.admin.clear")) {
             if (!$plot->hasPlotOwner()) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.noPlotOwner"]);
+                self::sendMessage($sender, ["prefix", "clear.noPlotOwner"]);
                 return;
             }
             if (!$plot->isPlotOwner($sender)) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.notPlotOwner"]);
+                self::sendMessage($sender, ["prefix", "clear.notPlotOwner"]);
                 return;
             }
         }
 
         $lock = new ClearLockID();
         if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.plotLocked"]);
+            self::sendMessage($sender, ["prefix", "clear.plotLocked"]);
             return;
         }
 
@@ -66,8 +65,8 @@ class ClearSubcommand extends Subcommand {
                 try {
                     yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getClearReason());
                 } catch(EconomyException $exception) {
-                    $errorMessage = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $exception->getLanguageKey());
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                    $errorMessage = self::translateForCommandSender($sender, $exception->getLanguageKey());
+                    self::sendMessage(
                         $sender, [
                             "prefix",
                             "clear.chargeMoneyError" => [
@@ -80,11 +79,11 @@ class ClearSubcommand extends Subcommand {
                     PlotLockManager::getInstance()->unlockPlots($lock, $plot);
                     return;
                 }
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
+                self::sendMessage($sender, ["prefix", "clear.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
 
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.start"]);
+        self::sendMessage($sender, ["prefix", "clear.start"]);
         /** @phpstan-var PlotClearAsyncTask $task */
         $task = yield from Await::promise(
             static fn($resolve) => $plot->clear($resolve)
@@ -101,7 +100,7 @@ class ClearSubcommand extends Subcommand {
         Server::getInstance()->getLogger()->debug(
             "Clearing plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "clear.finish" => $elapsedTimeString]);
+        self::sendMessage($sender, ["prefix", "clear.finish" => $elapsedTimeString]);
         PlotLockManager::getInstance()->unlockPlots($lock, $plot);
     }
 }

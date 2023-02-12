@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\commands;
 
 use ColinHDev\CPlot\provider\LanguageManager;
+use ColinHDev\CPlot\provider\LanguageProvider;
+use ColinHDev\CPlot\utils\APIHolder;
 use Generator;
 use pocketmine\command\CommandSender;
-use poggit\libasynql\SqlError;
 
+/**
+ * @phpstan-import-type MessageKey from LanguageProvider
+ * @phpstan-import-type MessageParam from LanguageProvider
+ */
 abstract class Subcommand {
+    use APIHolder;
 
     private string $key;
     private string $name;
@@ -50,7 +56,7 @@ abstract class Subcommand {
         if ($sender->hasPermission($this->permission)) {
             return true;
         }
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", $this->key . ".permissionMessage"]);
+        self::sendMessage($sender, ["prefix", $this->key . ".permissionMessage"]);
         return false;
     }
 
@@ -60,4 +66,22 @@ abstract class Subcommand {
      * @phpstan-return Generator<mixed, mixed, mixed, mixed>
      */
     abstract public function execute(CommandSender $sender, array $args) : Generator;
+
+    /**
+     * Utility method to send a message to a command sender, while also removing some boilerplate code within the
+     * subcommand classes.
+     * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
+     */
+    final protected static function sendMessage(CommandSender $sender, array|string $keys) : void {
+        LanguageManager::getInstance()->getProvider()->sendMessage($sender, $keys);
+    }
+
+    /**
+     * Utility method to translate a message for a command sender, while also removing some boilerplate code within the
+     * subcommand classes.
+     * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
+     */
+    final protected static function translateForCommandSender(CommandSender $sender, array|string $keys) : string {
+        return LanguageManager::getInstance()->getProvider()->translateForCommandSender($sender, $keys);
+    }
 }

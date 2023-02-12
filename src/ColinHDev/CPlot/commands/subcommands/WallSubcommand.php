@@ -74,8 +74,9 @@ class WallSubcommand extends Subcommand {
     }
 
     public function execute(CommandSender $sender, array $args) : \Generator {
+        0 && yield;
         if (!$sender instanceof Player) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "wall.senderNotOnline"]);
+            self::sendMessage($sender, ["prefix", "wall.senderNotOnline"]);
             return;
         }
         $sender->sendForm($this->form);
@@ -86,39 +87,39 @@ class WallSubcommand extends Subcommand {
      */
     public function onFormSubmit(Player $player, int $selectedOption) : \Generator {
         if (!$player->hasPermission($this->permissions[$selectedOption])) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.blockPermissionMessage"]);
+            self::sendMessage($player, ["prefix", "wall.blockPermissionMessage"]);
             return;
         }
 
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($player->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlotWorld"]);
+            self::sendMessage($player, ["prefix", "wall.noPlotWorld"]);
             return;
         }
 
         $plot = yield Plot::awaitFromPosition($player->getPosition());
         if (!($plot instanceof Plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlot"]);
+            self::sendMessage($player, ["prefix", "wall.noPlot"]);
             return;
         }
         if (!$player->hasPermission("cplot.admin.wall")) {
             if (!$plot->hasPlotOwner()) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.noPlotOwner"]);
+                self::sendMessage($player, ["prefix", "wall.noPlotOwner"]);
                 return;
             }
             if (!$plot->isPlotOwner($player)) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.notPlotOwner"]);
+                self::sendMessage($player, ["prefix", "wall.notPlotOwner"]);
                 return;
             }
         }
 
         $lock = new WallChangeLockID();
         if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.plotLocked"]);
+            self::sendMessage($player, ["prefix", "wall.plotLocked"]);
             return;
         }
 
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($player, ["prefix", "wall.start"]);
+        self::sendMessage($player, ["prefix", "wall.start"]);
         $block = $this->blocks[$selectedOption];
         /** @phpstan-var PlotWallChangeAsyncTask $task */
         $task = yield from Await::promise(
@@ -136,7 +137,7 @@ class WallSubcommand extends Subcommand {
         Server::getInstance()->getLogger()->debug(
             "Changing plot wall to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $player->getUniqueId()->getBytes() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
-        LanguageManager::getInstance()->getProvider()->sendMessage($player, ["prefix", "wall.finish" => [$elapsedTimeString, $block->getName()]]);
+        self::sendMessage($player, ["prefix", "wall.finish" => [$elapsedTimeString, $block->getName()]]);
         PlotLockManager::getInstance()->unlockPlots($lock, $plot);
     }
 }

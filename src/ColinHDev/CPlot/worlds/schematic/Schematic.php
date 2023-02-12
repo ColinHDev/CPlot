@@ -150,6 +150,9 @@ class Schematic implements SchematicTypes {
         }
 
         $this->version = $nbt->getShort("Version");
+        if ($this->version < 1 || $this->version > self::SCHEMATIC_VERSION) {
+            return false;
+        }
         $this->creationTime = $nbt->getLong("CreationTime");
         $this->type = $nbt->getString("Type");
         $this->roadSize = $nbt->getShort("RoadSize");

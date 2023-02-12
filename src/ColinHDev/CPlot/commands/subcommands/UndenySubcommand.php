@@ -14,7 +14,6 @@ use ColinHDev\CPlot\plots\lock\RemovePlotPlayerLockID;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -24,12 +23,12 @@ class UndenySubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.senderNotOnline"]);
+            self::sendMessage($sender, ["prefix", "undeny.senderNotOnline"]);
             return;
         }
 
         if (count($args) === 0) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.usage"]);
+            self::sendMessage($sender, ["prefix", "undeny.usage"]);
             return;
         }
 
@@ -38,7 +37,7 @@ class UndenySubcommand extends Subcommand {
             if ($player instanceof Player) {
                 $playerName = $player->getName();
             } else {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.playerNotOnline" => $args[0]]);
+                self::sendMessage($sender, ["prefix", "undeny.playerNotOnline" => $args[0]]);
                 $playerName = $args[0];
                 $player = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
             }
@@ -47,42 +46,42 @@ class UndenySubcommand extends Subcommand {
             $player = yield from DataProvider::getInstance()->awaitPlayerDataByXUID("*");
         }
         if (!($player instanceof Player) && !($player instanceof PlayerData)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.playerNotFound" => $playerName]);
+            self::sendMessage($sender, ["prefix", "undeny.playerNotFound" => $playerName]);
             return null;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.noPlotWorld"]);
+            self::sendMessage($sender, ["prefix", "undeny.noPlotWorld"]);
             return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.noPlot"]);
+            self::sendMessage($sender, ["prefix", "undeny.noPlot"]);
             return;
         }
 
         if (!$plot->hasPlotOwner()) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.noPlotOwner"]);
+            self::sendMessage($sender, ["prefix", "undeny.noPlotOwner"]);
             return;
         }
         if (!$sender->hasPermission("cplot.admin.undeny")) {
             if (!$plot->isPlotOwner($sender)) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.notPlotOwner"]);
+                self::sendMessage($sender, ["prefix", "undeny.notPlotOwner"]);
                 return;
             }
         }
 
         $plotPlayer = $plot->getPlotPlayerExact($player);
         if (!($plotPlayer instanceof PlotPlayer) || $plotPlayer->getState() !== PlotPlayer::STATE_DENIED) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.playerNotDenied" => $playerName]);
+            self::sendMessage($sender, ["prefix", "undeny.playerNotDenied" => $playerName]);
             return;
         }
 
         $playerData = $plotPlayer->getPlayerData();
         $lock = new RemovePlotPlayerLockID($playerData->getPlayerID());
         if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.plotLocked"]);
+            self::sendMessage($sender, ["prefix", "undeny.plotLocked"]);
             return;
         }
 
@@ -97,15 +96,15 @@ class UndenySubcommand extends Subcommand {
         try {
             yield from DataProvider::getInstance()->deletePlotPlayer($plot, $playerData->getPlayerID());
         } catch (SqlError $exception) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.saveError" => $exception->getMessage()]);
+            self::sendMessage($sender, ["prefix", "undeny.saveError" => $exception->getMessage()]);
             return;
         } finally {
             PlotLockManager::getInstance()->unlockPlots($lock, $plot);
         }
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "undeny.success" => $playerName]);
+        self::sendMessage($sender, ["prefix", "undeny.success" => $playerName]);
 
         if ($player instanceof Player && $playerData->getSetting(Settings::INFORM_UNDENIED())->equals(InformUndeniedSetting::TRUE())) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+            self::sendMessage(
                 $player,
                 ["prefix", "undeny.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
             );

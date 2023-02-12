@@ -8,7 +8,6 @@ use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use Generator;
 use pocketmine\command\CommandSender;
@@ -18,24 +17,24 @@ class MiddleSubcommand extends Subcommand {
 
     public function execute(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "middle.senderNotOnline"]);
+            self::sendMessage($sender, ["prefix", "middle.senderNotOnline"]);
             return;
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "middle.noPlotWorld"]);
+            self::sendMessage($sender, ["prefix", "middle.noPlotWorld"]);
             return;
         }
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "middle.noPlot"]);
+            self::sendMessage($sender, ["prefix", "middle.noPlot"]);
             return;
         }
 
         if (!$plot->teleportTo($sender, TeleportDestination::PLOT_CENTER)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "middle.couldNotTeleport"]);
+            self::sendMessage($sender, ["prefix", "middle.couldNotTeleport"]);
             return;
         }
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "middle.success"]);
+        self::sendMessage($sender, ["prefix", "middle.success"]);
     }
 }
