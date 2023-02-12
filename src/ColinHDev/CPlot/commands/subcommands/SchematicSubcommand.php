@@ -16,6 +16,7 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
+use RuntimeException;
 
 class SchematicSubcommand extends Subcommand {
 
@@ -73,7 +74,9 @@ class SchematicSubcommand extends Subcommand {
                     break;
                 }
                 $schematic = new Schematic($file);
-                if (!$schematic->loadFromFile()) {
+                try {
+                    $schematic->loadFromFile();
+                } catch (RuntimeException) {
                     self::sendMessage($sender, ["prefix", "schematic.info.loadSchematicError" => $args[1]]);
                     break;
                 }
@@ -176,7 +179,9 @@ class SchematicSubcommand extends Subcommand {
                         break;
                     }
                     $schematic = new Schematic($file);
-                    if (!$schematic->loadFromFile()) {
+                    try {
+                        $schematic->loadFromFile();
+                    } catch (RuntimeException) {
                         self::sendMessage($sender, ["prefix", "schematic.generate.loadSchematicError" => $args[2]]);
                         break;
                     }

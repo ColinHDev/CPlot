@@ -24,6 +24,7 @@ use pocketmine\world\format\io\GlobalBlockStateHandlers;
 use pocketmine\world\format\SubChunk;
 use pocketmine\world\utils\SubChunkExplorer;
 use pocketmine\world\World;
+use RuntimeException;
 use function file_exists;
 use function pathinfo;
 use const DIRECTORY_SEPARATOR;
@@ -128,36 +129,35 @@ class Schematic implements SchematicTypes {
     }
 
     /**
-     * Tries to load the schematic from the given file.
-     * @return bool Returns true if the schematic was loaded successfully.
+     * Loads the schematic from the given file.
+     * @throws RuntimeException if the schematic could not be loaded
      */
-    public function loadFromFile() : bool {
+    public function loadFromFile() : void {
         if (!file_exists($this->file)) {
-            return false;
+            throw new RuntimeException("Schematic file \"" . $this->file . "\" does not exist.");
         }
         $contents = file_get_contents($this->file);
         if ($contents === false) {
-            return false;
+            throw new RuntimeException("Schematic file \"" . $this->file . "\" could not be read.");
         }
         $decompressed = zlib_decode($contents);
         if ($decompressed === false) {
-            return false;
+            throw new RuntimeException("The data in the schematic file \"" . $this->file . "\" could not be decoded.");
         }
-
         try {
             $nbt = (new BigEndianNbtSerializer())->read($decompressed)->mustGetCompoundTag();
-        } catch (NbtDataException) {
-            return false;
+        } catch (NbtDataException $e) {
+            throw new RuntimeException("The data in the schematic file \"" . $this->file . "\" could not be deserialized into an NBT tag.", 0, $e);
         }
 
         $this->version = $nbt->getShort("Version");
         if ($this->version < 1 || $this->version > self::SCHEMATIC_VERSION) {
-            return false;
+            throw new RuntimeException("The given version \"" . $this->version . "\" of the schematic \"" . $this->getName() . "\" is not supported.");
         }
         $this->creationTime = $nbt->getLong("CreationTime");
         $type = $nbt->getString("Type");
         if ($type !== SchematicTypes::TYPE_ROAD && $type !== SchematicTypes::TYPE_PLOT) {
-            return false;
+            throw new RuntimeException("The given type \"" . $type . "\" of the schematic \"" . $this->getName() . "\" is not supported.");
         }
         $this->type = $type;
         $this->roadSize = $nbt->getShort("RoadSize");
@@ -300,7 +300,6 @@ class Schematic implements SchematicTypes {
         if ($this->version !== self::SCHEMATIC_VERSION) {
             $this->save();
         }
-        return true;
     }
 
     /**

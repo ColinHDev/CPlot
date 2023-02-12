@@ -50,16 +50,12 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
         $schematicRoad = null;
         if ($worldSettings->getRoadSchematic() !== "default") {
             $schematicRoad = new Schematic("plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getRoadSchematic() . "." . Schematic::FILE_EXTENSION);
-            if (!$schematicRoad->loadFromFile()) {
-                $schematicRoad = null;
-            }
+            $schematicRoad->loadFromFile();
         }
         $schematicMergeRoad = null;
         if ($worldSettings->getMergeRoadSchematic() !== "default") {
             $schematicMergeRoad = new Schematic("plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getRoadSchematic() . "." . Schematic::FILE_EXTENSION);
-            if (!$schematicMergeRoad->loadFromFile()) {
-                $schematicMergeRoad = null;
-            }
+            $schematicMergeRoad->loadFromFile();
         }
 
         $world = $this->getChunkManager();

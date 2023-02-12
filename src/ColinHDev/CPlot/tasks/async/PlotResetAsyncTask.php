@@ -61,17 +61,13 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
         $schematicRoad = null;
         if ($worldSettings->getRoadSchematic() !== "default") {
             $schematicRoad = new Schematic("plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getRoadSchematic() . "." . Schematic::FILE_EXTENSION);
-            if (!$schematicRoad->loadFromFile()) {
-                $schematicRoad = null;
-            }
+            $schematicRoad->loadFromFile();
         }
 
         $schematicPlot = null;
         if ($worldSettings->getPlotSchematic() !== "default") {
             $schematicPlot = new Schematic("plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getPlotSchematic() . "." . Schematic::FILE_EXTENSION);
-            if (!$schematicPlot->loadFromFile()) {
-                $schematicPlot = null;
-            }
+            $schematicPlot->loadFromFile();
         }
 
         $world = $this->getChunkManager();
