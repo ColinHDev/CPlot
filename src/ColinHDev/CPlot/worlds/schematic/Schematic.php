@@ -139,6 +139,9 @@ class Schematic implements SchematicTypes {
         }
 
         $this->version = $nbt->getShort("Version");
+        if ($this->version < 1 || $this->version > self::SCHEMATIC_VERSION) {
+            return false;
+        }
         switch ($this->version) {
             case 1:
                 $this->creationTime = $nbt->getLong("CreationTime");
