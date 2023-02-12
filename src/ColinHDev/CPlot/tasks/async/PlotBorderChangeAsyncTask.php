@@ -21,7 +21,7 @@ class PlotBorderChangeAsyncTask extends ChunkModifyingAsyncTask {
     private int $y;
 
     public function __construct(Plot $plot, Block $block) {
-        $this->blockFullID = $block->getFullId();
+        $this->blockFullID = $block->getStateId();
         $worldSettings = $plot->getWorldSettings();
         $this->y = $worldSettings->getGroundSize() + 1;
 

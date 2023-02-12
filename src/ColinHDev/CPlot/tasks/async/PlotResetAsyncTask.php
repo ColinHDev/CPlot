@@ -104,11 +104,11 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                     } else {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             if ($y === $world->getMinY()) {
-                                $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
+                                $fullBlock = $worldSettings->getPlotBottomBlock()->getStateId();
                             } else if ($y === $worldSettings->getGroundSize()) {
-                                $fullBlock = $worldSettings->getPlotFloorBlock()->getFullId();
+                                $fullBlock = $worldSettings->getPlotFloorBlock()->getStateId();
                             } else if ($y < $worldSettings->getGroundSize()) {
-                                $fullBlock = $worldSettings->getPlotFillBlock()->getFullId();
+                                $fullBlock = $worldSettings->getPlotFillBlock()->getStateId();
                             } else {
                                 $fullBlock = 0;
                             }
@@ -148,9 +148,9 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                     } else {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             if ($y === $world->getMinY()) {
-                                $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
+                                $fullBlock = $worldSettings->getPlotBottomBlock()->getStateId();
                             } else if ($y <= $worldSettings->getGroundSize()) {
-                                $fullBlock = $worldSettings->getRoadBlock()->getFullId();
+                                $fullBlock = $worldSettings->getRoadBlock()->getStateId();
                             } else {
                                 $fullBlock = 0;
                             }
@@ -190,17 +190,17 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                     } else {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             if ($y === $world->getMinY()) {
-                                $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
+                                $fullBlock = $worldSettings->getPlotBottomBlock()->getStateId();
                             } else if ($y === $worldSettings->getGroundSize() + 1) {
                                 $xRaster = CoordinateUtils::getRasterCoordinate($x, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
                                 $zRaster = CoordinateUtils::getRasterCoordinate($z, $worldSettings->getRoadSize() + $worldSettings->getPlotSize());
                                 if (CoordinateUtils::isRasterPositionOnBorder($xRaster, $zRaster, $worldSettings->getRoadSize())) {
-                                    $fullBlock = $worldSettings->getBorderBlock()->getFullId();
+                                    $fullBlock = $worldSettings->getBorderBlock()->getStateId();
                                 } else {
                                     $fullBlock = 0;
                                 }
                             } else if ($y <= $worldSettings->getGroundSize()) {
-                                $fullBlock = $worldSettings->getRoadBlock()->getFullId();
+                                $fullBlock = $worldSettings->getRoadBlock()->getStateId();
                             } else {
                                 $fullBlock = 0;
                             }
