@@ -135,7 +135,7 @@ class SchematicSubcommand extends Subcommand {
                 }
                 self::sendMessage($sender, ["prefix", "schematic.save.start" => $schematicName]);
                 $world = $sender->getWorld();
-                $task = new SchematicSaveAsyncTask($world, $pos1, $pos2, $schematicName, $file, $type, $worldSettings->getRoadSize(), $worldSettings->getPlotSize());
+                $task = new SchematicSaveAsyncTask($world, $pos1, $pos2, $file, $type, $worldSettings->getRoadSize(), $worldSettings->getPlotSize());
                 $task->setCallback(
                     static function (SchematicSaveAsyncTask $task) use ($world, $sender, $schematicName, $schematicType) : void {
                         /** @phpstan-var array{0: int, 1: int, 2: string} $result */
