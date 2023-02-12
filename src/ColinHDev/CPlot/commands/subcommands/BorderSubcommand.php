@@ -74,6 +74,7 @@ class BorderSubcommand extends Subcommand {
     }
 
     public function execute(CommandSender $sender, array $args) : \Generator {
+        /** @phpstan-ignore-next-line */
         0 && yield;
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "border.senderNotOnline"]);
@@ -135,7 +136,7 @@ class BorderSubcommand extends Subcommand {
         );
         $elapsedTimeString = $task->getElapsedTimeString();
         Server::getInstance()->getLogger()->debug(
-            "Changing plot border to " . $block->getName() . " (ID:Meta: " . $block->getId() . ":" . $block->getMeta() . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $player->getUniqueId()->getBytes() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
+            "Changing plot border to " . $block->getName() . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $player->getUniqueId()->getBytes() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
         self::sendMessage($player, ["prefix", "border.finish" => [$elapsedTimeString, $block->getName()]]);
         PlotLockManager::getInstance()->unlockPlots($lock, $plot);

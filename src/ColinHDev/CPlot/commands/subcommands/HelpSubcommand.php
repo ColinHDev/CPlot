@@ -22,6 +22,7 @@ class HelpSubcommand extends Subcommand {
     }
 
     public function execute(CommandSender $sender, array $args) : \Generator {
+        /** @phpstan-ignore-next-line */
         0 && yield;
         if (count($args) === 0) {
             $page = 1;
@@ -48,7 +49,6 @@ class HelpSubcommand extends Subcommand {
 
         ksort($subcommands, SORT_NATURAL | SORT_FLAG_CASE);
         $screenLineHeight = $sender->getScreenLineHeight();
-        assert($screenLineHeight >= 1);
         /** @var array<int, array<string, Subcommand>> $subcommands */
         $subcommands = array_chunk($subcommands, $screenLineHeight);
         /** @var int $page */

@@ -121,7 +121,7 @@ class Schematic implements SchematicTypes {
             $pathInfo = pathinfo($this->file);
             rename(
                 $this->file,
-                $pathInfo["dirname"] . DIRECTORY_SEPARATOR . $pathInfo["filename"] . "_old." . $pathInfo["extension"]
+                ($pathInfo["dirname"] ?? "") . DIRECTORY_SEPARATOR . $pathInfo["filename"] . "_old." . ($pathInfo["extension"] ?? self::FILE_EXTENSION)
             );
         }
         file_put_contents($this->file, zlib_encode((new BigEndianNbtSerializer())->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));
@@ -155,7 +155,11 @@ class Schematic implements SchematicTypes {
             return false;
         }
         $this->creationTime = $nbt->getLong("CreationTime");
-        $this->type = $nbt->getString("Type");
+        $type = $nbt->getString("Type");
+        if ($type !== SchematicTypes::TYPE_ROAD && $type !== SchematicTypes::TYPE_PLOT) {
+            return false;
+        }
+        $this->type = $type;
         $this->roadSize = $nbt->getShort("RoadSize");
         $this->plotSize = $nbt->getShort("PlotSize");
 
@@ -322,6 +326,9 @@ class Schematic implements SchematicTypes {
     public function loadFromWorld(ChunkManager $world, string $type, int $roadSize, int $plotSize) : bool {
         $this->version = self::SCHEMATIC_VERSION;
         $this->creationTime = time();
+        if ($type !== SchematicTypes::TYPE_ROAD && $type !== SchematicTypes::TYPE_PLOT) {
+            return false;
+        }
         $this->type = $type;
         $this->roadSize = $roadSize;
         $this->plotSize = $plotSize;
@@ -347,8 +354,6 @@ class Schematic implements SchematicTypes {
                     }
                 }
                 break;
-            default:
-                return false;
         }
         return true;
     }
@@ -433,8 +438,7 @@ class Schematic implements SchematicTypes {
     public function calculateBiomeCount() : int {
         return match ($this->type) {
                 SchematicTypes::TYPE_ROAD => $this->roadSize ** 2 + 2 * $this->roadSize * $this->plotSize,
-                SchematicTypes::TYPE_PLOT => $this->plotSize ** 2,
-                default => 0
+                SchematicTypes::TYPE_PLOT => $this->plotSize ** 2
         } * (World::Y_MAX - World::Y_MIN);
     }
 

@@ -46,7 +46,7 @@ class BiomeSubcommand extends Subcommand {
         }
 
         if (count($args) === 0) {
-            $biomeName = $this->getBiomeNameByID($world->getBiomeId($position->getFloorX(), $position->getFloorZ()));
+            $biomeName = $this->getBiomeNameByID($world->getBiomeId($position->getFloorX(), $position->getFloorY(), $position->getFloorZ()));
             self::sendMessage($sender, ["prefix", "biome.plotBiome" => $biomeName]);
             return;
         }
