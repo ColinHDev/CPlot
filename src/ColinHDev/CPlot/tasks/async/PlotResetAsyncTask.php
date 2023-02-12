@@ -93,7 +93,7 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             $explorer->moveTo($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $explorer->currentSubChunk->setFullBlock(
+                                $explorer->currentSubChunk->setBlockStateId(
                                     $xInChunk,
                                     $y & 0x0f,
                                     $zInChunk,
@@ -114,7 +114,7 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                             }
                             $explorer->moveTo($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $explorer->currentSubChunk->setFullBlock(
+                                $explorer->currentSubChunk->setBlockStateId(
                                     $xInChunk,
                                     $y & 0x0f,
                                     $zInChunk,
@@ -137,7 +137,7 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             $explorer->moveTo($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $explorer->currentSubChunk->setFullBlock(
+                                $explorer->currentSubChunk->setBlockStateId(
                                     $xInChunk,
                                     $y & 0x0f,
                                     $zInChunk,
@@ -156,7 +156,7 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                             }
                             $explorer->moveTo($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $explorer->currentSubChunk->setFullBlock(
+                                $explorer->currentSubChunk->setBlockStateId(
                                     $xInChunk,
                                     $y & 0x0f,
                                     $zInChunk,
@@ -179,7 +179,7 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             $explorer->moveTo($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $explorer->currentSubChunk->setFullBlock(
+                                $explorer->currentSubChunk->setBlockStateId(
                                     $xInChunk,
                                     $y & 0x0f,
                                     $zInChunk,
@@ -206,7 +206,7 @@ class PlotResetAsyncTask extends ChunkModifyingAsyncTask {
                             }
                             $explorer->moveTo($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $explorer->currentSubChunk->setFullBlock(
+                                $explorer->currentSubChunk->setBlockStateId(
                                     $xInChunk,
                                     $y & 0x0f,
                                     $zInChunk,

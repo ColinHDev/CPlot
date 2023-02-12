@@ -49,7 +49,7 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
                 for ($y = 1; $y <= $this->groundSize; $y++) {
                     $explorer->moveTo($x, $y, $z);
                     if ($explorer->currentSubChunk instanceof SubChunk) {
-                        $explorer->currentSubChunk->setFullBlock(
+                        $explorer->currentSubChunk->setBlockStateId(
                             $xInChunk,
                             ($y & 0x0f),
                             $zInChunk,

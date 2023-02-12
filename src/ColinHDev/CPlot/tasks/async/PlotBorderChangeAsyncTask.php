@@ -49,7 +49,7 @@ class PlotBorderChangeAsyncTask extends ChunkModifyingAsyncTask {
                 $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
                 $explorer->moveTo($x, $this->y, $z);
                 if ($explorer->currentSubChunk instanceof SubChunk) {
-                    $explorer->currentSubChunk->setFullBlock(
+                    $explorer->currentSubChunk->setBlockStateId(
                         $xInChunk,
                         $yInChunk,
                         $zInChunk,
