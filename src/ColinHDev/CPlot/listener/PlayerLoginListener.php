@@ -31,7 +31,7 @@ class PlayerLoginListener implements Listener {
                 $player->kick(
                     LanguageManager::getInstance()->getProvider()->translateForCommandSender(
                         $player,
-                        ["prefix", "player.login.savePlayerDataError"]
+                        ["prefix", "playerLogin.savePlayerDataError"]
                     )
                 );
             }
