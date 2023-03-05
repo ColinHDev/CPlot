@@ -1,7 +1,4 @@
 --- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/ColinHDev/CPlot
-build-by-default: true
-branches:
-- development
 projects:
   CPlot:
     path: ""
@@ -11,9 +8,9 @@ projects:
     - src: dktapps-pm-pl/pmforms/pmforms
       version: ^2.0.0
     - src: poggit/libasynql/libasynql
-      version: ^4.0.1
+      version: ^4.1.1
     - src: sof3/await-generator/await-generator
-      version: ^3.1.0
+      version: ^3.4.3
     - src: ColinHDev/libAsyncEvent/libAsyncEvent
       version: ^1.0.0
 ...

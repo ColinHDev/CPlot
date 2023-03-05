@@ -30,7 +30,11 @@ class BlockFormListener implements Listener {
 
         /** @phpstan-var Plot|false|null $plot */
         $plot = $this->getAPI()->getOrLoadPlotAtPosition($position)->getResult();
-        if ($plot instanceof Plot && $plot->getFlag(Flags::FLOWING())->equals(FlowingFlag::TRUE())) {
+        if (
+            $plot instanceof Plot &&
+            $plot->getFlag(Flags::FLOWING())->equals(FlowingFlag::TRUE()) &&
+            $plot->isOnPlot($event->getCausingBlock()->getPosition())
+        ) {
             return;
         }
 

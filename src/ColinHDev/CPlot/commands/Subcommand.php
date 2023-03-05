@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\commands;
 
 use ColinHDev\CPlot\provider\LanguageManager;
+use ColinHDev\CPlot\provider\LanguageProvider;
+use ColinHDev\CPlot\utils\APIHolder;
 use pocketmine\command\CommandSender;
-use poggit\libasynql\SqlError;
 
 /**
- * @phpstan-template GeneratorKey
- * @phpstan-template GeneratorValue
- * @phpstan-template GeneratorSend
- * @phpstan-template GeneratorReturn
+ * @phpstan-import-type MessageKey from LanguageProvider
+ * @phpstan-import-type MessageParam from LanguageProvider
  */
 abstract class Subcommand {
+    use APIHolder;
 
     private string $key;
     private string $name;
@@ -55,28 +55,31 @@ abstract class Subcommand {
         if ($sender->hasPermission($this->permission)) {
             return true;
         }
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", $this->key . ".permissionMessage"]);
+        self::sendMessage($sender, ["prefix", $this->key . ".permissionMessage"]);
         return false;
     }
 
     /**
-     * This generator function contains the code you want to be executed when the command is run.
+     * This method contains the code you want to be executed when the command is run.
      * @param string[] $args
-     * @phpstan-return \Generator<GeneratorKey, GeneratorValue, GeneratorSend, GeneratorReturn|null>
      */
-    abstract public function execute(CommandSender $sender, array $args) : \Generator;
+    abstract public function execute(CommandSender $sender, array $args) : void;
 
     /**
-     * Overwrite this method to handle the return value of the generator function {@see Subcommand::execute()}.
-     * @phpstan-param GeneratorReturn $return
+     * Utility method to send a message to a command sender, while also removing some boilerplate code within the
+     * subcommand classes.
+     * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
      */
-    public function onSuccess(CommandSender $sender, mixed $return) : void {
+    final protected static function sendMessage(CommandSender $sender, array|string $keys) : void {
+        LanguageManager::getInstance()->getProvider()->sendMessage($sender, $keys);
     }
 
     /**
-     * Overwrite this method to handle any exceptions that were thrown during the executing of
-     * {@see Subcommand::execute()}, e.g. {@see SqlError} when interacting with the database.
+     * Utility method to translate a message for a command sender, while also removing some boilerplate code within the
+     * subcommand classes.
+     * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
      */
-    public function onError(CommandSender $sender, \Throwable $error) : void {
+    final protected static function translateForCommandSender(CommandSender $sender, array|string $keys) : string {
+        return LanguageManager::getInstance()->getProvider()->translateForCommandSender($sender, $keys);
     }
 }

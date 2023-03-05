@@ -4,33 +4,33 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\event\PlotPlayerAddAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\implementation\InformAddedSetting;
 use ColinHDev\CPlot\player\settings\Settings;
+use ColinHDev\CPlot\plots\lock\AddPlotPlayerLockID;
+use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use poggit\libasynql\SqlError;
 
-/**
- * @phpstan-extends Subcommand<mixed, mixed, mixed, null>
- */
-class AddSubcommand extends Subcommand {
+class AddSubcommand extends AsyncSubcommand {
 
-    public function execute(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.senderNotOnline"]);
-            return null;
+            self::sendMessage($sender, ["prefix", "add.senderNotOnline"]);
+            return;
         }
 
         if (count($args) === 0) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.usage"]);
-            return null;
+            self::sendMessage($sender, ["prefix", "add.usage"]);
+            return;
         }
 
         $player = null;
@@ -42,19 +42,19 @@ class AddSubcommand extends Subcommand {
                 $playerXUID = $player->getXuid();
                 $playerName = $player->getName();
             } else {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerNotOnline" => $args[0]]);
+                self::sendMessage($sender, ["prefix", "add.playerNotOnline" => $args[0]]);
                 $playerName = $args[0];
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if (!($playerData instanceof PlayerData)) {
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerNotFound" => $playerName]);
-                    return null;
+                    self::sendMessage($sender, ["prefix", "add.playerNotFound" => $playerName]);
+                    return;
                 }
                 $playerUUID = $playerData->getPlayerUUID();
                 $playerXUID = $playerData->getPlayerXUID();
             }
             if ($playerUUID === $sender->getUniqueId()->getBytes()) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.senderIsPlayer"]);
-                return null;
+                self::sendMessage($sender, ["prefix", "add.senderIsPlayer"]);
+                return;
             }
         } else {
             $playerUUID = "*";
@@ -63,63 +63,69 @@ class AddSubcommand extends Subcommand {
         }
 
         if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.noPlotWorld"]);
-            return null;
+            self::sendMessage($sender, ["prefix", "add.noPlotWorld"]);
+            return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.noPlot"]);
-            return null;
+            self::sendMessage($sender, ["prefix", "add.noPlot"]);
+            return;
         }
 
         if (!$plot->hasPlotOwner()) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.noPlotOwner"]);
-            return null;
+            self::sendMessage($sender, ["prefix", "add.noPlotOwner"]);
+            return;
         }
         if (!$sender->hasPermission("cplot.admin.add")) {
             if (!$plot->isPlotOwner($sender)) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.notPlotOwner"]);
-                return null;
+                self::sendMessage($sender, ["prefix", "add.notPlotOwner"]);
+                return;
             }
         }
 
         if (!($playerData instanceof PlayerData)) {
             $playerData = yield DataProvider::getInstance()->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
             if (!($playerData instanceof PlayerData)) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerNotFound" => $playerName]);
-                return null;
+                self::sendMessage($sender, ["prefix", "add.playerNotFound" => $playerName]);
+                return;
             }
         }
         if ($plot->isPlotHelperExact($playerData)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.playerAlreadyHelper" => $playerName]);
-            return null;
+            self::sendMessage($sender, ["prefix", "add.playerAlreadyHelper" => $playerName]);
+            return;
+        }
+
+        $lock = new AddPlotPlayerLockID($playerData->getPlayerID());
+        if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
+            self::sendMessage($sender, ["prefix", "add.plotLocked"]);
+            return;
         }
 
         $plotPlayer = new PlotPlayer($playerData, PlotPlayer::STATE_HELPER);
         /** @phpstan-var PlotPlayerAddAsyncEvent $event */
         $event = yield from PlotPlayerAddAsyncEvent::create($plot, $plotPlayer, $sender);
         if ($event->isCancelled()) {
-            return null;
+            PlotLockManager::getInstance()->unlockPlots($lock, $plot);
+            return;
         }
 
         $plot->addPlotPlayer($plotPlayer);
-        yield DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "add.success" => $playerName]);
+        try {
+            yield from DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
+        } catch (SqlError $exception) {
+            self::sendMessage($sender, ["prefix", "add.saveError" => $exception->getMessage()]);
+            return;
+        } finally {
+            PlotLockManager::getInstance()->unlockPlots($lock, $plot);
+        }
+        self::sendMessage($sender, ["prefix", "add.success" => $playerName]);
 
         if ($player instanceof Player && $playerData->getSetting(Settings::INFORM_ADDED())->equals(InformAddedSetting::TRUE())) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+            self::sendMessage(
                 $player,
                 ["prefix", "add.success.player" => [$sender->getName(), $plot->getWorldName(), $plot->getX(), $plot->getZ()]]
             );
         }
-        return null;
-    }
-
-    public function onError(CommandSender $sender, \Throwable $error) : void {
-        if ($sender instanceof Player && !$sender->isConnected()) {
-            return;
-        }
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "add.saveError" => $error->getMessage()]);
     }
 }

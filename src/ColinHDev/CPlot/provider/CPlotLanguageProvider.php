@@ -58,11 +58,11 @@ class CPlotLanguageProvider extends LanguageProvider {
         return $this->buildMessage($this->languages[$this->fallbackLanguage], $keys);
     }
 
-    public function translateForCommandSender(CommandSender $sender, array|string $keys, \Closure $onSuccess, ?\Closure $onError = null) : void {
-        $onSuccess($this->buildMessage($this->getLanguage($sender), $keys));
+    public function translateForCommandSender(CommandSender $sender, array|string $keys) : string {
+        return $this->buildMessage($this->getLanguage($sender), $keys);
     }
 
-    public function sendMessage(CommandSender $sender, array|string $keys, ?\Closure $onSuccess = null, ?\Closure $onError = null) : void {
+    public function sendMessage(CommandSender $sender, array|string $keys) : void {
         if (!($sender instanceof Player)) {
             $message = $this->translateString($keys);
         } else {
@@ -72,21 +72,15 @@ class CPlotLanguageProvider extends LanguageProvider {
             $message = $this->buildMessage($this->getLanguage($sender), $keys);
         }
         $sender->sendMessage($message);
-        if ($onSuccess !== null) {
-            $onSuccess(null);
-        }
     }
 
-    public function sendTip(Player $player, array|string $keys, ?\Closure $onSuccess = null, ?\Closure $onError = null) : void {
+    public function sendTip(Player $player, array|string $keys) : void {
         if (!$player->isOnline()) {
             return;
         }
         $player->sendTip(
             $this->buildMessage($this->getLanguage($player), $keys)
         );
-        if ($onSuccess !== null) {
-            $onSuccess(null);
-        }
     }
 
     private function getLanguage(CommandSender $sender) : Language {

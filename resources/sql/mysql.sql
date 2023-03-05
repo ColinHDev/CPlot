@@ -252,9 +252,9 @@ VALUES (:playerUUID, :playerXUID, :playerName, :lastJoin);
 -- #    }
 -- #    { playerData
 -- #      :playerID int
--- #      :playerUUID string
--- #      :playerXUID string
--- #      :playerName string
+-- #      :playerUUID ?string
+-- #      :playerXUID ?string
+-- #      :playerName ?string
 -- #      :lastJoin string
 UPDATE playerData
 SET playerUUID = :playerUUID, playerXUID = :playerXUID, playerName = :playerName, lastJoin = :lastJoin
@@ -320,9 +320,8 @@ VALUES (:worldName, :originX, :originZ, :mergeX, :mergeZ);
 -- #      :playerID int
 -- #      :state string
 -- #      :addTime string
-INSERT INTO plotPlayers (worldName, x, z, playerID, state, addTime)
-VALUES (:worldName, :x, :z, :playerID, :state, :addTime) AS new
-ON DUPLICATE KEY UPDATE state = new.state, addTime = new.addTime;
+REPLACE INTO plotPlayers (worldName, x, z, playerID, state, addTime)
+VALUES (:worldName, :x, :z, :playerID, :state, :addTime);
 -- #    }
 -- #    { plotFlag
 -- #      :worldName string
@@ -341,9 +340,8 @@ VALUES (:worldName, :x, :z, :ID, :value);
 -- #      :playerID int
 -- #      :rateTime string
 -- #      :comment ?string
-INSERT INTO plotRates (worldName, x, z, rate, playerID, rateTime, comment)
-VALUES (:worldName, :x, :z, :rate, :playerID, :rateTime, :comment) AS new
-ON DUPLICATE KEY UPDATE rate = new.rate, comment = new.comment;
+REPLACE INTO plotRates (worldName, x, z, rate, playerID, rateTime, comment)
+VALUES (:worldName, :x, :z, :rate, :playerID, :rateTime, :comment);
 -- #    }
 -- #  }
 

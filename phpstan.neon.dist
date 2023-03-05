@@ -3,11 +3,7 @@ parameters:
 	paths:
 		- src
 	scanDirectories:
-	    - phar://virions/await-generator.phar/src
-	    - phar://virions/libAsyncEvent.phar/src
-	    - phar://virions/libasynql.phar/src
-	    - phar://virions/pmforms.phar/src
-	    - /vendor/cooldogedev/bedrockeconomy/src
+		- vendor
 
 includes:
 	- phpstan-baseline.neon
