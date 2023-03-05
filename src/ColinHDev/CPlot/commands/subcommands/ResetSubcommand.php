@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\lock\ResetLockID;
@@ -20,9 +20,9 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 
-class ResetSubcommand extends Subcommand {
+class ResetSubcommand extends AsyncSubcommand {
 
-    public function execute(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "reset.senderNotOnline"]);
             return;

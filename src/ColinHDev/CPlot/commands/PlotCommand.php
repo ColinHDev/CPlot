@@ -39,8 +39,6 @@ use pocketmine\command\CommandSender;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use pocketmine\utils\SingletonTrait;
-use SOFe\AwaitGenerator\Await;
-use Throwable;
 
 class PlotCommand extends Command implements PluginOwned {
     use SingletonTrait;
@@ -132,14 +130,7 @@ class PlotCommand extends Command implements PluginOwned {
         if (!$command->testPermission($sender)) {
             return;
         }
-        Await::g2c(
-            $command->execute($sender, $args),
-            null,
-            static function(Throwable $error) use ($sender, $commandLabel, $subcommand) : void {
-                $sender->getServer()->getLogger()->logException($error);
-                LanguageManager::getInstance()->getProvider()->sendMessage($sender, ["prefix", "plot.executionError" => [$commandLabel, $subcommand]]);
-            }
-        );
+        $command->execute($sender, $args);
     }
 
     public function getOwningPlugin() : Plugin {

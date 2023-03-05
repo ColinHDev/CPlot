@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
@@ -14,9 +14,9 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use poggit\libasynql\SqlError;
 
-class VisitSubcommand extends Subcommand {
+class VisitSubcommand extends AsyncSubcommand {
 
-    public function execute(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "visit.senderNotOnline"]);
             return;

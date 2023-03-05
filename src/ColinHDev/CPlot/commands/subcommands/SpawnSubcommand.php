@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -14,9 +14,9 @@ use pocketmine\command\CommandSender;
 use pocketmine\entity\Location;
 use pocketmine\player\Player;
 
-class SpawnSubcommand extends Subcommand {
+class SpawnSubcommand extends AsyncSubcommand {
 
-    public function execute(CommandSender $sender, array $args) : Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "spawn.senderNotOnline"]);
             return;

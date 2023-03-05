@@ -73,9 +73,7 @@ class BorderSubcommand extends Subcommand {
         );
     }
 
-    public function execute(CommandSender $sender, array $args) : \Generator {
-        /** @phpstan-ignore-next-line */
-        0 && yield;
+    public function execute(CommandSender $sender, array $args) : void {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "border.senderNotOnline"]);
             return;

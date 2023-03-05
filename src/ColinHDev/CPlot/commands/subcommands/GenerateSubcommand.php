@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\event\PlotWorldGenerateAsyncEvent;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\generator\PlotGenerator;
@@ -15,12 +15,12 @@ use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
 use poggit\libasynql\SqlError;
 
-class GenerateSubcommand extends Subcommand {
+class GenerateSubcommand extends AsyncSubcommand {
 
     /**
      * @throws \JsonException
      */
-    public function execute(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
             self::sendMessage($sender, ["prefix", "generate.usage"]);
             return;

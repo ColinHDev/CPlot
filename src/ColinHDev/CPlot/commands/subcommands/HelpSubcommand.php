@@ -21,9 +21,7 @@ class HelpSubcommand extends Subcommand {
         $this->command = $command;
     }
 
-    public function execute(CommandSender $sender, array $args) : \Generator {
-        /** @phpstan-ignore-next-line */
-        0 && yield;
+    public function execute(CommandSender $sender, array $args) : void {
         if (count($args) === 0) {
             $page = 1;
         } else if (is_numeric($args[0])) {

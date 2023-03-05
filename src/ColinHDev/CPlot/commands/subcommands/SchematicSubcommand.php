@@ -23,9 +23,7 @@ class SchematicSubcommand extends Subcommand {
     /**
      * @throws \JsonException
      */
-    public function execute(CommandSender $sender, array $args) : \Generator {
-        /** @phpstan-ignore-next-line */
-        0 && yield;
+    public function execute(CommandSender $sender, array $args) : void {
         if (count($args) === 0) {
             self::sendMessage($sender, ["prefix", "schematic.usage"]);
             return;

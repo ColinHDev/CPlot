@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
-use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\Settings;
 use ColinHDev\CPlot\plots\flags\Flag;
@@ -20,9 +20,9 @@ use pocketmine\player\Player;
 use function assert;
 use function is_array;
 
-class FlagSubcommand extends Subcommand {
+class FlagSubcommand extends AsyncSubcommand {
 
-    public function execute(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : \Generator {
         if (count($args) === 0) {
             self::sendMessage($sender, ["prefix", "flag.usage"]);
             return;

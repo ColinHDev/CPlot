@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
+use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\commands\PlotCommand;
-use ColinHDev\CPlot\commands\Subcommand;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
@@ -16,7 +16,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use function is_string;
 
-class AutoSubcommand extends Subcommand {
+class AutoSubcommand extends AsyncSubcommand {
 
     private bool $automaticClaim;
     private ?string $fallbackWorld;
@@ -37,7 +37,7 @@ class AutoSubcommand extends Subcommand {
         $this->command = $command;
     }
 
-    public function execute(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "auto.senderNotOnline"]);
             return;
@@ -85,7 +85,7 @@ class AutoSubcommand extends Subcommand {
 
         self::sendMessage($sender, ["prefix", "auto.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
         if ($this->automaticClaim) {
-            yield from $claimSubcommand->execute($sender, []);
+            yield from $claimSubcommand->executeAsync($sender, []);
         }
     }
 }

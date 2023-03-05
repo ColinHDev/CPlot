@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\event\PlotPlayerRemoveAsyncEvent;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\implementation\InformUndeniedSetting;
@@ -19,9 +19,9 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use poggit\libasynql\SqlError;
 
-class UndenySubcommand extends Subcommand {
+class UndenySubcommand extends AsyncSubcommand {
 
-    public function execute(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "undeny.senderNotOnline"]);
             return;

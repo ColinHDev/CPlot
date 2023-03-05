@@ -7,7 +7,6 @@ namespace ColinHDev\CPlot\commands;
 use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\provider\LanguageProvider;
 use ColinHDev\CPlot\utils\APIHolder;
-use Generator;
 use pocketmine\command\CommandSender;
 
 /**
@@ -61,11 +60,10 @@ abstract class Subcommand {
     }
 
     /**
-     * This generator function contains the code you want to be executed when the command is run.
+     * This method contains the code you want to be executed when the command is run.
      * @param string[] $args
-     * @phpstan-return Generator<mixed, mixed, mixed, mixed>
      */
-    abstract public function execute(CommandSender $sender, array $args) : Generator;
+    abstract public function execute(CommandSender $sender, array $args) : void;
 
     /**
      * Utility method to send a message to a command sender, while also removing some boilerplate code within the

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\lock\BiomeChangeLockID;
 use ColinHDev\CPlot\plots\lock\PlotLockManager;
@@ -19,7 +19,7 @@ use pocketmine\Server;
 use pocketmine\world\World;
 use SOFe\AwaitGenerator\Await;
 
-class BiomeSubcommand extends Subcommand {
+class BiomeSubcommand extends AsyncSubcommand {
 
     /** @phpstan-var array<string, BiomeIds::*> */
     private array $biomes;
@@ -31,7 +31,7 @@ class BiomeSubcommand extends Subcommand {
         $this->biomes = $biomes;
     }
 
-    public function execute(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : \Generator {
         if (!($sender instanceof Player)) {
             self::sendMessage($sender, ["prefix", "biome.senderNotOnline"]);
             return;
