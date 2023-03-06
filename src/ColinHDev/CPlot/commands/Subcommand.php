@@ -7,6 +7,7 @@ namespace ColinHDev\CPlot\commands;
 use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\provider\LanguageProvider;
 use ColinHDev\CPlot\utils\APIHolder;
+use ColinHDev\CPlot\utils\ParseUtils;
 use pocketmine\command\CommandSender;
 
 /**
@@ -22,17 +23,11 @@ abstract class Subcommand {
     private array $alias;
     private string $permission;
 
-    /**
-     * @throws \JsonException
-     */
     public function __construct(string $key) {
         $this->key = $key;
         $languageProvider = LanguageManager::getInstance()->getProvider();
         $this->name = $languageProvider->translateString($key . ".name");
-        $alias = json_decode($languageProvider->translateString($key . ".alias"), true, 512, JSON_THROW_ON_ERROR);
-        assert(is_array($alias));
-        /** @phpstan-var array<string> $alias */
-        $this->alias = $alias;
+        $this->alias = ParseUtils::parseAliasesFromString($languageProvider->translateString("plot.alias"));
         $this->permission = "cplot.subcommand." . $key;
     }
 

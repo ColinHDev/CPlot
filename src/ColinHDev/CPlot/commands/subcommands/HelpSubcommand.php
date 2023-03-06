@@ -13,9 +13,6 @@ class HelpSubcommand extends Subcommand {
 
     private PlotCommand $command;
 
-    /**
-     * @throws \JsonException
-     */
     public function __construct(string $key, PlotCommand $command) {
         parent::__construct($key);
         $this->command = $command;

@@ -17,6 +17,7 @@ use function count;
 use function explode;
 use function get_class;
 use function is_string;
+use function preg_match_all;
 use function zlib_decode;
 use function zlib_encode;
 use const ZLIB_ENCODING_GZIP;
@@ -127,5 +128,14 @@ class ParseUtils {
         } catch (UnsupportedBlockStateException) {
             return null;
         }
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function parseAliasesFromString(string $aliases) : array {
+        // Only allow letters and numbers to be used in aliases
+        preg_match_all('/\w+/', $aliases, $matches);
+        return $matches[0];
     }
 }
