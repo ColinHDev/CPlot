@@ -12,11 +12,13 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\tasks\async\PlotBiomeChangeAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\World;
+use ReflectionClass;
 use SOFe\AwaitGenerator\Await;
 
 class BiomeSubcommand extends AsyncSubcommand {
@@ -27,11 +29,11 @@ class BiomeSubcommand extends AsyncSubcommand {
     public function __construct(string $key) {
         parent::__construct($key);
         /** @phpstan-var array<string, BiomeIds::*> $biomes */
-        $biomes = (new \ReflectionClass(BiomeIds::class))->getConstants();
+        $biomes = (new ReflectionClass(BiomeIds::class))->getConstants();
         $this->biomes = $biomes;
     }
 
-    public function executeAsync(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (!($sender instanceof Player)) {
             self::sendMessage($sender, ["prefix", "biome.senderNotOnline"]);
             return;
@@ -114,7 +116,7 @@ class BiomeSubcommand extends AsyncSubcommand {
         Server::getInstance()->getLogger()->debug(
             "Changing plot biome to " . $biomeName . "(ID: " . $biomeID . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
-        self::sendMessage($sender, ["prefix", "biome.finish" => [$elapsedTimeString, $biomeName]]);
+        self::sendMessage($sender, ["prefix", "biome.finish" => [$biomeName, $elapsedTimeString]]);
         PlotLockManager::getInstance()->unlockPlots($lock, $plot);
     }
 
