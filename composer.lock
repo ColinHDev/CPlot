@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cb2a0b674c2ecb0c5f672c9c2ca51ce2",
+    "content-hash": "950e92526b0c73edfd5991395af88af2",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -1302,16 +1302,16 @@
         },
         {
             "name": "sof3/libasynql",
-            "version": "4.1.1",
+            "version": "4.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/poggit/libasynql.git",
-                "reference": "d1d5818936e458032de93ee1ce0759b1da3c0915"
+                "reference": "a55ecceb73e6aa99b80bbec2a78aed0c6341170c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/poggit/libasynql/zipball/d1d5818936e458032de93ee1ce0759b1da3c0915",
-                "reference": "d1d5818936e458032de93ee1ce0759b1da3c0915",
+                "url": "https://api.github.com/repos/poggit/libasynql/zipball/a55ecceb73e6aa99b80bbec2a78aed0c6341170c",
+                "reference": "a55ecceb73e6aa99b80bbec2a78aed0c6341170c",
                 "shasum": ""
             },
             "require": {
@@ -1335,9 +1335,9 @@
             ],
             "support": {
                 "issues": "https://github.com/poggit/libasynql/issues",
-                "source": "https://github.com/poggit/libasynql/tree/4.1.1"
+                "source": "https://github.com/poggit/libasynql/tree/4.1.0"
             },
-            "time": "2022-08-08T14:06:12+00:00"
+            "time": "2022-05-25T15:45:58+00:00"
         },
         {
             "name": "sof3/rwlock",
