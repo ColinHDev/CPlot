@@ -15,6 +15,7 @@ use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\provider\utils\EconomyException;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\Permission;
 use pocketmine\player\Player;
@@ -23,7 +24,7 @@ use SOFe\AwaitGenerator\Await;
 
 class ClaimSubcommand extends AsyncSubcommand {
 
-    public function executeAsync(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "claim.senderNotOnline"]);
             return;
@@ -42,10 +43,10 @@ class ClaimSubcommand extends AsyncSubcommand {
 
         if ($plot->hasPlotOwner()) {
             if ($plot->isPlotOwner($sender)) {
-                self::sendMessage($sender, ["prefix", "claim.plotAlreadyClaimedBySender"]);
+                self::sendMessage($sender, ["prefix", "claim.plotClaimedBySender"]);
                 return;
             }
-            self::sendMessage($sender, ["prefix", "claim.plotAlreadyClaimed"]);
+            self::sendMessage($sender, ["prefix", "claim.plotClaimed"]);
             return;
         }
 
@@ -100,10 +101,11 @@ class ClaimSubcommand extends AsyncSubcommand {
         try {
             yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
         } catch (SqlError $exception) {
-            self::sendMessage($sender, ["prefix", "claim.saveError" => $exception->getMessage()]);
+            self::sendMessage($sender, ["prefix", "claim.saveError"]);
+            $sender->getServer()->getLogger()->logException($exception);
             return;
         }
-        self::sendMessage($sender, ["prefix", "claim.success" => [$plot->toString(), $plot->toSmallString()]]);
+        self::sendMessage($sender, ["prefix", "claim.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
     }
 
     public function getMaxPlotsOfPlayer(Player $player) : int {

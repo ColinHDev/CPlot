@@ -18,6 +18,7 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use dktapps\pmforms\FormIcon;
 use dktapps\pmforms\MenuForm;
 use dktapps\pmforms\MenuOption;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\DefaultPermissions;
@@ -82,9 +83,9 @@ class BorderSubcommand extends Subcommand {
     }
 
     /**
-     * @phpstan-return \Generator<mixed, mixed, mixed, mixed>
+     * @phpstan-return Generator<mixed, mixed, mixed, mixed>
      */
-    public function onFormSubmit(Player $player, int $selectedOption) : \Generator {
+    public function onFormSubmit(Player $player, int $selectedOption) : Generator {
         if (!$player->hasPermission($this->permissions[$selectedOption])) {
             self::sendMessage($player, ["prefix", "border.blockPermissionMessage"]);
             return;
@@ -136,7 +137,7 @@ class BorderSubcommand extends Subcommand {
         Server::getInstance()->getLogger()->debug(
             "Changing plot border to " . $block->getName() . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $player->getUniqueId()->getBytes() . " (" . $player->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
-        self::sendMessage($player, ["prefix", "border.finish" => [$elapsedTimeString, $block->getName()]]);
+        self::sendMessage($player, ["prefix", "border.finish" => [$block->getName(), $elapsedTimeString]]);
         PlotLockManager::getInstance()->unlockPlots($lock, $plot);
     }
 }
