@@ -1,7 +1,0 @@
-brick_slab:
-    block: "Brick Slab"
-    permission: "cplot.borders.everyone"
-    form:
-        button.text: "§8Ziegelstufe§r \n§8[§7Jeder§8]"
-        button.icon: ""
-        button.icon.type: ""
