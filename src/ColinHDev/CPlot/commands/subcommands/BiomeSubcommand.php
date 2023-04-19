@@ -116,7 +116,7 @@ class BiomeSubcommand extends AsyncSubcommand {
         Server::getInstance()->getLogger()->debug(
             "Changing plot biome to " . $biomeName . "(ID: " . $biomeID . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
-        self::sendMessage($sender, ["prefix", "biome.finish" => [$biomeName, $elapsedTimeString]]);
+        self::sendMessage($sender, ["prefix", "biome.finish" => [$elapsedTimeString, $biomeName]]);
         PlotLockManager::getInstance()->unlockPlots($lock, $plot);
     }
 

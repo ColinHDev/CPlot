@@ -32,7 +32,7 @@ class MiddleSubcommand extends AsyncSubcommand {
         }
 
         if (!$plot->teleportTo($sender, TeleportDestination::PLOT_CENTER)) {
-            self::sendMessage($sender, ["prefix", "middle.couldNotTeleport"]);
+            self::sendMessage($sender, ["prefix", "middle.teleportError"]);
             return;
         }
         self::sendMessage($sender, ["prefix", "middle.success"]);

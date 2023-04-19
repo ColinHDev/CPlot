@@ -33,9 +33,15 @@ class SpawnSubcommand extends AsyncSubcommand {
             return;
         }
 
-        if (!$sender->hasPermission("cplot.admin.spawn") && !$plot->isPlotOwner($sender)) {
-            self::sendMessage($sender, ["prefix", "spawn.notPlotOwner"]);
-            return;
+        if (!$sender->hasPermission("cplot.admin.spawn")) {
+            if (!$plot->hasPlotOwner()) {
+                self::sendMessage($sender, ["prefix", "spawn.noPlotOwner"]);
+                return;
+            }
+            if (!$plot->isPlotOwner($sender)) {
+                self::sendMessage($sender, ["prefix", "spawn.notPlotOwner"]);
+                return;
+            }
         }
 
         $location = $sender->getLocation();

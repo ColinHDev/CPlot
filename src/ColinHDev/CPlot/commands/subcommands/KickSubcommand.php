@@ -10,13 +10,14 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use function count;
 
 class KickSubcommand extends AsyncSubcommand {
 
-    public function executeAsync(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "kick.senderNotOnline"]);
             return;
@@ -38,9 +39,15 @@ class KickSubcommand extends AsyncSubcommand {
             return;
         }
 
-        if (!$sender->hasPermission("cplot.admin.kick") && !$plot->isPlotOwner($sender)) {
-            self::sendMessage($sender, ["prefix", "kick.notPlotOwner"]);
-            return;
+        if (!$sender->hasPermission("cplot.admin.kick")) {
+            if (!$plot->hasPlotOwner()) {
+                self::sendMessage($sender, ["prefix", "kick.noPlotOwner"]);
+                return;
+            }
+            if (!$plot->isPlotOwner($sender)) {
+                self::sendMessage($sender, ["prefix", "kick.notPlotOwner"]);
+                return;
+            }
         }
 
         if ($args[0] === "*") {
@@ -72,36 +79,34 @@ class KickSubcommand extends AsyncSubcommand {
             }
 
         } else {
-            foreach($args as $arg) {
-                $target = $sender->getServer()->getPlayerByPrefix($arg);
-                if (!($target instanceof Player)) {
-                    self::sendMessage($sender, ["prefix", "kick.playerNotOnline" => $arg]);
-                    continue;
-                }
-                if ($target === $sender) {
-                    self::sendMessage($sender, ["prefix", "kick.senderIsTarget"]);
-                    continue;
-                }
-                if (!$plot->isOnPlot($target->getPosition())) {
-                    self::sendMessage($sender, ["prefix", "kick.playerNotOnPlot" => $target->getName()]);
-                    continue;
-                }
-                if ($target->hasPermission("cplot.bypass.kick")) {
-                    self::sendMessage($sender, ["prefix", "kick.hasBypassPermission" => $target->getName()]);
-                    continue;
-                }
-                $event = new PlayerKickFromPlotEvent($plot, $sender, $target);
-                $event->call();
-                if ($event->isCancelled()) {
-                    continue;
-                }
-                if (!$plot->teleportTo($target, TeleportDestination::ROAD_EDGE)) {
-                    self::sendMessage($sender, ["prefix", "kick.couldNotTeleport" => $target->getName()]);
-                    continue;
-                }
-                self::sendMessage($sender, ["prefix", "kick.success.playerNames" => $target->getName()]);
-                self::sendMessage($target, ["prefix", "kick.targetMessage" => $sender->getName()]);
+            $target = $sender->getServer()->getPlayerByPrefix($args[0]);
+            if (!($target instanceof Player)) {
+                self::sendMessage($sender, ["prefix", "kick.playerNotOnline" => $args[0]]);
+                return;
             }
+            if ($target === $sender) {
+                self::sendMessage($sender, ["prefix", "kick.senderIsTarget"]);
+                return;
+            }
+            if (!$plot->isOnPlot($target->getPosition())) {
+                self::sendMessage($sender, ["prefix", "kick.playerNotOnPlot" => $target->getName()]);
+                return;
+            }
+            if ($target->hasPermission("cplot.bypass.kick")) {
+                self::sendMessage($sender, ["prefix", "kick.hasBypassPermission" => $target->getName()]);
+                return;
+            }
+            $event = new PlayerKickFromPlotEvent($plot, $sender, $target);
+            $event->call();
+            if ($event->isCancelled()) {
+                return;
+            }
+            if (!$plot->teleportTo($target, TeleportDestination::ROAD_EDGE)) {
+                self::sendMessage($sender, ["prefix", "kick.couldNotTeleport" => $target->getName()]);
+                return;
+            }
+            self::sendMessage($sender, ["prefix", "kick.success.playerNames" => $target->getName()]);
+            self::sendMessage($target, ["prefix", "kick.targetMessage" => $sender->getName()]);
         }
     }
 }

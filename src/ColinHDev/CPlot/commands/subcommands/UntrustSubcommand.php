@@ -15,13 +15,14 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use poggit\libasynql\SqlError;
 
 class UntrustSubcommand extends AsyncSubcommand {
 
-    public function executeAsync(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "untrust.senderNotOnline"]);
             return;
@@ -37,7 +38,6 @@ class UntrustSubcommand extends AsyncSubcommand {
             if ($player instanceof Player) {
                 $playerName = $player->getName();
             } else {
-                self::sendMessage($sender, ["prefix", "untrust.playerNotOnline" => $args[0]]);
                 $playerName = $args[0];
                 $player = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
             }
@@ -96,7 +96,8 @@ class UntrustSubcommand extends AsyncSubcommand {
         try {
             yield from DataProvider::getInstance()->deletePlotPlayer($plot, $playerData->getPlayerID());
         } catch (SqlError $exception) {
-            self::sendMessage($sender, ["prefix", "untrust.saveError" => $exception->getMessage()]);
+            self::sendMessage($sender, ["prefix", "untrust.saveError"]);
+            $sender->getServer()->getLogger()->logException($exception);
             return;
         } finally {
             PlotLockManager::getInstance()->unlockPlots($lock, $plot);

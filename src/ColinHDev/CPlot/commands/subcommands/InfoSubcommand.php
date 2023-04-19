@@ -10,13 +10,14 @@ use ColinHDev\CPlot\plots\flags\InternalFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use function array_filter;
 
 class InfoSubcommand extends AsyncSubcommand {
 
-    public function executeAsync(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "info.senderNotOnline"]);
             return;
@@ -41,12 +42,12 @@ class InfoSubcommand extends AsyncSubcommand {
             /** @phpstan-var string $addTime */
             $addTime = self::translateForCommandSender(
                 $sender,
-                ["info.owners.time.format" => explode(".", date("d.m.Y.H.i.s", $plotOwner->getAddTime()))]
+                ["format.time" => explode(".", date("Y.m.d.H.i.s", $plotOwner->getAddTime()))]
             );
             $plotOwnerData[] = self::translateForCommandSender(
                 $sender,
-                ["info.owners.list" => [
-                    $playerData->getPlayerName() ?? "Error: " . ($playerData->getPlayerXUID() ?? $playerData->getPlayerUUID() ?? $playerData->getPlayerID()),
+                ["format.list.playerWithTime" => [
+                    $playerData->getPlayerName() ?? "Unknown",
                     $addTime
                 ]]
             );
@@ -55,7 +56,7 @@ class InfoSubcommand extends AsyncSubcommand {
             self::sendMessage($sender, ["info.owners.none"]);
         } else {
             /** @phpstan-var string $separator */
-            $separator = self::translateForCommandSender($sender, "info.owners.list.separator");
+            $separator = self::translateForCommandSender($sender, "format.list.playerWithTime.separator");
             $list = implode($separator, $plotOwnerData);
             self::sendMessage(
                 $sender,
