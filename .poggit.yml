@@ -12,5 +12,5 @@ projects:
     - src: sof3/await-generator/await-generator
       version: ^3.4.3
     - src: ColinHDev/libAsyncEvent/libAsyncEvent
-      version: ^1.0.0
+      version: ^1.0.1
 ...
