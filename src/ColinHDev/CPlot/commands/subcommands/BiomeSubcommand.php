@@ -24,13 +24,13 @@ use SOFe\AwaitGenerator\Await;
 class BiomeSubcommand extends AsyncSubcommand {
 
     /** @phpstan-var array<string, BiomeIds::*> */
-    private array $biomes;
+    private static array $biomes;
 
     public function __construct(string $key) {
         parent::__construct($key);
         /** @phpstan-var array<string, BiomeIds::*> $biomes */
         $biomes = (new ReflectionClass(BiomeIds::class))->getConstants();
-        $this->biomes = $biomes;
+        self::$biomes = $biomes;
     }
 
     public function executeAsync(CommandSender $sender, array $args) : Generator {
@@ -48,14 +48,14 @@ class BiomeSubcommand extends AsyncSubcommand {
         }
 
         if (count($args) === 0) {
-            $biomeName = $this->getBiomeNameByID($world->getBiomeId($position->getFloorX(), $position->getFloorY(), $position->getFloorZ()));
+            $biomeName = self::getBiomeNameByID($world->getBiomeId($position->getFloorX(), $position->getFloorY(), $position->getFloorZ()));
             self::sendMessage($sender, ["prefix", "biome.plotBiome" => $biomeName]);
             return;
         }
         $biomeName = strtoupper(implode("_", $args));
-        if (!isset($this->biomes[$biomeName])) {
+        if (!isset(self::$biomes[$biomeName])) {
             $biomes = [];
-            foreach ($this->biomes as $name => $ID) {
+            foreach (self::$biomes as $name => $ID) {
                 $biomes[] = self::translateForCommandSender(
                     $sender,
                     ["biome.list" => $name]
@@ -73,7 +73,7 @@ class BiomeSubcommand extends AsyncSubcommand {
             );
             return;
         }
-        $biomeID = $this->biomes[$biomeName];
+        $biomeID = self::$biomes[$biomeName];
 
         $plot = yield Plot::awaitFromPosition($position);
         if (!($plot instanceof Plot)) {
@@ -123,8 +123,8 @@ class BiomeSubcommand extends AsyncSubcommand {
     /**
      * This method is used to get the name of a biome by its ID.
      */
-    private function getBiomeNameByID(int $biomeID) : string {
-        $biomeName = array_search($biomeID, $this->biomes, true);
+    public static function getBiomeNameByID(int $biomeID) : string {
+        $biomeName = array_search($biomeID, self::$biomes, true);
         if (!is_string($biomeName)) {
             $biomeName = "Unknown (BiomeID: " . $biomeID . ")";
         }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\AsyncSubcommand;
-use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\InternalFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
@@ -13,7 +12,7 @@ use ColinHDev\CPlot\worlds\WorldSettings;
 use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use function array_filter;
+use function implode;
 
 class InfoSubcommand extends AsyncSubcommand {
 
@@ -23,98 +22,62 @@ class InfoSubcommand extends AsyncSubcommand {
             return;
         }
 
-        if (!((yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName())) instanceof WorldSettings)) {
+        $position = $sender->getPosition();
+        $world = $position->getWorld();
+        if (!((yield DataProvider::getInstance()->awaitWorld($world->getFolderName())) instanceof WorldSettings)) {
             self::sendMessage($sender, ["prefix", "info.noPlotWorld"]);
             return;
         }
 
-        $plot = yield Plot::awaitFromPosition($sender->getPosition());
+        $plot = yield Plot::awaitFromPosition($position);
         if (!($plot instanceof Plot)) {
             self::sendMessage($sender, ["prefix", "info.noPlot"]);
             return;
         }
-
-        self::sendMessage($sender, ["prefix", "info.plot" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
-
-        $plotOwnerData = [];
-        foreach ($plot->getPlotOwners() as $plotOwner) {
-            $playerData = $plotOwner->getPlayerData();
-            /** @phpstan-var string $addTime */
-            $addTime = self::translateForCommandSender(
-                $sender,
-                ["format.time" => explode(".", date("Y.m.d.H.i.s", $plotOwner->getAddTime()))]
-            );
-            $plotOwnerData[] = self::translateForCommandSender(
-                $sender,
-                ["format.list.playerWithTime" => [
-                    $playerData->getPlayerName() ?? "Unknown",
-                    $addTime
-                ]]
-            );
+        
+        $owners = [];
+        foreach($plot->getPlotOwners() as $plotPlayer) {
+            $owners[] = self::translateForCommandSender($sender, ["format.list.player" => $plotPlayer->getPlayerData()->getPlayerName() ?? "Unknown"]);
         }
-        if (count($plotOwnerData) === 0) {
-            self::sendMessage($sender, ["info.owners.none"]);
-        } else {
-            /** @phpstan-var string $separator */
-            $separator = self::translateForCommandSender($sender, "format.list.playerWithTime.separator");
-            $list = implode($separator, $plotOwnerData);
-            self::sendMessage(
-                $sender,
-                ["info.owners" => $list]
-            );
+        $trusted = [];
+        foreach($plot->getPlotTrusted() as $plotPlayer) {
+            $trusted[] = self::translateForCommandSender($sender, ["format.list.player" => $plotPlayer->getPlayerData()->getPlayerName() ?? "Unknown"]);
+        }
+        $helpers = [];
+        foreach($plot->getPlotHelpers() as $plotPlayer) {
+            $helpers[] = self::translateForCommandSender($sender, ["format.list.player" => $plotPlayer->getPlayerData()->getPlayerName() ?? "Unknown"]);
+        }
+        $denied = [];
+        foreach($plot->getPlotDenied() as $plotPlayer) {
+            $denied[] = self::translateForCommandSender($sender, ["format.list.player" => $plotPlayer->getPlayerData()->getPlayerName() ?? "Unknown"]);
         }
 
-        if ($plot->getAlias() !== null) {
-            self::sendMessage($sender, ["info.plotAlias" => $plot->getAlias()]);
-        } else {
-            self::sendMessage($sender, ["info.plotAlias.none"]);
+        $flags = [];
+        foreach($plot->getFlags() as $flagID => $flag) {
+            if (!$flag instanceof InternalFlag) {
+                $flags[] = self::translateForCommandSender($sender, ["format.list.flagWithValue" => [$flagID, $flag->toReadableString()]]);
+            }
         }
 
-        $mergedPlotsCount = count($plot->getMergePlots());
-        if ($mergedPlotsCount > 0) {
-            self::sendMessage($sender, ["info.merges" => $mergedPlotsCount]);
-        } else {
-            self::sendMessage($sender, ["info.merges.none"]);
-        }
-
-        $trustedCount = count($plot->getPlotTrusted());
-        if ($trustedCount > 0) {
-            self::sendMessage($sender, ["info.trusted" => $trustedCount]);
-        } else {
-            self::sendMessage($sender, ["info.trusted.none"]);
-        }
-        $helpersCount = count($plot->getPlotHelpers());
-        if ($helpersCount > 0) {
-            self::sendMessage($sender, ["info.helpers" => $helpersCount]);
-        } else {
-            self::sendMessage($sender, ["info.helpers.none"]);
-        }
-        $deniedCount = count($plot->getPlotDenied());
-        if ($deniedCount > 0) {
-            self::sendMessage($sender, ["info.denied" => $deniedCount]);
-        } else {
-            self::sendMessage($sender, ["info.denied.none"]);
-        }
-
-        $flagsCount = count(
-            array_filter(
-                $plot->getFlags(),
-                static function(Flag $flag) : bool {
-                    return !($flag instanceof InternalFlag);
-                }
-            )
+        $playerSeparator = self::translateForCommandSender($sender, "format.list.player.separator");
+        
+        self::sendMessage(
+            $sender,
+            [
+                "prefix", 
+                "info.success" => [
+                    $plot->getWorldName(), 
+                    $plot->getX(), 
+                    $plot->getZ(),
+                    implode($playerSeparator, $owners),
+                    $plot->getAlias() ?? "---",
+                    BiomeSubcommand::getBiomeNameByID($world->getBiomeId($position->getFloorX(), $position->getFloorY(), $position->getFloorZ())),
+                    implode($playerSeparator, $trusted),
+                    implode($playerSeparator, $helpers),
+                    implode($playerSeparator, $denied),
+                    implode(self::translateForCommandSender($sender, "format.list.flagWithValue.separator"), $flags),
+                ]
+            ]
         );
-        if ($flagsCount > 0) {
-            self::sendMessage($sender, ["info.flags" => $flagsCount]);
-        } else {
-            self::sendMessage($sender, ["info.flags.none"]);
-        }
-
-        $ratesCount = count($plot->getPlotRates());
-        if ($ratesCount > 0) {
-            self::sendMessage($sender, ["info.rates" => $ratesCount]);
-        } else {
-            self::sendMessage($sender, ["info.rates.none"]);
-        }
     }
 }
