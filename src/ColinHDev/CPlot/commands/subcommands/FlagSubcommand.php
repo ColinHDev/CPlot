@@ -15,14 +15,16 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use function assert;
+use function implode;
 use function is_array;
 
 class FlagSubcommand extends AsyncSubcommand {
 
-    public function executeAsync(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (count($args) === 0) {
             self::sendMessage($sender, ["prefix", "flag.usage"]);
             return;
@@ -30,29 +32,21 @@ class FlagSubcommand extends AsyncSubcommand {
 
         switch ($args[0]) {
             case "list":
-                self::sendMessage($sender, ["prefix", "flag.list.success"]);
-                $separator = self::translateForCommandSender(
-                    $sender,
-                    "flag.list.success.separator"
-                );
                 $flagsByCategory = [];
                 foreach (FlagManager::getInstance()->getFlags() as $flag) {
                     if ($flag instanceof InternalFlag) {
                         continue;
                     }
-                    $flagCategory = self::translateForCommandSender(
-                        $sender,
-                        "flag.category." . $flag->getID()
-                    );
-                    if (!isset($flagsByCategory[$flagCategory])) {
-                        $flagsByCategory[$flagCategory] = $flag->getID();
-                    } else {
-                        $flagsByCategory[$flagCategory] .= $separator . $flag->getID();
-                    }
+                    $flagCategory = self::translateForCommandSender($sender, "flag.category." . $flag->getID());
+                    $flagsByCategory[$flagCategory][] = self::translateForCommandSender($sender, ["format.list.flag" => $flag->getID()]);
                 }
+                $categories = [];
+                $flagSeparator = self::translateForCommandSender($sender, "format.list.flag.separator");
                 foreach ($flagsByCategory as $category => $flags) {
-                    self::sendMessage($sender, ["flag.list.success.format" => [$category, $flags]]);
+                    $categories[$category] = implode($flagSeparator, $flags);
                 }
+                $flagCategorySeparator = self::translateForCommandSender($sender, "format.list.flagCategory.separator");
+                self::sendMessage($sender, ["prefix", "flag.list.success" => implode($flagCategorySeparator, $categories)]);
                 break;
 
             case "info":
