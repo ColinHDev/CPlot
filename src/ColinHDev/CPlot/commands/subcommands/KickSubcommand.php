@@ -57,7 +57,7 @@ class KickSubcommand extends AsyncSubcommand {
                     continue;
                 }
                 if ($target->hasPermission("cplot.bypass.kick")) {
-                    self::sendMessage($sender, ["prefix", "kick.hasBypassPermission" => $target->getName()]);
+                    self::sendMessage($sender, ["prefix", "kick.kickError" => $target->getName()]);
                     continue;
                 }
                 $event = new PlayerKickFromPlotEvent($plot, $sender, $target);
@@ -66,7 +66,7 @@ class KickSubcommand extends AsyncSubcommand {
                     continue;
                 }
                 if (!$plot->teleportTo($target, TeleportDestination::ROAD_EDGE)) {
-                    self::sendMessage($sender, ["prefix", "kick.couldNotTeleport" => $target->getName()]);
+                    self::sendMessage($sender, ["prefix", "kick.kickError" => $target->getName()]);
                     continue;
                 }
                 $kickedPlayers++;
@@ -93,7 +93,7 @@ class KickSubcommand extends AsyncSubcommand {
                 return;
             }
             if ($target->hasPermission("cplot.bypass.kick")) {
-                self::sendMessage($sender, ["prefix", "kick.hasBypassPermission" => $target->getName()]);
+                self::sendMessage($sender, ["prefix", "kick.kickError" => $target->getName()]);
                 return;
             }
             $event = new PlayerKickFromPlotEvent($plot, $sender, $target);
@@ -102,10 +102,10 @@ class KickSubcommand extends AsyncSubcommand {
                 return;
             }
             if (!$plot->teleportTo($target, TeleportDestination::ROAD_EDGE)) {
-                self::sendMessage($sender, ["prefix", "kick.couldNotTeleport" => $target->getName()]);
+                self::sendMessage($sender, ["prefix", "kick.kickError" => $target->getName()]);
                 return;
             }
-            self::sendMessage($sender, ["prefix", "kick.success.playerNames" => $target->getName()]);
+            self::sendMessage($sender, ["prefix", "kick.success.playerName" => $target->getName()]);
             self::sendMessage($target, ["prefix", "kick.targetMessage" => $sender->getName()]);
         }
     }
