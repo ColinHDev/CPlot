@@ -8,7 +8,7 @@ projects:
     - src: dktapps-pm-pl/pmforms/pmforms
       version: ^2.0.0
     - src: poggit/libasynql/libasynql
-      version: 4.1.7
+      version: 4.1.6
     - src: sof3/await-generator/await-generator
       version: ^3.4.3
     - src: ColinHDev/libAsyncEvent/libAsyncEvent

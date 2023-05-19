@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3f889659cb867703070aba3b80b9e0af",
+    "content-hash": "5bea43b58bdd929ca925a83e62f55928",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -1309,16 +1309,16 @@
         },
         {
             "name": "sof3/libasynql",
-            "version": "4.1.7",
+            "version": "4.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/poggit/libasynql.git",
-                "reference": "2095422bd94f49bf57f72553a8e023f636dafdd1"
+                "reference": "1f456a3578f3ce6fb302b0ce9f440fdf690af920"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/poggit/libasynql/zipball/2095422bd94f49bf57f72553a8e023f636dafdd1",
-                "reference": "2095422bd94f49bf57f72553a8e023f636dafdd1",
+                "url": "https://api.github.com/repos/poggit/libasynql/zipball/1f456a3578f3ce6fb302b0ce9f440fdf690af920",
+                "reference": "1f456a3578f3ce6fb302b0ce9f440fdf690af920",
                 "shasum": ""
             },
             "require": {
@@ -1329,12 +1329,6 @@
                 "libasynql/cli/fx.php"
             ],
             "type": "library",
-            "extra": {
-                "virion": {
-                    "spec": "3.0",
-                    "namespace-root": "poggit\\libasynql"
-                }
-            },
             "autoload": {
                 "psr-0": {
                     "poggit\\libasynql\\": "libasynql/src/"
@@ -1352,9 +1346,9 @@
             ],
             "support": {
                 "issues": "https://github.com/poggit/libasynql/issues",
-                "source": "https://github.com/poggit/libasynql/tree/4.1.7"
+                "source": "https://github.com/poggit/libasynql/tree/4.1.6"
             },
-            "time": "2023-04-22T07:49:00+00:00"
+            "time": "2023-04-08T13:38:47+00:00"
         },
         {
             "name": "sof3/rwlock",
