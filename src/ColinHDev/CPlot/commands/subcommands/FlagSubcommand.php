@@ -136,7 +136,7 @@ class FlagSubcommand extends AsyncSubcommand {
 
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
                 if (!($flag instanceof Flag) || $flag instanceof InternalFlag) {
-                    self::sendMessage($sender, ["prefix", "flag.set.noFlag" => $args[1]]);
+                    self::sendMessage($sender, ["prefix", "flag.set.flagNotFound" => $args[1]]);
                     break;
                 }
                 if (!$sender->hasPermission("cplot.flag." . $flag->getID())) {
@@ -149,7 +149,7 @@ class FlagSubcommand extends AsyncSubcommand {
                 try {
                     $parsedValue = $flag->parse($arg);
                 } catch (AttributeParseException) {
-                    self::sendMessage($sender, ["prefix", "flag.set.parseError" => [$arg, $flag->getID()]]);
+                    self::sendMessage($sender, ["prefix", "flag.set.parseError" => [$flag->getID(), $arg]]);
                     break;
                 }
 
@@ -231,7 +231,7 @@ class FlagSubcommand extends AsyncSubcommand {
                         $parsedValues = $flag->parse($arg);
                         assert(is_array($parsedValues));
                     } catch (AttributeParseException) {
-                        self::sendMessage($sender, ["prefix", "flag.remove.parseError" => [$arg, $flag->getID()]]);
+                        self::sendMessage($sender, ["prefix", "flag.remove.parseError" => [$flag->getID(), $arg]]);
                         break;
                     }
 
@@ -252,14 +252,14 @@ class FlagSubcommand extends AsyncSubcommand {
                         $flag = $flag->createInstance($values);
                         $plot->addFlag($flag);
                         yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
-                        self::sendMessage($sender, ["prefix", "flag.remove.value.success" => [$flag->getID(), $flag->createInstance($removedValues)->toReadableString()]]);
+                        self::sendMessage($sender, ["prefix", "flag.remove.success.value" => [$flag->getID(), $flag->createInstance($removedValues)->toReadableString()]]);
                         break;
                     }
                 }
 
                 $plot->removeFlag($flag->getID());
                 yield DataProvider::getInstance()->deletePlotFlag($plot, $flag->getID());
-                self::sendMessage($sender, ["prefix", "flag.remove.flag.success" => $flag->getID()]);
+                self::sendMessage($sender, ["prefix", "flag.remove.success.flag" => $flag->getID()]);
                 break;
 
             default:
