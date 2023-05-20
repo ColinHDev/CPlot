@@ -19,7 +19,11 @@ use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
 use RuntimeException;
 use function count;
+use function date;
+use function explode;
 use function implode;
+use function is_dir;
+use function mkdir;
 use function pathinfo;
 use function scandir;
 use const DIRECTORY_SEPARATOR;
@@ -46,13 +50,17 @@ class SchematicSubcommand extends Subcommand {
                             if (!isset($fileData["extension"]) || $fileData["extension"] !== Schematic::FILE_EXTENSION) {
                                 continue;
                             }
-                            $files[] = $fileData["filename"];
+                            $files[] = self::translateForCommandSender($sender, ["format.list.schematic" => $fileData["filename"]]);
                         }
                     }
                     if (count($files) > 0) {
-                        $separator = self::translateForCommandSender($sender, "schematic.list.successSeparator");
-                        $list = implode($separator, $files);
-                        self::sendMessage($sender, ["prefix", "schematic.list.success" => $list]);
+                        self::sendMessage($sender, [
+                            "prefix", 
+                            "schematic.list.success" => implode(
+                                self::translateForCommandSender($sender, "format.list.schematic.separator"), 
+                                $files
+                            )
+                        ]);
                         break;
                     }
                 }
@@ -73,29 +81,21 @@ class SchematicSubcommand extends Subcommand {
                 try {
                     $schematic->loadFromFile();
                 } catch (RuntimeException) {
-                    self::sendMessage($sender, ["prefix", "schematic.info.loadSchematicError" => $args[1]]);
+                    self::sendMessage($sender, ["prefix", "schematic.info.loadError" => $args[1]]);
                     break;
                 }
-
-                self::sendMessage($sender, ["prefix", "schematic.info.success.head" => $args[1]]);
-                if ($schematic->getType() === SchematicTypes::TYPE_ROAD) {
-                    $typeString = "schematic.info.success.typeRoad";
-                } else if ($schematic->getType() === SchematicTypes::TYPE_PLOT) {
-                    $typeString = "schematic.info.success.typePlot";
-                } else {
-                    $typeString = "schematic.info.success.typeUnknown";
-                }
-                /** @phpstan-var string $creationTime */
-                $creationTime = self::translateForCommandSender(
-                    $sender,
-                    ["schematic.info.success.timeformat" => explode(".", date("d.m.Y.H.i.s", $schematic->getCreationTime()))]
-                );
-                /** @phpstan-var string $type */
-                $type = self::translateForCommandSender($sender, $typeString);
-                self::sendMessage(
-                    $sender,
-                    ["schematic.info.success.body" => [$creationTime, $type, $schematic->getRoadSize(), $schematic->getPlotSize()]]
-                );
+                self::sendMessage($sender, [
+                    "prefix", 
+                    "schematic.info.success" => [
+                        $args[1],
+                        self::translateForCommandSender(
+                            $sender, ["format.time" => explode(".", date("Y.m.d.H.i.s", $schematic->getCreationTime()))]
+                        ),
+                        $schematic->getType(),
+                        $schematic->getRoadSize(),
+                        $schematic->getPlotSize()
+                    ]
+                ]);
                 break;
 
             case "save":
@@ -109,13 +109,13 @@ class SchematicSubcommand extends Subcommand {
                 }
                 $schematicName = $args[1];
                 $dir = CPlot::getInstance()->getDataFolder() . "schematics";
-                if (!is_dir($dir)) {
+                if (!is_dir($dir) && mkdir($dir) === false) {
                     self::sendMessage($sender, ["prefix", "schematic.save.directoryNotFound"]);
                     break;
                 }
                 $file = $dir . DIRECTORY_SEPARATOR . $schematicName . "." . Schematic::FILE_EXTENSION;
                 if (file_exists($file)) {
-                    self::sendMessage($sender, ["prefix", "schematic.save.schematicAlreadyExists" => $schematicName]);
+                    self::sendMessage($sender, ["prefix", "schematic.save.schematicExists" => $schematicName]);
                     break;
                 }
                 $schematicType = strtolower($args[2]);
@@ -145,7 +145,7 @@ class SchematicSubcommand extends Subcommand {
                         Server::getInstance()->getLogger()->debug(
                             "Saving schematic from world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") \"" . $schematicName . "\" (" . $schematicType . ") with the size of " . $blocksCount . " blocks and a filesize of " . $fileSizeString . " (" . $fileSize . " B) took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ")."
                         );
-                        self::sendMessage($sender, ["prefix", "schematic.save.finish" => [$elapsedTimeString, $schematicName]]);
+                        self::sendMessage($sender, ["prefix", "schematic.save.finish" => [$schematicName, $elapsedTimeString]]);
                     },
                     null
                 );
@@ -178,7 +178,7 @@ class SchematicSubcommand extends Subcommand {
                     try {
                         $schematic->loadFromFile();
                     } catch (RuntimeException) {
-                        self::sendMessage($sender, ["prefix", "schematic.generate.loadSchematicError" => $args[2]]);
+                        self::sendMessage($sender, ["prefix", "schematic.generate.loadError" => $args[2]]);
                         break;
                     }
                     $worldSettings["schematicName"] = $schematic->getName();
