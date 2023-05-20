@@ -56,22 +56,20 @@ class FlagSubcommand extends AsyncSubcommand {
                 }
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
                 if (!($flag instanceof Flag) || $flag instanceof InternalFlag) {
-                    self::sendMessage($sender, ["prefix", "flag.info.noFlag" => $args[1]]);
+                    self::sendMessage($sender, ["prefix", "flag.info.flagNotFound" => $args[1]]);
                     break;
                 }
-                self::sendMessage($sender, ["prefix", "flag.info.flag" => $flag->getID()]);
-                self::sendMessage($sender, ["flag.info.ID" => $flag->getID()]);
-                /** @phpstan-var string $category */
-                $category = self::translateForCommandSender($sender, "flag.category." . $flag->getID());
-                self::sendMessage($sender, ["flag.info.category" => $category]);
-                /** @phpstan-var string $description */
-                $description = self::translateForCommandSender($sender, "flag.description." . $flag->getID());
-                self::sendMessage($sender, ["flag.info.description" => $description]);
-                /** @phpstan-var string $type */
-                $type = self::translateForCommandSender($sender, "flag.type." . $flag->getID());
-                self::sendMessage($sender, ["flag.info.type" => $type]);
-                self::sendMessage($sender, ["flag.info.example" => $flag->getExample()]);
-                self::sendMessage($sender, ["flag.info.default" => $flag->toReadableString()]);
+                self::sendMessage($sender, [
+                    "prefix", 
+                    "flag.info.success" => [
+                        $flag->getID(), 
+                        self::translateForCommandSender($sender, "flag.category." . $flag->getID()),
+                        self::translateForCommandSender($sender, "flag.description." . $flag->getID()),
+                        self::translateForCommandSender($sender, "flag.type." . $flag->getID()),
+                        $flag->getExample(),
+                        $flag->toReadableString()
+                    ]
+                ]);
                 break;
 
             case "here":
