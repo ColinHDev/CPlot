@@ -19,6 +19,7 @@ use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use function assert;
+use function count;
 use function implode;
 use function is_array;
 
@@ -86,28 +87,20 @@ class FlagSubcommand extends AsyncSubcommand {
                     self::sendMessage($sender, ["prefix", "flag.here.noPlot"]);
                     break;
                 }
-                $flags = $plot->getFlags();
+                $flags = [];
+                foreach($plot->getFlags() as $flagID => $flag) {
+                    if (!$flag instanceof InternalFlag) {
+                        $flags[] = self::translateForCommandSender($sender, ["format.list.flagWithValue" => [$flagID, $flag->toReadableString()]]);
+                    }
+                }
                 if (count($flags) === 0) {
                     self::sendMessage($sender, ["prefix", "flag.here.noFlags"]);
                     break;
                 }
-                $flagStrings = [];
-                foreach ($flags as $ID => $flag) {
-                    if ($flag instanceof InternalFlag) {
-                        continue;
-                    }
-                    $flagStrings[] = self::translateForCommandSender(
-                        $sender,
-                        ["flag.here.success.format" => [$ID, $flag->toReadableString()]]
-                    );
-                }
-                /** @phpstan-var string $separator */
-                $separator = self::translateForCommandSender($sender, "flag.here.success.separator");
-                $list = implode($separator, $flagStrings);
-                self::sendMessage(
-                    $sender,
-                    ["prefix", "flag.here.success" => $list]
-                );
+                self::sendMessage($sender, [
+                    "prefix", 
+                    "flag.here.success" => implode(self::translateForCommandSender($sender, "format.list.flagWithValue.separator"), $flags)
+                ]);
                 break;
 
             case "set":
