@@ -4,7 +4,7 @@
   "require": {
     "pocketmine/pocketmine-mp": "dev-major-next as 4.0.0",
     "sof3/await-generator": "^3.4.3",
-    "sof3/libasynql": "4.1.0",
+    "sof3/libasynql": "4.1.6",
     "sofe/capital": "^0.1.2",
     "cooldogedev/bedrockeconomy": "^2.0.8",
     "colinhdev/libasyncevent": "^1.0.0",
