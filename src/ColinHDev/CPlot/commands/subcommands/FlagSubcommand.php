@@ -39,14 +39,16 @@ class FlagSubcommand extends AsyncSubcommand {
                         continue;
                     }
                     $flagCategory = self::translateForCommandSender($sender, "flag.category." . $flag->getID());
-                    $flagsByCategory[$flagCategory][] = self::translateForCommandSender($sender, ["format.list.flag" => $flag->getID()]);
+                    $flagsByCategory[$flagCategory][] = self::translateForCommandSender($sender, ["format.list.attribute" => $flag->getID()]);
                 }
                 $categories = [];
-                $flagSeparator = self::translateForCommandSender($sender, "format.list.flag.separator");
+                $flagSeparator = self::translateForCommandSender($sender, "format.list.attribute.separator");
                 foreach ($flagsByCategory as $category => $flags) {
-                    $categories[$category] = implode($flagSeparator, $flags);
+                    $categories[] = self::translateForCommandSender($sender, [
+                        "format.list.category" => [$category, implode($flagSeparator, $flags)]
+                    ]);
                 }
-                $flagCategorySeparator = self::translateForCommandSender($sender, "format.list.flagCategory.separator");
+                $flagCategorySeparator = self::translateForCommandSender($sender, "format.list.category.separator");
                 self::sendMessage($sender, ["prefix", "flag.list.success" => implode($flagCategorySeparator, $categories)]);
                 break;
 
@@ -90,7 +92,7 @@ class FlagSubcommand extends AsyncSubcommand {
                 $flags = [];
                 foreach($plot->getFlags() as $flagID => $flag) {
                     if (!$flag instanceof InternalFlag) {
-                        $flags[] = self::translateForCommandSender($sender, ["format.list.flagWithValue" => [$flagID, $flag->toReadableString()]]);
+                        $flags[] = self::translateForCommandSender($sender, ["format.list.attributeWithValue" => [$flagID, $flag->toReadableString()]]);
                     }
                 }
                 if (count($flags) === 0) {
@@ -99,7 +101,7 @@ class FlagSubcommand extends AsyncSubcommand {
                 }
                 self::sendMessage($sender, [
                     "prefix", 
-                    "flag.here.success" => implode(self::translateForCommandSender($sender, "format.list.flagWithValue.separator"), $flags)
+                    "flag.here.success" => implode(self::translateForCommandSender($sender, "format.list.attributeWithValue.separator"), $flags)
                 ]);
                 break;
 

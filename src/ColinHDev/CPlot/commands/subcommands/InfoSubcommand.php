@@ -55,7 +55,7 @@ class InfoSubcommand extends AsyncSubcommand {
         $flags = [];
         foreach($plot->getFlags() as $flagID => $flag) {
             if (!$flag instanceof InternalFlag) {
-                $flags[] = self::translateForCommandSender($sender, ["format.list.flagWithValue" => [$flagID, $flag->toReadableString()]]);
+                $flags[] = self::translateForCommandSender($sender, ["format.list.attributeWithValue" => [$flagID, $flag->toReadableString()]]);
             }
         }
 
@@ -75,7 +75,7 @@ class InfoSubcommand extends AsyncSubcommand {
                     implode($playerSeparator, $trusted),
                     implode($playerSeparator, $helpers),
                     implode($playerSeparator, $denied),
-                    implode(self::translateForCommandSender($sender, "format.list.flagWithValue.separator"), $flags),
+                    implode(self::translateForCommandSender($sender, "format.list.attributeWithValue.separator"), $flags),
                 ]
             ]
         );
