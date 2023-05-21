@@ -9,6 +9,8 @@ use ColinHDev\CPlot\event\PlotWorldGenerateAsyncEvent;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\generator\PlotGenerator;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
+use JsonException;
 use pocketmine\command\CommandSender;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
@@ -18,9 +20,9 @@ use poggit\libasynql\SqlError;
 class GenerateSubcommand extends AsyncSubcommand {
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
-    public function executeAsync(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (count($args) === 0) {
             self::sendMessage($sender, ["prefix", "generate.usage"]);
             return;
@@ -53,7 +55,8 @@ class GenerateSubcommand extends AsyncSubcommand {
         try {
             yield from DataProvider::getInstance()->addWorld($worldName, $event->getWorldSettings());
         } catch(SqlError $exception) {
-            self::sendMessage($sender, ["prefix", "generate.saveError" => $exception->getMessage()]);
+            self::sendMessage($sender, ["prefix", "generate.saveError"]);
+            $sender->getServer()->getLogger()->logException($exception);
             return;
         }
         self::sendMessage($sender, ["prefix", "generate.success" => $worldName]);

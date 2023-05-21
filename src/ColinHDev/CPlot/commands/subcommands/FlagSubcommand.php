@@ -15,14 +15,17 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use function assert;
+use function count;
+use function implode;
 use function is_array;
 
 class FlagSubcommand extends AsyncSubcommand {
 
-    public function executeAsync(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (count($args) === 0) {
             self::sendMessage($sender, ["prefix", "flag.usage"]);
             return;
@@ -30,29 +33,23 @@ class FlagSubcommand extends AsyncSubcommand {
 
         switch ($args[0]) {
             case "list":
-                self::sendMessage($sender, ["prefix", "flag.list.success"]);
-                $separator = self::translateForCommandSender(
-                    $sender,
-                    "flag.list.success.separator"
-                );
                 $flagsByCategory = [];
                 foreach (FlagManager::getInstance()->getFlags() as $flag) {
                     if ($flag instanceof InternalFlag) {
                         continue;
                     }
-                    $flagCategory = self::translateForCommandSender(
-                        $sender,
-                        "flag.category." . $flag->getID()
-                    );
-                    if (!isset($flagsByCategory[$flagCategory])) {
-                        $flagsByCategory[$flagCategory] = $flag->getID();
-                    } else {
-                        $flagsByCategory[$flagCategory] .= $separator . $flag->getID();
-                    }
+                    $flagCategory = self::translateForCommandSender($sender, "flag.category." . $flag->getID());
+                    $flagsByCategory[$flagCategory][] = self::translateForCommandSender($sender, ["format.list.attribute" => $flag->getID()]);
                 }
+                $categories = [];
+                $flagSeparator = self::translateForCommandSender($sender, "format.list.attribute.separator");
                 foreach ($flagsByCategory as $category => $flags) {
-                    self::sendMessage($sender, ["flag.list.success.format" => [$category, $flags]]);
+                    $categories[] = self::translateForCommandSender($sender, [
+                        "format.list.category" => [$category, implode($flagSeparator, $flags)]
+                    ]);
                 }
+                $flagCategorySeparator = self::translateForCommandSender($sender, "format.list.category.separator");
+                self::sendMessage($sender, ["prefix", "flag.list.success" => implode($flagCategorySeparator, $categories)]);
                 break;
 
             case "info":
@@ -62,22 +59,20 @@ class FlagSubcommand extends AsyncSubcommand {
                 }
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
                 if (!($flag instanceof Flag) || $flag instanceof InternalFlag) {
-                    self::sendMessage($sender, ["prefix", "flag.info.noFlag" => $args[1]]);
+                    self::sendMessage($sender, ["prefix", "flag.info.flagNotFound" => $args[1]]);
                     break;
                 }
-                self::sendMessage($sender, ["prefix", "flag.info.flag" => $flag->getID()]);
-                self::sendMessage($sender, ["flag.info.ID" => $flag->getID()]);
-                /** @phpstan-var string $category */
-                $category = self::translateForCommandSender($sender, "flag.category." . $flag->getID());
-                self::sendMessage($sender, ["flag.info.category" => $category]);
-                /** @phpstan-var string $description */
-                $description = self::translateForCommandSender($sender, "flag.description." . $flag->getID());
-                self::sendMessage($sender, ["flag.info.description" => $description]);
-                /** @phpstan-var string $type */
-                $type = self::translateForCommandSender($sender, "flag.type." . $flag->getID());
-                self::sendMessage($sender, ["flag.info.type" => $type]);
-                self::sendMessage($sender, ["flag.info.example" => $flag->getExample()]);
-                self::sendMessage($sender, ["flag.info.default" => $flag->toReadableString()]);
+                self::sendMessage($sender, [
+                    "prefix", 
+                    "flag.info.success" => [
+                        $flag->getID(), 
+                        self::translateForCommandSender($sender, "flag.category." . $flag->getID()),
+                        self::translateForCommandSender($sender, "flag.description." . $flag->getID()),
+                        self::translateForCommandSender($sender, "flag.type." . $flag->getID()),
+                        $flag->getExample(),
+                        $flag->toReadableString()
+                    ]
+                ]);
                 break;
 
             case "here":
@@ -94,28 +89,20 @@ class FlagSubcommand extends AsyncSubcommand {
                     self::sendMessage($sender, ["prefix", "flag.here.noPlot"]);
                     break;
                 }
-                $flags = $plot->getFlags();
+                $flags = [];
+                foreach($plot->getFlags() as $flagID => $flag) {
+                    if (!$flag instanceof InternalFlag) {
+                        $flags[] = self::translateForCommandSender($sender, ["format.list.attributeWithValue" => [$flagID, $flag->toReadableString()]]);
+                    }
+                }
                 if (count($flags) === 0) {
                     self::sendMessage($sender, ["prefix", "flag.here.noFlags"]);
                     break;
                 }
-                $flagStrings = [];
-                foreach ($flags as $ID => $flag) {
-                    if ($flag instanceof InternalFlag) {
-                        continue;
-                    }
-                    $flagStrings[] = self::translateForCommandSender(
-                        $sender,
-                        ["flag.here.success.format" => [$ID, $flag->toReadableString()]]
-                    );
-                }
-                /** @phpstan-var string $separator */
-                $separator = self::translateForCommandSender($sender, "flag.here.success.separator");
-                $list = implode($separator, $flagStrings);
-                self::sendMessage(
-                    $sender,
-                    ["prefix", "flag.here.success" => $list]
-                );
+                self::sendMessage($sender, [
+                    "prefix", 
+                    "flag.here.success" => implode(self::translateForCommandSender($sender, "format.list.attributeWithValue.separator"), $flags)
+                ]);
                 break;
 
             case "set":
@@ -151,7 +138,7 @@ class FlagSubcommand extends AsyncSubcommand {
 
                 $flag = FlagManager::getInstance()->getFlagByID($args[1]);
                 if (!($flag instanceof Flag) || $flag instanceof InternalFlag) {
-                    self::sendMessage($sender, ["prefix", "flag.set.noFlag" => $args[1]]);
+                    self::sendMessage($sender, ["prefix", "flag.set.flagNotFound" => $args[1]]);
                     break;
                 }
                 if (!$sender->hasPermission("cplot.flag." . $flag->getID())) {
@@ -164,7 +151,7 @@ class FlagSubcommand extends AsyncSubcommand {
                 try {
                     $parsedValue = $flag->parse($arg);
                 } catch (AttributeParseException) {
-                    self::sendMessage($sender, ["prefix", "flag.set.parseError" => [$arg, $flag->getID()]]);
+                    self::sendMessage($sender, ["prefix", "flag.set.parseError" => [$flag->getID(), $arg]]);
                     break;
                 }
 
@@ -246,7 +233,7 @@ class FlagSubcommand extends AsyncSubcommand {
                         $parsedValues = $flag->parse($arg);
                         assert(is_array($parsedValues));
                     } catch (AttributeParseException) {
-                        self::sendMessage($sender, ["prefix", "flag.remove.parseError" => [$arg, $flag->getID()]]);
+                        self::sendMessage($sender, ["prefix", "flag.remove.parseError" => [$flag->getID(), $arg]]);
                         break;
                     }
 
@@ -267,14 +254,14 @@ class FlagSubcommand extends AsyncSubcommand {
                         $flag = $flag->createInstance($values);
                         $plot->addFlag($flag);
                         yield DataProvider::getInstance()->savePlotFlag($plot, $flag);
-                        self::sendMessage($sender, ["prefix", "flag.remove.value.success" => [$flag->getID(), $flag->createInstance($removedValues)->toReadableString()]]);
+                        self::sendMessage($sender, ["prefix", "flag.remove.success.value" => [$flag->getID(), $flag->createInstance($removedValues)->toReadableString()]]);
                         break;
                     }
                 }
 
                 $plot->removeFlag($flag->getID());
                 yield DataProvider::getInstance()->deletePlotFlag($plot, $flag->getID());
-                self::sendMessage($sender, ["prefix", "flag.remove.flag.success" => $flag->getID()]);
+                self::sendMessage($sender, ["prefix", "flag.remove.success.flag" => $flag->getID()]);
                 break;
 
             default:

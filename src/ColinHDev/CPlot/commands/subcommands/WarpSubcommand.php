@@ -9,12 +9,13 @@ use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 class WarpSubcommand extends AsyncSubcommand {
 
-    public function executeAsync(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "warp.senderNotOnline"]);
             return;
@@ -76,7 +77,7 @@ class WarpSubcommand extends AsyncSubcommand {
         }
 
         if (!($plot->teleportTo($sender))) {
-            self::sendMessage($sender, ["prefix", "warp.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);
+            self::sendMessage($sender, ["prefix", "warp.teleportError"]);
             return;
         }
         self::sendMessage($sender, ["prefix", "warp.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ()]]);

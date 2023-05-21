@@ -42,7 +42,6 @@ class AddSubcommand extends AsyncSubcommand {
                 $playerXUID = $player->getXuid();
                 $playerName = $player->getName();
             } else {
-                self::sendMessage($sender, ["prefix", "add.playerNotOnline" => $args[0]]);
                 $playerName = $args[0];
                 $playerData = yield DataProvider::getInstance()->awaitPlayerDataByName($playerName);
                 if (!($playerData instanceof PlayerData)) {
@@ -114,7 +113,8 @@ class AddSubcommand extends AsyncSubcommand {
         try {
             yield from DataProvider::getInstance()->savePlotPlayer($plot, $plotPlayer);
         } catch (SqlError $exception) {
-            self::sendMessage($sender, ["prefix", "add.saveError" => $exception->getMessage()]);
+            self::sendMessage($sender, ["prefix", "add.saveError"]);
+            $sender->getServer()->getLogger()->logException($exception);
             return;
         } finally {
             PlotLockManager::getInstance()->unlockPlots($lock, $plot);

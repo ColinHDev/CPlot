@@ -8,12 +8,13 @@ use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 class HelpersSubcommand extends AsyncSubcommand {
 
-    public function executeAsync(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "helpers.senderNotOnline"]);
             return;
@@ -34,12 +35,12 @@ class HelpersSubcommand extends AsyncSubcommand {
             $plotPlayerData = $plotPlayer->getPlayerData();
             $addTime = self::translateForCommandSender(
                 $sender,
-                ["helpers.success.list.addTime.format" => explode(".", date("d.m.Y.H.i.s", $plotPlayer->getAddTime()))]
+                ["format.time" => explode(".", date("Y.m.d.H.i.s", $plotPlayer->getAddTime()))]
             );
             $helperData[] = self::translateForCommandSender(
                 $sender,
-                ["helpers.success.list" => [
-                    $plotPlayerData->getPlayerName() ?? "Error: " . ($plotPlayerData->getPlayerXUID() ?? $plotPlayerData->getPlayerUUID() ?? $plotPlayerData->getPlayerID()),
+                ["format.list.playerWithTime" => [
+                    $plotPlayerData->getPlayerName() ?? "Unknown",
                     $addTime
                 ]]
             );
@@ -50,7 +51,7 @@ class HelpersSubcommand extends AsyncSubcommand {
         }
 
         /** @phpstan-var string $separator */
-        $separator = self::translateForCommandSender($sender, "helpers.success.list.separator");
+        $separator = self::translateForCommandSender($sender, "format.list.playerWithTime.separator");
         $list = implode($separator, $helperData);
         self::sendMessage(
             $sender,

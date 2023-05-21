@@ -13,9 +13,6 @@ class HelpSubcommand extends Subcommand {
 
     private PlotCommand $command;
 
-    /**
-     * @throws \JsonException
-     */
     public function __construct(string $key, PlotCommand $command) {
         parent::__construct($key);
         $this->command = $command;
@@ -58,12 +55,12 @@ class HelpSubcommand extends Subcommand {
             $description = self::translateForCommandSender($sender, $subcommand->getName() . ".description");
             $subcommandsOnPage[] = self::translateForCommandSender(
                 $sender,
-                ["help.success.list" => [$subcommand->getName(), $description]]
+                ["format.list.commandWithDescription" => [$subcommand->getName(), $description]]
             );
         }
 
         /** @phpstan-var string $separator */
-        $separator = self::translateForCommandSender($sender, "help.success.list.separator");
+        $separator = self::translateForCommandSender($sender, "format.list.commandWithDescription.separator");
         $list = implode($separator, $subcommandsOnPage);
         self::sendMessage(
             $sender,
