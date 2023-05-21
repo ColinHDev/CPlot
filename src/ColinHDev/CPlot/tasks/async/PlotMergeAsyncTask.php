@@ -49,17 +49,13 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
 
         $schematicRoad = null;
         if ($worldSettings->getRoadSchematic() !== "default") {
-            $schematicRoad = new Schematic($worldSettings->getRoadSchematic(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getRoadSchematic() . "." . Schematic::FILE_EXTENSION);
-            if (!$schematicRoad->loadFromFile()) {
-                $schematicRoad = null;
-            }
+            $schematicRoad = new Schematic("plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getRoadSchematic() . "." . Schematic::FILE_EXTENSION);
+            $schematicRoad->loadFromFile();
         }
         $schematicMergeRoad = null;
         if ($worldSettings->getMergeRoadSchematic() !== "default") {
-            $schematicMergeRoad = new Schematic($worldSettings->getRoadSchematic(), "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getRoadSchematic() . "." . Schematic::FILE_EXTENSION);
-            if (!$schematicMergeRoad->loadFromFile()) {
-                $schematicMergeRoad = null;
-            }
+            $schematicMergeRoad = new Schematic("plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $worldSettings->getRoadSchematic() . "." . Schematic::FILE_EXTENSION);
+            $schematicMergeRoad->loadFromFile();
         }
 
         $world = $this->getChunkManager();
@@ -81,28 +77,28 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             $explorer->moveTo($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $explorer->currentSubChunk->setFullBlock(
+                                $explorer->currentSubChunk->setBlockStateId(
                                     $xInChunk,
                                     $y & 0x0f,
                                     $zInChunk,
-                                    $schematicMergeRoad->getFullBlock($xRaster, $y, $zRaster)
+                                    $schematicMergeRoad->getBlockStateID($xRaster, $y, $zRaster)
                                 );
                             }
                         }
                     } else {
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                             if ($y === $world->getMinY()) {
-                                $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
+                                $fullBlock = $worldSettings->getPlotBottomBlock()->getStateId();
                             } else if ($y === $worldSettings->getGroundSize()) {
-                                $fullBlock = $worldSettings->getPlotFloorBlock()->getFullId();
+                                $fullBlock = $worldSettings->getPlotFloorBlock()->getStateId();
                             } else if ($y < $worldSettings->getGroundSize()) {
-                                $fullBlock = $worldSettings->getPlotFillBlock()->getFullId();
+                                $fullBlock = $worldSettings->getPlotFillBlock()->getStateId();
                             } else {
                                 $fullBlock = 0;
                             }
                             $explorer->moveTo($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $explorer->currentSubChunk->setFullBlock(
+                                $explorer->currentSubChunk->setBlockStateId(
                                     $xInChunk,
                                     $y & 0x0f,
                                     $zInChunk,
@@ -121,17 +117,17 @@ class PlotMergeAsyncTask extends ChunkModifyingAsyncTask {
                     $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
                     for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
                         if ($y === $world->getMinY()) {
-                            $fullBlock = $worldSettings->getPlotBottomBlock()->getFullId();
+                            $fullBlock = $worldSettings->getPlotBottomBlock()->getStateId();
                         } else if ($y === $worldSettings->getGroundSize() + 1) {
-                            $fullBlock = $worldSettings->getBorderBlock()->getFullId();
+                            $fullBlock = $worldSettings->getBorderBlock()->getStateId();
                         } else if ($y <= $worldSettings->getGroundSize()) {
-                            $fullBlock = $worldSettings->getRoadBlock()->getFullId();
+                            $fullBlock = $worldSettings->getRoadBlock()->getStateId();
                         } else {
                             $fullBlock = 0;
                         }
                         $explorer->moveTo($x, $y, $z);
                         if ($explorer->currentSubChunk instanceof SubChunk) {
-                            $explorer->currentSubChunk->setFullBlock(
+                            $explorer->currentSubChunk->setBlockStateId(
                                 $xInChunk,
                                 $y & 0x0f,
                                 $zInChunk,

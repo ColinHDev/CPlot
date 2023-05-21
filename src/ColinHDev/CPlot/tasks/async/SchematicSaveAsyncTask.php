@@ -16,7 +16,6 @@ use pocketmine\world\World;
 
 class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
 
-    private string $name;
     private string $file;
     private string $type;
 
@@ -25,8 +24,7 @@ class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
 
     private string $tiles;
 
-    public function __construct(World $world, Vector3 $pos1, Vector3 $pos2, string $name, string $file, string $type, int $sizeRoad, int $sizePlot) {
-        $this->name = $name;
+    public function __construct(World $world, Vector3 $pos1, Vector3 $pos2, string $file, string $type, int $sizeRoad, int $sizePlot) {
         $this->file = $file;
         $this->type = $type;
         $this->sizeRoad = $sizeRoad;
@@ -58,7 +56,7 @@ class SchematicSaveAsyncTask extends ChunkFetchingAsyncTask {
     }
 
     public function onRun() : void {
-        $schematic = new Schematic($this->name, $this->file);
+        $schematic = new Schematic($this->file);
         $schematic->loadFromWorld($this->getChunkManager(), $this->type, $this->sizeRoad, $this->sizePlot);
         $schematic->save();
 

@@ -25,11 +25,15 @@ class PlayerLoginListener implements Listener {
             ),
             null,
             static function() use ($player) : void {
-                if ($player->isConnected()) {
-                    $player->kick(
-                        LanguageManager::getInstance()->getProvider()->translateString(["prefix", "player.login.savePlayerDataError"])
-                    );
+                if (!$player->isConnected()) {
+                    return;
                 }
+                $player->kick(
+                    LanguageManager::getInstance()->getProvider()->translateForCommandSender(
+                        $player,
+                        ["prefix", "playerLogin.savePlayerDataError"]
+                    )
+                );
             }
         );
     }

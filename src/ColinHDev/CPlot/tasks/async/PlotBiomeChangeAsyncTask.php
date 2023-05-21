@@ -48,7 +48,9 @@ class PlotBiomeChangeAsyncTask extends ChunkModifyingAsyncTask {
 
             foreach ($blockHashs[""] as $blockHash) {
                 World::getXZ($blockHash, $xInChunk, $zInChunk);
-                $chunk->setBiomeId($xInChunk, $zInChunk, $this->biomeID);
+                for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
+                    $chunk->setBiomeId($xInChunk, $y, $zInChunk, $this->biomeID);
+                }
             }
 
             $finishedChunks[$chunkHash] = FastChunkSerializer::serializeTerrain($chunk);

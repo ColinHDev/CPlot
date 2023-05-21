@@ -5,10 +5,22 @@ declare(strict_types=1);
 namespace ColinHDev\CPlot\utils;
 
 use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
-use pocketmine\block\UnknownBlock;
-use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
+use pocketmine\data\bedrock\block\BlockStateData;
+use pocketmine\data\bedrock\block\BlockStateDeserializeException;
+use pocketmine\data\bedrock\block\convert\UnsupportedBlockStateException;
 use pocketmine\item\StringToItemParser;
+use pocketmine\nbt\BigEndianNbtSerializer;
+use pocketmine\nbt\NbtDataException;
+use pocketmine\nbt\TreeRoot;
+use pocketmine\world\format\io\GlobalBlockStateHandlers;
+use function count;
+use function explode;
+use function get_class;
+use function is_string;
+use function preg_match_all;
+use function zlib_decode;
+use function zlib_encode;
+use const ZLIB_ENCODING_GZIP;
 
 class ParseUtils {
 
@@ -32,8 +44,20 @@ class ParseUtils {
         return null;
     }
 
+    /**
+     * @throws ParseException
+     */
     public static function parseStringFromBlock(Block $block) : string {
-        return (LegacyBlockIdToStringIdMap::getInstance()->legacyToString($block->getId()) ?? "minecraft:info_update") . ";" . $block->getId() . ";" . $block->getMeta();
+        $compressedTreeRoot = zlib_encode(
+            (new BigEndianNbtSerializer())->write(new TreeRoot(
+                GlobalBlockStateHandlers::getSerializer()->serialize($block->getStateId())->toNbt()
+            )),
+            ZLIB_ENCODING_GZIP
+        );
+        if (!is_string($compressedTreeRoot)) {
+            throw new ParseException("Block " . get_class($block) . " could not be parsed into a string.");
+        }
+        return $compressedTreeRoot;
     }
 
     /**
@@ -47,24 +71,72 @@ class ParseUtils {
     }
 
     public static function parseBlockFromString(string $blockIdentifier) : ?Block {
-        $item = StringToItemParser::getInstance()->parse($blockIdentifier);
-        $block = null;
-        if ($item !== null) {
-            $block = $item->getBlock();
-        } else {
-            $blockData = explode(";", $blockIdentifier);
-            if (count($blockData) === 3) {
-                $blockID = self::parseIntegerFromArray($blockData, 1);
-                $blockMeta = self::parseIntegerFromArray($blockData, 2);
-                if ($blockID !== null && $blockMeta !== null) {
-                    $block = BlockFactory::getInstance()->get($blockID, $blockMeta);
-                    if ($block instanceof UnknownBlock) {
-                        $block = null;
-                    }
-                }
-            }
+        $block = self::parseBlockFromBlockName($blockIdentifier);
+        if ($block !== null) {
+            return $block;
         }
-        return $block;
+        $block = self::parseBlockFromCompressedTreeRoot($blockIdentifier);
+        if ($block !== null) {
+            return $block;
+        }
+        return self::parseBlockFromIdMetaString($blockIdentifier);
+    }
+
+    private static function parseBlockFromBlockName(string $blockName) : ?Block {
+        $item = StringToItemParser::getInstance()->parse($blockName);
+        return $item?->getBlock();
+    }
+
+    private static function parseBlockFromCompressedTreeRoot(string $compressedTreeRoot) : ?Block {
+        $decompressed = zlib_decode($compressedTreeRoot);
+        if (!is_string($decompressed)) {
+            return null;
+        }
+        try {
+            $compoundTag = (new BigEndianNbtSerializer())->read($decompressed)->mustGetCompoundTag();
+        } catch (NbtDataException) {
+            return null;
+        }
+        try {
+            $blockState = BlockStateData::fromNbt($compoundTag);
+        } catch (BlockStateDeserializeException) {
+            return null;
+        }
+        try {
+            return GlobalBlockStateHandlers::getDeserializer()->deserializeBlock($blockState);
+        } catch (UnsupportedBlockStateException) {
+            return null;
+        }
+    }
+
+    private static function parseBlockFromIdMetaString(string $idMetaString) : ?Block {
+        $blockData = explode(";", $idMetaString);
+        if (count($blockData) !== 3) {
+            return null;
+        }
+        $blockID = self::parseIntegerFromArray($blockData, 1);
+        $blockMeta = self::parseIntegerFromArray($blockData, 2);
+        if ($blockID === null || $blockMeta === null) {
+            return null;
+        }
+        $blockState = GlobalBlockStateHandlers::getUpgrader()->upgradeIntIdMeta($blockID, $blockMeta);
+        if ($blockState === null) {
+            return null;
+        }
+        try {
+            return GlobalBlockStateHandlers::getDeserializer()->deserializeBlock($blockState);
+        } catch (UnsupportedBlockStateException) {
+            return null;
+        }
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function parseAliasesFromString(string $aliases) : array {
+        // Only allow letters and numbers to be used in aliases
+        preg_match_all('/\w+/', $aliases, $matches);
+        return $matches[0];
     }
 
 	/**

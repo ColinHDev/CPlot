@@ -4,32 +4,41 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\worlds\schematic;
 
+use InvalidArgumentException;
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
 use pocketmine\block\tile\Tile;
 use pocketmine\data\bedrock\BiomeIds;
+use pocketmine\data\bedrock\block\BlockStateData;
+use pocketmine\data\bedrock\block\BlockStateDeserializeException;
 use pocketmine\nbt\BigEndianNbtSerializer;
 use pocketmine\nbt\NbtDataException;
+use pocketmine\nbt\NbtException;
 use pocketmine\nbt\NoSuchTagException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\TreeRoot;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\world\ChunkManager;
 use pocketmine\world\format\Chunk;
+use pocketmine\world\format\io\GlobalBlockStateHandlers;
 use pocketmine\world\format\SubChunk;
 use pocketmine\world\utils\SubChunkExplorer;
 use pocketmine\world\World;
+use RuntimeException;
+use function file_exists;
+use function pathinfo;
+use const DIRECTORY_SEPARATOR;
 
 class Schematic implements SchematicTypes {
 
     public const FILE_EXTENSION = "cplot_schematic";
 
-    public const SCHEMATIC_VERSION = 2;
+    public const SCHEMATIC_VERSION = 4;
 
-    private string $name;
     private string $file;
     private int $version;
     private int $creationTime;
+    /** @phpstan-var SchematicTypes::* */
     private string $type;
 
     private int $roadSize;
@@ -39,21 +48,30 @@ class Schematic implements SchematicTypes {
     private array $biomeIDs = [];
 
     /** @var array<int, int> */
-    private array $blockIDs = [];
-    /** @var array<int, int> */
-    private array $blockMetas = [];
+    private array $blockStateIDs = [];
 
-    /** @phpstan-var array<int, CompoundTag> */
+    /** @var array<int, CompoundTag> */
     private array $tiles = [];
 
-    public function __construct(string $name, string $file) {
-        $this->name = $name;
+    /**
+     * @param string $file The file this schematic can be loaded from and /or will be saved to.
+     */
+    public function __construct(string $file) {
         $this->file = $file;
     }
 
-    public function save() : bool {
+    /**
+     * Saves the schematic to the given file.
+     * If the file already exists, it won't be overwritten but instead, the old file will be renamed for backup reasons,
+     * e.g. "road.cplot_schematic" will be renamed to "road_old.cplot_schematic".
+     */
+    public function save() : void {
         $nbt = new CompoundTag();
 
+        // Schematic versions indicate how the schematic file's contained data should be parsed. By calling the save()
+        // method, the schematic file is always written according to the current version, basically upgrading it.
+        // Because of that, we need to update its version, in case someone calls this on an old schematic.
+        $this->version = self::SCHEMATIC_VERSION;
         $nbt->setShort("Version", $this->version);
         $nbt->setLong("CreationTime", $this->creationTime);
         $nbt->setString("Type", $this->type);
@@ -64,8 +82,9 @@ class Schematic implements SchematicTypes {
         foreach ($this->biomeIDs as $coordinateHash => $biomeID) {
             $biomeNBT = new CompoundTag();
             $biomeNBT->setShort("ID", $biomeID);
-            World::getXZ($coordinateHash, $x, $z);
+            World::getBlockXYZ($coordinateHash, $x, $y, $z);
             $biomeNBT->setShort("X", $x);
+            $biomeNBT->setShort("Y", $y);
             $biomeNBT->setShort("Z", $z);
             $biomeTreeRoots[] = new TreeRoot($biomeNBT, (string) $coordinateHash);
         }
@@ -74,27 +93,11 @@ class Schematic implements SchematicTypes {
         $nbt->setByteArray("Biomes", $biomeTreeRootsEncoded);
 
         $blockTreeRoots = [];
-        $blockMetas = $this->blockMetas;
-        foreach ($this->blockIDs as $coordinateHash => $blockID) {
+        $blockStateSerializer = GlobalBlockStateHandlers::getSerializer();
+        foreach ($this->blockStateIDs as $coordinateHash => $blockStateID) {
             $blockNBT = new CompoundTag();
 
-            $blockNBT->setInt("ID", $this->blockIDs[$coordinateHash]);
-            if (isset($blockMetas[$coordinateHash])) {
-                $blockNBT->setShort("Meta", $blockMetas[$coordinateHash]);
-                unset($blockMetas[$coordinateHash]);
-            }
-
-            World::getBlockXYZ($coordinateHash, $x, $y, $z);
-            $blockNBT->setShort("X", $x);
-            $blockNBT->setShort("Y", $y);
-            $blockNBT->setShort("Z", $z);
-
-            $blockTreeRoots[] = new TreeRoot($blockNBT, (string) $coordinateHash);
-        }
-        foreach ($blockMetas as $coordinateHash => $blockMeta) {
-            $blockNBT = new CompoundTag();
-
-            $blockNBT->setShort("Meta", $blockMeta);
+            $blockNBT->setTag("NBT", $blockStateSerializer->serialize($blockStateID)->toNbt());
 
             World::getBlockXYZ($coordinateHash, $x, $y, $z);
             $blockNBT->setShort("X", $x);
@@ -115,110 +118,194 @@ class Schematic implements SchematicTypes {
         assert(is_string($tileTreeRootsEncoded));
         $nbt->setByteArray("TileEntities", $tileTreeRootsEncoded);
 
+        if (file_exists($this->file)) {
+            $pathInfo = pathinfo($this->file);
+            rename(
+                $this->file,
+                ($pathInfo["dirname"] ?? "") . DIRECTORY_SEPARATOR . $pathInfo["filename"] . "_old." . ($pathInfo["extension"] ?? self::FILE_EXTENSION)
+            );
+        }
         file_put_contents($this->file, zlib_encode((new BigEndianNbtSerializer())->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));
-        return true;
     }
 
-    public function loadFromFile() : bool {
+    /**
+     * Loads the schematic from the given file.
+     * @throws RuntimeException if the schematic could not be loaded
+     */
+    public function loadFromFile() : void {
         if (!file_exists($this->file)) {
-            return false;
+            throw new RuntimeException("Schematic file \"" . $this->file . "\" does not exist.");
         }
         $contents = file_get_contents($this->file);
         if ($contents === false) {
-            return false;
+            throw new RuntimeException("Schematic file \"" . $this->file . "\" could not be read.");
         }
         $decompressed = zlib_decode($contents);
         if ($decompressed === false) {
-            return false;
+            throw new RuntimeException("The data in the schematic file \"" . $this->file . "\" could not be decoded.");
         }
-
         try {
             $nbt = (new BigEndianNbtSerializer())->read($decompressed)->mustGetCompoundTag();
-        } catch (NbtDataException) {
-            return false;
+        } catch (NbtDataException $e) {
+            throw new RuntimeException("The data in the schematic file \"" . $this->file . "\" could not be deserialized into an NBT tag.", 0, $e);
         }
 
         $this->version = $nbt->getShort("Version");
-        switch ($this->version) {
-            case 1:
-                $this->creationTime = $nbt->getLong("CreationTime");
-                $this->type = $nbt->getString("Type");
-                $this->roadSize = $nbt->getShort("RoadSize");
-                $this->plotSize = $nbt->getShort("PlotSize");
+        if ($this->version < 1 || $this->version > self::SCHEMATIC_VERSION) {
+            throw new RuntimeException("The given version \"" . $this->version . "\" of the schematic \"" . $this->getName() . "\" is not supported.");
+        }
+        $this->creationTime = $nbt->getLong("CreationTime");
+        $type = $nbt->getString("Type");
+        if ($type !== SchematicTypes::TYPE_ROAD && $type !== SchematicTypes::TYPE_PLOT) {
+            throw new RuntimeException("The given type \"" . $type . "\" of the schematic \"" . $this->getName() . "\" is not supported.");
+        }
+        $this->type = $type;
+        $this->roadSize = $nbt->getShort("RoadSize");
+        $this->plotSize = $nbt->getShort("PlotSize");
 
-                foreach ($this->readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
-                    try {
-                        $blockNBT = $blockTreeRoot->mustGetCompoundTag();
-                        $coordinateHash = World::blockHash($blockNBT->getShort("X"), $blockNBT->getShort("Y"), $blockNBT->getShort("Z"));
-                    } catch (NbtDataException|\InvalidArgumentException) {
-                        continue;
-                    }
-                    // $this->blockStringIDs[$coordinateHash] = $blockNBT->getString("StringID");
-                    $this->blockIDs[$coordinateHash] = $blockNBT->getInt("ID");
-                    $this->blockMetas[$coordinateHash] = $blockNBT->getShort("Meta");
-                }
-                break;
-
+        // Loading biome data
+        switch($this->version) {
+            // Biome data was not stored in schematic version 1
             case 2:
-                $this->creationTime = $nbt->getLong("CreationTime");
-                $this->type = $nbt->getString("Type");
-                $this->roadSize = $nbt->getShort("RoadSize");
-                $this->plotSize = $nbt->getShort("PlotSize");
-
-                foreach ($this->readTreeRoots($nbt, "Biomes") as $biomeTreeRoots) {
+            case 3:
+                foreach (self::readTreeRoots($nbt, "Biomes") as $biomeTreeRoots) {
                     try {
                         $biomeNBT = $biomeTreeRoots->mustGetCompoundTag();
-                        $coordinateHash = World::chunkHash($biomeNBT->getShort("X"), $biomeNBT->getShort("Z"));
-                    } catch (NbtDataException) {
+                        $x = $biomeNBT->getShort("X");
+                        $z = $biomeNBT->getShort("Z");
+                    } catch (NbtException) {
+                        continue;
+                    }
+                    /** @phpstan-var BiomeIds::* $biomeID */
+                    $biomeID = $biomeNBT->getShort("ID");
+                    // version 2 and 3 only saved one biome ID for each x,z column
+                    for ($y = World::Y_MIN; $y < World::Y_MAX; $y++) {
+                        $this->biomeIDs[World::blockHash($x, $y, $z)] = $biomeID;
+                    }
+                }
+                break;
+            case 4:
+                foreach (self::readTreeRoots($nbt, "Biomes") as $biomeTreeRoots) {
+                    try {
+                        $biomeNBT = $biomeTreeRoots->mustGetCompoundTag();
+                        $coordinateHash = World::blockHash($biomeNBT->getShort("X"), $biomeNBT->getShort("Y"), $biomeNBT->getShort("Z"));
+                    } catch (NbtException) {
                         continue;
                     }
                     /** @phpstan-var BiomeIds::* $biomeID */
                     $biomeID = $biomeNBT->getShort("ID");
                     $this->biomeIDs[$coordinateHash] = $biomeID;
                 }
+                break;
+        }
 
-                foreach ($this->readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
+        // Loading block data
+        $blockDataUpgrader = GlobalBlockStateHandlers::getUpgrader();
+        $blockStateDeserializer = GlobalBlockStateHandlers::getDeserializer();
+        switch ($this->version) {
+            case 1:
+                foreach (self::readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
                     try {
                         $blockNBT = $blockTreeRoot->mustGetCompoundTag();
                         $coordinateHash = World::blockHash($blockNBT->getShort("X"), $blockNBT->getShort("Y"), $blockNBT->getShort("Z"));
-                    } catch (NbtDataException|\InvalidArgumentException) {
+                        $ID = $blockNBT->getInt("ID");
+                        $meta = $blockNBT->getShort("Meta");
+                    } catch (NbtException) {
                         continue;
                     }
+                    $blockStateData = $blockDataUpgrader->upgradeIntIdMeta($ID, $meta);
+                    if ($blockStateData instanceof BlockStateData) {
+                        try {
+                            $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize($blockStateData);
+                            continue;
+                        } catch(BlockStateDeserializeException) {
+                        }
+                    }
+                    $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize(GlobalBlockStateHandlers::getUnknownBlockStateData());
+                }
+                break;
+
+            case 2:
+                foreach (self::readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
+                    try {
+                        $blockNBT = $blockTreeRoot->mustGetCompoundTag();
+                        $coordinateHash = World::blockHash($blockNBT->getShort("X"), $blockNBT->getShort("Y"), $blockNBT->getShort("Z"));
+                    } catch (NbtException|InvalidArgumentException) {
+                        continue;
+                    }
+                    // Schematic version 2 did not store block IDs or Metas that were 0
                     try {
                         $ID = $blockNBT->getInt("ID");
-                    } catch (UnexpectedTagTypeException|NoSuchTagException) {
-                        $ID = BlockLegacyIds::AIR;
+                    } catch(UnexpectedTagTypeException|NoSuchTagException) {
+                        $ID = 0;
                     }
-                    $this->blockIDs[$coordinateHash] = $ID;
                     try {
                         $meta = $blockNBT->getShort("Meta");
-                    } catch (UnexpectedTagTypeException|NoSuchTagException) {
+                    } catch(UnexpectedTagTypeException|NoSuchTagException) {
                         $meta = 0;
                     }
-                    $this->blockMetas[$coordinateHash] = $meta;
+                    $blockStateData = $blockDataUpgrader->upgradeIntIdMeta($ID, $meta);
+                    if ($blockStateData instanceof BlockStateData) {
+                        try {
+                            $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize($blockStateData);
+                            continue;
+                        } catch(BlockStateDeserializeException) {
+                        }
+                    }
+                    $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize(GlobalBlockStateHandlers::getUnknownBlockStateData());
                 }
+                break;
 
-                foreach ($this->readTreeRoots($nbt, "TileEntities") as $tileTreeRoot) {
+            case 3:
+            case 4:
+                foreach (self::readTreeRoots($nbt, "Blocks") as $blockTreeRoot) {
+                    try {
+                        $blockNBT = $blockTreeRoot->mustGetCompoundTag();
+                        $coordinateHash = World::blockHash($blockNBT->getShort("X"), $blockNBT->getShort("Y"), $blockNBT->getShort("Z"));
+                        $tag = $blockNBT->getCompoundTag("NBT");
+                    } catch (NbtDataException) {
+                        continue;
+                    }
+                    if ($tag instanceof CompoundTag) {
+                        try {
+                            $blockStateData = BlockStateData::fromNbt($tag);
+                            $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize($blockStateData);
+                            continue;
+                        } catch(BlockStateDeserializeException) {
+                        }
+                    }
+                    $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize(GlobalBlockStateHandlers::getUnknownBlockStateData());
+                }
+                break;
+        }
+
+        // Loading tile data
+        switch($this->version) {
+            // Tile data was not stored in schematic version 1
+            case 2:
+            case 3:
+            case 4:
+                foreach (self::readTreeRoots($nbt, "TileEntities") as $tileTreeRoot) {
                     try {
                         $tileNBT = $tileTreeRoot->mustGetCompoundTag();
                         $coordinateHash = World::blockHash($tileNBT->getInt(Tile::TAG_X), $tileNBT->getInt(Tile::TAG_Y), $tileNBT->getInt(Tile::TAG_Z));
-                    } catch (NbtDataException|\InvalidArgumentException) {
+                    } catch (NbtException|InvalidArgumentException) {
                         continue;
                     }
                     $this->tiles[$coordinateHash] = $tileNBT;
                 }
                 break;
-
-            default:
-                return false;
         }
-        return true;
+        // To ensure that all schematics use the best available format, we always upgrade them to the latest version.
+        if ($this->version !== self::SCHEMATIC_VERSION) {
+            $this->save();
+        }
     }
 
     /**
      * @phpstan-return array<int, TreeRoot>
      */
-    private function readTreeRoots(CompoundTag $nbt, string $key) : array {
+    private static function readTreeRoots(CompoundTag $nbt, string $key) : array {
         try {
             $compressed = $nbt->getByteArray($key);
         } catch (UnexpectedTagTypeException|NoSuchTagException) {
@@ -238,6 +325,9 @@ class Schematic implements SchematicTypes {
     public function loadFromWorld(ChunkManager $world, string $type, int $roadSize, int $plotSize) : bool {
         $this->version = self::SCHEMATIC_VERSION;
         $this->creationTime = time();
+        if ($type !== SchematicTypes::TYPE_ROAD && $type !== SchematicTypes::TYPE_PLOT) {
+            return false;
+        }
         $this->type = $type;
         $this->roadSize = $roadSize;
         $this->plotSize = $plotSize;
@@ -248,85 +338,58 @@ class Schematic implements SchematicTypes {
             case SchematicTypes::TYPE_ROAD:
                 $totalSize = $this->roadSize + $this->plotSize;
                 for ($x = 0; $x < $totalSize; $x++) {
-                    $xInChunk = $x & SubChunk::COORD_MASK;
                     for ($z = 0; $z < $totalSize; $z++) {
-                        $zInChunk = $z & SubChunk::COORD_MASK;
                         if ($x >= $this->roadSize && $z >= $this->roadSize) {
                             continue 2;
                         }
-                        for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            $explorer->moveTo($x, $y, $z);
-                            $coordinateHash = World::blockHash($x, $y, $z);
-                            if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $blockFullID = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & SubChunk::COORD_MASK, $zInChunk);
-                                $blockID = $blockFullID >> Block::INTERNAL_METADATA_BITS;
-                                if ($blockID !== BlockLegacyIds::AIR) {
-                                    $this->blockIDs[$coordinateHash] = $blockID;
-                                }
-                                $blockMeta = $blockFullID & Block::INTERNAL_METADATA_MASK;
-                                if ($blockMeta !== 0) {
-                                    $this->blockMetas[$coordinateHash] = $blockMeta;
-                                }
-                            }
-                            if ($explorer->currentChunk instanceof Chunk) {
-                                $tile = $explorer->currentChunk->getTile($xInChunk, $y, $zInChunk);
-                                if ($tile instanceof Tile) {
-                                    $this->tiles[$coordinateHash] = $tile->saveNBT();
-                                }
-                            }
-                        }
-                        if ($explorer->currentChunk instanceof Chunk) {
-                            /** @phpstan-var BiomeIds::* $biomeID */
-                            $biomeID = $explorer->currentChunk->getBiomeId($xInChunk, $zInChunk);
-                            $this->biomeIDs[World::chunkHash($x, $z)] = $biomeID;
-                        }
+                        $this->loadFromColumn($world, $explorer, $x, $z);
                     }
                 }
                 break;
-
             case SchematicTypes::TYPE_PLOT:
                 for ($x = 0; $x < $this->plotSize; $x++) {
-                    $xInChunk = $x & SubChunk::COORD_MASK;
                     for ($z = 0; $z < $this->plotSize; $z++) {
-                        $zInChunk = $z & SubChunk::COORD_MASK;
-                        for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            $explorer->moveTo($x, $y, $z);
-                            $coordinateHash = World::blockHash($x, $y, $z);
-                            if ($explorer->currentSubChunk instanceof SubChunk) {
-                                $blockFullID = $explorer->currentSubChunk->getFullBlock($xInChunk, $y & SubChunk::COORD_MASK, $zInChunk);
-                                $blockID = $blockFullID >> Block::INTERNAL_METADATA_BITS;
-                                if ($blockID !== BlockLegacyIds::AIR) {
-                                    $this->blockIDs[$coordinateHash] = $blockID;
-                                }
-                                $blockMeta = $blockFullID & Block::INTERNAL_METADATA_MASK;
-                                if ($blockMeta !== 0) {
-                                    $this->blockMetas[$coordinateHash] = $blockMeta;
-                                }
-                            }
-                            if ($explorer->currentChunk instanceof Chunk) {
-                                $tile = $explorer->currentChunk->getTile($xInChunk, $y, $zInChunk);
-                                if ($tile instanceof Tile) {
-                                    $this->tiles[$coordinateHash] = $tile->saveNBT();
-                                }
-                            }
-                        }
-                        if ($explorer->currentChunk instanceof Chunk) {
-                            /** @phpstan-var BiomeIds::* $biomeID */
-                            $biomeID = $explorer->currentChunk->getBiomeId($xInChunk, $zInChunk);
-                            $this->biomeIDs[World::chunkHash($x, $z)] = $biomeID;
-                        }
+                        $this->loadFromColumn($world, $explorer, $x, $z);
                     }
                 }
                 break;
-
-            default:
-                return false;
         }
         return true;
     }
 
+    private function loadFromColumn(ChunkManager $world, SubChunkExplorer $explorer, int $x, int $z) : void {
+        $xInChunk = $x & SubChunk::COORD_MASK;
+        $zInChunk = $z & SubChunk::COORD_MASK;
+        for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
+            $explorer->moveTo($x, $y, $z);
+            $coordinateHash = World::blockHash($x, $y, $z);
+            if ($explorer->currentSubChunk instanceof SubChunk) {
+                $blockStateID = $explorer->currentSubChunk->getBlockStateId($xInChunk, $y & SubChunk::COORD_MASK, $zInChunk);
+                $blockID = $blockStateID >> Block::INTERNAL_STATE_DATA_BITS;
+                $blockMeta = $blockStateID & Block::INTERNAL_STATE_DATA_MASK;
+                // We don't store generic air blocks to reduce the size of our array and our schematic file.
+                if ($blockID === BlockTypeIds::AIR && $blockMeta === 0) {
+                    continue;
+                }
+                $this->blockStateIDs[$coordinateHash] = $blockStateID;
+            }
+            if ($explorer->currentChunk instanceof Chunk) {
+                $tile = $explorer->currentChunk->getTile($xInChunk, $y, $zInChunk);
+                if ($tile instanceof Tile) {
+                    $this->tiles[$coordinateHash] = $tile->saveNBT();
+                }
+                /** @phpstan-var BiomeIds::* $biomeID */
+                $biomeID = $explorer->currentChunk->getBiomeId($xInChunk, $y, $zInChunk);
+                $this->biomeIDs[$coordinateHash] = $biomeID;
+            }
+        }
+    }
+
+    /**
+     * Returns the name of this schematic. The schematic name matches the name of the schematic file and is solely based on it.
+     */
     public function getName() : string {
-        return $this->name;
+        return pathinfo($this->file, PATHINFO_FILENAME);
     }
 
     public function getFile() : string {
@@ -353,32 +416,17 @@ class Schematic implements SchematicTypes {
         return $this->plotSize;
     }
 
-    public function getBiomeID(int $x, int $z) : int {
-        return $this->biomeIDs[World::chunkHash($x, $z)] ?? BiomeIds::PLAINS;
+    public function getBiomeID(int $x, int $y, int $z) : int {
+        return $this->biomeIDs[World::blockHash($x, $y, $z)] ?? BiomeIds::PLAINS;
     }
 
-    public function getFullBlock(int $x, int $y, int $z) : int {
+    public function getBlockStateID(int $x, int $y, int $z) : int {
         $coordinateHash = World::blockHash($x, $y, $z);
-        switch ($this->version) {
-            case 1:
-                if (!isset($this->blockIDs[$coordinateHash])) {
-                    $fullID = BlockLegacyIds::AIR << Block::INTERNAL_METADATA_BITS;
-                    break;
-                }
-                $fullID = ($this->blockIDs[$coordinateHash] << Block::INTERNAL_METADATA_BITS) | $this->blockMetas[$coordinateHash];
-                break;
-
-            case 2:
-                $ID = $this->blockIDs[$coordinateHash] ?? BlockLegacyIds::AIR;
-                $meta = $this->blockMetas[$coordinateHash] ?? 0;
-                $fullID = $ID << Block::INTERNAL_METADATA_BITS | $meta;
-                break;
-
-            default:
-                $fullID = BlockLegacyIds::AIR << Block::INTERNAL_METADATA_BITS | 0;
-                break;
+        if (isset($this->blockStateIDs[$coordinateHash])) {
+            return $this->blockStateIDs[$coordinateHash];
         }
-        return $fullID;
+        static $airBlockStateID = (BlockTypeIds::AIR << Block::INTERNAL_STATE_DATA_BITS) | 0;
+        return $airBlockStateID;
     }
 
     public function getTileCompoundTag(int $x, int $y, int $z) : ?CompoundTag {
@@ -388,14 +436,13 @@ class Schematic implements SchematicTypes {
 
     public function calculateBiomeCount() : int {
         return match ($this->type) {
-            SchematicTypes::TYPE_ROAD => $this->roadSize ** 2 + 2 * $this->roadSize * $this->plotSize,
-            SchematicTypes::TYPE_PLOT => $this->plotSize ** 2,
-            default => 0
-        };
+                SchematicTypes::TYPE_ROAD => $this->roadSize ** 2 + 2 * $this->roadSize * $this->plotSize,
+                SchematicTypes::TYPE_PLOT => $this->plotSize ** 2
+        } * (World::Y_MAX - World::Y_MIN);
     }
 
     public function calculateBlockCount() : int {
-        return $this->calculateBiomeCount() * (World::Y_MAX - World::Y_MIN);
+        return $this->calculateBiomeCount();
     }
 
     public function calculateTileCount() : int {

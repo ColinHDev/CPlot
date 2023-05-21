@@ -58,17 +58,13 @@ class PlotGenerator extends Generator {
 
         $roadSchematicName = ParseUtils::parseStringFromArray($generatorOptions, "roadSchematic") ?? "default";
         if ($roadSchematicName !== "default") {
-            $roadSchematic = new Schematic($roadSchematicName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $roadSchematicName . "." . Schematic::FILE_EXTENSION);
-            if ($roadSchematic->loadFromFile()) {
-                $this->roadSchematic = $roadSchematic;
-            }
+            $this->roadSchematic = new Schematic("plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $roadSchematicName . "." . Schematic::FILE_EXTENSION);
+            $this->roadSchematic->loadFromFile();
         }
         $plotSchematicName = ParseUtils::parseStringFromArray($generatorOptions, "plotSchematic") ?? "default";
         if ($plotSchematicName !== "default") {
-            $plotSchematic = new Schematic($plotSchematicName, "plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $plotSchematicName . "." . Schematic::FILE_EXTENSION);
-            if ($plotSchematic->loadFromFile()) {
-                $this->plotSchematic = $plotSchematic;
-            }
+            $this->plotSchematic = new Schematic("plugin_data" . DIRECTORY_SEPARATOR . "CPlot" . DIRECTORY_SEPARATOR . "schematics" . DIRECTORY_SEPARATOR . $plotSchematicName . "." . Schematic::FILE_EXTENSION);
+            $this->plotSchematic->loadFromFile();
         }
 
         $this->roadSize = ParseUtils::parseIntegerFromArray($generatorOptions, "roadSize") ?? 7;
@@ -76,15 +72,15 @@ class PlotGenerator extends Generator {
         $this->groundSize = ParseUtils::parseIntegerFromArray($generatorOptions, "groundSize") ?? 64;
 
         $roadBlock = ParseUtils::parseBlockFromArray($generatorOptions, "roadBlock") ?? VanillaBlocks::OAK_PLANKS();
-        $this->roadBlockFullID = $roadBlock->getFullId();
+        $this->roadBlockFullID = $roadBlock->getStateId();
         $borderBlock = ParseUtils::parseBlockFromArray($generatorOptions, "borderBlock") ?? VanillaBlocks::STONE_SLAB();
-        $this->borderBlockFullID = $borderBlock->getFullId();
+        $this->borderBlockFullID = $borderBlock->getStateId();
         $plotFloorBlock = ParseUtils::parseBlockFromArray($generatorOptions, "plotFloorBlock") ?? VanillaBlocks::GRASS();
-        $this->plotFloorBlockFullID = $plotFloorBlock->getFullId();
+        $this->plotFloorBlockFullID = $plotFloorBlock->getStateId();
         $plotFillBlock = ParseUtils::parseBlockFromArray($generatorOptions, "plotFillBlock") ?? VanillaBlocks::DIRT();
-        $this->plotFillBlockFullID = $plotFillBlock->getFullId();
+        $this->plotFillBlockFullID = $plotFillBlock->getStateId();
         $plotBottomBlock = ParseUtils::parseBlockFromArray($generatorOptions, "plotBottomBlock") ?? VanillaBlocks::BEDROCK();
-        $this->plotBottomBlockFullID = $plotBottomBlock->getFullId();
+        $this->plotBottomBlockFullID = $plotBottomBlock->getStateId();
     }
 
     public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
@@ -105,9 +101,9 @@ class PlotGenerator extends Generator {
 
                 if ($x < $this->roadSize || $z < $this->roadSize) {
                     if ($this->roadSchematic !== null) {
-                        $chunk->setBiomeId($X, $Z, $this->roadSchematic->getBiomeID($x, $z));
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            $chunk->setFullBlock($X, $y, $Z, $this->roadSchematic->getFullBlock($x, $y, $z));
+                            $chunk->setBiomeId($X, $y, $Z, $this->roadSchematic->getBiomeID($x, $y, $z));
+                            $chunk->setBlockStateId($X, $y, $Z, $this->roadSchematic->getBlockStateID($x, $y, $z));
                             $tileNBT = $this->roadSchematic->getTileCompoundTag($x, $y, $z);
                             if ($tileNBT instanceof CompoundTag) {
                                 $tileNBT->setInt(Tile::TAG_X, $chunkX * 16 + $X);
@@ -117,24 +113,27 @@ class PlotGenerator extends Generator {
                             }
                         }
                     } else {
-                        $chunk->setBiomeId($X, $Z, $this->biomeID);
-                        for ($y = $world->getMinY(); $y <= $this->groundSize + 1; $y++) {
+                        for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
+                            $chunk->setBiomeId($X, $y, $Z, $this->biomeID);
+                            if ($y > $this->groundSize + 1) {
+                                continue;
+                            }
                             if ($y === $world->getMinY()) {
-                                $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
+                                $chunk->setBlockStateId($X, $y, $Z, $this->plotBottomBlockFullID);
                             } else if ($y === ($this->groundSize + 1)) {
                                 if (CoordinateUtils::isRasterPositionOnBorder($x, $z, $this->roadSize)) {
-                                    $chunk->setFullBlock($X, $y, $Z, $this->borderBlockFullID);
+                                    $chunk->setBlockStateId($X, $y, $Z, $this->borderBlockFullID);
                                 }
                             } else {
-                                $chunk->setFullBlock($X, $y, $Z, $this->roadBlockFullID);
+                                $chunk->setBlockStateId($X, $y, $Z, $this->roadBlockFullID);
                             }
                         }
                     }
                 } else {
                     if ($this->plotSchematic !== null) {
-                        $chunk->setBiomeId($X, $Z, $this->plotSchematic->getBiomeID($xPlot, $zPlot));
                         for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
-                            $chunk->setFullBlock($X, $y, $Z, $this->plotSchematic->getFullBlock($xPlot, $y, $zPlot));
+                            $chunk->setBiomeId($X, $y, $Z, $this->plotSchematic->getBiomeID($xPlot, $y, $zPlot));
+                            $chunk->setBlockStateId($X, $y, $Z, $this->plotSchematic->getBlockStateID($xPlot, $y, $zPlot));
                             $tileNBT = $this->plotSchematic->getTileCompoundTag($xPlot, $y, $zPlot);
                             if ($tileNBT instanceof CompoundTag) {
                                 $tileNBT->setInt(Tile::TAG_X, $chunkX * 16 + $X);
@@ -144,14 +143,17 @@ class PlotGenerator extends Generator {
                             }
                         }
                     } else {
-                        $chunk->setBiomeId($X, $Z, $this->biomeID);
-                        for ($y = $world->getMinY(); $y <= $this->groundSize; $y++) {
+                        for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
+                            $chunk->setBiomeId($X, $y, $Z, $this->biomeID);
+                            if ($y > $this->groundSize) {
+                                continue;
+                            }
                             if ($y === $world->getMinY()) {
-                                $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
+                                $chunk->setBlockStateId($X, $y, $Z, $this->plotBottomBlockFullID);
                             } else if ($y === $this->groundSize) {
-                                $chunk->setFullBlock($X, $y, $Z, $this->plotFloorBlockFullID);
+                                $chunk->setBlockStateId($X, $y, $Z, $this->plotFloorBlockFullID);
                             } else {
-                                $chunk->setFullBlock($X, $y, $Z, $this->plotFillBlockFullID);
+                                $chunk->setBlockStateId($X, $y, $Z, $this->plotFillBlockFullID);
                             }
                         }
                     }

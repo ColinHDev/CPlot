@@ -6,7 +6,6 @@ namespace ColinHDev\CPlot\commands\subcommands;
 
 use ColinHDev\CPlot\commands\PlotCommand;
 use ColinHDev\CPlot\commands\Subcommand;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\ResourceManager;
 use pocketmine\command\CommandSender;
 
@@ -14,15 +13,12 @@ class HelpSubcommand extends Subcommand {
 
     private PlotCommand $command;
 
-    /**
-     * @throws \JsonException
-     */
     public function __construct(string $key, PlotCommand $command) {
         parent::__construct($key);
         $this->command = $command;
     }
 
-    public function execute(CommandSender $sender, array $args) : \Generator {
+    public function execute(CommandSender $sender, array $args) : void {
         if (count($args) === 0) {
             $page = 1;
         } else if (is_numeric($args[0])) {
@@ -48,7 +44,6 @@ class HelpSubcommand extends Subcommand {
 
         ksort($subcommands, SORT_NATURAL | SORT_FLAG_CASE);
         $screenLineHeight = $sender->getScreenLineHeight();
-        assert($screenLineHeight >= 1);
         /** @var array<int, array<string, Subcommand>> $subcommands */
         $subcommands = array_chunk($subcommands, $screenLineHeight);
         /** @var int $page */
@@ -57,17 +52,17 @@ class HelpSubcommand extends Subcommand {
         $subcommandsOnPage = [];
         foreach ($subcommands[$page - 1] as $subcommand) {
             /** @phpstan-var string $description */
-            $description = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $subcommand->getName() . ".description");
-            $subcommandsOnPage[] = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender(
+            $description = self::translateForCommandSender($sender, $subcommand->getName() . ".description");
+            $subcommandsOnPage[] = self::translateForCommandSender(
                 $sender,
-                ["help.success.list" => [$subcommand->getName(), $description]]
+                ["format.list.commandWithDescription" => [$subcommand->getName(), $description]]
             );
         }
 
         /** @phpstan-var string $separator */
-        $separator = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, "help.success.list.separator");
+        $separator = self::translateForCommandSender($sender, "format.list.commandWithDescription.separator");
         $list = implode($separator, $subcommandsOnPage);
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+        self::sendMessage(
             $sender,
             [
                 "prefix",

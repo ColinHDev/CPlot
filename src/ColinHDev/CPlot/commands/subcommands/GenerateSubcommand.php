@@ -4,32 +4,32 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\event\PlotWorldGenerateAsyncEvent;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\worlds\generator\PlotGenerator;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
+use JsonException;
 use pocketmine\command\CommandSender;
 use pocketmine\math\Vector3;
-use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\WorldCreationOptions;
 use poggit\libasynql\SqlError;
 
-class GenerateSubcommand extends Subcommand {
+class GenerateSubcommand extends AsyncSubcommand {
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
-    public function execute(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (count($args) === 0) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.usage"]);
+            self::sendMessage($sender, ["prefix", "generate.usage"]);
             return;
         }
         $worldName = $args[0];
         if ($sender->getServer()->getWorldManager()->isWorldGenerated($worldName)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.worldExists" => $worldName]);
+            self::sendMessage($sender, ["prefix", "generate.worldExists" => $worldName]);
             return;
         }
 
@@ -49,15 +49,16 @@ class GenerateSubcommand extends Subcommand {
         $worldName = $event->getWorldName();
 
         if (!Server::getInstance()->getWorldManager()->generateWorld($worldName, $event->getWorldCreationOptions())) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.generateError"]);
+            self::sendMessage($sender, ["prefix", "generate.generateError"]);
             return;
         }
         try {
             yield from DataProvider::getInstance()->addWorld($worldName, $event->getWorldSettings());
         } catch(SqlError $exception) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.saveError" => $exception->getMessage()]);
+            self::sendMessage($sender, ["prefix", "generate.saveError"]);
+            $sender->getServer()->getLogger()->logException($exception);
             return;
         }
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "generate.success" => $worldName]);
+        self::sendMessage($sender, ["prefix", "generate.success" => $worldName]);
     }
 }

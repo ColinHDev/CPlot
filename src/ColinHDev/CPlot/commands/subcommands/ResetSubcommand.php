@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands\subcommands;
 
-use ColinHDev\CPlot\commands\Subcommand;
+use ColinHDev\CPlot\commands\AsyncSubcommand;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\lock\PlotLockManager;
 use ColinHDev\CPlot\plots\lock\ResetLockID;
@@ -12,7 +12,6 @@ use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\provider\EconomyProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\provider\utils\EconomyException;
 use ColinHDev\CPlot\tasks\async\PlotResetAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
@@ -21,40 +20,40 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use SOFe\AwaitGenerator\Await;
 
-class ResetSubcommand extends Subcommand {
+class ResetSubcommand extends AsyncSubcommand {
 
-    public function execute(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : \Generator {
         if (!$sender instanceof Player) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.senderNotOnline"]);
+            self::sendMessage($sender, ["prefix", "reset.senderNotOnline"]);
             return;
         }
 
         $worldSettings = yield DataProvider::getInstance()->awaitWorld($sender->getWorld()->getFolderName());
         if (!($worldSettings instanceof WorldSettings)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.noPlotWorld"]);
+            self::sendMessage($sender, ["prefix", "reset.noPlotWorld"]);
             return;
         }
 
         $plot = yield Plot::awaitFromPosition($sender->getPosition());
         if (!($plot instanceof Plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.noPlot"]);
+            self::sendMessage($sender, ["prefix", "reset.noPlot"]);
             return;
         }
 
         if (!$sender->hasPermission("cplot.admin.reset")) {
             if (!$plot->hasPlotOwner()) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.noPlotOwner"]);
+                self::sendMessage($sender, ["prefix", "reset.noPlotOwner"]);
                 return;
             }
             if (!$plot->isPlotOwner($sender)) {
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.notPlotOwner"]);
+                self::sendMessage($sender, ["prefix", "reset.notPlotOwner"]);
                 return;
             }
         }
 
         $lock = new ResetLockID();
         if (!PlotLockManager::getInstance()->lockPlotsSilent($lock, $plot)) {
-            yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.plotLocked"]);
+            self::sendMessage($sender, ["prefix", "reset.plotLocked"]);
             return;
         }
 
@@ -66,8 +65,8 @@ class ResetSubcommand extends Subcommand {
                 try {
                     yield from $economyProvider->awaitMoneyRemoval($sender, $price, $economyManager->getResetReason());
                 } catch(EconomyException $exception) {
-                    $errorMessage = yield from LanguageManager::getInstance()->getProvider()->awaitTranslationForCommandSender($sender, $exception->getLanguageKey());
-                    yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage(
+                    $errorMessage = self::translateForCommandSender($sender, $exception->getLanguageKey());
+                    self::sendMessage(
                         $sender, [
                             "prefix",
                             "reset.chargeMoneyError" => [
@@ -80,11 +79,11 @@ class ResetSubcommand extends Subcommand {
                     PlotLockManager::getInstance()->unlockPlots($lock, $plot);
                     return;
                 }
-                yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
+                self::sendMessage($sender, ["prefix", "reset.chargedMoney" => [$economyProvider->parseMoneyToString($price), $economyProvider->getCurrency()]]);
             }
         }
 
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.start"]);
+        self::sendMessage($sender, ["prefix", "reset.start"]);
         /** @phpstan-var PlotResetAsyncTask $task */
         $task = yield from Await::promise(
             static fn($resolve) => $plot->reset($resolve)
@@ -101,7 +100,7 @@ class ResetSubcommand extends Subcommand {
         Server::getInstance()->getLogger()->debug(
             "Resetting plot" . ($plotCount > 1 ? "s" : "") . " in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."
         );
-        yield from LanguageManager::getInstance()->getProvider()->awaitMessageSendage($sender, ["prefix", "reset.finish" => $elapsedTimeString]);
+        self::sendMessage($sender, ["prefix", "reset.finish" => $elapsedTimeString]);
         PlotLockManager::getInstance()->unlockPlots($lock, $plot);
     }
 }

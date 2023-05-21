@@ -34,6 +34,7 @@ use poggit\libasynql\SqlError;
 use SOFe\AwaitGenerator\Await;
 use Webmozart\PathUtil\Path;
 use function file_exists;
+use function count;
 use function is_int;
 use function is_string;
 use function time;
@@ -515,9 +516,15 @@ final class DataProvider {
             $playerID,
             new PlayerData($playerID, $playerUUID, $playerXUID, $playerName, time(), $playerData->getSettings())
         );
-        $this->caches[CacheIDs::CACHE_PLAYER_UUID]->cacheObject($playerUUID, $playerID);
-        $this->caches[CacheIDs::CACHE_PLAYER_XUID]->cacheObject($playerXUID, $playerID);
-        $this->caches[CacheIDs::CACHE_PLAYER_NAME]->cacheObject($playerName, $playerID);
+        if (is_string($playerUUID)) {
+            $this->caches[CacheIDs::CACHE_PLAYER_UUID]->cacheObject($playerUUID, $playerID);
+        }
+        if (is_string($playerXUID)) {
+            $this->caches[CacheIDs::CACHE_PLAYER_XUID]->cacheObject($playerXUID, $playerID);
+        }
+        if (is_string($playerName)) {
+            $this->caches[CacheIDs::CACHE_PLAYER_NAME]->cacheObject($playerName, $playerID);
+        }
     }
 
     /**
@@ -706,18 +713,18 @@ final class DataProvider {
             return null;
         }
         /** @phpstan-var WorldSettings|false $worldSettings */
-        $worldSettings = yield $this->awaitWorld($worldName);
+        $worldSettings = yield from $this->awaitWorld($worldName);
         assert($worldSettings instanceof WorldSettings);
         /** @phpstan-var string|null $plotAliases */
-        $plotAliases = yield $this->awaitPlotAliases($worldName, $x, $z);
+        $plotAliases = yield from $this->awaitPlotAliases($worldName, $x, $z);
         /** @phpstan-var array<string, MergePlot> $mergePlots */
-        $mergePlots = yield $this->awaitMergePlots($worldName, $worldSettings, $x, $z);
+        $mergePlots = yield from $this->awaitMergePlots($worldName, $worldSettings, $x, $z);
         /** @phpstan-var PlotPlayerContainer $plotPlayerContainer */
-        $plotPlayerContainer = yield $this->awaitPlotPlayers($worldName, $x, $z);
+        $plotPlayerContainer = yield from $this->awaitPlotPlayers($worldName, $x, $z);
         /** @phpstan-var array<string, Flag<mixed>> $plotFlags */
-        $plotFlags = yield $this->awaitPlotFlags($worldName, $x, $z);
+        $plotFlags = yield from $this->awaitPlotFlags($worldName, $x, $z);
         /** @phpstan-var array<string, PlotRate> $plotRates */
-        $plotRates = yield $this->awaitPlotRates($worldName, $x, $z);
+        $plotRates = yield from $this->awaitPlotRates($worldName, $x, $z);
         $plot = new Plot(
             $worldName, $worldSettings, $x, $z,
             $plotAliases,

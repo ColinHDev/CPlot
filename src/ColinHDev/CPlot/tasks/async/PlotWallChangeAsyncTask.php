@@ -21,7 +21,7 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
     private int $groundSize;
 
     public function __construct(Plot $plot, Block $block) {
-        $this->blockFullID = $block->getFullId();
+        $this->blockFullID = $block->getStateId();
         $worldSettings = $plot->getWorldSettings();
         $this->groundSize = $worldSettings->getGroundSize();
 
@@ -49,7 +49,7 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
                 for ($y = 1; $y <= $this->groundSize; $y++) {
                     $explorer->moveTo($x, $y, $z);
                     if ($explorer->currentSubChunk instanceof SubChunk) {
-                        $explorer->currentSubChunk->setFullBlock(
+                        $explorer->currentSubChunk->setBlockStateId(
                             $xInChunk,
                             ($y & 0x0f),
                             $zInChunk,
