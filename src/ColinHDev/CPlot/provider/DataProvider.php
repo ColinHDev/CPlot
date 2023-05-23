@@ -1361,8 +1361,8 @@ final class DataProvider {
                     // Although the array contains more data about the plot, we only need the following:
                     $records[] = [
                         "level" => $unparsedRecord["level"],
-                        "x" => $unparsedRecord["X"],
-                        "z" => $unparsedRecord["Z"],
+                        "X" => $unparsedRecord["X"],
+                        "Z" => $unparsedRecord["Z"],
                         "owner" => $unparsedRecord["owner"],
                         "helpers" => explode(",", $unparsedRecord["helpers"]),
                         "denied" => explode(",", $unparsedRecord["denied"]),
@@ -1376,7 +1376,7 @@ final class DataProvider {
                 $filename = "plots.yml";
             case 'json':
                 $data = new Config(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "Data", $filename ?? "plots.json"), Config::DETECT);
-                /** @var array{string: array{level: string, x: int, z: int, owner: string, helpers: string[], denied: string[], pvp: bool}} $records */
+                /** @var array{string: array{level: string, X: int, Z: int, owner: string, helpers: string[], denied: string[], pvp: bool}} $records */
                 $records = $data->get("plots");
                 /** @var array{string: string[]} $unparsedMergeRecords */
                 $unparsedMergeRecords = $data->get("merges");
@@ -1442,7 +1442,7 @@ final class DataProvider {
         foreach($records as $record) {
             // load plot
             /** @var Plot|null $plot */
-            $plot = yield $this->awaitPlot($record["level"], (int)$record["x"], (int)$record["z"]);
+            $plot = yield $this->awaitPlot($record["level"], (int)$record["X"], (int)$record["Z"]);
             if ($plot === null) {
                 continue;
             }
