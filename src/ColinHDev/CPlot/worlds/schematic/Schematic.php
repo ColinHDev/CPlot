@@ -213,13 +213,12 @@ class Schematic implements SchematicTypes {
                     } catch (NbtException) {
                         continue;
                     }
-                    $blockStateData = $blockDataUpgrader->upgradeIntIdMeta($ID, $meta);
-                    if ($blockStateData instanceof BlockStateData) {
-                        try {
-                            $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize($blockStateData);
-                            continue;
-                        } catch(BlockStateDeserializeException) {
-                        }
+                    try {
+                        $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize(
+                            $blockDataUpgrader->upgradeIntIdMeta($ID, $meta)
+                        );
+                        continue;
+                    } catch(BlockStateDeserializeException) {
                     }
                     $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize(GlobalBlockStateHandlers::getUnknownBlockStateData());
                 }
@@ -244,13 +243,12 @@ class Schematic implements SchematicTypes {
                     } catch(UnexpectedTagTypeException|NoSuchTagException) {
                         $meta = 0;
                     }
-                    $blockStateData = $blockDataUpgrader->upgradeIntIdMeta($ID, $meta);
-                    if ($blockStateData instanceof BlockStateData) {
-                        try {
-                            $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize($blockStateData);
-                            continue;
-                        } catch(BlockStateDeserializeException) {
-                        }
+                    try {
+                        $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize(
+                            $blockDataUpgrader->upgradeIntIdMeta($ID, $meta)
+                        );
+                        continue;
+                    } catch(BlockStateDeserializeException) {
                     }
                     $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize(GlobalBlockStateHandlers::getUnknownBlockStateData());
                 }

@@ -180,7 +180,6 @@ class SettingSubcommand extends AsyncSubcommand {
                     }
 
                     $values = $setting->getValue();
-                    assert(is_array($values));
                     foreach ($values as $key => $value) {
                         $valueString = $setting->createInstance([$value])->toString();
                         foreach ($parsedValues as $parsedValue) {

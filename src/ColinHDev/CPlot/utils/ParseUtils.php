@@ -119,12 +119,10 @@ class ParseUtils {
         if ($blockID === null || $blockMeta === null) {
             return null;
         }
-        $blockState = GlobalBlockStateHandlers::getUpgrader()->upgradeIntIdMeta($blockID, $blockMeta);
-        if ($blockState === null) {
-            return null;
-        }
         try {
-            return GlobalBlockStateHandlers::getDeserializer()->deserializeBlock($blockState);
+            return GlobalBlockStateHandlers::getDeserializer()->deserializeBlock(
+                GlobalBlockStateHandlers::getUpgrader()->upgradeIntIdMeta($blockID, $blockMeta)
+            );
         } catch (UnsupportedBlockStateException) {
             return null;
         }

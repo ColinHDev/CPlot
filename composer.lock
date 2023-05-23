@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "89708935283dc3e5418603e786c2487d",
+    "content-hash": "59c6c1731d466b6938ee8b54d21381b6",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -162,16 +162,6 @@
                 "type": "git",
                 "url": "https://github.com/cooldogedev/BedrockEconomy",
                 "reference": "main"
-            },
-            "type": "library"
-        },
-        {
-            "name": "dktapps/pmforms",
-            "version": "2.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/dktapps-pm-pl/pmforms",
-                "reference": "master"
             },
             "type": "library"
         },

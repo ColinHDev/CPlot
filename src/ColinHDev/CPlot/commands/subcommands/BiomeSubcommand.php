@@ -111,7 +111,7 @@ class BiomeSubcommand extends AsyncSubcommand {
             array_merge([$plot], $plot->getMergePlots())
         );
         $biomeID = $task->getBiomeID();
-        $biomeName = $this->getBiomeNameByID($biomeID);
+        $biomeName = self::getBiomeNameByID($biomeID);
         $elapsedTimeString = $task->getElapsedTimeString();
         Server::getInstance()->getLogger()->debug(
             "Changing plot biome to " . $biomeName . "(ID: " . $biomeID . ") in world " . $world->getDisplayName() . " (folder: " . $world->getFolderName() . ") took " . $elapsedTimeString . " (" . $task->getElapsedTime() . "ms) for player " . $sender->getUniqueId()->getBytes() . " (" . $sender->getName() . ") for " . $plotCount . " plot" . ($plotCount > 1 ? "s" : "") . ": [" . implode(", ", $plots) . "]."

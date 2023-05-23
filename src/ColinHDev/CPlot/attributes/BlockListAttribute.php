@@ -37,7 +37,7 @@ abstract class BlockListAttribute extends ListAttribute {
                 return false;
             }
             $otherBlock = $otherValue[$i];
-            if (!$block->isSameType($otherBlock)) {
+            if (!$block->hasSameTypeId($otherBlock)) {
                 return false;
             }
         }
@@ -50,7 +50,7 @@ abstract class BlockListAttribute extends ListAttribute {
     public function contains(mixed $value) : bool {
         /** @var Block $currentValue */
         foreach ($this->value as $currentValue) {
-            if ($currentValue->isSameType($value)) {
+            if ($currentValue->hasSameTypeId($value)) {
                 return true;
             }
         }
