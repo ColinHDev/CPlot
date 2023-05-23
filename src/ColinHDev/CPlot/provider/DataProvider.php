@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\provider;
 
+use Closure;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\player\PlayerData;
@@ -23,6 +24,7 @@ use ColinHDev\CPlot\provider\cache\CacheIDs;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\utils\ParseUtils;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use DateTime;
 use Generator;
 use pocketmine\player\Player;
 use pocketmine\Server;
@@ -32,9 +34,10 @@ use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
 use SOFe\AwaitGenerator\Await;
-use Webmozart\PathUtil\Path;
-use function file_exists;
+use Symfony\Component\Filesystem\Path;
+use Throwable;
 use function count;
+use function file_exists;
 use function is_int;
 use function is_string;
 use function time;
@@ -182,7 +185,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
@@ -194,7 +197,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by either its UUID, XUID or name asynchronously from the database (or
-     * synchronously from the cache if contained) and returns a {@see \Generator}. It can be gotten by using {@see Await}.
+     * synchronously from the cache if contained) and returns a {@see Generator}. It can be gotten by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : Generator {
@@ -233,11 +236,11 @@ final class DataProvider {
         $playerUUID ??= $playerData["playerUUID"];
         $playerXUID ??= $playerData["playerXUID"];
         $playerName ??= $playerData["playerName"];
-        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $lastJoin = DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerID,
             $playerUUID, $playerXUID, $playerName,
-            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            $lastJoin instanceof DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerID))
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
@@ -258,10 +261,10 @@ final class DataProvider {
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the player data can be
      * worked with once it was successfully loaded from the database.
-     * @phpstan-param null|\Closure(PlayerData|null): void $onSuccess
-     * @phpstan-param null|\Closure(\Throwable): void $onError
+     * @phpstan-param null|Closure(PlayerData|null): void $onSuccess
+     * @phpstan-param null|Closure(Throwable): void $onError
      */
-    public function getPlayerDataByUUID(string $playerUUID, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?PlayerData {
+    public function getPlayerDataByUUID(string $playerUUID, ?Closure $onSuccess = null, ?Closure $onError = null) : ?PlayerData {
         $playerID = $this->caches[CacheIDs::CACHE_PLAYER_UUID]->getObjectFromCache($playerUUID);
         if (is_int($playerID)) {
             $playerData = $this->caches[CacheIDs::CACHE_PLAYER]->getObjectFromCache($playerID);
@@ -282,7 +285,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its identifier asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
+     * cache if contained) and returns a {@see Generator}. It can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByID(int $playerID) : Generator {
@@ -303,11 +306,11 @@ final class DataProvider {
         $playerUUID = $playerData["playerUUID"];
         $playerXUID = $playerData["playerXUID"];
         $playerName = $playerData["playerName"];
-        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $lastJoin = DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerID,
             $playerUUID, $playerXUID, $playerName,
-            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            $lastJoin instanceof DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerID))
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
@@ -325,7 +328,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
+     * cache if contained) and returns a {@see Generator}. It can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByUUID(string $playerUUID) : Generator {
@@ -349,11 +352,11 @@ final class DataProvider {
         $playerID = $playerData["playerID"];
         $playerXUID = $playerData["playerXUID"];
         $playerName = $playerData["playerName"];
-        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $lastJoin = DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerID,
             $playerUUID, $playerXUID, $playerName,
-            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            $lastJoin instanceof DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerID))
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
@@ -369,7 +372,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its XUID asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
+     * cache if contained) and returns a {@see Generator}. It can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByXUID(string $playerXUID) : Generator {
@@ -393,11 +396,11 @@ final class DataProvider {
         $playerID = $playerData["playerID"];
         $playerUUID = $playerData["playerUUID"];
         $playerName = $playerData["playerName"];
-        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $lastJoin = DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerID,
             $playerUUID, $playerXUID, $playerName,
-            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            $lastJoin instanceof DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerID))
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
@@ -413,7 +416,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its name asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
+     * cache if contained) and returns a {@see Generator}. It can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByName(string $playerName) : Generator {
@@ -437,11 +440,11 @@ final class DataProvider {
         $playerID = $playerData["playerID"];
         $playerUUID = $playerData["playerUUID"];
         $playerXUID = $playerData["playerXUID"];
-        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $lastJoin = DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerID,
             $playerUUID, $playerXUID, $playerName,
-            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            $lastJoin instanceof DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerID))
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
@@ -456,7 +459,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the {@see Setting}s of a player asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see Setting}s of a player asynchronously from the database and returns a {@see Generator}. The
      * player settings can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, array<string, Setting<mixed>>>
      */
@@ -565,10 +568,10 @@ final class DataProvider {
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the result can be
      * worked with once it was successfully loaded from the database.
-     * @phpstan-param null|\Closure(WorldSettings|false): void $onSuccess
-     * @phpstan-param null|\Closure(\Throwable): void $onError
+     * @phpstan-param null|Closure(WorldSettings|false): void $onSuccess
+     * @phpstan-param null|Closure(Throwable): void $onError
      */
-    public function getOrLoadWorldSettings(string $worldName, ?\Closure $onSuccess = null, ?\Closure $onError = null) : WorldSettings|false|null {
+    public function getOrLoadWorldSettings(string $worldName, ?Closure $onSuccess = null, ?Closure $onError = null) : WorldSettings|false|null {
         $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
         if ($worldSettings instanceof WorldSettings || $worldSettings === false) {
             if ($onSuccess !== null) {
@@ -602,7 +605,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see WorldSettings} of a world asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, WorldSettings|false>
      */
@@ -659,10 +662,10 @@ final class DataProvider {
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the result can be
      * worked with once it was successfully loaded from the database.
-     * @phpstan-param null|\Closure(Plot|null): void $onSuccess
-     * @phpstan-param null|\Closure(\Throwable): void $onError
+     * @phpstan-param null|Closure(Plot|null): void $onSuccess
+     * @phpstan-param null|Closure(Throwable): void $onError
      */
-    public function getOrLoadPlot(string $worldName, int $x, int $z, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?Plot {
+    public function getOrLoadPlot(string $worldName, int $x, int $z, ?Closure $onSuccess = null, ?Closure $onError = null) : ?Plot {
         $plot = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($worldName . ";" . $x . ";" . $z);
         if ($plot instanceof BasePlot) {
             $return = $plot instanceof Plot ? $plot : null;
@@ -700,7 +703,7 @@ final class DataProvider {
 
     /**
      * Fetches a {@see Plot} asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
      */
@@ -735,7 +738,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the aliases of a plot asynchronously from the database and returns a {@see \Generator}. They can be get
+     * Fetches the aliases of a plot asynchronously from the database and returns a {@see Generator}. They can be get
      * by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, string|null>
      */
@@ -757,7 +760,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the {@see MergePlot}s of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see MergePlot}s of a plot asynchronously from the database and returns a {@see Generator}. The
      * merge plots can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, array<string, MergePlot>>
      */
@@ -783,7 +786,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the {@see PlotPlayer}s of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see PlotPlayer}s of a plot asynchronously from the database and returns a {@see Generator}. The
      * plot players can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlotPlayerContainer>
      */
@@ -808,18 +811,18 @@ final class DataProvider {
             /** @phpstan-var PlotPlayer::STATE_* $state */
             /** @phpstan-var PlayerData $playerData */
             $playerData = yield $this->awaitPlayerDataByID($row["playerID"]);
-            $addTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["addTime"]);
+            $addTime = DateTime::createFromFormat("d.m.Y H:i:s", $row["addTime"]);
             $plotPlayerContainer->addPlotPlayer(new PlotPlayer(
                 $playerData,
                 $state,
-                $addTime instanceof \DateTime ? $addTime->getTimestamp() : time()
+                $addTime instanceof DateTime ? $addTime->getTimestamp() : time()
             ));
         }
         return $plotPlayerContainer;
     }
 
     /**
-     * Fetches the {@see Flag}s of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see Flag}s of a plot asynchronously from the database and returns a {@see Generator}. The
      * plot flags can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, array<string, Flag<mixed>>>
      */
@@ -849,7 +852,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the {@see PlotRate}s of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see PlotRate}s of a plot asynchronously from the database and returns a {@see Generator}. The
      * plot rates can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, array<string, PlotRate>>
      */
@@ -868,11 +871,11 @@ final class DataProvider {
         foreach ($rows as $row) {
             /** @phpstan-var PlayerData $playerData */
             $playerData = yield $this->awaitPlayerDataByID($row["playerID"]);
-            $rateTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["rateTime"]);
+            $rateTime = DateTime::createFromFormat("d.m.Y H:i:s", $row["rateTime"]);
             $plotRate = new PlotRate(
                 $row["rate"],
                 $playerData,
-                $rateTime instanceof \DateTime ? $rateTime->getTimestamp() : time(),
+                $rateTime instanceof DateTime ? $rateTime->getTimestamp() : time(),
                 $row["comment"] ?? null
             );
             $plotRates[$plotRate->toString()] = $plotRate;
@@ -881,7 +884,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches a {@see Plot} by its alias asynchronously from the database and returns a {@see \Generator}. It can be get
+     * Fetches a {@see Plot} by its alias asynchronously from the database and returns a {@see Generator}. It can be get
      * by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
      */
@@ -991,10 +994,10 @@ final class DataProvider {
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the result can be
      * worked with once it was successfully loaded from the database.
-     * @phpstan-param null|\Closure(Plot|null): void $onSuccess
-     * @phpstan-param null|\Closure(\Throwable): void $onError
+     * @phpstan-param null|Closure(Plot|null): void $onSuccess
+     * @phpstan-param null|Closure(Throwable): void $onError
      */
-    public function getOrLoadMergeOrigin(BasePlot $plot, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?Plot {
+    public function getOrLoadMergeOrigin(BasePlot $plot, ?Closure $onSuccess = null, ?Closure $onError = null) : ?Plot {
         if ($plot instanceof Plot) {
             if ($onSuccess !== null) {
                 $onSuccess($plot);
@@ -1055,7 +1058,7 @@ final class DataProvider {
 
     /**
      * Fetches the origin plot ({@see Plot}) of another plot asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get
+     * cache if contained) and returns a {@see Generator}. It can be get
      * by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
      */
@@ -1100,7 +1103,7 @@ final class DataProvider {
 
     /**
      * Fetches asynchronously all {@see Plot}s and {@see MergePlot}s in a plot world in a certain radius around plot
-     * worldName;0;0 from the database. Returns a {@see \Generator} that returns a plot that is in the radius, closest
+     * worldName;0;0 from the database. Returns a {@see Generator} that returns a plot that is in the radius, closest
      * to the spawn and has no data in the database or null if no such plot could be found, by using {@see Await}.
      * @param int $limitXZ Limits the radius in which plots are fetched.
      * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
@@ -1204,7 +1207,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches {@see Plot}s by a common {@see PlotPlayer} asynchronously from the database and returns a {@see \Generator}.
+     * Fetches {@see Plot}s by a common {@see PlotPlayer} asynchronously from the database and returns a {@see Generator}.
      * It can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, array<string, Plot>>
      */
@@ -1323,8 +1326,9 @@ final class DataProvider {
             !file_exists(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml")) ||
 			!file_exists(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "worlds", $worldName . ".yml")))
             return;
-        /** @var string[][] $settings */
+        /** @var array{DataProvider: string, MySQLSettings: array{Host: string, Username: string, Password: string, DatabaseName: string, Port: int}} $settings */
         $settings = yaml_parse_file(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml"));
+        /** @var array{UpdatePlotLiquids: bool, AllowFireTicking: bool} $worldSettings */
         $worldSettings = yaml_parse_file(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "worlds", $worldName . ".yml"));
         switch(mb_strtolower($settings["DataProvider"])) {
             case 'sqlite':
@@ -1359,14 +1363,18 @@ final class DataProvider {
                 $filename = "plots.yml";
             case 'json':
                 $data = new Config(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "Data", $filename ?? "plots.json"), Config::DETECT);
-                $records = array_values($data->get("plots"));
+                /** @var array{string: array{owner: string, helpers: string[], denied: string[]}} $unparsedRecords */
+                $unparsedRecords = $data->get("plots");
+                $records = array_values($unparsedRecords);
+                /** @var array{string: string[]} $unparsedMergeRecords */
                 $unparsedMergeRecords = $data->get("merges");
                 $mergeRecords = [];
-                foreach($unparsedMergeRecords as $origin => $merges) {
+                foreach ($unparsedMergeRecords as $origin => $merges) {
                     $originData = explode(";", $origin);
-                    if($originData[0] !== $worldName)
+                    if ($originData[0] !== $worldName) {
                         continue;
-                    foreach($merges as $merge) {
+                    }
+                    foreach ($merges as $merge) {
                         $mergeData = explode(";", $merge);
                         $mergeRecords[] = [
                             "level" => $originData[0],
@@ -1420,89 +1428,42 @@ final class DataProvider {
             }
         }
         foreach($records as $record) {
-            // validate offline player data
-            $offlineData = Server::getInstance()->getOfflinePlayerData($record["owner"]);
-            $XUID = $offlineData?->getString("LastKnownXUID", null);
-
-            // register filler player data
-            /** @var PlayerData|null $playerData */
-            $playerData = yield $this->updatePlayerData(
-                null, // doesn't matter what is input at this point. will overwrite on login
-                $XUID,
-                $record["owner"]
-            );
-            if (!($playerData instanceof PlayerData)) {
-                // retry now that player data updated
-                $playerData = yield $this->awaitPlayerDataByData(
-                    null,
-                    $XUID,
-                    $record["owner"]
-                );
-            }
-
             // load plot
             /** @var Plot|null $plot */
             $plot = yield $this->awaitPlot($record["level"], (int)$record["x"], (int)$record["z"]);
-            if($plot === null)
+            if ($plot === null) {
                 continue;
+            }
 
             // claim plot
-            $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
-            $plot->addPlotPlayer($senderData);
-            yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
+            /** @var PlayerData|null $playerData */
+            $playerData = yield from $this->createPlayerDataEntry($record["owner"]);
+            if ($playerData !== null) {
+                $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
+                $plot->addPlotPlayer($senderData);
+                yield from $this->savePlotPlayer($plot, $senderData);
+            }
 
             // load helpers
             foreach($record["helpers"] as $playerName) {
-                // validate offline player data
-                $offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
-                $XUID = $offlineData?->getString("LastKnownXUID", null);
-
-                // register filler player data
                 /** @var PlayerData|null $playerData */
-                $playerData = yield $this->updatePlayerData(
-                    null, // doesn't matter what is input at this point. will overwrite on login
-                    $XUID,
-                    $playerName
-                );
-                if (!($playerData instanceof PlayerData)) {
-                    // retry now that player data updated
-                    $playerData = yield $this->awaitPlayerDataByData(
-                        null,
-                        $XUID,
-                        $playerName
-                    );
+                $playerData = yield from $this->createPlayerDataEntry($playerName);
+                if ($playerData !== null) {
+                    $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_TRUSTED);
+                    $plot->addPlotPlayer($senderData);
+                    yield from $this->savePlotPlayer($plot, $senderData);
                 }
-
-                $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_TRUSTED);
-                $plot->addPlotPlayer($senderData);
-                yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
             }
 
             // load denied with priority over helpers
             foreach($record["denied"] as $playerName) {
-                // validate offline player data
-                $offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
-                $XUID = $offlineData?->getString("LastKnownXUID", null);
-
-                // register filler player data
                 /** @var PlayerData|null $playerData */
-                $playerData = yield $this->updatePlayerData(
-                    null, // doesn't matter what is input at this point. will overwrite on login
-                    $XUID,
-                    $playerName
-                );
-                if (!($playerData instanceof PlayerData)) {
-                    // retry now that player data updated
-                    $playerData = yield $this->awaitPlayerDataByData(
-                        null,
-                        $XUID,
-                        $playerName
-                    );
+                $playerData = yield from $this->createPlayerDataEntry($playerName);
+                if ($playerData !== null) {
+                    $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_DENIED);
+                    $plot->addPlotPlayer($senderData);
+                    yield from $this->savePlotPlayer($plot, $senderData);
                 }
-
-                $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_DENIED);
-                $plot->addPlotPlayer($senderData);
-                yield from DataProvider::getInstance()->savePlotPlayer($plot, $senderData);
             }
 
             //load common flags
@@ -1518,5 +1479,29 @@ final class DataProvider {
             $plot->addFlag($flag);
             yield from $this->savePlotFlag($plot, $flag);
         }
+    }
+
+    /**
+     * @return Generator<mixed, mixed, mixed, PlayerData|null>
+     */
+    private function createPlayerDataEntry(string $playerName) : Generator {
+        // validate offline player data
+        $offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
+        $XUID = $offlineData?->getString("LastKnownXUID");
+
+        // register filler player data
+        yield from $this->updatePlayerData(
+            null, // doesn't matter what is input at this point. will overwrite on login
+            $XUID,
+            $playerName
+        );
+        // queriying now that player data updated
+        /** @var PlayerData|null $playerData */
+        $playerData = yield from $this->awaitPlayerDataByData(
+            null,
+            $XUID,
+            $playerName
+        );
+        return $playerData;
     }
 }

@@ -11,6 +11,8 @@ use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\world\ChunkManager;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\generator\Generator;
+use function is_array;
+use function json_decode;
 
 class MyPlotGenerator extends Generator {
 
@@ -33,8 +35,8 @@ class MyPlotGenerator extends Generator {
         parent::__construct($seed, $preset);
         $generatorOptions = [];
         if ($preset !== "") {
-            $generatorOptions = \json_decode($preset, true, flags: \JSON_THROW_ON_ERROR);
-            if ($generatorOptions === false || is_null($generatorOptions)) {
+            $generatorOptions = json_decode($preset, true);
+            if (!is_array($generatorOptions)) {
                 $generatorOptions = [];
             }
         }
@@ -46,15 +48,15 @@ class MyPlotGenerator extends Generator {
         $this->groundSize = ParseUtils::parseIntegerFromArray($generatorOptions, "GroundHeight") ?? 64;
 
         $roadBlock = ParseUtils::parseMyPlotBlock($generatorOptions, "RoadBlock") ?? VanillaBlocks::OAK_PLANKS();
-        $this->roadBlockFullID = $roadBlock->getFullId();
+        $this->roadBlockFullID = $roadBlock->getStateId();
         $borderBlock = ParseUtils::parseMyPlotBlock($generatorOptions, "WallBlock") ?? VanillaBlocks::STONE_SLAB();
-        $this->borderBlockFullID = $borderBlock->getFullId();
+        $this->borderBlockFullID = $borderBlock->getStateId();
         $plotFloorBlock = ParseUtils::parseMyPlotBlock($generatorOptions, "PlotFloorBlock") ?? VanillaBlocks::GRASS();
-        $this->plotFloorBlockFullID = $plotFloorBlock->getFullId();
+        $this->plotFloorBlockFullID = $plotFloorBlock->getStateId();
         $plotFillBlock = ParseUtils::parseMyPlotBlock($generatorOptions, "PlotFillBlock") ?? VanillaBlocks::DIRT();
-        $this->plotFillBlockFullID = $plotFillBlock->getFullId();
+        $this->plotFillBlockFullID = $plotFillBlock->getStateId();
         $plotBottomBlock = ParseUtils::parseMyPlotBlock($generatorOptions, "BottomBlock") ?? VanillaBlocks::BEDROCK();
-        $this->plotBottomBlockFullID = $plotBottomBlock->getFullId();
+        $this->plotBottomBlockFullID = $plotBottomBlock->getStateId();
     }
 
     public function generateChunk(ChunkManager $world, int $chunkX, int $chunkZ) : void {
@@ -69,27 +71,34 @@ class MyPlotGenerator extends Generator {
             for ($Z = 0; $Z < Chunk::EDGE_LENGTH; $Z++) {
                 $z = CoordinateUtils::getRasterCoordinate($chunkZ * 16 + $Z + self::MYPLOT_OFFSET, $this->roadSize + $this->plotSize);
 
-                $chunk->setBiomeId($X, $Z, $this->biomeID);
                 if ($x < $this->roadSize || $z < $this->roadSize) {
-                    for ($y = $world->getMinY(); $y <= $this->groundSize + 1; $y++) {
+                    for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
+                        $chunk->setBiomeId($X, $y, $Z, $this->biomeID);
+                        if ($y > $this->groundSize + 1) {
+                            continue;
+                        }
                         if ($y === $world->getMinY()) {
-                            $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
+                            $chunk->setBlockStateId($X, $y, $Z, $this->plotBottomBlockFullID);
                         } else if ($y === ($this->groundSize + 1)) {
                             if (CoordinateUtils::isRasterPositionOnBorder($x, $z, $this->roadSize)) {
-                                $chunk->setFullBlock($X, $y, $Z, $this->borderBlockFullID);
+                                $chunk->setBlockStateId($X, $y, $Z, $this->borderBlockFullID);
                             }
                         } else {
-                            $chunk->setFullBlock($X, $y, $Z, $this->roadBlockFullID);
+                            $chunk->setBlockStateId($X, $y, $Z, $this->roadBlockFullID);
                         }
                     }
                 } else {
-                    for ($y = $world->getMinY(); $y <= $this->groundSize; $y++) {
+                    for ($y = $world->getMinY(); $y < $world->getMaxY(); $y++) {
+                        $chunk->setBiomeId($X, $y, $Z, $this->biomeID);
+                        if ($y > $this->groundSize) {
+                            continue;
+                        }
                         if ($y === $world->getMinY()) {
-                            $chunk->setFullBlock($X, $y, $Z, $this->plotBottomBlockFullID);
+                            $chunk->setBlockStateId($X, $y, $Z, $this->plotBottomBlockFullID);
                         } else if ($y === $this->groundSize) {
-                            $chunk->setFullBlock($X, $y, $Z, $this->plotFloorBlockFullID);
+                            $chunk->setBlockStateId($X, $y, $Z, $this->plotFloorBlockFullID);
                         } else {
-                            $chunk->setFullBlock($X, $y, $Z, $this->plotFillBlockFullID);
+                            $chunk->setBlockStateId($X, $y, $Z, $this->plotFillBlockFullID);
                         }
                     }
                 }

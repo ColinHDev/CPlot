@@ -79,7 +79,7 @@ class ParseUtils {
         if ($block !== null) {
             return $block;
         }
-        return self::parseBlockFromIdMetaString($blockIdentifier);
+        return self::parseBlockFromIdMetaString($blockIdentifier, ";");
     }
 
     private static function parseBlockFromBlockName(string $blockName) : ?Block {
@@ -109,8 +109,11 @@ class ParseUtils {
         }
     }
 
-    private static function parseBlockFromIdMetaString(string $idMetaString) : ?Block {
-        $blockData = explode(";", $idMetaString);
+    /**
+     * @param non-empty-string $separator
+     */
+    private static function parseBlockFromIdMetaString(string $idMetaString, string $separator) : ?Block {
+        $blockData = explode($separator, $idMetaString);
         if (count($blockData) !== 3) {
             return null;
         }
@@ -143,18 +146,10 @@ class ParseUtils {
 	 * @phpstan-param array<string|int, string|int> $array
 	 */
 	public static function parseMyPlotBlock(array $array, string | int $key) : ?Block {
-		if (isset($array[$key]) && is_string($array[$key])) {
-			$blockData = explode(":", $array[$key]);
-			$blockID = self::parseIntegerFromArray($blockData, 0);
-			$blockMeta = self::parseIntegerFromArray($blockData, 1) ?? 0;
-			if ($blockID !== null) {
-				$block = BlockFactory::getInstance()->get($blockID, $blockMeta);
-				if ($block instanceof UnknownBlock) {
-					$block = null;
-				}
-				return $block;
-			}
-		}
-		return null;
+        $idMetaString = self::parseStringFromArray($array, $key);
+        if ($idMetaString !== null) {
+            return self::parseBlockFromIdMetaString($idMetaString, ":");
+        }
+        return null;
 	}
 }
