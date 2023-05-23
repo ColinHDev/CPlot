@@ -8,7 +8,6 @@
     "sofe/capital": "^0.1.2",
     "cooldogedev/bedrockeconomy": "^2.0.8",
     "colinhdev/libasyncevent": "^1.0.0",
-    "dktapps/pmforms": "^2.0.0",
     "ext-zlib": "*"
   },
   "require-dev": {
@@ -30,18 +29,6 @@
           "type": "git",
           "url": "https://github.com/cooldogedev/BedrockEconomy",
           "reference": "main"
-        }
-      }
-    },
-    "pmforms": {
-      "type": "package",
-      "package": {
-        "name": "dktapps/pmforms",
-        "version": "2.0.0",
-        "source": {
-          "type": "git",
-          "url": "https://github.com/dktapps-pm-pl/pmforms",
-          "reference": "master"
         }
       }
     }
