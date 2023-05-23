@@ -19,6 +19,7 @@ use ColinHDev\CPlot\listener\EntityExplodeListener;
 use ColinHDev\CPlot\listener\EntityItemPickupListener;
 use ColinHDev\CPlot\listener\EntityShootBowListener;
 use ColinHDev\CPlot\listener\EntityTrampleFarmlandListener;
+use ColinHDev\CPlot\listener\MyPlotConversionListener;
 use ColinHDev\CPlot\listener\PlayerBucketEmptyListener;
 use ColinHDev\CPlot\listener\PlayerDropItemListener;
 use ColinHDev\CPlot\listener\PlayerInteractListener;
@@ -29,6 +30,7 @@ use ColinHDev\CPlot\listener\StructureGrowListener;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\EconomyManager;
 use ColinHDev\CPlot\tasks\EntityMovementTask;
+use ColinHDev\CPlot\worlds\generator\MyPlotGenerator;
 use ColinHDev\CPlot\worlds\generator\PlotGenerator;
 use ColinHDev\CPlot\worlds\generator\SchematicGenerator;
 use pocketmine\plugin\PluginBase;
@@ -48,6 +50,7 @@ class CPlot extends PluginBase {
         EconomyManager::getInstance();
 
         $generatorManager = GeneratorManager::getInstance();
+        $generatorManager->addGenerator(MyPlotGenerator::class, MyPlotGenerator::GENERATOR_NAME, fn() => null, true);
         $generatorManager->addGenerator(PlotGenerator::class, PlotGenerator::GENERATOR_NAME, fn() => null, true);
         $generatorManager->addGenerator(SchematicGenerator::class, SchematicGenerator::GENERATOR_NAME, fn() => null, true);
 
@@ -76,6 +79,7 @@ class CPlot extends PluginBase {
         $pluginManager->registerEvents(new PlayerLoginListener(), $this);
         $pluginManager->registerEvents(new ProjectileLaunchListener(), $this);
         $pluginManager->registerEvents(new StructureGrowListener(), $this);
+        $pluginManager->registerEvents(new MyPlotConversionListener(), $this);
 
         $server->getCommandMap()->register("CPlot", new PlotCommand());
     }

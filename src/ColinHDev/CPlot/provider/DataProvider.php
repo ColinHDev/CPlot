@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\provider;
 
+use Closure;
 use ColinHDev\CPlot\attributes\utils\AttributeParseException;
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\player\PlayerData;
@@ -12,6 +13,7 @@ use ColinHDev\CPlot\player\settings\SettingManager;
 use ColinHDev\CPlot\plots\BasePlot;
 use ColinHDev\CPlot\plots\flags\Flag;
 use ColinHDev\CPlot\plots\flags\FlagManager;
+use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\MergePlot;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\PlotPlayer;
@@ -22,16 +24,28 @@ use ColinHDev\CPlot\provider\cache\CacheIDs;
 use ColinHDev\CPlot\ResourceManager;
 use ColinHDev\CPlot\utils\ParseUtils;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use DateTime;
 use Generator;
+use pocketmine\block\VanillaBlocks;
+use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\player\Player;
+use pocketmine\Server;
+use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
+use pocketmine\world\World;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
 use SOFe\AwaitGenerator\Await;
+use Symfony\Component\Filesystem\Path;
+use Throwable;
+use function array_merge;
 use function count;
+use function file_exists;
+use function is_array;
 use function is_int;
 use function is_string;
+use function json_decode;
 use function time;
 
 /**
@@ -91,6 +105,9 @@ final class DataProvider {
     private const DELETE_PLOTFLAGS = "cplot.delete.plotFlags";
     private const DELETE_PLOTFLAG = "cplot.delete.plotFlag";
     private const DELETE_PLOTRATES = "cplot.delete.plotRates";
+
+    private const EXPORT_MYPLOT_PLOTS = "myplot.get.Plots";
+    private const EXPORT_MYPLOT_MERGES = "myplot.get.Merges";
 
     private DataConnector $database;
     private bool $isInitialized = false;
@@ -174,7 +191,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
@@ -186,7 +203,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by either its UUID, XUID or name asynchronously from the database (or
-     * synchronously from the cache if contained) and returns a {@see \Generator}. It can be gotten by using {@see Await}.
+     * synchronously from the cache if contained) and returns a {@see Generator}. It can be gotten by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : Generator {
@@ -225,11 +242,11 @@ final class DataProvider {
         $playerUUID ??= $playerData["playerUUID"];
         $playerXUID ??= $playerData["playerXUID"];
         $playerName ??= $playerData["playerName"];
-        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $lastJoin = DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerID,
             $playerUUID, $playerXUID, $playerName,
-            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            $lastJoin instanceof DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerID))
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
@@ -250,10 +267,10 @@ final class DataProvider {
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the player data can be
      * worked with once it was successfully loaded from the database.
-     * @phpstan-param null|\Closure(PlayerData|null): void $onSuccess
-     * @phpstan-param null|\Closure(\Throwable): void $onError
+     * @phpstan-param null|Closure(PlayerData|null): void $onSuccess
+     * @phpstan-param null|Closure(Throwable): void $onError
      */
-    public function getPlayerDataByUUID(string $playerUUID, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?PlayerData {
+    public function getPlayerDataByUUID(string $playerUUID, ?Closure $onSuccess = null, ?Closure $onError = null) : ?PlayerData {
         $playerID = $this->caches[CacheIDs::CACHE_PLAYER_UUID]->getObjectFromCache($playerUUID);
         if (is_int($playerID)) {
             $playerData = $this->caches[CacheIDs::CACHE_PLAYER]->getObjectFromCache($playerID);
@@ -274,7 +291,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its identifier asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
+     * cache if contained) and returns a {@see Generator}. It can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByID(int $playerID) : Generator {
@@ -295,11 +312,11 @@ final class DataProvider {
         $playerUUID = $playerData["playerUUID"];
         $playerXUID = $playerData["playerXUID"];
         $playerName = $playerData["playerName"];
-        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $lastJoin = DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerID,
             $playerUUID, $playerXUID, $playerName,
-            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            $lastJoin instanceof DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerID))
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
@@ -317,7 +334,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its UUID asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
+     * cache if contained) and returns a {@see Generator}. It can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByUUID(string $playerUUID) : Generator {
@@ -341,11 +358,11 @@ final class DataProvider {
         $playerID = $playerData["playerID"];
         $playerXUID = $playerData["playerXUID"];
         $playerName = $playerData["playerName"];
-        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $lastJoin = DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerID,
             $playerUUID, $playerXUID, $playerName,
-            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            $lastJoin instanceof DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerID))
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
@@ -361,7 +378,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its XUID asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
+     * cache if contained) and returns a {@see Generator}. It can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByXUID(string $playerXUID) : Generator {
@@ -385,11 +402,11 @@ final class DataProvider {
         $playerID = $playerData["playerID"];
         $playerUUID = $playerData["playerUUID"];
         $playerName = $playerData["playerName"];
-        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $lastJoin = DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerID,
             $playerUUID, $playerXUID, $playerName,
-            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            $lastJoin instanceof DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerID))
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
@@ -405,7 +422,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see PlayerData} of a player by its name asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by using {@see Await}.
+     * cache if contained) and returns a {@see Generator}. It can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function awaitPlayerDataByName(string $playerName) : Generator {
@@ -429,11 +446,11 @@ final class DataProvider {
         $playerID = $playerData["playerID"];
         $playerUUID = $playerData["playerUUID"];
         $playerXUID = $playerData["playerXUID"];
-        $lastJoin = \DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
+        $lastJoin = DateTime::createFromFormat("d.m.Y H:i:s", $playerData["lastJoin"]);
         $playerData = new PlayerData(
             $playerID,
             $playerUUID, $playerXUID, $playerName,
-            $lastJoin instanceof \DateTime ? $lastJoin->getTimestamp() : time(),
+            $lastJoin instanceof DateTime ? $lastJoin->getTimestamp() : time(),
             (yield from $this->awaitPlayerSettings($playerID))
         );
         $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $playerData);
@@ -448,7 +465,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the {@see Setting}s of a player asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see Setting}s of a player asynchronously from the database and returns a {@see Generator}. The
      * player settings can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, array<string, Setting<mixed>>>
      */
@@ -557,10 +574,10 @@ final class DataProvider {
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the result can be
      * worked with once it was successfully loaded from the database.
-     * @phpstan-param null|\Closure(WorldSettings|false): void $onSuccess
-     * @phpstan-param null|\Closure(\Throwable): void $onError
+     * @phpstan-param null|Closure(WorldSettings|false): void $onSuccess
+     * @phpstan-param null|Closure(Throwable): void $onError
      */
-    public function getOrLoadWorldSettings(string $worldName, ?\Closure $onSuccess = null, ?\Closure $onError = null) : WorldSettings|false|null {
+    public function getOrLoadWorldSettings(string $worldName, ?Closure $onSuccess = null, ?Closure $onError = null) : WorldSettings|false|null {
         $worldSettings = $this->caches[CacheIDs::CACHE_WORLDSETTING]->getObjectFromCache($worldName);
         if ($worldSettings instanceof WorldSettings || $worldSettings === false) {
             if ($onSuccess !== null) {
@@ -594,7 +611,7 @@ final class DataProvider {
 
     /**
      * Fetches the {@see WorldSettings} of a world asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, WorldSettings|false>
      */
@@ -635,6 +652,7 @@ final class DataProvider {
                 "roadSize" => $worldSettings->getRoadSize(),
                 "plotSize" => $worldSettings->getPlotSize(),
                 "groundSize" => $worldSettings->getGroundSize(),
+                "coordinateOffset" => $worldSettings->getCoordinateOffset(),
                 "roadBlock" => ParseUtils::parseStringFromBlock($worldSettings->getRoadBlock()),
                 "borderBlock" => ParseUtils::parseStringFromBlock($worldSettings->getBorderBlock()),
                 "plotFloorBlock" => ParseUtils::parseStringFromBlock($worldSettings->getPlotFloorBlock()),
@@ -650,10 +668,10 @@ final class DataProvider {
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the result can be
      * worked with once it was successfully loaded from the database.
-     * @phpstan-param null|\Closure(Plot|null): void $onSuccess
-     * @phpstan-param null|\Closure(\Throwable): void $onError
+     * @phpstan-param null|Closure(Plot|null): void $onSuccess
+     * @phpstan-param null|Closure(Throwable): void $onError
      */
-    public function getOrLoadPlot(string $worldName, int $x, int $z, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?Plot {
+    public function getOrLoadPlot(string $worldName, int $x, int $z, ?Closure $onSuccess = null, ?Closure $onError = null) : ?Plot {
         $plot = $this->caches[CacheIDs::CACHE_PLOT]->getObjectFromCache($worldName . ";" . $x . ";" . $z);
         if ($plot instanceof BasePlot) {
             $return = $plot instanceof Plot ? $plot : null;
@@ -691,7 +709,7 @@ final class DataProvider {
 
     /**
      * Fetches a {@see Plot} asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get by
+     * cache if contained) and returns a {@see Generator}. It can be get by
      * using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
      */
@@ -726,7 +744,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the aliases of a plot asynchronously from the database and returns a {@see \Generator}. They can be get
+     * Fetches the aliases of a plot asynchronously from the database and returns a {@see Generator}. They can be get
      * by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, string|null>
      */
@@ -748,7 +766,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the {@see MergePlot}s of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see MergePlot}s of a plot asynchronously from the database and returns a {@see Generator}. The
      * merge plots can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, array<string, MergePlot>>
      */
@@ -774,7 +792,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the {@see PlotPlayer}s of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see PlotPlayer}s of a plot asynchronously from the database and returns a {@see Generator}. The
      * plot players can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, PlotPlayerContainer>
      */
@@ -799,18 +817,18 @@ final class DataProvider {
             /** @phpstan-var PlotPlayer::STATE_* $state */
             /** @phpstan-var PlayerData $playerData */
             $playerData = yield $this->awaitPlayerDataByID($row["playerID"]);
-            $addTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["addTime"]);
+            $addTime = DateTime::createFromFormat("d.m.Y H:i:s", $row["addTime"]);
             $plotPlayerContainer->addPlotPlayer(new PlotPlayer(
                 $playerData,
                 $state,
-                $addTime instanceof \DateTime ? $addTime->getTimestamp() : time()
+                $addTime instanceof DateTime ? $addTime->getTimestamp() : time()
             ));
         }
         return $plotPlayerContainer;
     }
 
     /**
-     * Fetches the {@see Flag}s of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see Flag}s of a plot asynchronously from the database and returns a {@see Generator}. The
      * plot flags can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, array<string, Flag<mixed>>>
      */
@@ -840,7 +858,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches the {@see PlotRate}s of a plot asynchronously from the database and returns a {@see \Generator}. The
+     * Fetches the {@see PlotRate}s of a plot asynchronously from the database and returns a {@see Generator}. The
      * plot rates can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, array<string, PlotRate>>
      */
@@ -859,11 +877,11 @@ final class DataProvider {
         foreach ($rows as $row) {
             /** @phpstan-var PlayerData $playerData */
             $playerData = yield $this->awaitPlayerDataByID($row["playerID"]);
-            $rateTime = \DateTime::createFromFormat("d.m.Y H:i:s", $row["rateTime"]);
+            $rateTime = DateTime::createFromFormat("d.m.Y H:i:s", $row["rateTime"]);
             $plotRate = new PlotRate(
                 $row["rate"],
                 $playerData,
-                $rateTime instanceof \DateTime ? $rateTime->getTimestamp() : time(),
+                $rateTime instanceof DateTime ? $rateTime->getTimestamp() : time(),
                 $row["comment"] ?? null
             );
             $plotRates[$plotRate->toString()] = $plotRate;
@@ -872,7 +890,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches a {@see Plot} by its alias asynchronously from the database and returns a {@see \Generator}. It can be get
+     * Fetches a {@see Plot} by its alias asynchronously from the database and returns a {@see Generator}. It can be get
      * by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
      */
@@ -982,10 +1000,10 @@ final class DataProvider {
      * If the cache does not contain it, it is loaded asynchronously from the database into the cache, so it
      * is synchronously available the next time this method is called. By providing a callback, the result can be
      * worked with once it was successfully loaded from the database.
-     * @phpstan-param null|\Closure(Plot|null): void $onSuccess
-     * @phpstan-param null|\Closure(\Throwable): void $onError
+     * @phpstan-param null|Closure(Plot|null): void $onSuccess
+     * @phpstan-param null|Closure(Throwable): void $onError
      */
-    public function getOrLoadMergeOrigin(BasePlot $plot, ?\Closure $onSuccess = null, ?\Closure $onError = null) : ?Plot {
+    public function getOrLoadMergeOrigin(BasePlot $plot, ?Closure $onSuccess = null, ?Closure $onError = null) : ?Plot {
         if ($plot instanceof Plot) {
             if ($onSuccess !== null) {
                 $onSuccess($plot);
@@ -1046,7 +1064,7 @@ final class DataProvider {
 
     /**
      * Fetches the origin plot ({@see Plot}) of another plot asynchronously from the database (or synchronously from the
-     * cache if contained) and returns a {@see \Generator}. It can be get
+     * cache if contained) and returns a {@see Generator}. It can be get
      * by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
      */
@@ -1091,7 +1109,7 @@ final class DataProvider {
 
     /**
      * Fetches asynchronously all {@see Plot}s and {@see MergePlot}s in a plot world in a certain radius around plot
-     * worldName;0;0 from the database. Returns a {@see \Generator} that returns a plot that is in the radius, closest
+     * worldName;0;0 from the database. Returns a {@see Generator} that returns a plot that is in the radius, closest
      * to the spawn and has no data in the database or null if no such plot could be found, by using {@see Await}.
      * @param int $limitXZ Limits the radius in which plots are fetched.
      * @phpstan-return Generator<mixed, mixed, mixed, Plot|null>
@@ -1195,7 +1213,7 @@ final class DataProvider {
     }
 
     /**
-     * Fetches {@see Plot}s by a common {@see PlotPlayer} asynchronously from the database and returns a {@see \Generator}.
+     * Fetches {@see Plot}s by a common {@see PlotPlayer} asynchronously from the database and returns a {@see Generator}.
      * It can be get by using {@see Await}.
      * @phpstan-return Generator<mixed, mixed, mixed, array<string, Plot>>
      */
@@ -1304,5 +1322,223 @@ final class DataProvider {
 
     public function close() : void {
         $this->database->close();
+    }
+
+    /**
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
+     */
+    public function importMyPlotData(World $world) : Generator {
+        $worldName = $world->getFolderName();
+        $myplotPluginDataPath = Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot");
+        if (!is_dir($myplotPluginDataPath) ||
+            !file_exists(Path::join($myplotPluginDataPath, "config.yml")) || 
+            !file_exists(Path::join($myplotPluginDataPath, "worlds", $worldName . ".yml"))
+        ) {
+            return;
+        }
+
+        // Importing the world data
+        $worldOptions = json_decode($world->getProvider()->getWorldData()->getGeneratorOptions(), true);
+        if (!is_array($worldOptions)) {
+            $worldOptions = [];
+        }
+        $worldSettings = new WorldSettings(
+            WorldSettings::TYPE_MYPLOT,
+            BiomeIds::PLAINS, // MyPlot always uses the plains biome
+            "default",
+            "default",
+            "default",
+            ParseUtils::parseIntegerFromArray($worldOptions, "RoadWidth") ?? 7,
+            ParseUtils::parseIntegerFromArray($worldOptions, "PlotSize") ?? 32,
+            ParseUtils::parseIntegerFromArray($worldOptions, "GroundHeight") ?? 64,
+            -1 * (ParseUtils::parseIntegerFromArray($worldOptions, "RoadWidth") ?? 7), // MyPlot generation offset is the negative road width
+            ParseUtils::parseMyPlotBlock($worldOptions, "RoadBlock") ?? VanillaBlocks::OAK_PLANKS(),
+            ParseUtils::parseMyPlotBlock($worldOptions, "WallBlock") ?? VanillaBlocks::STONE_SLAB(),
+            ParseUtils::parseMyPlotBlock($worldOptions, "PlotFloorBlock") ?? VanillaBlocks::GRASS(),
+            ParseUtils::parseMyPlotBlock($worldOptions, "PlotFillBlock") ?? VanillaBlocks::DIRT(),
+            ParseUtils::parseMyPlotBlock($worldOptions, "BottomBlock") ?? VanillaBlocks::BEDROCK(),
+        );
+        yield from $this->addWorld($worldName, $worldSettings);
+
+        // Importing the plots
+        /** @var array{DataProvider: string, MySQLSettings: array{Host: string, Username: string, Password: string, DatabaseName: string, Port: int}} $myplotConfigData */
+        $myplotConfigData = yaml_parse_file(Path::join($myplotPluginDataPath, "config.yml"));
+        /** @var array{UpdatePlotLiquids: bool, AllowFireTicking: bool} $myplotWorldData */
+        $myplotWorldData = yaml_parse_file(Path::join($myplotPluginDataPath, "worlds", $worldName . ".yml"));
+        switch(mb_strtolower($myplotConfigData["DataProvider"])) {
+            case "sqlite":
+                $myplotDatabase = libasynql::create(CPlot::getInstance(), [
+                    "type" => "sqlite",
+                    "sqlite" => [
+                        "file" => Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "plots.db")
+                    ]
+                ], [
+                    "sqlite" => "sql" . DIRECTORY_SEPARATOR . "myplot_sqlite.sql"
+                ]);
+            case "mysql":
+                $sqlSettings = $myplotConfigData["MySQLSettings"];
+                $myplotDatabase = $myplotDatabase ?? libasynql::create(CPlot::getInstance(), [
+                    "type" => "mysql",
+                    "mysql" => [
+                        "host" => $sqlSettings["Host"],
+                        "user" => $sqlSettings["Username"],
+                        "password" => $sqlSettings["Password"],
+                        "schema" => $sqlSettings["DatabaseName"],
+                        "port" => $sqlSettings["Port"]
+                    ],
+                    "worker-limit" => ResourceManager::getInstance()->getConfig()->getNested("database.worker-limit", 1)
+                ], [
+                    "mysql" => "sql" . DIRECTORY_SEPARATOR . "myplot_mysql.sql"
+                ]);
+                $unparsedRecords = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_PLOTS, ["worldName" => $worldName]);
+                $records = [];
+                foreach ($unparsedRecords as $unparsedRecord) {
+                    // Although the array contains more data about the plot, we only need the following:
+                    $records[] = [
+                        "level" => $unparsedRecord["level"],
+                        "X" => $unparsedRecord["X"],
+                        "Z" => $unparsedRecord["Z"],
+                        "owner" => $unparsedRecord["owner"],
+                        "helpers" => $unparsedRecord["helpers"] === "" ? [] : explode(",", $unparsedRecord["helpers"]),
+                        "denied" => $unparsedRecord["denied"] === "" ? [] : explode(",", $unparsedRecord["denied"]),
+                        "pvp" => (bool) $unparsedRecord["pvp"]
+                    ];
+                }
+                $mergeRecords = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_MERGES, ["worldName" => $worldName]);
+                $myplotDatabase->close();
+                break;
+            case "yaml":
+                $filename = "plots.yml";
+            case "json":
+                $data = new Config(Path::join($myplotPluginDataPath, "Data", $filename ?? "plots.json"), Config::DETECT);
+                /** @var array{string: array{level: string, X: int, Z: int, owner: string, helpers: string[], denied: string[], pvp: bool}} $records */
+                $records = $data->get("plots");
+                /** @var array{string: string[]} $unparsedMergeRecords */
+                $unparsedMergeRecords = $data->get("merges");
+                $mergeRecords = [];
+                foreach ($unparsedMergeRecords as $origin => $merges) {
+                    $originData = explode(";", $origin);
+                    if ($originData[0] !== $worldName) {
+                        continue;
+                    }
+                    foreach ($merges as $merge) {
+                        $mergeData = explode(";", $merge);
+                        $mergeRecords[] = [
+                            "level" => $originData[0],
+                            "originX" => $originData[1],
+                            "originZ" => $originData[2],
+                            "mergedX" => $mergeData[1],
+                            "mergedZ" => $mergeData[2]
+                        ];
+                    }
+                }
+                break;
+            default:
+                return; // don't import anything due to invalid data provider
+        }
+        foreach ($mergeRecords as $mergeRecord) {
+            /** @var Plot|null $originPlot */
+            $originPlot = yield from $this->awaitMergeOrigin(
+                new BasePlot($mergeRecord["level"], $worldSettings, (int) $mergeRecord["originX"], (int) $mergeRecord["originZ"])
+            );
+            if ($originPlot === null) {
+                continue;
+            }
+            /** @var Plot|null $plotToMerge */
+            $plotToMerge = yield from $this->awaitMergeOrigin(
+                new BasePlot($mergeRecord["level"], $worldSettings, (int) $mergeRecord["mergedX"], (int) $mergeRecord["mergedZ"])
+            );
+            if ($plotToMerge === null) {
+                continue;
+            }
+            foreach (array_merge([$plotToMerge], $plotToMerge->getMergePlots()) as $mergePlot) {
+                $mergePlot = MergePlot::fromBasePlot($mergePlot->toBasePlot(), $originPlot->getX(), $originPlot->getZ());
+                if ($originPlot->isMerged($mergePlot)) {
+                    continue;
+                }
+                $originPlot->addMergePlot($mergePlot);
+                yield from $this->addMergePlot($originPlot, $mergePlot);
+            }
+        }
+        foreach($records as $record) {
+            // load plot
+            /** @var Plot|null $plot */
+            $plot = yield from $this->awaitMergeOrigin(
+                new BasePlot($record["level"], $worldSettings, (int) $record["X"], (int) $record["Z"])
+            );
+            if ($plot === null) {
+                continue;
+            }
+
+            // claim plot
+            if ($record["owner"] !== "") {
+                /** @var PlayerData|null $playerData */
+                $playerData = yield from $this->createPlayerDataEntry($record["owner"]);
+                if ($playerData !== null) {
+                    $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
+                    $plot->addPlotPlayer($senderData);
+                    yield from $this->savePlotPlayer($plot, $senderData);
+                }
+            }
+
+            // load helpers
+            foreach($record["helpers"] as $playerName) {
+                /** @var PlayerData|null $playerData */
+                $playerData = yield from $this->createPlayerDataEntry($playerName);
+                if ($playerData !== null) {
+                    $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_TRUSTED);
+                    $plot->addPlotPlayer($senderData);
+                    yield from $this->savePlotPlayer($plot, $senderData);
+                }
+            }
+
+            // load denied with priority over helpers
+            foreach($record["denied"] as $playerName) {
+                /** @var PlayerData|null $playerData */
+                $playerData = yield from $this->createPlayerDataEntry($playerName);
+                if ($playerData !== null) {
+                    $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_DENIED);
+                    $plot->addPlotPlayer($senderData);
+                    yield from $this->savePlotPlayer($plot, $senderData);
+                }
+            }
+
+            //load common flags
+            $flag = Flags::PVP()->createInstance($record["pvp"]);
+            $plot->addFlag($flag);
+            yield from $this->savePlotFlag($plot, $flag);
+
+            $flag = Flags::FLOWING()->createInstance($myplotWorldData["UpdatePlotLiquids"]);
+            $plot->addFlag($flag);
+            yield from $this->savePlotFlag($plot, $flag);
+
+            $flag = Flags::BURNING()->createInstance($myplotWorldData["AllowFireTicking"]);
+            $plot->addFlag($flag);
+            yield from $this->savePlotFlag($plot, $flag);
+        }
+    }
+
+    /**
+     * @return Generator<mixed, mixed, mixed, PlayerData|null>
+     */
+    private function createPlayerDataEntry(string $playerName) : Generator {
+        // validate offline player data
+        $offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
+        $XUID = $offlineData?->getString("LastKnownXUID");
+
+        // register filler player data
+        yield from $this->updatePlayerData(
+            null, // doesn't matter what is input at this point. will overwrite on login
+            $XUID,
+            $playerName
+        );
+        // queriying now that player data updated
+        /** @var PlayerData|null $playerData */
+        $playerData = yield from $this->awaitPlayerDataByData(
+            null,
+            $XUID,
+            $playerName
+        );
+        return $playerData;
     }
 }

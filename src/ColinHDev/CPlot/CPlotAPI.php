@@ -365,8 +365,9 @@ final class CPlotAPI {
     public function getBasePlotAtPoint(string $worldName, WorldSettings $worldSettings, Vector3 $point) : BasePlot|false {
         $roadSize = $worldSettings->getRoadSize();
         $plotSize = $worldSettings->getPlotSize();
+        $coordinateOffset = $worldSettings->getCoordinateOffset();
         $roadPlotSize = $roadSize + $plotSize;
-        $x = $point->getFloorX() - $roadSize;
+        $x = $point->getFloorX() - $roadSize - $coordinateOffset;
         if ($x >= 0) {
             $X = (int) floor($x / $roadPlotSize);
             $difX = $x % $roadPlotSize;
@@ -374,7 +375,7 @@ final class CPlotAPI {
             $X = (int) ceil(($x - $plotSize + 1) / $roadPlotSize);
             $difX = abs(($x - $plotSize + 1) % $roadPlotSize);
         }
-        $z = $point->getFloorZ() - $roadSize;
+        $z = $point->getFloorZ() - $roadSize - $coordinateOffset;
         if ($z >= 0) {
             $Z = (int) floor($z / $roadPlotSize);
             $difZ = $z % $roadPlotSize;

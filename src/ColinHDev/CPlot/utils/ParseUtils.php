@@ -79,7 +79,7 @@ class ParseUtils {
         if ($block !== null) {
             return $block;
         }
-        return self::parseBlockFromIdMetaString($blockIdentifier);
+        return self::parseBlockFromIdMetaString($blockIdentifier, ";");
     }
 
     private static function parseBlockFromBlockName(string $blockName) : ?Block {
@@ -109,8 +109,11 @@ class ParseUtils {
         }
     }
 
-    private static function parseBlockFromIdMetaString(string $idMetaString) : ?Block {
-        $blockData = explode(";", $idMetaString);
+    /**
+     * @param non-empty-string $separator
+     */
+    private static function parseBlockFromIdMetaString(string $idMetaString, string $separator) : ?Block {
+        $blockData = explode($separator, $idMetaString);
         if (count($blockData) !== 3) {
             return null;
         }
@@ -136,4 +139,17 @@ class ParseUtils {
         preg_match_all('/\w+/', $aliases, $matches);
         return $matches[0];
     }
+
+	/**
+	 * This is different from CPlot because of the $blockData separator character and output keys
+	 *
+	 * @phpstan-param array<string|int, string|int> $array
+	 */
+	public static function parseMyPlotBlock(array $array, string | int $key) : ?Block {
+        $idMetaString = self::parseStringFromArray($array, $key);
+        if ($idMetaString !== null) {
+            return self::parseBlockFromIdMetaString($idMetaString, ":");
+        }
+        return null;
+	}
 }
