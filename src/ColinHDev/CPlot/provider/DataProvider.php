@@ -26,20 +26,26 @@ use ColinHDev\CPlot\utils\ParseUtils;
 use ColinHDev\CPlot\worlds\WorldSettings;
 use DateTime;
 use Generator;
+use pocketmine\block\VanillaBlocks;
+use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
+use pocketmine\world\World;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
 use SOFe\AwaitGenerator\Await;
 use Symfony\Component\Filesystem\Path;
 use Throwable;
+use function array_merge;
 use function count;
 use function file_exists;
+use function is_array;
 use function is_int;
 use function is_string;
+use function json_decode;
 use function time;
 
 /**
@@ -1321,17 +1327,46 @@ final class DataProvider {
     /**
      * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
-    public function importMyPlotData(string $worldName) : Generator {
-        if(!is_dir(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot")) ||
-            !file_exists(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml")) ||
-			!file_exists(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "worlds", $worldName . ".yml")))
+    public function importMyPlotData(World $world) : Generator {
+        $worldName = $world->getFolderName();
+        $myplotPluginDataPath = Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot");
+        if (!is_dir($myplotPluginDataPath) ||
+            !file_exists(Path::join($myplotPluginDataPath, "config.yml")) || 
+            !file_exists(Path::join($myplotPluginDataPath, "worlds", $worldName . ".yml"))
+        ) {
             return;
-        /** @var array{DataProvider: string, MySQLSettings: array{Host: string, Username: string, Password: string, DatabaseName: string, Port: int}} $settings */
-        $settings = yaml_parse_file(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "config.yml"));
-        /** @var array{UpdatePlotLiquids: bool, AllowFireTicking: bool} $worldSettings */
-        $worldSettings = yaml_parse_file(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "worlds", $worldName . ".yml"));
-        switch(mb_strtolower($settings["DataProvider"])) {
-            case 'sqlite':
+        }
+
+        // Importing the world data
+        $worldOptions = json_decode($world->getProvider()->getWorldData()->getGeneratorOptions(), true);
+        if (!is_array($worldOptions)) {
+            $worldOptions = [];
+        }
+        $worldSettings = new WorldSettings(
+            WorldSettings::TYPE_MYPLOT,
+            BiomeIds::PLAINS, // MyPlot always uses the plains biome
+            "default",
+            "default",
+            "default",
+            ParseUtils::parseIntegerFromArray($worldOptions, "RoadWidth") ?? 7,
+            ParseUtils::parseIntegerFromArray($worldOptions, "PlotSize") ?? 32,
+            ParseUtils::parseIntegerFromArray($worldOptions, "GroundHeight") ?? 64,
+            -1 * (ParseUtils::parseIntegerFromArray($worldOptions, "RoadWidth") ?? 7), // MyPlot generation offset is the negative road width
+            ParseUtils::parseMyPlotBlock($worldOptions, "RoadBlock") ?? VanillaBlocks::OAK_PLANKS(),
+            ParseUtils::parseMyPlotBlock($worldOptions, "WallBlock") ?? VanillaBlocks::STONE_SLAB(),
+            ParseUtils::parseMyPlotBlock($worldOptions, "PlotFloorBlock") ?? VanillaBlocks::GRASS(),
+            ParseUtils::parseMyPlotBlock($worldOptions, "PlotFillBlock") ?? VanillaBlocks::DIRT(),
+            ParseUtils::parseMyPlotBlock($worldOptions, "BottomBlock") ?? VanillaBlocks::BEDROCK(),
+        );
+        yield from $this->addWorld($worldName, $worldSettings);
+
+        // Importing the plots
+        /** @var array{DataProvider: string, MySQLSettings: array{Host: string, Username: string, Password: string, DatabaseName: string, Port: int}} $myplotConfigData */
+        $myplotConfigData = yaml_parse_file(Path::join($myplotPluginDataPath, "config.yml"));
+        /** @var array{UpdatePlotLiquids: bool, AllowFireTicking: bool} $myplotWorldData */
+        $myplotWorldData = yaml_parse_file(Path::join($myplotPluginDataPath, "worlds", $worldName . ".yml"));
+        switch(mb_strtolower($myplotConfigData["DataProvider"])) {
+            case "sqlite":
                 $myplotDatabase = libasynql::create(CPlot::getInstance(), [
                     "type" => "sqlite",
                     "sqlite" => [
@@ -1340,8 +1375,8 @@ final class DataProvider {
                 ], [
                     "sqlite" => "sql" . DIRECTORY_SEPARATOR . "myplot_sqlite.sql"
                 ]);
-            case 'mysql':
-                $sqlSettings = $settings["MySQLSettings"];
+            case "mysql":
+                $sqlSettings = $myplotConfigData["MySQLSettings"];
                 $myplotDatabase = $myplotDatabase ?? libasynql::create(CPlot::getInstance(), [
                     "type" => "mysql",
                     "mysql" => [
@@ -1364,18 +1399,18 @@ final class DataProvider {
                         "X" => $unparsedRecord["X"],
                         "Z" => $unparsedRecord["Z"],
                         "owner" => $unparsedRecord["owner"],
-                        "helpers" => explode(",", $unparsedRecord["helpers"]),
-                        "denied" => explode(",", $unparsedRecord["denied"]),
+                        "helpers" => $unparsedRecord["helpers"] === "" ? [] : explode(",", $unparsedRecord["helpers"]),
+                        "denied" => $unparsedRecord["denied"] === "" ? [] : explode(",", $unparsedRecord["denied"]),
                         "pvp" => (bool) $unparsedRecord["pvp"]
                     ];
                 }
                 $mergeRecords = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_MERGES, ["worldName" => $worldName]);
                 $myplotDatabase->close();
                 break;
-            case 'yaml':
+            case "yaml":
                 $filename = "plots.yml";
-            case 'json':
-                $data = new Config(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "Data", $filename ?? "plots.json"), Config::DETECT);
+            case "json":
+                $data = new Config(Path::join($myplotPluginDataPath, "Data", $filename ?? "plots.json"), Config::DETECT);
                 /** @var array{string: array{level: string, X: int, Z: int, owner: string, helpers: string[], denied: string[], pvp: bool}} $records */
                 $records = $data->get("plots");
                 /** @var array{string: string[]} $unparsedMergeRecords */
@@ -1392,8 +1427,8 @@ final class DataProvider {
                             "level" => $originData[0],
                             "originX" => $originData[1],
                             "originZ" => $originData[2],
-                            "mergedX" => $mergeData[0],
-                            "mergedZ" => $mergeData[1]
+                            "mergedX" => $mergeData[1],
+                            "mergedZ" => $mergeData[2]
                         ];
                     }
                 }
@@ -1401,59 +1436,49 @@ final class DataProvider {
             default:
                 return; // don't import anything due to invalid data provider
         }
-        foreach($mergeRecords as $mergeRecord) {
-            // load merge plot 1
-            /** @var Plot|null $plot */
-            $plot = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["originX"], (int)$mergeRecord["originZ"]);
-            if($plot === null)
+        foreach ($mergeRecords as $mergeRecord) {
+            /** @var Plot|null $originPlot */
+            $originPlot = yield from $this->awaitMergeOrigin(
+                new BasePlot($mergeRecord["level"], $worldSettings, (int) $mergeRecord["originX"], (int) $mergeRecord["originZ"])
+            );
+            if ($originPlot === null) {
                 continue;
-
-            // load merge plot 2
+            }
             /** @var Plot|null $plotToMerge */
-            $plotToMerge = yield $this->awaitPlot($mergeRecord["level"], (int)$mergeRecord["mergedX"], (int)$mergeRecord["mergedZ"]);
-            if($plotToMerge === null)
+            $plotToMerge = yield from $this->awaitMergeOrigin(
+                new BasePlot($mergeRecord["level"], $worldSettings, (int) $mergeRecord["mergedX"], (int) $mergeRecord["mergedZ"])
+            );
+            if ($plotToMerge === null) {
                 continue;
-
-            // complete merge logic
-            yield from DataProvider::getInstance()->awaitPlotDeletion($plotToMerge);
-            foreach($plotToMerge->getMergePlots() as $mergePlot){
-                $plot->addMergePlot($mergePlot);
-                yield from $this->addMergePlot($plot, $mergePlot);
             }
-            foreach($plotToMerge->getPlotPlayers() as $mergePlotPlayer) {
-                $plot->addPlotPlayer($mergePlotPlayer);
-                yield from $this->savePlotPlayer($plot, $mergePlotPlayer);
-            }
-            foreach ($plotToMerge->getFlags() as $mergeFlag) {
-                $flag = $plot->getLocalFlagByID($mergeFlag->getID());
-                if ($flag === null) {
-                    $flag = $mergeFlag;
-                } else {
-                    $flag = $flag->merge($mergeFlag->getValue());
+            foreach (array_merge([$plotToMerge], $plotToMerge->getMergePlots()) as $mergePlot) {
+                $mergePlot = MergePlot::fromBasePlot($mergePlot->toBasePlot(), $originPlot->getX(), $originPlot->getZ());
+                if ($originPlot->isMerged($mergePlot)) {
+                    continue;
                 }
-                $plot->addFlag($flag);
-                yield from DataProvider::getInstance()->savePlotFlag($plot, $flag);
-            }
-            foreach ($plotToMerge->getPlotRates() as $mergePlotRate) {
-                $plot->addPlotRate($mergePlotRate);
-                yield from DataProvider::getInstance()->savePlotRate($plot, $mergePlotRate);
+                $originPlot->addMergePlot($mergePlot);
+                yield from $this->addMergePlot($originPlot, $mergePlot);
             }
         }
         foreach($records as $record) {
             // load plot
             /** @var Plot|null $plot */
-            $plot = yield $this->awaitPlot($record["level"], (int)$record["X"], (int)$record["Z"]);
+            $plot = yield from $this->awaitMergeOrigin(
+                new BasePlot($record["level"], $worldSettings, (int) $record["X"], (int) $record["Z"])
+            );
             if ($plot === null) {
                 continue;
             }
 
             // claim plot
-            /** @var PlayerData|null $playerData */
-            $playerData = yield from $this->createPlayerDataEntry($record["owner"]);
-            if ($playerData !== null) {
-                $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
-                $plot->addPlotPlayer($senderData);
-                yield from $this->savePlotPlayer($plot, $senderData);
+            if ($record["owner"] !== "") {
+                /** @var PlayerData|null $playerData */
+                $playerData = yield from $this->createPlayerDataEntry($record["owner"]);
+                if ($playerData !== null) {
+                    $senderData = new PlotPlayer($playerData, PlotPlayer::STATE_OWNER);
+                    $plot->addPlotPlayer($senderData);
+                    yield from $this->savePlotPlayer($plot, $senderData);
+                }
             }
 
             // load helpers
@@ -1483,11 +1508,11 @@ final class DataProvider {
             $plot->addFlag($flag);
             yield from $this->savePlotFlag($plot, $flag);
 
-            $flag = Flags::FLOWING()->createInstance($worldSettings["UpdatePlotLiquids"]);
+            $flag = Flags::FLOWING()->createInstance($myplotWorldData["UpdatePlotLiquids"]);
             $plot->addFlag($flag);
             yield from $this->savePlotFlag($plot, $flag);
 
-            $flag = Flags::BURNING()->createInstance($worldSettings["AllowFireTicking"]);
+            $flag = Flags::BURNING()->createInstance($myplotWorldData["AllowFireTicking"]);
             $plot->addFlag($flag);
             yield from $this->savePlotFlag($plot, $flag);
         }
