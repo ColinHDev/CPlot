@@ -114,20 +114,20 @@ class VisitSubcommand extends AsyncSubcommand {
             return;
         }
         if (count($plots) === 0) {
-            self::sendMessage($sender, ["prefix", "visit.other.noPlots" => $player->getPlayerName()]);
+            self::sendMessage($sender, ["prefix", "visit.other.noPlots" => $player->getPlayerName() ?? "Unknown"]);
             return;
         }
         if ($plotNumber > count($plots)) {
-            self::sendMessage($sender, ["prefix", "visit.other.noPlot" => [$player->getPlayerName(), $plotNumber]]);
+            self::sendMessage($sender, ["prefix", "visit.other.noPlot" => [$player->getPlayerName() ?? "Unknown", $plotNumber]]);
             return;
         }
         /** @var Plot $plot */
         $plot = array_values($plots)[($plotNumber - 1)];
         if (!($plot->teleportTo($sender))) {
-            self::sendMessage($sender, ["prefix", "visit.other.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $player->getPlayerName(), $plotNumber]]);
+            self::sendMessage($sender, ["prefix", "visit.other.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $player->getPlayerName() ?? "Unknown", $plotNumber]]);
             return;
         }
-        self::sendMessage($sender, ["prefix", "visit.other.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $player->getPlayerName(), $plotNumber]]);
+        self::sendMessage($sender, ["prefix", "visit.other.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $player->getPlayerName() ?? "Unknown", $plotNumber]]);
     }
     private function teleportByPlotAlias(Player $sender, string $alias) : Generator {
         try {

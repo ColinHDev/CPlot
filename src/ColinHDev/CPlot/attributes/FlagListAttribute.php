@@ -13,7 +13,6 @@ use function count;
 use function explode;
 use function implode;
 use function is_array;
-use function is_string;
 use function json_decode;
 use function json_encode;
 use const JSON_THROW_ON_ERROR;
@@ -139,9 +138,9 @@ abstract class FlagListAttribute extends ListAttribute {
                 $flags = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
                 if (is_array($flags)) {
                     $parsedFlags = [];
-                    foreach ($flags as $flagParts) {
+                    foreach ($flags as $stringValue) {
                         try {
-                            $flag = $this->parseFlagFromString($flagParts);
+                            $flag = $this->parseFlagFromString($stringValue);
                             if ($flag instanceof Flag) {
                                 $parsedFlags[] = $flag;
                             }
@@ -160,9 +159,9 @@ abstract class FlagListAttribute extends ListAttribute {
                     $flags = explode(",", $value);
                 }
                 $parsedFlags = [];
-                foreach ($flags as $flagParts) {
+                foreach ($flags as $stringValue) {
                     try {
-                        $flag = $this->parseFlagFromString($flagParts);
+                        $flag = $this->parseFlagFromString($stringValue);
                         if ($flag instanceof Flag) {
                             $parsedFlags[] = $flag;
                         }
