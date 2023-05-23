@@ -1355,7 +1355,20 @@ final class DataProvider {
                 ], [
                     "mysql" => "sql" . DIRECTORY_SEPARATOR . "myplot_mysql.sql"
                 ]);
-                $records = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_PLOTS, ["worldName" => $worldName]);
+                $unparsedRecords = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_PLOTS, ["worldName" => $worldName]);
+                $records = [];
+                foreach ($unparsedRecords as $unparsedRecord) {
+                    // Although the array contains more data about the plot, we only need the following:
+                    $records[] = [
+                        "level" => $unparsedRecord["level"],
+                        "x" => $unparsedRecord["X"],
+                        "z" => $unparsedRecord["Z"],
+                        "owner" => $unparsedRecord["owner"],
+                        "helpers" => explode(",", $unparsedRecord["helpers"]),
+                        "denied" => explode(",", $unparsedRecord["denied"]),
+                        "pvp" => (bool) $unparsedRecord["pvp"]
+                    ];
+                }
                 $mergeRecords = yield from $myplotDatabase->asyncSelect(self::EXPORT_MYPLOT_MERGES, ["worldName" => $worldName]);
                 $myplotDatabase->close();
                 break;
@@ -1363,9 +1376,8 @@ final class DataProvider {
                 $filename = "plots.yml";
             case 'json':
                 $data = new Config(Path::join(Server::getInstance()->getDataPath(), "plugin_data", "MyPlot", "Data", $filename ?? "plots.json"), Config::DETECT);
-                /** @var array{string: array{owner: string, helpers: string[], denied: string[]}} $unparsedRecords */
-                $unparsedRecords = $data->get("plots");
-                $records = array_values($unparsedRecords);
+                /** @var array{string: array{level: string, x: int, z: int, owner: string, helpers: string[], denied: string[], pvp: bool}} $records */
+                $records = $data->get("plots");
                 /** @var array{string: string[]} $unparsedMergeRecords */
                 $unparsedMergeRecords = $data->get("merges");
                 $mergeRecords = [];
