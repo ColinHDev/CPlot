@@ -1512,7 +1512,7 @@ final class DataProvider {
             $plot->addFlag($flag);
             yield from $this->savePlotFlag($plot, $flag);
 
-            $flag = Flags::BURNING()->createInstance($myplotWorldData["AllowFireTicking"]);
+            $flag = Flags::BURNING()->createInstance($myplotWorldData["AllowFireTicking"] ?? false);
             $plot->addFlag($flag);
             yield from $this->savePlotFlag($plot, $flag);
         }
