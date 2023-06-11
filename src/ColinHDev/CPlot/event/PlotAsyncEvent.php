@@ -6,8 +6,16 @@ namespace ColinHDev\CPlot\event;
 
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\libAsyncEvent\AsyncEvent;
+use ColinHDev\libAsyncEvent\ConsecutiveEventHandlerExecutionTrait;
+use pocketmine\event\Event;
 
-abstract class PlotAsyncEvent extends AsyncEvent {
+/**
+ * @link https://github.com/ColinHDev/libAsyncEvent/
+ * @method void block()
+ * @method void release()
+ */
+abstract class PlotAsyncEvent extends Event implements AsyncEvent {
+    use ConsecutiveEventHandlerExecutionTrait;
 
     private Plot $plot;
 

@@ -6,16 +6,22 @@ namespace ColinHDev\CPlot\event;
 
 use ColinHDev\CPlot\worlds\WorldSettings;
 use ColinHDev\libAsyncEvent\AsyncEvent;
+use ColinHDev\libAsyncEvent\ConsecutiveEventHandlerExecutionTrait;
 use pocketmine\event\Cancellable;
 use pocketmine\event\CancellableTrait;
+use pocketmine\event\Event;
 use pocketmine\world\generator\Generator;
 use pocketmine\world\WorldCreationOptions;
 use SOFe\AwaitGenerator\Await;
 
 /**
  * This event is called when a new plot world is generated.
+ * @link https://github.com/ColinHDev/libAsyncEvent/
+ * @method void block()
+ * @method void release()
  */
-class PlotWorldGenerateAsyncEvent extends AsyncEvent implements Cancellable {
+class PlotWorldGenerateAsyncEvent extends Event implements AsyncEvent, Cancellable {
+    use ConsecutiveEventHandlerExecutionTrait;
     use CancellableTrait;
 
     private string $worldName;
