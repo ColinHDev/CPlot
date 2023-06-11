@@ -28,6 +28,7 @@ use DateTime;
 use Generator;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\data\bedrock\BiomeIds;
+use pocketmine\nbt\NoSuchTagException;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\Config;
@@ -1524,7 +1525,11 @@ final class DataProvider {
     private function createPlayerDataEntry(string $playerName) : Generator {
         // validate offline player data
         $offlineData = Server::getInstance()->getOfflinePlayerData($playerName);
-        $XUID = $offlineData?->getString("LastKnownXUID");
+        try {
+            $XUID = $offlineData?->getString("LastKnownXUID");
+        } catch (NoSuchTagException) {
+            $XUID = null;
+        }
 
         // register filler player data
         yield from $this->updatePlayerData(
