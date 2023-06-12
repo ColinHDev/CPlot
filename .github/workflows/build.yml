@@ -53,3 +53,13 @@ jobs:
               name: release_artifacts
               path: |
                   ${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}.phar
+        
+        - name: Create or update development release
+          uses: ncipollo/release-action@v1.8.10
+          with:
+              artifacts: "${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}_branch_${{ github.ref_name }}.phar"
+              token: ${{ secrets.GITHUB_TOKEN }}
+              prerelease: true
+              allowUpdates: true
+              tag: development-release
+              name: "Development Plugin Builds"
