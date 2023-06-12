@@ -33,11 +33,8 @@ jobs:
               key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
               restore-keys: ${{ runner.os }}-composer-
 
-        - name: Install Composer dependencies
-          run: composer install --no-progress --no-dev --prefer-dist --optimize-autoloader --ignore-platform-reqs
-
-        - name: Download Pharynx phar builder
-          run: wget https://github.com/SOF3/pharynx/releases/latest/download/pharynx.phar -O pharynx.phar
+        - name: Download pmmp plugin build script
+          run: wget https://raw.githubusercontent.com/ColinHDev/pmmp-plugin-build-script/main/build-plugin.php
 
         - id: get-manifest
           run: |
@@ -48,7 +45,7 @@ jobs:
               sed -i "s/version: .*/version: ${{ github.ref_name }}/g" plugin.yml
 
         - name: Build plugin archive
-          run: php pharynx.phar -i . -f LICENSE -c -p=${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}.phar
+          run: php build-plugin.php
 
         - name: Upload release artifacts
           uses: actions/upload-artifact@v3
@@ -56,16 +53,3 @@ jobs:
               name: release_artifacts
               path: |
                   ${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}.phar
-
-        - name: Create draft release
-          uses: ncipollo/release-action@v1
-          with:
-              artifacts: ${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}.phar
-              commit: ${{ github.sha }}
-              draft: true
-              name: ${{ steps.get-manifest.outputs.NAME }} v${{ github.ref_name }}
-              prerelease: ${{ steps.get-manifest.outputs.PRERELEASE }}
-              tag: ${{ github.ref_name }}
-              #token: ${{ secrets.GITHUB_TOKEN }}
-              body: |
-                  **For PocketMine-MP API ${{ steps.get-manifest.outputs.API }}**
