@@ -53,9 +53,12 @@ jobs:
               name: release_artifacts
               path: |
                   ${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}.phar
-        
+    
+        - name: Rename output file
+          run: mv "${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}.phar" "${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}_branch_${{ github.ref_name }}.phar"
+    
         - name: Create or update development release
-          uses: ncipollo/release-action@v1.8.10
+          uses: ncipollo/release-action@v1
           with:
               artifacts: "${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}_branch_${{ github.ref_name }}.phar"
               token: ${{ secrets.GITHUB_TOKEN }}
