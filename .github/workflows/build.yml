@@ -4,8 +4,8 @@ on:
     push
 
 jobs:
-    draft:
-        name: Create GitHub Draft Release
+    build:
+        name: Build Plugin Phar
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
@@ -44,17 +44,17 @@ jobs:
               sed -i '/src-namespace-prefix/d' plugin.yml
               sed -i "s/version: .*/version: ${{ github.ref_name }}/g" plugin.yml
 
-        - name: Build plugin archive
+        - name: Build plugin phar
           run: php build-plugin.php
 
-        - name: Upload release artifacts
+        - name: Upload plugin phar as workflow artifact
           uses: actions/upload-artifact@v3
           with:
               name: release_artifacts
               path: |
                   ${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}.phar
     
-        - name: Rename output file
+        - name: Rename plugin phar for the development release
           run: mv "${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}.phar" "${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}_dev-${{ github.ref_name }}.phar"
     
         - name: Create or update development release
@@ -66,3 +66,10 @@ jobs:
               allowUpdates: true
               tag: development-release
               name: "Development Plugin Builds"
+              body: |
+                This release contains the latest development builds of the plugin for each branch.
+                They are automatically updated when new commits are pushed to the branch. 
+                
+                The plugin phar name follows the format: **{plugin name}_dev-{branch name}.phar**
+                
+                **DO NOT USE THESE BUILDS ON A PRODUCTION SERVER**
