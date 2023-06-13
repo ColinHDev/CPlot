@@ -18,6 +18,9 @@ use pocketmine\nbt\NoSuchTagException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\TreeRoot;
 use pocketmine\nbt\UnexpectedTagTypeException;
+use pocketmine\network\mcpe\compression\DecompressionException;
+use pocketmine\network\mcpe\compression\ZlibCompressor;
+use pocketmine\utils\BinaryStream;
 use pocketmine\world\ChunkManager;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\GlobalBlockStateHandlers;
@@ -26,14 +29,18 @@ use pocketmine\world\utils\SubChunkExplorer;
 use pocketmine\world\World;
 use RuntimeException;
 use function file_exists;
+use function file_put_contents;
 use function pathinfo;
+use function strlen;
+use function zlib_encode;
 use const DIRECTORY_SEPARATOR;
+use const ZLIB_ENCODING_GZIP;
 
 class Schematic implements SchematicTypes {
 
     public const FILE_EXTENSION = "cplot_schematic";
 
-    public const SCHEMATIC_VERSION = 4;
+    public const SCHEMATIC_VERSION = 5;
 
     private string $file;
     private int $version;
@@ -67,56 +74,47 @@ class Schematic implements SchematicTypes {
      */
     public function save() : void {
         $nbt = new CompoundTag();
+        $nbtSerializer = new BigEndianNbtSerializer();
 
         // Schematic versions indicate how the schematic file's contained data should be parsed. By calling the save()
         // method, the schematic file is always written according to the current version, basically upgrading it.
         // Because of that, we need to update its version, in case someone calls this on an old schematic.
         $this->version = self::SCHEMATIC_VERSION;
+        
         $nbt->setShort("Version", $this->version);
         $nbt->setLong("CreationTime", $this->creationTime);
         $nbt->setString("Type", $this->type);
         $nbt->setShort("RoadSize", $this->roadSize);
         $nbt->setShort("PlotSize", $this->plotSize);
 
-        $biomeTreeRoots = [];
+        $stream = new BinaryStream();
         foreach ($this->biomeIDs as $coordinateHash => $biomeID) {
-            $biomeNBT = new CompoundTag();
-            $biomeNBT->setShort("ID", $biomeID);
             World::getBlockXYZ($coordinateHash, $x, $y, $z);
-            $biomeNBT->setShort("X", $x);
-            $biomeNBT->setShort("Y", $y);
-            $biomeNBT->setShort("Z", $z);
-            $biomeTreeRoots[] = new TreeRoot($biomeNBT, (string) $coordinateHash);
+            $stream->putShort($x);
+            $stream->putShort($y);
+            $stream->putShort($z);
+            $stream->putShort($biomeID);
         }
-        $biomeTreeRootsEncoded = zlib_encode((new BigEndianNbtSerializer())->writeMultiple($biomeTreeRoots), ZLIB_ENCODING_GZIP);
-        assert(is_string($biomeTreeRootsEncoded));
-        $nbt->setByteArray("Biomes", $biomeTreeRootsEncoded);
+        $nbt->setByteArray("Biomes", $stream->getBuffer());
 
-        $blockTreeRoots = [];
+        $stream = new BinaryStream();
         $blockStateSerializer = GlobalBlockStateHandlers::getSerializer();
         foreach ($this->blockStateIDs as $coordinateHash => $blockStateID) {
-            $blockNBT = new CompoundTag();
-
-            $blockNBT->setTag("NBT", $blockStateSerializer->serialize($blockStateID)->toNbt());
-
             World::getBlockXYZ($coordinateHash, $x, $y, $z);
-            $blockNBT->setShort("X", $x);
-            $blockNBT->setShort("Y", $y);
-            $blockNBT->setShort("Z", $z);
-
-            $blockTreeRoots[] = new TreeRoot($blockNBT, (string) $coordinateHash);
+            $stream->putShort($x);
+            $stream->putShort($y);
+            $stream->putShort($z);
+            $stream->put($nbtSerializer->write(new TreeRoot(
+                $blockStateSerializer->serialize($blockStateID)->toNbt()
+            )));
         }
-        $blockTreeRootsEncoded = zlib_encode((new BigEndianNbtSerializer())->writeMultiple($blockTreeRoots), ZLIB_ENCODING_GZIP);
-        assert(is_string($blockTreeRootsEncoded));
-        $nbt->setByteArray("Blocks", $blockTreeRootsEncoded);
+        $nbt->setByteArray("Blocks", $stream->getBuffer());
 
-        $tileTreeRoots = [];
-        foreach ($this->tiles as $coordinateHash => $tileNBT) {
-            $tileTreeRoots[] = new TreeRoot($tileNBT, (string) $coordinateHash);
+        $stream = new BinaryStream();
+        foreach ($this->tiles as $tileNBT) {
+            $stream->put($nbtSerializer->write(new TreeRoot($tileNBT)));
         }
-        $tileTreeRootsEncoded = zlib_encode((new BigEndianNbtSerializer())->writeMultiple($tileTreeRoots), ZLIB_ENCODING_GZIP);
-        assert(is_string($tileTreeRootsEncoded));
-        $nbt->setByteArray("TileEntities", $tileTreeRootsEncoded);
+        $nbt->setByteArray("TileEntities", $stream->getBuffer());
 
         if (file_exists($this->file)) {
             $pathInfo = pathinfo($this->file);
@@ -125,7 +123,13 @@ class Schematic implements SchematicTypes {
                 ($pathInfo["dirname"] ?? "") . DIRECTORY_SEPARATOR . $pathInfo["filename"] . "_old." . ($pathInfo["extension"] ?? self::FILE_EXTENSION)
             );
         }
-        file_put_contents($this->file, zlib_encode((new BigEndianNbtSerializer())->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP));
+        $fileContents = zlib_encode($nbtSerializer->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP);
+        if ($fileContents === false) {
+            throw new RuntimeException("The schematic data could not be compressed.");
+        }
+        if (file_put_contents($this->file, $fileContents) === false) {
+            throw new RuntimeException("The schematic file \"" . $this->file . "\" could not be written.");
+        }
     }
 
     /**
@@ -194,6 +198,17 @@ class Schematic implements SchematicTypes {
                     }
                     /** @phpstan-var BiomeIds::* $biomeID */
                     $biomeID = $biomeNBT->getShort("ID");
+                    $this->biomeIDs[$coordinateHash] = $biomeID;
+                }
+                break;
+            case 5:
+                $buffer = $nbt->getByteArray("Biomes");
+                $bufferLength = strlen($buffer);
+                $stream = new BinaryStream($buffer);
+                while ($stream->getOffset() < $bufferLength) {
+                    $coordinateHash = World::blockHash($stream->getShort(), $stream->getSignedShort(), $stream->getShort());
+                    /** @phpstan-var BiomeIds::* $biomeID */
+                    $biomeID = $stream->getShort();
                     $this->biomeIDs[$coordinateHash] = $biomeID;
                 }
                 break;
@@ -275,6 +290,25 @@ class Schematic implements SchematicTypes {
                     $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize(GlobalBlockStateHandlers::getUnknownBlockStateData());
                 }
                 break;
+                
+            case 5:
+                $buffer = $nbt->getByteArray("Blocks");
+                $bufferLength = strlen($buffer);
+                $stream = new BinaryStream($buffer);
+                while ($stream->getOffset() < $bufferLength) {
+                    $coordinateHash = World::blockHash($stream->getShort(), $stream->getSignedShort(), $stream->getShort());
+                    $offset = $stream->getOffset();
+                    $blockTreeRoot = (new BigEndianNbtSerializer())->read($stream->getBuffer(), $offset);
+                    $stream->setOffset($offset);
+                    try {
+                        $blockStateData = BlockStateData::fromNbt($blockTreeRoot->mustGetCompoundTag());
+                        $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize($blockStateData);
+                        continue;
+                    } catch(NbtDataException|BlockStateDeserializeException) {
+                    }
+                    $this->blockStateIDs[$coordinateHash] = $blockStateDeserializer->deserialize(GlobalBlockStateHandlers::getUnknownBlockStateData());
+                }
+                break;
         }
 
         // Loading tile data
@@ -284,6 +318,17 @@ class Schematic implements SchematicTypes {
             case 3:
             case 4:
                 foreach (self::readTreeRoots($nbt, "TileEntities") as $tileTreeRoot) {
+                    try {
+                        $tileNBT = $tileTreeRoot->mustGetCompoundTag();
+                        $coordinateHash = World::blockHash($tileNBT->getInt(Tile::TAG_X), $tileNBT->getInt(Tile::TAG_Y), $tileNBT->getInt(Tile::TAG_Z));
+                    } catch (NbtException|InvalidArgumentException) {
+                        continue;
+                    }
+                    $this->tiles[$coordinateHash] = $tileNBT;
+                }
+                break;
+            case 5:
+                foreach (self::readTreeRoots($nbt, "TileEntities", false) as $tileTreeRoot) {
                     try {
                         $tileNBT = $tileTreeRoot->mustGetCompoundTag();
                         $coordinateHash = World::blockHash($tileNBT->getInt(Tile::TAG_X), $tileNBT->getInt(Tile::TAG_Y), $tileNBT->getInt(Tile::TAG_Z));
@@ -303,15 +348,20 @@ class Schematic implements SchematicTypes {
     /**
      * @phpstan-return array<int, TreeRoot>
      */
-    private static function readTreeRoots(CompoundTag $nbt, string $key) : array {
+    private static function readTreeRoots(CompoundTag $nbt, string $key, bool $isCompressed = true) : array {
         try {
             $compressed = $nbt->getByteArray($key);
         } catch (UnexpectedTagTypeException|NoSuchTagException) {
             return [];
         }
-        $decompressed = zlib_decode($compressed);
-        if ($decompressed === false) {
-            return [];
+        if ($isCompressed) {
+            try {
+                $decompressed = ZlibCompressor::getInstance()->decompress($compressed);
+            } catch(DecompressionException) {
+                return [];
+            }
+        } else {
+            $decompressed = $compressed;
         }
         try {
             return (new BigEndianNbtSerializer())->readMultiple($decompressed);
