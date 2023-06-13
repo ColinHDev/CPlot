@@ -96,7 +96,10 @@ class ParseUtils {
         if (!is_string($decompressed)) {
             return null;
         }
-        $decompressed = zlib_decode($decompressed);
+        // Apparently zlib_decode() not only returns false but also issues a warning if the data could not be
+        // decompressed. (This is not stated in the php wiki.) Since PocketMine-MP automatically converts warnings to
+        // exceptions, we silence the warning here.
+        $decompressed = @zlib_decode($decompressed);
         if (!is_string($decompressed)) {
             return null;
         }
