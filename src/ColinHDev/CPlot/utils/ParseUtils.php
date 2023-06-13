@@ -13,6 +13,8 @@ use pocketmine\nbt\BigEndianNbtSerializer;
 use pocketmine\nbt\NbtDataException;
 use pocketmine\nbt\TreeRoot;
 use pocketmine\world\format\io\GlobalBlockStateHandlers;
+use function base64_decode;
+use function base64_encode;
 use function count;
 use function explode;
 use function get_class;
@@ -57,7 +59,9 @@ class ParseUtils {
         if (!is_string($compressedTreeRoot)) {
             throw new ParseException("Block " . get_class($block) . " could not be parsed into a string.");
         }
-        return $compressedTreeRoot;
+        // Returning only the GZIP compressed data resulted in errors e.g. when json encoding the string because of
+        // malformed UTF-8 characters. Therefore, we base64 encode the compressed data.
+        return base64_encode($compressedTreeRoot);
     }
 
     /**
@@ -88,7 +92,11 @@ class ParseUtils {
     }
 
     private static function parseBlockFromCompressedTreeRoot(string $compressedTreeRoot) : ?Block {
-        $decompressed = zlib_decode($compressedTreeRoot);
+        $decompressed = base64_decode($compressedTreeRoot);
+        if (!is_string($decompressed)) {
+            return null;
+        }
+        $decompressed = zlib_decode($decompressed);
         if (!is_string($decompressed)) {
             return null;
         }
