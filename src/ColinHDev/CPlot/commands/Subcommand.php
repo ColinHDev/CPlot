@@ -27,7 +27,7 @@ abstract class Subcommand {
         $this->key = $key;
         $languageProvider = LanguageManager::getInstance()->getProvider();
         $this->name = $languageProvider->translateString($key . ".name");
-        $this->alias = ParseUtils::parseAliasesFromString($languageProvider->translateString("plot.alias"));
+        $this->alias = ParseUtils::parseAliasesFromString($languageProvider->translateString($key . ".alias"));
         $this->permission = "cplot.subcommand." . $key;
     }
 
