@@ -15,6 +15,7 @@ use ColinHDev\CPlot\provider\EconomyProvider;
 use ColinHDev\CPlot\provider\utils\EconomyException;
 use ColinHDev\CPlot\tasks\async\PlotMergeAsyncTask;
 use ColinHDev\CPlot\worlds\WorldSettings;
+use Generator;
 use pocketmine\command\CommandSender;
 use pocketmine\math\Facing;
 use pocketmine\player\Player;
@@ -24,7 +25,7 @@ use SOFe\AwaitGenerator\Await;
 
 class MergeSubcommand extends AsyncSubcommand {
 
-    public function executeAsync(CommandSender $sender, array $args) : \Generator {
+    public function executeAsync(CommandSender $sender, array $args) : Generator {
         if (!$sender instanceof Player) {
             self::sendMessage($sender, ["prefix", "merge.senderNotOnline"]);
             return;
@@ -61,7 +62,7 @@ class MergeSubcommand extends AsyncSubcommand {
             }
         }
 
-        $rotation = ($location->yaw - 180) % 360;
+        $rotation = (((int) $location->yaw) - 180) % 360;
         if ($rotation < 0) $rotation += 360.0;
 
         if ((0 <= $rotation && $rotation < 45) || (315 <= $rotation && $rotation < 360)) {
