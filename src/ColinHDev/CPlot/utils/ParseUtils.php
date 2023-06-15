@@ -147,7 +147,7 @@ class ParseUtils {
      */
     public static function parseAliasesFromString(string $aliases) : array {
         // Only allow letters and numbers to be used in aliases
-        preg_match_all('/\w+/', $aliases, $matches);
+        preg_match_all('/[^\s,.;]+/', $aliases, $matches);
         return $matches[0];
     }
 
