@@ -37,7 +37,7 @@ class BorderSubcommand extends AsyncSubcommand {
         }
         $block = ParseUtils::parseBlockFromString($args[0]);
         if ($block === null) {
-            self::sendMessage($sender, ["prefix", "border.invalidBlock"]);
+            self::sendMessage($sender, ["prefix", "border.invalidBlock" => $args[0]]);
             return;
         }
 

@@ -37,7 +37,7 @@ class WallSubcommand extends AsyncSubcommand {
         }
         $block = ParseUtils::parseBlockFromString($args[0]);
         if ($block === null) {
-            self::sendMessage($sender, ["prefix", "wall.invalidBlock"]);
+            self::sendMessage($sender, ["prefix", "wall.invalidBlock" => $args[0]]);
             return;
         }
 
