@@ -92,7 +92,7 @@ class WorldSettings {
 	}
 
     public function getAirBlock() : Block {
-        return $this->roadBlock;
+        return $this->airBlock;
     }
     
     public function getRoadBlock() : Block {
