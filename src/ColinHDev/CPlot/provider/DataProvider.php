@@ -1364,7 +1364,7 @@ final class DataProvider {
         // Importing the plots
         /** @var array{DataProvider: string, MySQLSettings: array{Host: string, Username: string, Password: string, DatabaseName: string, Port: int}} $myplotConfigData */
         $myplotConfigData = yaml_parse_file(Path::join($myplotPluginDataPath, "config.yml"));
-        /** @var array{UpdatePlotLiquids: bool, AllowFireTicking: bool} $myplotWorldData */
+        /** @var array{UpdatePlotLiquids: bool, AllowFireTicking?: bool} $myplotWorldData */
         $myplotWorldData = yaml_parse_file(Path::join($myplotPluginDataPath, "worlds", $worldName . ".yml"));
         switch(mb_strtolower($myplotConfigData["DataProvider"])) {
             case "sqlite":

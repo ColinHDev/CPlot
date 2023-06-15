@@ -92,7 +92,7 @@ class ParseUtils {
     }
 
     private static function parseBlockFromCompressedTreeRoot(string $compressedTreeRoot) : ?Block {
-        $decompressed = base64_decode($compressedTreeRoot);
+        $decompressed = base64_decode($compressedTreeRoot, true);
         if (!is_string($decompressed)) {
             return null;
         }
