@@ -105,7 +105,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
                             } else if ($y < $worldSettings->getGroundSize()) {
                                 $fullBlock = $worldSettings->getPlotFillBlock()->getStateId();
                             } else {
-                                $fullBlock = 0;
+                                $fullBlock = $worldSettings->getAirBlock()->getStateId();
                             }
                             $explorer->moveTo($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {
@@ -149,7 +149,7 @@ class PlotClearAsyncTask extends ChunkModifyingAsyncTask {
                             } else if ($y < $worldSettings->getGroundSize()) {
                                 $fullBlock = $worldSettings->getPlotFillBlock()->getStateId();
                             } else {
-                                $fullBlock = 0;
+                                $fullBlock = $worldSettings->getAirBlock()->getStateId();
                             }
                             $explorer->moveTo($x, $y, $z);
                             if ($explorer->currentSubChunk instanceof SubChunk) {

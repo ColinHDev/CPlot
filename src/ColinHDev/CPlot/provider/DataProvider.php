@@ -1353,6 +1353,7 @@ final class DataProvider {
             ParseUtils::parseIntegerFromArray($worldOptions, "PlotSize") ?? 32,
             ParseUtils::parseIntegerFromArray($worldOptions, "GroundHeight") ?? 64,
             -1 * (ParseUtils::parseIntegerFromArray($worldOptions, "RoadWidth") ?? 7), // MyPlot generation offset is the negative road width
+            VanillaBlocks::AIR(),
             ParseUtils::parseMyPlotBlock($worldOptions, "RoadBlock") ?? VanillaBlocks::OAK_PLANKS(),
             ParseUtils::parseMyPlotBlock($worldOptions, "WallBlock") ?? VanillaBlocks::STONE_SLAB(),
             ParseUtils::parseMyPlotBlock($worldOptions, "PlotFloorBlock") ?? VanillaBlocks::GRASS(),

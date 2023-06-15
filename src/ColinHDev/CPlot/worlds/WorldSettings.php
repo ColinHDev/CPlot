@@ -25,15 +25,16 @@ class WorldSettings {
     private int $roadSize;
     private int $plotSize;
     private int $groundSize;
-	private int $coordinateOffset;
+    private int $coordinateOffset;
 
+    private Block $airBlock;
     private Block $roadBlock;
     private Block $borderBlock;
     private Block $plotFloorBlock;
     private Block $plotFillBlock;
     private Block $plotBottomBlock;
 
-    public function __construct(string $worldType, int $biomeID, string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, int $coordinateOffset, Block $roadBlock, Block $borderBlock, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
+    public function __construct(string $worldType, int $biomeID, string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, int $coordinateOffset, Block $airBlock, Block $roadBlock, Block $borderBlock, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
         $this->worldType = $worldType;
         $this->biomeID = $biomeID;
 
@@ -44,8 +45,9 @@ class WorldSettings {
         $this->roadSize = $roadSize;
         $this->plotSize = $plotSize;
         $this->groundSize = $groundSize;
-		$this->coordinateOffset = $coordinateOffset;
+        $this->coordinateOffset = $coordinateOffset;
 
+        $this->airBlock = $airBlock;
         $this->roadBlock = $roadBlock;
         $this->borderBlock = $borderBlock;
         $this->plotFloorBlock = $plotFloorBlock;
@@ -89,6 +91,10 @@ class WorldSettings {
 		return $this->coordinateOffset;
 	}
 
+    public function getAirBlock() : Block {
+        return $this->roadBlock;
+    }
+    
     public function getRoadBlock() : Block {
         return $this->roadBlock;
     }
@@ -110,7 +116,7 @@ class WorldSettings {
     }
 
     /**
-     * @phpstan-return array{worldType: string, biomeID: int, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, roadBlock: string, borderBlock: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string}
+     * @phpstan-return array{worldType: string, biomeID: int, roadSchematic: string, mergeRoadSchematic: string, plotSchematic: string, roadSize: int, plotSize: int, groundSize: int, airBlock: string, roadBlock: string, borderBlock: string, plotFloorBlock: string, plotFillBlock: string, plotBottomBlock: string}
      */
     public function toArray() : array {
         return [
@@ -123,9 +129,10 @@ class WorldSettings {
 
             "roadSize" => $this->roadSize,
             "plotSize" => $this->plotSize,
-            "groundSize" => $this->groundSize,
-			"coordinateOffset" => $this->coordinateOffset,
+            "groundSize" => $this->groundSize, 
+            "coordinateOffset" => $this->coordinateOffset,
 
+            "airBlock" => ParseUtils::parseStringFromBlock($this->airBlock),
             "roadBlock" => ParseUtils::parseStringFromBlock($this->roadBlock),
             "borderBlock" => ParseUtils::parseStringFromBlock($this->borderBlock),
             "plotFloorBlock" => ParseUtils::parseStringFromBlock($this->plotFloorBlock),
@@ -135,7 +142,7 @@ class WorldSettings {
     }
 
     public static function fromConfig() : self {
-        /** @phpstan-var array{worldType?: string, roadSchematic?: string, biome?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings */
+        /** @phpstan-var array{worldType?: string, roadSchematic?: string, biome?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, airBlock?: string, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings */
         $settings = ResourceManager::getInstance()->getConfig()->get("worldSettings", []);
         $biomeName = strtoupper($settings["biome"] ?? "PLAINS");
         unset($settings["biome"]);
@@ -148,7 +155,7 @@ class WorldSettings {
     }
 
     /**
-     * @phpstan-param array{worldType?: string, biomeID?: int, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings
+     * @phpstan-param array{worldType?: string, biomeID?: int, roadSchematic?: string, mergeRoadSchematic?: string, plotSchematic?: string, roadSize?: int, plotSize?: int, groundSize?: int, airBlock?: string, roadBlock?: string, borderBlock?: string, plotFloorBlock?: string, plotFillBlock?: string, plotBottomBlock?: string} $settings
      */
     public static function fromArray(array $settings) : self {
         $worldType = ParseUtils::parseStringFromArray($settings, "worldType") ?? self::TYPE_CPLOT_DEFAULT;
@@ -161,8 +168,9 @@ class WorldSettings {
         $roadSize = ParseUtils::parseIntegerFromArray($settings, "roadSize") ?? 7;
         $plotSize = ParseUtils::parseIntegerFromArray($settings, "plotSize") ?? 32;
         $groundSize = ParseUtils::parseIntegerFromArray($settings, "groundSize") ?? 64;
-		$coordinateOffset = ParseUtils::parseIntegerFromArray($settings, "coordinateOffset") ?? ($worldType === self::TYPE_MYPLOT ? -$roadSize : 0);
+        $coordinateOffset = ParseUtils::parseIntegerFromArray($settings, "coordinateOffset") ?? ($worldType === self::TYPE_MYPLOT ? -$roadSize : 0);
 
+        $airBlock = ParseUtils::parseBlockFromArray($settings, "airBlock") ?? VanillaBlocks::AIR();
         $roadBlock = ParseUtils::parseBlockFromArray($settings, "roadBlock") ?? VanillaBlocks::OAK_PLANKS();
         $borderBlock = ParseUtils::parseBlockFromArray($settings, "borderBlock") ?? VanillaBlocks::STONE_SLAB();
         $plotFloorBlock = ParseUtils::parseBlockFromArray($settings, "plotFloorBlock") ?? VanillaBlocks::GRASS();
@@ -173,7 +181,7 @@ class WorldSettings {
             $worldType, $biomeID,
             $roadSchematic, $mergeRoadSchematic, $plotSchematic,
             $roadSize, $plotSize, $groundSize, $coordinateOffset,
-            $roadBlock, $borderBlock, $plotFloorBlock, $plotFillBlock, $plotBottomBlock
+            $airBlock, $roadBlock, $borderBlock, $plotFloorBlock, $plotFillBlock, $plotBottomBlock
         );
     }
 }
