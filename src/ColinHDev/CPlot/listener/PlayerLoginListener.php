@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
+use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\provider\DataProvider;
 use ColinHDev\CPlot\provider\LanguageManager;
 use pocketmine\event\Listener;
@@ -23,7 +24,20 @@ class PlayerLoginListener implements Listener {
                 $player->getXuid(),
                 $player->getName()
             ),
-            null,
+            static function(?PlayerData $playerData) use ($player) : void {
+                if (!$player->isConnected()) {
+                    return;
+                }
+                if ($playerData === null) {
+                    $player->kick(
+                        LanguageManager::getInstance()->getProvider()->translateForCommandSender(
+                            $player,
+                            ["prefix", "playerLogin.savePlayerDataError"]
+                        )
+                    );
+                    return;
+                }
+            },
             static function() use ($player) : void {
                 if (!$player->isConnected()) {
                     return;
