@@ -12,19 +12,15 @@ use function pathinfo;
 use function scandir;
 use function strtolower;
 
-/**
- * @phpstan-type LanguageIdentifier string
- */
 final class LanguageManager {
     use SingletonTrait;
 
-    /** @phpstan-var LanguageIdentifier */
     private string $fallbackLanguage;
-    /** @phpstan-var array<LanguageIdentifier, Language> */
+    /** @var array<string, Language> */
     private array $languages;
 
     public function __construct() {
-        /** @phpstan-var array{fallback: LanguageIdentifier, aliases: array<LanguageIdentifier, LanguageIdentifier>} $languageSettings */
+        /** @phpstan-var array{fallback: string, aliases: array<string, string>} $languageSettings */
         $languageSettings = ResourceManager::getInstance()->getConfig()->get("language", []);
         $this->fallbackLanguage = strtolower($languageSettings["fallback"]);
         $languageAliases = $languageSettings["aliases"];
@@ -55,9 +51,19 @@ final class LanguageManager {
     }
 
     /**
+     * Returns the default language.
+     * @return Language The default language.
+     */
+    public function getDefaultLanguage() : Language {
+        return $this->languages[$this->fallbackLanguage];
+    }
+
+    /**
      * Returns the language for the given identifier. If the language does not exist, the fallback language is returned.
+     * @param string $language The language identifier.
+     * @return Language The language matching the identifier or the default language.
      */
     public function getLanguage(string $language) : Language {
-        return $this->languages[$language] ?? $this->languages[$this->fallbackLanguage];
+        return $this->languages[$language] ?? $this->getDefaultLanguage();
     }
 }
