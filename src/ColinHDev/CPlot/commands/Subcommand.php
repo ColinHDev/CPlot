@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands;
 
-use ColinHDev\CPlot\provider\LanguageManager;
+use ColinHDev\CPlot\language\LanguageManager;
 use ColinHDev\CPlot\provider\LanguageProvider;
 use ColinHDev\CPlot\utils\APIHolder;
 use ColinHDev\CPlot\utils\ParseUtils;

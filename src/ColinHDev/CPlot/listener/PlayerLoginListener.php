@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
+use ColinHDev\CPlot\language\LanguageManager;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerLoginEvent;
 use SOFe\AwaitGenerator\Await;
