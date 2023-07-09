@@ -6,7 +6,9 @@ namespace ColinHDev\CPlot\language;
 
 use ColinHDev\CPlot\CPlot;
 use ColinHDev\CPlot\ResourceManager;
+use pocketmine\command\CommandSender;
 use pocketmine\lang\Language;
+use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use function pathinfo;
 use function scandir;
@@ -65,5 +67,17 @@ final class LanguageManager {
      */
     public function getLanguage(string $language) : Language {
         return $this->languages[$language] ?? $this->getDefaultLanguage();
+    }
+
+    /**
+     * Returns the language for the given command sender.
+     * @param CommandSender $sender The command sender.
+     * @return Language The language for the command sender.
+     */
+    public function getLanguageForCommandSender(CommandSender $sender) : Language {
+        if ($sender instanceof Player) {
+            return $this->getLanguage($sender->getLocale());
+        }
+        return $this->getDefaultLanguage();
     }
 }
