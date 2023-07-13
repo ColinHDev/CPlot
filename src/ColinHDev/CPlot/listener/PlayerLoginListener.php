@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\listener;
 
-use ColinHDev\CPlot\language\LanguageManager;
+use ColinHDev\CPlot\commands\CommandExecutor;
+use ColinHDev\CPlot\commands\CommandExecutorManager;
+use ColinHDev\CPlot\language\KnownTranslationFactory;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\provider\DataProvider;
 use pocketmine\event\Listener;
@@ -24,30 +26,27 @@ class PlayerLoginListener implements Listener {
                 $player->getXuid(),
                 $player->getName()
             ),
-            static function(?PlayerData $playerData) use ($player) : void {
+            static function(?PlayerData $playerData) use($player) : void {
                 if (!$player->isConnected()) {
                     return;
                 }
                 if ($playerData === null) {
-                    $player->kick(
-                        LanguageManager::getInstance()->getProvider()->translateForCommandSender(
-                            $player,
-                            ["prefix", "playerLogin.savePlayerDataError"]
-                        )
-                    );
+                    $player->kick((new CommandExecutor($player))->translate(
+                        KnownTranslationFactory::prefix(),
+                        KnownTranslationFactory::playerLogin_savePlayerDataError()
+                    ));
                     return;
                 }
+                CommandExecutorManager::getInstance()->registerPlayerSession($player, $playerData);
             },
-            static function() use ($player) : void {
+            static function() use($player) : void {
                 if (!$player->isConnected()) {
                     return;
                 }
-                $player->kick(
-                    LanguageManager::getInstance()->getProvider()->translateForCommandSender(
-                        $player,
-                        ["prefix", "playerLogin.savePlayerDataError"]
-                    )
-                );
+                $player->kick((new CommandExecutor($player))->translate(
+                    KnownTranslationFactory::prefix(),
+                    KnownTranslationFactory::playerLogin_savePlayerDataError()
+                ));
             }
         );
     }
