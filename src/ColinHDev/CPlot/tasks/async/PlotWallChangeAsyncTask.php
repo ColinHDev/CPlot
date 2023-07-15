@@ -46,7 +46,7 @@ class PlotWallChangeAsyncTask extends ChunkModifyingAsyncTask {
                 World::getXZ($blockHash, $xInChunk, $zInChunk);
                 $x = CoordinateUtils::getCoordinateFromChunk($chunkX, $xInChunk);
                 $z = CoordinateUtils::getCoordinateFromChunk($chunkZ, $zInChunk);
-                for ($y = 1; $y <= $this->groundSize; $y++) {
+                for ($y = $world->getMinY() + 1; $y <= $this->groundSize; $y++) {
                     $explorer->moveTo($x, $y, $z);
                     if ($explorer->currentSubChunk instanceof SubChunk) {
                         $explorer->currentSubChunk->setBlockStateId(
