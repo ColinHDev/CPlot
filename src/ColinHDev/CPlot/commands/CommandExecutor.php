@@ -37,6 +37,7 @@ class CommandExecutor {
             if ($message instanceof Translatable) {
                 $result .= $this->language->translate($message);
             } else {
+                
                 $result .= $message;
             }
         }

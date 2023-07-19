@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands;
 
+use ColinHDev\CPlot\language\KnownTranslationFactory;
 use ColinHDev\CPlot\language\LanguageManager;
 use ColinHDev\CPlot\provider\LanguageProvider;
 use ColinHDev\CPlot\utils\APIHolder;
 use ColinHDev\CPlot\utils\ParseUtils;
-use pocketmine\command\CommandSender;
 
 /**
  * @phpstan-import-type MessageKey from LanguageProvider
@@ -46,10 +46,11 @@ abstract class Subcommand {
         return $this->permission;
     }
 
-    public function testPermission(CommandSender $sender) : bool {
-        if ($sender->hasPermission($this->permission)) {
+    public function testPermission(CommandExecutor $sender) : bool {
+        if ($sender->getSender()->hasPermission($this->permission)) {
             return true;
         }
+        $sender->sendMessage(KnownTranslationFactory::prefix());
         self::sendMessage($sender, ["prefix", $this->key . ".permissionMessage"]);
         return false;
     }
@@ -58,23 +59,5 @@ abstract class Subcommand {
      * This method contains the code you want to be executed when the command is run.
      * @param string[] $args
      */
-    abstract public function execute(CommandSender $sender, array $args) : void;
-
-    /**
-     * Utility method to send a message to a command sender, while also removing some boilerplate code within the
-     * subcommand classes.
-     * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
-     */
-    final protected static function sendMessage(CommandSender $sender, array|string $keys) : void {
-        LanguageManager::getInstance()->getProvider()->sendMessage($sender, $keys);
-    }
-
-    /**
-     * Utility method to translate a message for a command sender, while also removing some boilerplate code within the
-     * subcommand classes.
-     * @phpstan-param array<int|MessageKey, MessageKey|MessageParam|array<MessageParam>>|MessageKey $keys
-     */
-    final protected static function translateForCommandSender(CommandSender $sender, array|string $keys) : string {
-        return LanguageManager::getInstance()->getProvider()->translateForCommandSender($sender, $keys);
-    }
+    abstract public function execute(CommandExecutor $sender, array $args) : void;
 }
