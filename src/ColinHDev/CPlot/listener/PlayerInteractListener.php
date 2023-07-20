@@ -8,6 +8,7 @@ use ColinHDev\CPlot\plots\flags\Flags;
 use ColinHDev\CPlot\plots\flags\implementation\PlayerInteractFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\utils\APIHolder;
+use pocketmine\block\BaseSign;
 use pocketmine\block\Door;
 use pocketmine\block\FenceGate;
 use pocketmine\block\Trapdoor;
@@ -56,7 +57,7 @@ class PlayerInteractListener implements Listener {
 
             $block = $event->getBlock();
             if (
-                ($block instanceof Door || $block instanceof Trapdoor || $block instanceof FenceGate) &&
+                ($block instanceof Door || $block instanceof Trapdoor || $block instanceof FenceGate || $block instanceof BaseSign) &&
                 $plot->getFlag(Flags::PLAYER_INTERACT())->equals(PlayerInteractFlag::TRUE())
             ) {
                 return;
