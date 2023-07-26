@@ -373,6 +373,7 @@ class Plot extends BasePlot {
                 );
             }
         }
+        if (!$location->isValid()) return false;
         return $player->teleport($location);
     }
 
