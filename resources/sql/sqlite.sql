@@ -118,9 +118,10 @@ WHERE playerID = :playerID;
 -- #      :playerName ?string
 SELECT playerID, playerUUID, playerXUID, playerName, lastJoin
 FROM playerData
-WHERE (:playerUUID IS NOT NULL AND playerUUID = :playerUUID) OR
-      (:playerXUID IS NOT NULL AND playerXUID = :playerXUID) OR
-      (:playerName IS NOT NULL AND playerName = :playerName);
+WHERE (:playerUUID IS NULL OR playerUUID IS NULL OR playerUUID = :playerUUID) AND
+      (:playerXUID IS NULL OR playerXUID IS NULL OR playerXUID = :playerXUID) AND
+      (:playerName IS NULL OR playerName IS NULL OR playerName = :playerName)
+LIMIT 1;
 -- #    }
 -- #    { playerDataByUUID
 -- #      :playerUUID string
