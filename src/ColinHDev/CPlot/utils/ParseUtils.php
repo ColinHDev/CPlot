@@ -109,7 +109,7 @@ class ParseUtils {
             return null;
         }
         try {
-            $blockState = BlockStateData::fromNbt($compoundTag);
+            $blockState = GlobalBlockStateHandlers::getUpgrader()->upgradeBlockStateNbt($compoundTag);
         } catch (BlockStateDeserializeException) {
             return null;
         }
