@@ -492,40 +492,39 @@ final class DataProvider {
     }
 
     /**
-     * @phpstan-return Generator<mixed, mixed, mixed, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, PlayerData|null>
      */
     public function updatePlayerData(?string $playerUUID, ?string $playerXUID, ?string $playerName) : Generator {
         $playerUUID = ($playerUUID === "" ? null : $playerUUID);
         $playerXUID = ($playerXUID === "" ? null : $playerXUID);
         $playerName = ($playerName === "" ? null : $playerName);
-        $playerData = yield $this->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
+        $lastJoin = time();
+        $playerData = yield from $this->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
         if (!($playerData instanceof PlayerData)) {
-            yield $this->database->asyncInsert(
+            yield from $this->database->asyncInsert(
                 self::SET_NEW_PLAYERDATA,
                 [
                     "playerUUID" => $playerUUID,
                     "playerXUID" => $playerXUID,
                     "playerName" => $playerName,
-                    "lastJoin" => date("d.m.Y H:i:s")
+                    "lastJoin" => date("d.m.Y H:i:s", $lastJoin)
                 ]
             );
-            return;
+            return yield from $this->awaitPlayerDataByData($playerUUID, $playerXUID, $playerName);
         }
         $playerID = $playerData->getPlayerID();
-        yield $this->database->asyncInsert(
+        yield from $this->database->asyncInsert(
             self::SET_PLAYERDATA,
             [
                 "playerID" => $playerID,
                 "playerUUID" => $playerUUID,
                 "playerXUID" => $playerXUID,
                 "playerName" => $playerName,
-                "lastJoin" => date("d.m.Y H:i:s")
+                "lastJoin" => date("d.m.Y H:i:s", $lastJoin)
             ]
         );
-        $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject(
-            $playerID,
-            new PlayerData($playerID, $playerUUID, $playerXUID, $playerName, time(), $playerData->getSettings())
-        );
+        $updatedPlayerData = new PlayerData($playerID, $playerUUID, $playerXUID, $playerName, $lastJoin, $playerData->getSettings());
+        $this->caches[CacheIDs::CACHE_PLAYER]->cacheObject($playerID, $updatedPlayerData);
         if (is_string($playerUUID)) {
             $this->caches[CacheIDs::CACHE_PLAYER_UUID]->cacheObject($playerUUID, $playerID);
         }
@@ -535,6 +534,7 @@ final class DataProvider {
         if (is_string($playerName)) {
             $this->caches[CacheIDs::CACHE_PLAYER_NAME]->cacheObject($playerName, $playerID);
         }
+        return $updatedPlayerData;
     }
 
     /**
@@ -1533,15 +1533,9 @@ final class DataProvider {
         }
 
         // register filler player data
-        yield from $this->updatePlayerData(
-            null, // doesn't matter what is input at this point. will overwrite on login
-            $XUID,
-            $playerName
-        );
-        // queriying now that player data updated
         /** @var PlayerData|null $playerData */
-        $playerData = yield from $this->awaitPlayerDataByData(
-            null,
+        $playerData = yield from $this->updatePlayerData(
+            null, // doesn't matter what is input at this point. will overwrite on login
             $XUID,
             $playerName
         );

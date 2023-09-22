@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 namespace ColinHDev\CPlot\commands;
+
 use Generator;
-use pocketmine\command\CommandSender;
 use SOFe\AwaitGenerator\Await;
 
 abstract class AsyncSubcommand extends Subcommand {
 
-    final public function execute(CommandSender $sender, array $args) : void {
+    final public function execute(CommandExecutor $sender, array $args) : void {
         Await::g2c(
             $this->executeAsync($sender, $args)
         );
@@ -21,5 +21,5 @@ abstract class AsyncSubcommand extends Subcommand {
      * @param string[] $args
      * @phpstan-return Generator<mixed, mixed, mixed, mixed>
      */
-    abstract public function executeAsync(CommandSender $sender, array $args) : Generator;
+    abstract public function executeAsync(CommandExecutor $sender, array $args) : Generator;
 }
