@@ -124,10 +124,10 @@ class VisitSubcommand extends AsyncSubcommand {
         /** @var Plot $plot */
         $plot = array_values($plots)[($plotNumber - 1)];
         if (!($plot->teleportTo($sender))) {
-            self::sendMessage($sender, ["prefix", "visit.other.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $player->getPlayerName() ?? "Unknown", $plotNumber]]);
+            self::sendMessage($sender, ["prefix", "visit.oneArgument.player.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $player->getPlayerName() ?? "Unknown", $plotNumber]]);
             return;
         }
-        self::sendMessage($sender, ["prefix", "visit.other.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $player->getPlayerName() ?? "Unknown", $plotNumber]]);
+        self::sendMessage($sender, ["prefix", "visit.oneArgument.player.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $player->getPlayerName() ?? "Unknown", $plotNumber]]);
     }
     private function teleportByPlotAlias(Player $sender, string $alias) : Generator {
         try {
