@@ -49,7 +49,7 @@ class VisitSubcommand extends AsyncSubcommand {
                 /** @var PlayerData|null $playerData */
                 $playerData = yield from $this->getPlayerDataByName($args[0]);
                 if (!($playerData instanceof PlayerData)) {
-                    self::sendMessage($sender, ["prefix", "visit.other.playerNotFound" => $args[0]]);
+                    self::sendMessage($sender, ["prefix", "visit.twoArguments.playerNotFound" => $args[0]]);
                     return;
                 }
                 if (is_numeric($args[1])) {
@@ -89,7 +89,7 @@ class VisitSubcommand extends AsyncSubcommand {
             return;
         }
         if (count($plots) === 0) {
-            self::sendMessage($sender, ["prefix", "visit.self.noPlots"]);
+            self::sendMessage($sender, ["prefix", "visit.oneArgument.sender.noPlots"]);
             return;
         }
         if ($plotNumber > count($plots)) {
@@ -99,7 +99,7 @@ class VisitSubcommand extends AsyncSubcommand {
         /** @var Plot $plot */
         $plot = array_values($plots)[($plotNumber - 1)];
         if (!($plot->teleportTo($sender))) {
-            self::sendMessage($sender, ["prefix", "visit.self.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $plotNumber]]);
+            self::sendMessage($sender, ["prefix", "visit.oneArgument.sender.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $plotNumber]]);
             return;
         }
         self::sendMessage($sender, ["prefix", "visit.self.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $plotNumber]]);
@@ -110,15 +110,15 @@ class VisitSubcommand extends AsyncSubcommand {
             /** @var Plot[] $plots */
             $plots = yield from DataProvider::getInstance()->awaitPlotsByPlotPlayer($player->getPlayerID(), PlotPlayer::STATE_OWNER);
         } catch(SqlError $exception) {
-            self::sendMessage($sender, ["prefix", "visit.loadPlotsError" => $exception->getMessage()]);
+            self::sendMessage($sender, ["prefix", "visit.oneArgument.player.teleportError" => $exception->getMessage()]);
             return;
         }
         if (count($plots) === 0) {
-            self::sendMessage($sender, ["prefix", "visit.other.noPlots" => $player->getPlayerName() ?? "Unknown"]);
+            self::sendMessage($sender, ["prefix", "visit.oneArgument.player.noPlots" => $player->getPlayerName() ?? "Unknown"]);
             return;
         }
         if ($plotNumber > count($plots)) {
-            self::sendMessage($sender, ["prefix", "visit.other.noPlot" => [$player->getPlayerName() ?? "Unknown", $plotNumber]]);
+            self::sendMessage($sender, ["prefix", "visit.twoArguments.noPlot" => [$player->getPlayerName() ?? "Unknown", $plotNumber]]);
             return;
         }
         /** @var Plot $plot */
@@ -139,11 +139,11 @@ class VisitSubcommand extends AsyncSubcommand {
             return;
         }
         if (!($plot instanceof Plot)) {
-            self::sendMessage($sender, ["prefix", "visit.alias.noPlot" => $alias]);
+            self::sendMessage($sender, ["prefix", "visit.twoArguments.noPlots" => $alias]);
             return;
         }
         if (!($plot->teleportTo($sender))) {
-            self::sendMessage($sender, ["prefix", "visit.alias.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]]);
+            self::sendMessage($sender, ["prefix", "visit.oneArgument.alias.teleportError" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]]);
             return;
         }
         self::sendMessage($sender, ["prefix", "visit.alias.success" => [$plot->getWorldName(), $plot->getX(), $plot->getZ(), $alias]]);
