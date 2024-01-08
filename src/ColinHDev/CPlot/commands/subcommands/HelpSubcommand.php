@@ -52,7 +52,7 @@ class HelpSubcommand extends Subcommand {
         $subcommandsOnPage = [];
         foreach ($subcommands[$page - 1] as $subcommand) {
             /** @phpstan-var string $description */
-            $description = self::translateForCommandSender($sender, $subcommand->getName() . ".description");
+            $description = self::translateForCommandSender($sender, $subcommand->getName() . "help.description");
             $subcommandsOnPage[] = self::translateForCommandSender(
                 $sender,
                 ["help.success.list" => [$subcommand->getName(), $description]]
