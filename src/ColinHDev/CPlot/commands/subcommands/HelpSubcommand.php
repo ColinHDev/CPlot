@@ -55,12 +55,12 @@ class HelpSubcommand extends Subcommand {
             $description = self::translateForCommandSender($sender, $subcommand->getName() . ".description");
             $subcommandsOnPage[] = self::translateForCommandSender(
                 $sender,
-                ["format.list.commandWithDescription" => [$subcommand->getName(), $description]]
+                ["help.success.list" => [$subcommand->getName(), $description]]
             );
         }
 
         /** @phpstan-var string $separator */
-        $separator = self::translateForCommandSender($sender, "format.list.commandWithDescription.separator");
+        $separator = self::translateForCommandSender($sender, "help.success.list.separator");
         $list = implode($separator, $subcommandsOnPage);
         self::sendMessage(
             $sender,
