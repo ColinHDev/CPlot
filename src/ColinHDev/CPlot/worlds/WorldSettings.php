@@ -15,24 +15,24 @@ class WorldSettings {
     public const TYPE_CPLOT_DEFAULT = "cplot_default";
     public const TYPE_MYPLOT = "myplot";
 
-    private string $worldType;
-    private int $biomeID;
+    public readonly string $worldType;
+    public readonly int $biomeID;
 
-    private string $roadSchematic;
-    private string $mergeRoadSchematic;
-    private string $plotSchematic;
+    public readonly string $roadSchematic;
+    public readonly string $mergeRoadSchematic;
+    public readonly string $plotSchematic;
 
-    private int $roadSize;
-    private int $plotSize;
-    private int $groundSize;
-    private int $coordinateOffset;
+    public readonly int $roadSize;
+    public readonly int $plotSize;
+    public readonly int $groundSize;
+    public readonly int $coordinateOffset;
 
-    private Block $airBlock;
-    private Block $roadBlock;
-    private Block $borderBlock;
-    private Block $plotFloorBlock;
-    private Block $plotFillBlock;
-    private Block $plotBottomBlock;
+    public readonly Block $airBlock;
+    public readonly Block $roadBlock;
+    public readonly Block $borderBlock;
+    public readonly Block $plotFloorBlock;
+    public readonly Block $plotFillBlock;
+    public readonly Block $plotBottomBlock;
 
     public function __construct(string $worldType, int $biomeID, string $roadSchematic, string $mergeRoadSchematic, string $plotSchematic, int $roadSize, int $plotSize, int $groundSize, int $coordinateOffset, Block $airBlock, Block $roadBlock, Block $borderBlock, Block $plotFloorBlock, Block $plotFillBlock, Block $plotBottomBlock) {
         $this->worldType = $worldType;
