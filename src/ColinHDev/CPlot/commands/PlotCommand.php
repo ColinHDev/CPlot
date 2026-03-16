@@ -33,7 +33,7 @@ use ColinHDev\CPlot\commands\subcommands\VisitSubcommand;
 use ColinHDev\CPlot\commands\subcommands\WallSubcommand;
 use ColinHDev\CPlot\commands\subcommands\WarpSubcommand;
 use ColinHDev\CPlot\CPlot;
-use ColinHDev\CPlot\provider\LanguageManager;
+use ColinHDev\CPlot\language\LanguageManager;
 use ColinHDev\CPlot\utils\ParseUtils;
 use InvalidArgumentException;
 use pocketmine\command\Command;

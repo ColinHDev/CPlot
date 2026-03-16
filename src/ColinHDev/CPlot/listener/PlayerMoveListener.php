@@ -9,6 +9,7 @@ use ColinHDev\CPlot\event\PlayerEnteredPlotEvent;
 use ColinHDev\CPlot\event\PlayerEnterPlotEvent;
 use ColinHDev\CPlot\event\PlayerLeavePlotEvent;
 use ColinHDev\CPlot\event\PlayerLeftPlotEvent;
+use ColinHDev\CPlot\language\LanguageManager;
 use ColinHDev\CPlot\player\PlayerData;
 use ColinHDev\CPlot\player\settings\Settings;
 use ColinHDev\CPlot\plots\flags\Flags;
@@ -17,8 +18,8 @@ use ColinHDev\CPlot\plots\flags\implementation\GreetingFlag;
 use ColinHDev\CPlot\plots\Plot;
 use ColinHDev\CPlot\plots\TeleportDestination;
 use ColinHDev\CPlot\provider\DataProvider;
-use ColinHDev\CPlot\provider\LanguageManager;
 use ColinHDev\CPlot\utils\APIHolder;
+use Generator;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\player\Player;
@@ -85,9 +86,9 @@ class PlayerMoveListener implements Listener {
      * could not be synchronously loaded.
      * So we call this method to at least process the player's movement, although we no longer can cancel the
      * {@see PlayerMoveEvent} itself.
-     * @phpstan-return \Generator<mixed, mixed, mixed, void>
+     * @phpstan-return Generator<mixed, mixed, mixed, void>
      */
-    private function onPlayerAsyncMove(PlayerMoveEvent $event) : \Generator {
+    private function onPlayerAsyncMove(PlayerMoveEvent $event) : Generator {
         /** @var Plot|false $fromPlot */
         $fromPlot = yield from Await::promise(
             fn(Closure $resolve, Closure $reject) => $this->getAPI()->getOrLoadPlotAtPosition($event->getFrom())->onCompletion($resolve, $reject)
@@ -128,7 +129,7 @@ class PlayerMoveListener implements Listener {
      * @param Player $player The player that entered the plot.
      */
     private function onPlotEnter(Plot $plot, Player $player) : void {
-        Await::f2c(static function() use($plot, $player) : \Generator {
+        Await::f2c(static function() use($plot, $player) : Generator {
             $languageProvider = LanguageManager::getInstance()->getProvider();
             // settings on plot enter
             $playerData = yield from DataProvider::getInstance()->awaitPlayerDataByPlayer($player);
